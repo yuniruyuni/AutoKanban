@@ -12,7 +12,7 @@
     "arch:check": "cd server && bun run arch:check"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.5",
-    "typescript": "^5.9.3"
+    "@biomejs/biome": "^2.4.9",
+    "typescript": "^6.0.2"
   }
 }
