@@ -6,7 +6,7 @@ import { Dialog, DialogContent } from "@/components/atoms/Dialog";
 import { TabBar } from "@/components/atoms/TabBar";
 import { ConversationPanel } from "@/components/chat/ConversationPanel";
 import { BranchInfo } from "@/components/task/BranchInfo";
-import { DiffPanel } from "@/components/task/DiffPanel";
+import { DiffPanel } from "@/components/task/diff-panel";
 import { GitOperationButtons } from "@/components/task/GitOperationButtons";
 import { PreviewPanel } from "@/components/task/PreviewPanel";
 import { useDevServerPreview } from "@/hooks/useDevServerPreview";

@@ -27,7 +27,17 @@ import type {
 	ToolEntry as ToolEntryType,
 	ToolStatus,
 } from "../types/conversation";
+import { computeIdleState } from "./idle-state";
+import { computeDefaultPlanStatus, determinePlanStatusFromText } from "./plan-status";
 import { mapToolNameToAction } from "./tool-action-mapper";
+import { extractExitCode, formatToolOutput } from "./tool-result-formatter";
+import {
+	type ControlResponseInput,
+	applyControlRequest,
+	applyControlResponse,
+	applyToolResult,
+	normalizeControlResponse,
+} from "./tool-status-machine";
 
 /**
  * Parse result containing entries and idle state
@@ -106,9 +116,6 @@ function parseLogLine(line: string): ParsedLogLine | null {
 	};
 }
 
-// Plan approval/rejection message patterns
-const PLAN_APPROVAL_PATTERN = "Please proceed with the plan.";
-const PLAN_REJECTION_PATTERN = "I'm rejecting this plan because:";
 
 /**
  * Parse raw database logs into structured ParseResult.
@@ -149,20 +156,12 @@ export function parseLogsToConversation(rawLogs: string): ParseResult {
 			const json = JSON.parse(data) as ClaudeJsonMessage;
 
 			// Track idle state based on message type
-			// Claude is idle when the last message is "result" (turn completed)
-			// or when awaiting approval (canUseTool control_request)
-			// Claude is NOT idle when:
-			// - It starts responding (assistant message)
-			// - User sends a new message (user message after result)
-			if (json.type === "result") {
-				isIdle = true;
-			} else if (json.type === "assistant" || json.type === "user") {
-				isIdle = false;
-			} else if (json.type === "control_request") {
-				const req = json as ClaudeControlRequestMessage;
-				if (req.request.subtype === "canUseTool" || req.request.subtype === "can_use_tool" || req.request.subtype === "permission_request") {
-					isIdle = true;
-				}
+			const controlSubtype = json.type === "control_request"
+				? (json as ClaudeControlRequestMessage).request.subtype
+				: undefined;
+			const idleChange = computeIdleState(json.type, controlSubtype);
+			if (idleChange !== null) {
+				isIdle = idleChange;
 			}
 
 			const result = processClaudeJson(
@@ -184,14 +183,7 @@ export function parseLogsToConversation(rawLogs: string): ParseResult {
 		if (entry.type.kind === "tool") {
 			const toolType = entry.type as ToolEntryType;
 			if (toolType.action.type === "plan" && !toolType.action.planStatus) {
-				// If the tool has a pending_approval status (from control_request), mark as pending
-				if (toolType.status === "pending_approval") {
-					toolType.action.planStatus = "pending";
-				} else if (toolType.status === "denied") {
-					toolType.action.planStatus = "rejected";
-				} else {
-					toolType.action.planStatus = "pending";
-				}
+				toolType.action.planStatus = computeDefaultPlanStatus(toolType.status);
 			}
 		}
 	}
@@ -391,29 +383,16 @@ function processUserMessage(
 
 	// Helper to check for plan approval/rejection and update plan status
 	const checkAndUpdatePlanStatus = (text: string) => {
-		// Check if this is a plan approval or rejection message
-		if (text === PLAN_APPROVAL_PATTERN) {
-			// Find the most recent pending plan and mark it as approved
-			for (const [toolId, entry] of completedPlanTools) {
-				if (entry.type.kind === "tool") {
-					const toolType = entry.type as ToolEntryType;
-					if (toolType.action.type === "plan" && !toolType.action.planStatus) {
-						(toolType.action as PlanAction).planStatus = "approved";
-						completedPlanTools.delete(toolId);
-						break;
-					}
-				}
-			}
-		} else if (text.startsWith(PLAN_REJECTION_PATTERN)) {
-			// Find the most recent pending plan and mark it as rejected
-			for (const [toolId, entry] of completedPlanTools) {
-				if (entry.type.kind === "tool") {
-					const toolType = entry.type as ToolEntryType;
-					if (toolType.action.type === "plan" && !toolType.action.planStatus) {
-						(toolType.action as PlanAction).planStatus = "rejected";
-						completedPlanTools.delete(toolId);
-						break;
-					}
+		const planStatus = determinePlanStatusFromText(text);
+		if (!planStatus) return;
+
+		for (const [toolId, entry] of completedPlanTools) {
+			if (entry.type.kind === "tool") {
+				const toolType = entry.type as ToolEntryType;
+				if (toolType.action.type === "plan" && !toolType.action.planStatus) {
+					(toolType.action as PlanAction).planStatus = planStatus;
+					completedPlanTools.delete(toolId);
+					break;
 				}
 			}
 		}
@@ -459,7 +438,7 @@ function processUserMessage(
 				const toolEntry = pendingTools.get(item.tool_use_id);
 				if (toolEntry && toolEntry.type.kind === "tool") {
 					const toolType = toolEntry.type as ToolEntryType;
-					toolType.status = item.is_error ? "failed" : "success";
+					toolType.status = applyToolResult(item.is_error ?? false);
 					const output = formatToolOutput(item.content);
 					toolType.result = {
 						output,
@@ -488,8 +467,7 @@ function processControlRequest(
 	pendingTools: Map<string, ConversationEntry>,
 ): ConversationEntry[] | null {
 	const subtype = json.request.subtype;
-	// Handle both legacy "permission_request" and new "canUseTool" subtypes
-	if (subtype !== "permission_request" && subtype !== "canUseTool" && subtype !== "can_use_tool") return null;
+	if (!applyControlRequest(subtype)) return null;
 
 	const toolUseId = json.request.tool_use_id as string | undefined;
 	if (!toolUseId) return null;
@@ -514,70 +492,48 @@ function processControlResponse(
 	pendingTools: Map<string, ConversationEntry>,
 	completedPlanTools?: Map<string, ConversationEntry>,
 ): ConversationEntry[] | null {
-	const subtype = json.response.subtype;
-
-	// Determine approved/reason from either legacy or new response format
-	let approved: boolean | undefined;
-	let reason: string | undefined;
-
-	if (subtype === "permission_response") {
-		// Legacy format: { subtype: "permission_response", approved, reason }
-		approved = json.response.approved as boolean | undefined;
-		reason = json.response.reason as string | undefined;
-	} else if (subtype === "success") {
-		// Format: { subtype: "success", response: { behavior: "allow"|"deny", message } }
-		const inner = json.response.response as
-			| { behavior?: string; message?: string }
-			| undefined;
-		if (inner?.behavior) {
-			approved = inner.behavior === "allow";
-			reason = inner.message;
-		} else {
-			return null;
-		}
-	} else {
-		return null;
-	}
+	// Normalize legacy/new response formats
+	const normalized = normalizeControlResponse(
+		json.response as ControlResponseInput,
+	);
+	if (!normalized) return null;
 
 	// Find the tool entry that matches this permission response
 	for (const [, entry] of pendingTools) {
 		if (entry.type.kind === "tool") {
 			const toolType = entry.type as ToolEntryType;
 			if (toolType.status === "pending_approval") {
-				if (approved) {
-					toolType.status = "running";
+				const transition = applyControlResponse(
+					normalized.approved,
+					normalized.reason,
+					toolType.toolName,
+					toolType.action.type,
+				);
 
-					// For ExitPlanMode, mark plan as approved
-					if (
-						toolType.toolName === "ExitPlanMode" &&
-						toolType.action.type === "plan"
-					) {
-						(toolType.action as PlanAction).planStatus = "approved";
-						completedPlanTools?.delete(toolType.toolId);
-					}
-				} else {
-					toolType.status = "denied";
+				toolType.status = transition.newStatus;
+
+				if (transition.planStatusUpdate) {
+					(toolType.action as PlanAction).planStatus =
+						transition.planStatusUpdate;
+					completedPlanTools?.delete(toolType.toolId);
+				}
+
+				if (transition.newStatus === "denied") {
 					pendingTools.delete(toolType.toolId);
 
-					// For ExitPlanMode, mark plan as rejected
-					if (
-						toolType.toolName === "ExitPlanMode" &&
-						toolType.action.type === "plan"
-					) {
-						(toolType.action as PlanAction).planStatus = "rejected";
-						completedPlanTools?.delete(toolType.toolId);
-					}
-
-					// Create a user_feedback entry if there's a reason
-					if (reason) {
+					if (transition.feedbackReason) {
 						return [
 							{
-								id: generateStableId("user_feedback", timestamp, reason),
+								id: generateStableId(
+									"user_feedback",
+									timestamp,
+									transition.feedbackReason,
+								),
 								timestamp,
 								type: {
 									kind: "user_feedback",
 									toolName: toolType.toolName,
-									reason,
+									reason: transition.feedbackReason,
 								},
 							},
 						];
@@ -589,37 +545,6 @@ function processControlResponse(
 	}
 
 	return null;
-}
-
-/**
- * Extract exit code from Bash tool output.
- * Tries to parse "Exit code: N" from output, falls back to is_error flag.
- */
-function extractExitCode(output: string, isError?: boolean): number {
-	const match = output.match(/(?:^|\n)\s*Exit code:\s*(\d+)\s*$/);
-	if (match) {
-		return parseInt(match[1], 10);
-	}
-	return isError ? 1 : 0;
-}
-
-/**
- * Format tool output for display.
- */
-function formatToolOutput(content: unknown): string {
-	if (typeof content === "string") {
-		return content;
-	}
-
-	if (content === null || content === undefined) {
-		return "";
-	}
-
-	try {
-		return JSON.stringify(content, null, 2);
-	} catch {
-		return String(content);
-	}
 }
 
 /**
