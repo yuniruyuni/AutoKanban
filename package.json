@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": ["server", "client"],
   "scripts": {
-    "dev": "bun run --filter '*' dev",
+    "dev": "bun run --filter '*' --parallel dev",
     "build": "bun run --filter '*' build",
     "test": "bun run --filter '*' test",
     "lint": "bun run --filter '*' lint",

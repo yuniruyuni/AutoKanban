@@ -118,6 +118,7 @@ process.on("SIGTERM", () => {
 logger.info(`Server running on http://localhost:${PORT}`);
 
 export default {
+	hostname: "0.0.0.0",
 	port: PORT,
 	fetch: app.fetch,
 	idleTimeout: 120, // 2 minutes idle timeout for SSE connections
