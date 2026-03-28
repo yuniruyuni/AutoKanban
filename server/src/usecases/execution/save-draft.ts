@@ -1,0 +1,48 @@
+import { fail } from "../../models/common";
+import { Session } from "../../models/session";
+import { usecase } from "../runner";
+
+export interface SaveDraftInput {
+	sessionId: string;
+	text: string;
+}
+
+export const saveDraft = (input: SaveDraftInput) =>
+	usecase({
+		read: (ctx) => {
+			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+			if (!session) {
+				return fail("NOT_FOUND", "Session not found", {
+					sessionId: input.sessionId,
+				});
+			}
+			return { session };
+		},
+
+		write: (ctx) => {
+			ctx.repos.draft.save(input.sessionId, input.text);
+			return { success: true };
+		},
+	});
+
+export interface GetDraftInput {
+	sessionId: string;
+}
+
+export const getDraft = (input: GetDraftInput) =>
+	usecase({
+		read: (ctx) => {
+			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+			if (!session) {
+				return fail("NOT_FOUND", "Session not found", {
+					sessionId: input.sessionId,
+				});
+			}
+
+			const draft = ctx.repos.draft.get(input.sessionId);
+			return {
+				text: draft?.text ?? "",
+				savedAt: draft?.savedAt?.toISOString() ?? null,
+			};
+		},
+	});

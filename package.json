@@ -1,0 +1,18 @@
+{
+  "name": "auto-kanban",
+  "private": true,
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "test": "bun run --filter '*' test",
+    "lint": "bun run --filter '*' lint",
+    "lint:fix": "bun run --filter '*' lint:fix",
+    "typecheck": "bun run --filter '*' typecheck",
+    "arch:check": "cd server && bun run arch:check"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.5",
+    "typescript": "^5.9.3"
+  }
+}

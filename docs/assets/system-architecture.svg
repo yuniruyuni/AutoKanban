@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+    <marker id="arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#999"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1976d2"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#f57c00"/>
+    </marker>
+  </defs>
+
+  <!-- Frontend -->
+  <rect x="20" y="20" width="680" height="55" rx="8" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="360" y="42" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#6a1b9a">Frontend (React)</text>
+  <text x="360" y="60" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#666">Valtio + tRPC Client</text>
+
+  <!-- Arrow: Frontend -> Presentation (受動的) -->
+  <line x1="270" y1="75" x2="270" y2="105" stroke="#1976d2" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <text x="235" y="95" font-family="system-ui, sans-serif" font-size="8" fill="#1976d2">受動的</text>
+  <text x="280" y="95" font-family="system-ui, sans-serif" font-size="9" fill="#1976d2">tRPC</text>
+
+  <!-- Backend container -->
+  <rect x="20" y="110" width="680" height="260" rx="8" fill="#fafafa" stroke="#bdbdbd" stroke-width="2"/>
+  <text x="40" y="130" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#616161">Backend (Bun)</text>
+
+  <!-- Model Layer (LEFT) -->
+  <rect x="40" y="145" width="130" height="210" rx="6" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="105" y="235" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="bold" fill="#ad1457">Model</text>
+  <text x="105" y="255" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#666">ドメインモデル</text>
+  <text x="105" y="270" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#888">全レイヤー</text>
+  <text x="105" y="283" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#888">共通言語</text>
+
+  <!-- Presentation Layer (CENTER) -->
+  <rect x="200" y="145" width="200" height="55" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <text x="300" y="167" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#1565c0">Presentation</text>
+  <text x="300" y="183" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#666">リクエスト受信・応答（受動的）</text>
+
+  <!-- Arrow: Presentation -> Usecase -->
+  <line x1="300" y1="200" x2="300" y2="215" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Usecase Layer (CENTER) -->
+  <rect x="200" y="220" width="200" height="55" rx="6" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
+  <text x="300" y="242" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#2e7d32">Usecase</text>
+  <text x="300" y="258" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#666">ビジネスロジック</text>
+
+  <!-- Arrow: Usecase -> Repository -->
+  <line x1="300" y1="275" x2="300" y2="290" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Repository Layer (CENTER) -->
+  <rect x="200" y="295" width="200" height="55" rx="6" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="300" y="317" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#e65100">Repository</text>
+  <text x="300" y="333" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#666">外部システム呼び出し（能動的）</text>
+
+  <!-- Dashed arrows: Model <- All layers -->
+  <line x1="195" y1="172" x2="175" y2="200" stroke="#999" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow-dashed)"/>
+  <line x1="195" y1="247" x2="175" y2="247" stroke="#999" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow-dashed)"/>
+  <line x1="195" y1="322" x2="175" y2="295" stroke="#999" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow-dashed)"/>
+
+  <!-- Arrow: Repository -> External (能動的) -->
+  <line x1="405" y1="322" x2="465" y2="280" stroke="#f57c00" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <text x="455" y="310" font-family="system-ui, sans-serif" font-size="8" fill="#e65100">能動的</text>
+
+  <!-- External Systems (RIGHT) -->
+  <rect x="470" y="145" width="210" height="205" rx="6" fill="#e0f2f1" stroke="#00796b" stroke-width="2"/>
+  <text x="575" y="165" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#00695c">外部システム</text>
+
+  <rect x="490" y="180" width="170" height="35" rx="4" fill="#fff" stroke="#00796b" stroke-width="1"/>
+  <text x="575" y="203" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#00695c">SQLite (bun:sqlite)</text>
+
+  <rect x="490" y="225" width="170" height="35" rx="4" fill="#fff" stroke="#00796b" stroke-width="1"/>
+  <text x="575" y="248" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#00695c">Git Repos</text>
+
+  <rect x="490" y="270" width="170" height="35" rx="4" fill="#fff" stroke="#00796b" stroke-width="1"/>
+  <text x="575" y="293" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#00695c">Coding Agents</text>
+
+  <rect x="490" y="315" width="170" height="25" rx="4" fill="#fff" stroke="#00796b" stroke-width="1"/>
+  <text x="575" y="332" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#00695c">Config Files</text>
+
+  <!-- Legend -->
+  <rect x="20" y="390" width="680" height="75" rx="6" fill="#fff" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="40" y="410" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#666">凡例</text>
+
+  <line x1="40" y1="435" x2="80" y2="435" stroke="#1976d2" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <text x="90" y="439" font-family="system-ui, sans-serif" font-size="9" fill="#666">受動的（リクエスト受信）</text>
+
+  <line x1="250" y1="435" x2="290" y2="435" stroke="#f57c00" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <text x="300" y="439" font-family="system-ui, sans-serif" font-size="9" fill="#666">能動的（外部呼び出し）</text>
+
+  <line x1="450" y1="435" x2="490" y2="435" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="500" y="439" font-family="system-ui, sans-serif" font-size="9" fill="#666">レイヤー間呼び出し</text>
+
+  <line x1="40" y1="455" x2="80" y2="455" stroke="#999" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow-dashed)"/>
+  <text x="90" y="459" font-family="system-ui, sans-serif" font-size="9" fill="#666">Model参照（全レイヤーが使用）</text>
+</svg>

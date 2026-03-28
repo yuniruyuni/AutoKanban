@@ -1,0 +1,52 @@
+{
+	"name": "@auto-kanban/client",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview",
+		"test": "vitest --run",
+		"test:watch": "vitest",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write ."
+	},
+	"dependencies": {
+		"@auto-kanban/server": "workspace:*",
+		"@dnd-kit/core": "^6.3.1",
+		"@dnd-kit/sortable": "^10.0.0",
+		"@dnd-kit/utilities": "^3.2.2",
+		"@git-diff-view/react": "^0.0.40",
+		"@tanstack/react-query": "^5.80.3",
+		"@tanstack/react-virtual": "^3.13.19",
+		"@trpc/client": "11.10.0",
+		"@trpc/react-query": "11.10.0",
+		"@trpc/server": "11.10.0",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.575.0",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-markdown": "^10.1.0",
+		"react-resizable-panels": "^4.7.0",
+		"react-router-dom": "^7.13.1",
+		"remark-gfm": "^4.0.1",
+		"tailwind-merge": "^3.5.0",
+		"valtio": "^2.1.2"
+	},
+	"devDependencies": {
+		"@tailwindcss/typography": "^0.5.19",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.2",
+		"@types/react": "^19.0.0",
+		"@types/react-dom": "^19.0.0",
+		"@vitejs/plugin-react": "^4.3.4",
+		"autoprefixer": "^10.4.20",
+		"jsdom": "^28.1.0",
+		"postcss": "^8.4.49",
+		"tailwindcss": "^3.4.16",
+		"typescript": "^5.7.2",
+		"vite": "^6.0.3",
+		"vitest": "^2.1.8"
+	}
+}

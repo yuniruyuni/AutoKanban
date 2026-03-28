@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Override Tailwind ring (1px+) to use inset outline instead of box-shadow,
+   so it is not clipped by overflow:auto/hidden containers.
+   ring-0 is intentionally excluded — it is used to disable rings. */
+@layer utilities {
+	.ring-1, .ring-2, .ring-4, .ring-8, .ring {
+		--tw-ring-shadow: 0 0 #0000 !important;
+		outline-style: solid;
+		outline-color: var(--tw-ring-color, currentColor);
+	}
+	.ring-1 { outline-width: 1px; outline-offset: -1px; }
+	.ring-2 { outline-width: 2px; outline-offset: -2px; }
+	.ring-4 { outline-width: 4px; outline-offset: -4px; }
+	.ring-8 { outline-width: 8px; outline-offset: -8px; }
+	.ring   { outline-width: 3px; outline-offset: -3px; }
+}
+
+@layer base {
+	:root {
+		--color-primary: #ffffff;
+		--color-primary-foreground: #0a0a0b;
+		--color-secondary: #f5f5f5;
+		--color-secondary-foreground: #71717a;
+		--color-card: #ffffff;
+		--color-hover: #ebebeb;
+		--color-muted: #a1a1aa;
+		--color-accent: #e87b35;
+		--color-border: #e4e4e7;
+		--color-destructive: #ef4444;
+		--color-warning: #f59e0b;
+		--color-info: #3b82f6;
+		--color-success: #22c55e;
+		--color-accent-hover: #f5924d;
+	}
+}
