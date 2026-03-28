@@ -117,10 +117,7 @@ export interface IToolRepository {
 
 export interface IVariantRepository {
 	get(spec: Variant.Spec): Variant | null;
-	list(
-		spec: Variant.Spec,
-		cursor: Cursor<Variant.SortKey>,
-	): Page<Variant>;
+	list(spec: Variant.Spec, cursor: Cursor<Variant.SortKey>): Page<Variant>;
 	listByExecutor(executor: string): Variant[];
 	upsert(variant: Variant): void;
 	delete(spec: Variant.Spec): number;
@@ -246,11 +243,7 @@ export interface IGitRepository {
 	}>;
 
 	// Pull branch (fetch + update-ref)
-	pullBranch(
-		repoPath: string,
-		branch: string,
-		remote?: string,
-	): Promise<void>;
+	pullBranch(repoPath: string, branch: string, remote?: string): Promise<void>;
 
 	// Helper methods
 	fetch(worktreePath: string, remote?: string): Promise<void>;
@@ -298,6 +291,8 @@ export interface ExecutorStartOptions {
 	prompt: string;
 	dangerouslySkipPermissions?: boolean;
 	model?: string;
+	/** Which driver to use. Defaults to "claude-code". */
+	executor?: string;
 }
 
 export interface ExecutorStartProtocolOptions {
@@ -310,6 +305,8 @@ export interface ExecutorStartProtocolOptions {
 	resumeSessionId?: string;
 	resumeMessageId?: string;
 	interruptedTools?: Array<{ toolId: string; toolName: string }>;
+	/** Which driver to use. Defaults to "claude-code". */
+	executor?: string;
 }
 
 export interface ExecutorProcessInfo {
@@ -333,6 +330,9 @@ export interface IExecutorRepository {
 		requestSubtype?: string,
 		reason?: string,
 	): Promise<boolean>;
+	startProtocolAndWait(
+		options: ExecutorStartProtocolOptions,
+	): Promise<{ exitCode: number }>;
 	get(processId: string): ExecutorProcessInfo | undefined;
 	getBySession(sessionId: string): ExecutorProcessInfo[];
 	getStdout(processId: string): ReadableStream<Uint8Array> | null;

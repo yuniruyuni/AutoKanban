@@ -13,9 +13,7 @@ export interface UpdateTaskTemplateInput {
 export const updateTaskTemplate = (input: UpdateTaskTemplateInput) =>
 	usecase({
 		read: (ctx) => {
-			const template = ctx.repos.taskTemplate.get(
-				TaskTemplate.ById(input.id),
-			);
+			const template = ctx.repos.taskTemplate.get(TaskTemplate.ById(input.id));
 			if (!template) {
 				return fail("NOT_FOUND", "Task template not found");
 			}
@@ -28,12 +26,10 @@ export const updateTaskTemplate = (input: UpdateTaskTemplateInput) =>
 				title: input.title?.trim() ?? template.title,
 				description:
 					input.description !== undefined
-						? (input.description?.trim() || null)
+						? input.description?.trim() || null
 						: template.description,
 				condition:
-					input.condition !== undefined
-						? input.condition
-						: template.condition,
+					input.condition !== undefined ? input.condition : template.condition,
 				sortOrder: input.sortOrder ?? template.sortOrder,
 				updatedAt: new Date(),
 			};

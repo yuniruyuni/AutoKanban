@@ -33,12 +33,17 @@ export const initCommit = (input: InitCommitInput) =>
 			const commitExit = await commitProc.exited;
 			if (commitExit !== 0) {
 				const stderr = await new Response(commitProc.stderr).text();
-				return fail("GIT_COMMIT_FAILED", `initial commit failed: ${stderr.trim()}`);
+				return fail(
+					"GIT_COMMIT_FAILED",
+					`initial commit failed: ${stderr.trim()}`,
+				);
 			}
 
 			// Stage all existing files
 			const addProc = spawn(["git", "add", "-A"], {
-				cwd: path, stdout: "pipe", stderr: "pipe",
+				cwd: path,
+				stdout: "pipe",
+				stderr: "pipe",
 			});
 			if ((await addProc.exited) !== 0) {
 				return { path };
@@ -46,13 +51,16 @@ export const initCommit = (input: InitCommitInput) =>
 
 			// Commit staged files if any
 			const statusProc = spawn(["git", "diff", "--cached", "--quiet"], {
-				cwd: path, stdout: "pipe", stderr: "pipe",
+				cwd: path,
+				stdout: "pipe",
+				stderr: "pipe",
 			});
 			if ((await statusProc.exited) !== 0) {
-				const snapProc = spawn(
-					["git", "commit", "-m", "Add existing files"],
-					{ cwd: path, stdout: "pipe", stderr: "pipe" },
-				);
+				const snapProc = spawn(["git", "commit", "-m", "Add existing files"], {
+					cwd: path,
+					stdout: "pipe",
+					stderr: "pipe",
+				});
 				await snapProc.exited;
 			}
 

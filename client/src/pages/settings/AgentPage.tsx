@@ -70,7 +70,9 @@ export function AgentPage() {
 			<div className="flex flex-col gap-8 py-8 px-10">
 				{/* Header */}
 				<div className="flex flex-col gap-1">
-					<h1 className="text-[28px] font-bold text-primary-foreground">Agent</h1>
+					<h1 className="text-[28px] font-bold text-primary-foreground">
+						Agent
+					</h1>
 					<p className="text-sm text-secondary-foreground">
 						Configure how Auto Kanban sends requests to coding agents
 					</p>

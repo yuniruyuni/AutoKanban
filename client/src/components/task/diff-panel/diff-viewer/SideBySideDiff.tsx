@@ -5,7 +5,13 @@ import {
 } from "@/lib/diff-parser";
 import { cn } from "@/lib/utils";
 
-export function SideBySideDiff({ rawDiff, hideWhitespace }: { rawDiff: string; hideWhitespace: boolean }) {
+export function SideBySideDiff({
+	rawDiff,
+	hideWhitespace,
+}: {
+	rawDiff: string;
+	hideWhitespace: boolean;
+}) {
 	const filtered = hideWhitespace ? filterWhitespaceHunks(rawDiff) : rawDiff;
 	const lines = parseDiffLines(filtered);
 	const pairs = pairSideBySide(lines);
@@ -57,10 +63,14 @@ export function SideBySideDiff({ rawDiff, hideWhitespace }: { rawDiff: string; h
 							<span className="w-8 flex-shrink-0 text-right text-[#8C959F] select-none">
 								{pair.left?.oldLineNum ?? ""}
 							</span>
-							<span className={cn("break-all", leftTextColor)}>{pair.left?.content ?? ""}</span>
+							<span className={cn("break-all", leftTextColor)}>
+								{pair.left?.content ?? ""}
+							</span>
 						</div>
 						{/* Right (new) */}
-						<div className={cn("flex w-1/2 min-w-0 gap-4 px-5 py-0.5", rightBg)}>
+						<div
+							className={cn("flex w-1/2 min-w-0 gap-4 px-5 py-0.5", rightBg)}
+						>
 							<span className="w-8 flex-shrink-0 text-right text-[#8C959F] select-none">
 								{pair.right?.newLineNum ?? ""}
 							</span>

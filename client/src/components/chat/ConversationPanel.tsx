@@ -5,10 +5,7 @@ import { PermissionResponseInput } from "@/components/chat/PermissionResponseInp
 import { PlanResponseInput } from "@/components/chat/PlanResponseInput";
 import { useTodoProgress } from "@/hooks/useTodoProgress";
 import { trpc } from "@/trpc";
-import {
-	AttemptSwitcher,
-	type AttemptSummary,
-} from "./AttemptSwitcher";
+import { type AttemptSummary, AttemptSwitcher } from "./AttemptSwitcher";
 import { TodoProgressPopup } from "./TodoProgressPopup";
 import type { ConversationEntry } from "./types";
 
@@ -27,7 +24,6 @@ interface ConversationPanelProps {
 	selectedAttempt?: number;
 	onSelectAttempt?: (attempt: AttemptSummary) => void;
 }
-
 
 export function ConversationPanel({
 	workspaceId: _workspaceId,
@@ -140,7 +136,9 @@ export function ConversationPanel({
 					{!isHistoricalView && isCompleted && !isRunning && (
 						<div className="flex items-center gap-2">
 							<div className="h-2 w-2 rounded-sm bg-secondary-foreground" />
-							<span className="text-[13px] text-secondary-foreground">Completed</span>
+							<span className="text-[13px] text-secondary-foreground">
+								Completed
+							</span>
 						</div>
 					)}
 				</div>
@@ -188,7 +186,9 @@ export function ConversationPanel({
 								<ChatContainer
 									executionProcessId={executionProcessId}
 									isRunning={isRunning}
-									isAwaitingApproval={showPlanResponseInput || showPermissionResponseInput}
+									isAwaitingApproval={
+										showPlanResponseInput || showPermissionResponseInput
+									}
 									sessionId={sessionId}
 								/>
 							</div>
@@ -201,7 +201,9 @@ export function ConversationPanel({
 							<ChatContainer
 								executionProcessId={executionProcessId}
 								isRunning={isRunning}
-								isAwaitingApproval={showPlanResponseInput || showPermissionResponseInput}
+								isAwaitingApproval={
+									showPlanResponseInput || showPermissionResponseInput
+								}
 								sessionId={sessionId}
 								onExecutionStarted={onExecutionStarted}
 							/>
@@ -234,12 +236,15 @@ export function ConversationPanel({
 			</div>
 
 			{/* Input area - hidden in historical view */}
-			{!isHistoricalView && sessionId && showPlanResponseInput && planApproval && (
-				<PlanResponseInput
-					approvalId={planApproval.id}
-					executionProcessId={executionProcessId!}
-				/>
-			)}
+			{!isHistoricalView &&
+				sessionId &&
+				showPlanResponseInput &&
+				planApproval && (
+					<PlanResponseInput
+						approvalId={planApproval.id}
+						executionProcessId={executionProcessId!}
+					/>
+				)}
 			{!isHistoricalView && sessionId && showPermissionResponseInput && (
 				<PermissionResponseInput
 					sessionId={sessionId}
@@ -250,12 +255,15 @@ export function ConversationPanel({
 					}))}
 				/>
 			)}
-			{!isHistoricalView && sessionId && !showPlanResponseInput && !showPermissionResponseInput && (
-				<FollowUpInput
-					sessionId={sessionId}
-					onExecutionStarted={onExecutionStarted}
-				/>
-			)}
+			{!isHistoricalView &&
+				sessionId &&
+				!showPlanResponseInput &&
+				!showPermissionResponseInput && (
+					<FollowUpInput
+						sessionId={sessionId}
+						onExecutionStarted={onExecutionStarted}
+					/>
+				)}
 		</div>
 	);
 }

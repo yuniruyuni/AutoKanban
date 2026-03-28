@@ -572,7 +572,16 @@ export class GitRepository {
 		baseBranch: string,
 		draft: boolean = false,
 	): Promise<{ url: string }> {
-		const args = ["pr", "create", "--title", title, "--body", body, "--base", baseBranch];
+		const args = [
+			"pr",
+			"create",
+			"--title",
+			title,
+			"--body",
+			body,
+			"--base",
+			baseBranch,
+		];
 		if (draft) {
 			args.push("--draft");
 		}

@@ -6,16 +6,35 @@
    so it is not clipped by overflow:auto/hidden containers.
    ring-0 is intentionally excluded — it is used to disable rings. */
 @layer utilities {
-	.ring-1, .ring-2, .ring-4, .ring-8, .ring {
-		--tw-ring-shadow: 0 0 #0000 !important;
+	.ring-1,
+	.ring-2,
+	.ring-4,
+	.ring-8,
+	.ring {
+		--tw-ring-shadow: 0 0 #0000;
 		outline-style: solid;
 		outline-color: var(--tw-ring-color, currentColor);
 	}
-	.ring-1 { outline-width: 1px; outline-offset: -1px; }
-	.ring-2 { outline-width: 2px; outline-offset: -2px; }
-	.ring-4 { outline-width: 4px; outline-offset: -4px; }
-	.ring-8 { outline-width: 8px; outline-offset: -8px; }
-	.ring   { outline-width: 3px; outline-offset: -3px; }
+	.ring-1 {
+		outline-width: 1px;
+		outline-offset: -1px;
+	}
+	.ring-2 {
+		outline-width: 2px;
+		outline-offset: -2px;
+	}
+	.ring-4 {
+		outline-width: 4px;
+		outline-offset: -4px;
+	}
+	.ring-8 {
+		outline-width: 8px;
+		outline-offset: -8px;
+	}
+	.ring {
+		outline-width: 3px;
+		outline-offset: -3px;
+	}
 }
 
 @layer base {

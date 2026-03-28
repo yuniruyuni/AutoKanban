@@ -23,7 +23,9 @@ describe("computeIdleState", () => {
 	});
 
 	test("control_request with permission_request → idle", () => {
-		expect(computeIdleState("control_request", "permission_request")).toBe(true);
+		expect(computeIdleState("control_request", "permission_request")).toBe(
+			true,
+		);
 	});
 
 	test("control_request with other subtype → no change", () => {

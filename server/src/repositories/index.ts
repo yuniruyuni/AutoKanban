@@ -8,7 +8,7 @@ export * from "./log-collector";
 export * from "./log-store";
 export * from "./message-queue-repository";
 export * from "./project-repository";
-export * from "./protocol-log-collector";
+export * from "./drivers/claude-code";
 export * from "./session-repository";
 export * from "./sql";
 export * from "./task-repository";

@@ -285,9 +285,7 @@ describe("startExecution", () => {
 			} as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
-				startProtocol: async (opts: {
-					resumeSessionId?: string;
-				}) => {
+				startProtocol: async (opts: { resumeSessionId?: string }) => {
 					capturedResumeSessionId = opts.resumeSessionId;
 					return {
 						id: "exec-5",
@@ -309,8 +307,7 @@ describe("startExecution", () => {
 		const task = createTestTask({ title: "Test Task" });
 		const project = createTestProject({ id: task.projectId });
 
-		let upsertedSession: { executor?: string; variant?: string } | null =
-			null;
+		let upsertedSession: { executor?: string; variant?: string } | null = null;
 
 		const ctx = createMockContext({
 			task: { get: () => task, upsert: () => {} } as never,
@@ -571,9 +568,7 @@ describe("startExecution", () => {
 			task: { get: () => null } as never,
 		});
 
-		const result = await startExecution({ taskId: "non-existent" }).run(
-			ctx,
-		);
+		const result = await startExecution({ taskId: "non-existent" }).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -616,9 +611,7 @@ describe("startExecution", () => {
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
 			} as never,
-			worktree: createMockWorktreeRepositoryCreationFails(
-				"Permission denied",
-			),
+			worktree: createMockWorktreeRepositoryCreationFails("Permission denied"),
 		});
 
 		const result = await startExecution({ taskId: task.id }).run(ctx);

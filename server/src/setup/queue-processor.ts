@@ -55,7 +55,7 @@ export function setupQueueProcessor(deps: QueueProcessorDependencies): void {
 			if (!session) return;
 
 			const workspace = workspaceRepo.get(Workspace.ById(session.workspaceId));
-			if (!workspace || !workspace.taskId) return;
+			if (!workspace?.taskId) return;
 
 			const task = taskRepo.get(Task.ById(workspace.taskId));
 			if (!task) return;

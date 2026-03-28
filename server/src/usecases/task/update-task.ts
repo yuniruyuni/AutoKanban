@@ -20,10 +20,9 @@ export const updateTask = (input: UpdateTaskInput) =>
 			}
 
 			// Chat Reset: collect related entity IDs when transitioning to "todo"
-			const needsChatReset =
-				input.status === "todo" && task.status !== "todo";
+			const needsChatReset = input.status === "todo" && task.status !== "todo";
 
-			let workspaceIds: string[] = [];
+			const workspaceIds: string[] = [];
 			let project: Project | null = null;
 
 			if (needsChatReset) {
@@ -76,15 +75,7 @@ export const updateTask = (input: UpdateTaskInput) =>
 			return { task: updated, ...rest };
 		},
 
-		write: (
-			ctx,
-			{
-				task,
-				needsChatReset,
-				workspaceIds,
-				project,
-			},
-		) => {
+		write: (ctx, { task, needsChatReset, workspaceIds, project }) => {
 			ctx.repos.task.upsert(task);
 
 			if (needsChatReset) {

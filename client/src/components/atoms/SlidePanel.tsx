@@ -44,7 +44,9 @@ export function SlidePanel({
 				{/* Header */}
 				<div className="flex items-center justify-between py-6 px-7 border-b border-border">
 					<div className="space-y-1.5">
-						<h2 className="text-xl font-semibold text-primary-foreground">{title}</h2>
+						<h2 className="text-xl font-semibold text-primary-foreground">
+							{title}
+						</h2>
 						{subtitle && (
 							<p className="text-sm font-semibold font-mono text-accent">
 								{subtitle}

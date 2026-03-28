@@ -53,7 +53,13 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 
 			const targetBranch = workspaceRepo.targetBranch;
 
-			return { workspace, project, task, targetBranch, alreadyDone: false as const };
+			return {
+				workspace,
+				project,
+				task,
+				targetBranch,
+				alreadyDone: false as const,
+			};
 		},
 
 		write: async (ctx, data) => {
@@ -70,10 +76,7 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 			ctx.repos.task.upsert({ ...task, status: "done", updatedAt: ctx.now });
 
 			// Remove worktree
-			await ctx.repos.worktree.removeWorktree(
-				data.workspace.id,
-				project,
-			);
+			await ctx.repos.worktree.removeWorktree(data.workspace.id, project);
 
 			return { success: true };
 		},

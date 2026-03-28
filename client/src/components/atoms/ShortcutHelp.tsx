@@ -24,9 +24,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
 	},
 	{
 		label: "Tasks",
-		shortcuts: [
-			{ keys: ["C"], description: "Create new task" },
-		],
+		shortcuts: [{ keys: ["C"], description: "Create new task" }],
 	},
 	{
 		label: "Approval",
@@ -48,11 +46,13 @@ export function ShortcutHelp() {
 
 	return (
 		// biome-ignore lint/a11y/useKeyWithClickEvents: click-to-close overlay
+		// biome-ignore lint/a11y/noStaticElementInteractions: click-to-close overlay
 		<div
 			className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
 			onClick={() => uiActions.closeShortcutHelp()}
 		>
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: stop propagation on content */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: stop propagation on content */}
 			<div
 				className="bg-card border border-border rounded-lg shadow-lg p-6 max-w-md w-full mx-4"
 				onClick={(e) => e.stopPropagation()}

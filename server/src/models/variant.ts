@@ -83,8 +83,7 @@ export namespace Variant {
 		const result: Record<string, string> = {};
 		for (const key of keys) {
 			const value = variant[key];
-			result[key] =
-				value instanceof Date ? value.toISOString() : String(value);
+			result[key] = value instanceof Date ? value.toISOString() : String(value);
 		}
 		return result;
 	}

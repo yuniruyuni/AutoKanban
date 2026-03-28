@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/atoms/Button";
 import { Toggle } from "@/components/atoms/Toggle";
-import { useVariantMutations, useVariants } from "@/hooks/useVariants";
 import { SidebarLayout } from "@/components/project/SidebarLayout";
+import { useVariantMutations, useVariants } from "@/hooks/useVariants";
 import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
 

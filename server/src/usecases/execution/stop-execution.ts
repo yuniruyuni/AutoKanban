@@ -20,7 +20,10 @@ export const stopExecution = (input: StopExecutionInput) =>
 				});
 			}
 
-			if (executionProcess.status !== "running" && executionProcess.status !== "awaiting_approval") {
+			if (
+				executionProcess.status !== "running" &&
+				executionProcess.status !== "awaiting_approval"
+			) {
 				return fail("INVALID_STATE", "Execution process is not active", {
 					status: executionProcess.status,
 				});

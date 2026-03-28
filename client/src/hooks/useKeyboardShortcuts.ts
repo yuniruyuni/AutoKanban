@@ -1,7 +1,7 @@
 import { useEffect } from "react";
+import { KANBAN_COLUMNS } from "@/lib/constants";
 import type { Task } from "@/store";
 import { uiActions } from "@/store";
-import { KANBAN_COLUMNS } from "@/lib/constants";
 
 interface KeyboardShortcutsOptions {
 	taskId: string | undefined;
@@ -91,9 +91,7 @@ export function useKeyboardShortcuts({
 						break;
 					}
 
-					const currentIndex = ordered.findIndex(
-						(t) => t.id === taskId,
-					);
+					const currentIndex = ordered.findIndex((t) => t.id === taskId);
 					if (currentIndex === -1) {
 						openTask(ordered[0].id);
 						break;
@@ -147,17 +145,11 @@ export function useKeyboardShortcuts({
 						// h/l: move across lanes
 						const currentStatus = ordered[currentIndex].status;
 						const colIdx = KANBAN_COLUMNS.indexOf(currentStatus);
-						const targetColIdx =
-							e.key === "l" ? colIdx + 1 : colIdx - 1;
-						if (
-							targetColIdx < 0 ||
-							targetColIdx >= KANBAN_COLUMNS.length
-						)
+						const targetColIdx = e.key === "l" ? colIdx + 1 : colIdx - 1;
+						if (targetColIdx < 0 || targetColIdx >= KANBAN_COLUMNS.length)
 							break;
 						const targetStatus = KANBAN_COLUMNS[targetColIdx];
-						const laneTasks = ordered.filter(
-							(t) => t.status === targetStatus,
-						);
+						const laneTasks = ordered.filter((t) => t.status === targetStatus);
 						if (laneTasks.length > 0) {
 							// Pick the first task in the target lane
 							nextIndex = ordered.indexOf(laneTasks[0]);

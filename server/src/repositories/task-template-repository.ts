@@ -23,9 +23,7 @@ interface TaskTemplateRow {
 // Spec to SQL converter
 // ============================================
 
-type TaskTemplateSpecData =
-	| { type: "ById"; id: string }
-	| { type: "All" };
+type TaskTemplateSpecData = { type: "ById"; id: string } | { type: "All" };
 
 function taskTemplateSpecToSQL(spec: TaskTemplateSpecData): SQLFragment {
 	switch (spec.type) {

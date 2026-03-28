@@ -183,9 +183,7 @@ export function FileBrowser({ onSelect, selectedPath }: FileBrowserProps) {
 						)}
 
 						{leftBrowser.isLoading && (
-							<div className="px-4 py-2.5 text-sm text-muted">
-								Loading...
-							</div>
+							<div className="px-4 py-2.5 text-sm text-muted">Loading...</div>
 						)}
 
 						{leftBrowser.entries.map((entry) => (
@@ -254,9 +252,7 @@ export function FileBrowser({ onSelect, selectedPath }: FileBrowserProps) {
 						)}
 
 						{rightPanePath && rightBrowser.isLoading && (
-							<div className="px-4 py-2.5 text-sm text-muted">
-								Loading...
-							</div>
+							<div className="px-4 py-2.5 text-sm text-muted">Loading...</div>
 						)}
 
 						{rightPanePath &&

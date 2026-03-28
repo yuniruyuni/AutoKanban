@@ -3,6 +3,7 @@ import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
 import { usecase } from "../runner";
+import { generatePrDescription } from "./generate-pr-description";
 
 export interface CreatePullRequestInput {
 	workspaceId: string;
@@ -50,10 +51,20 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 
 			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
 
-			return { workspace, project, worktreePath, branch, targetBranch, workspaceRepo };
+			return {
+				workspace,
+				project,
+				worktreePath,
+				branch,
+				targetBranch,
+				workspaceRepo,
+			};
 		},
 
-		write: async (ctx, { workspace, project, worktreePath, branch, targetBranch, workspaceRepo }) => {
+		write: async (
+			ctx,
+			{ workspace, project, worktreePath, branch, targetBranch, workspaceRepo },
+		) => {
 			// Stage and commit any uncommitted changes
 			const diffs = await ctx.repos.git.getDiffs(worktreePath, targetBranch);
 			if (diffs.length > 0) {
@@ -77,22 +88,36 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 				input.force ?? false,
 			);
 
-			// Create PR
+			// Generate PR description via CodingAgent (session fork)
+			const description = await generatePrDescription(ctx, {
+				workspaceId: workspace.id,
+				worktreePath,
+			});
+			const prTitle = description?.title ?? input.taskTitle;
+			const prBody = description?.body ?? "";
+
+			// Create PR with generated (or fallback) title and body
 			const { url } = await ctx.repos.git.createPullRequest(
 				worktreePath,
-				input.taskTitle,
-				"",
+				prTitle,
+				prBody,
 				targetBranch,
 				input.draft,
 			);
 
 			// Save PR URL to workspace repo
-			const workspaceRepoToUpdate = workspaceRepo ?? WorkspaceRepo.create({
-				workspaceId: workspace.id,
-				projectId: project.id,
-				targetBranch,
+			const workspaceRepoToUpdate =
+				workspaceRepo ??
+				WorkspaceRepo.create({
+					workspaceId: workspace.id,
+					projectId: project.id,
+					targetBranch,
+				});
+			ctx.repos.workspaceRepo.upsert({
+				...workspaceRepoToUpdate,
+				prUrl: url,
+				updatedAt: ctx.now,
 			});
-			ctx.repos.workspaceRepo.upsert({ ...workspaceRepoToUpdate, prUrl: url, updatedAt: ctx.now });
 
 			return { success: true, branch, prUrl: url };
 		},

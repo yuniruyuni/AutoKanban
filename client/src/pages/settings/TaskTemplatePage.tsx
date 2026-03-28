@@ -105,9 +105,7 @@ export function TaskTemplatePage() {
 						<div className="text-center py-12 text-muted">Loading...</div>
 					) : templates.length === 0 ? (
 						<div className="border border-dashed rounded-lg p-12 text-center">
-							<p className="text-muted">
-								テンプレートが設定されていません
-							</p>
+							<p className="text-muted">テンプレートが設定されていません</p>
 							<p className="text-sm text-muted mt-1">
 								テンプレートを追加すると、新規プロジェクト作成時にタスクが自動登録されます
 							</p>
@@ -129,8 +127,7 @@ export function TaskTemplatePage() {
 											</div>
 										)}
 										<div className="text-xs text-secondary-foreground">
-											{CONDITION_LABELS[tmpl.condition ?? ""] ??
-												tmpl.condition}
+											{CONDITION_LABELS[tmpl.condition ?? ""] ?? tmpl.condition}
 										</div>
 									</div>
 									<div className="flex items-center gap-2">
@@ -160,11 +157,7 @@ export function TaskTemplatePage() {
 			</div>
 
 			{/* Add Dialog */}
-			<Dialog
-				open={isAddOpen}
-				onClose={() => setIsAddOpen(false)}
-				width={600}
-			>
+			<Dialog open={isAddOpen} onClose={() => setIsAddOpen(false)} width={600}>
 				<DialogHeader
 					subtitle="新規プロジェクト作成時に自動登録されるタスクを追加"
 					onClose={() => setIsAddOpen(false)}
@@ -209,11 +202,7 @@ export function TaskTemplatePage() {
 			</Dialog>
 
 			{/* Delete Confirmation */}
-			<Dialog
-				open={!!deleteId}
-				onClose={() => setDeleteId(null)}
-				width={400}
-			>
+			<Dialog open={!!deleteId} onClose={() => setDeleteId(null)} width={400}>
 				<DialogHeader onClose={() => setDeleteId(null)}>
 					Delete Template
 				</DialogHeader>
@@ -223,10 +212,7 @@ export function TaskTemplatePage() {
 					</p>
 				</DialogContent>
 				<DialogFooter>
-					<Button
-						variant="outline"
-						onClick={() => setDeleteId(null)}
-					>
+					<Button variant="outline" onClick={() => setDeleteId(null)}>
 						Cancel
 					</Button>
 					<Button
@@ -261,9 +247,7 @@ function TaskTemplateForm({
 	const [description, setDescription] = useState(
 		initialValues?.description ?? "",
 	);
-	const [condition, setCondition] = useState(
-		initialValues?.condition ?? "",
-	);
+	const [condition, setCondition] = useState(initialValues?.condition ?? "");
 	const [sortOrder, setSortOrder] = useState(
 		initialValues?.sortOrder ?? nextSortOrder,
 	);
@@ -325,9 +309,7 @@ function TaskTemplateForm({
 					className="px-3 py-2 rounded-md border border-border bg-primary text-sm text-primary-foreground outline-none focus:ring-1 focus:ring-accent"
 				>
 					<option value="">常に適用</option>
-					<option value="no_dev_server">
-						devServerScript 未設定時のみ
-					</option>
+					<option value="no_dev_server">devServerScript 未設定時のみ</option>
 				</select>
 				<p className="text-xs text-muted">
 					テンプレートが適用される条件を選択します

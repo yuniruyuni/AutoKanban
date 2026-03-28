@@ -11,8 +11,14 @@ import { useTasks } from "@/hooks/useTasks";
 import { projectActions, projectStore, uiActions } from "@/store";
 
 export function TaskFullscreenPage() {
-	const { projectId, taskId, exitFullscreen, closePanel, openTask, openFullscreen } =
-		useTaskNavigation();
+	const {
+		projectId,
+		taskId,
+		exitFullscreen,
+		closePanel,
+		openTask,
+		openFullscreen,
+	} = useTaskNavigation();
 	useEscapeNavigation();
 	const projectState = useSnapshot(projectStore);
 	const { tasks } = useTasks({ projectId: projectId ?? "" });

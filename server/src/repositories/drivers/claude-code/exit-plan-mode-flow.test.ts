@@ -14,17 +14,18 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { Approval } from "../models/approval";
-import type { ClaudeControlRequestMessage } from "../models/claude-protocol";
-import type { ILogger } from "../types/logger";
+import { Approval } from "../../../models/approval";
+import type { ClaudeControlRequestMessage } from "../../../models/claude-protocol";
+import type { ILogger } from "../../../types/logger";
 import type {
 	IApprovalRepository,
-	IApprovalStore,
-	ICodingAgentTurnRepository,
 	IExecutionProcessLogsRepository,
-} from "../types/repository";
-import { ApprovalStore } from "./approval-store";
-import { AUTO_APPROVE_CALLBACK_ID } from "./claude-code-executor";
+} from "../../../types/repository";
+import { ApprovalStore } from "../../approval-store";
+import {
+	AUTO_APPROVE_CALLBACK_ID,
+	TOOL_APPROVAL_CALLBACK_ID,
+} from "./claude-code-executor";
 import { ProtocolLogCollector } from "./protocol-log-collector";
 
 // ============================================
@@ -68,7 +69,7 @@ function createMockApprovalRepo(): IApprovalRepository {
 
 function makeStream(lines: object[]): ReadableStream<Uint8Array> {
 	const encoder = new TextEncoder();
-	const data = lines.map((l) => JSON.stringify(l)).join("\n") + "\n";
+	const data = `${lines.map((l) => JSON.stringify(l)).join("\n")}\n`;
 	return new ReadableStream({
 		start(controller) {
 			controller.enqueue(encoder.encode(data));
@@ -122,13 +123,16 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		// Wire up callbacks exactly like ExecutorRepository does in its constructor
 
 		// 1. hookCallback handler (from ExecutorRepository.handleHookCallback)
-		// All hook callbacks respond "allow" immediately; the actual gating
-		// for ExitPlanMode happens via the simultaneous can_use_tool request.
+		// tool_approval → "ask" (forwards to can_use_tool for user approval)
+		// AUTO_APPROVE → "allow" (immediately permits the tool)
 		collector.onHookCallback((_procId, request) => {
+			const callbackId = request.request.callback_id as string | undefined;
+			const decision =
+				callbackId === TOOL_APPROVAL_CALLBACK_ID ? "ask" : "allow";
 			hookResponsesSent.push({
 				processId: _procId,
 				requestId: request.request_id,
-				decision: "allow",
+				decision,
 			});
 		});
 
@@ -136,8 +140,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		collector.onApprovalRequest((_procId, request) => {
 			const toolCallId =
 				(request.request.tool_use_id as string) ?? request.request_id;
-			const toolName =
-				(request.request.tool_name as string) ?? "ExitPlanMode";
+			const toolName = (request.request.tool_name as string) ?? "ExitPlanMode";
 
 			const approval = Approval.create({
 				executionProcessId: _procId,
@@ -187,9 +190,9 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		// Assertions: verify the full flow worked
 		// ============================================
 
-		// 1. hookCallback was received and "allow" was decided (gating via can_use_tool)
+		// 1. hookCallback was received and "ask" was decided (forwards to can_use_tool)
 		expect(hookResponsesSent).toHaveLength(1);
-		expect(hookResponsesSent[0].decision).toBe("allow");
+		expect(hookResponsesSent[0].decision).toBe("ask");
 		expect(hookResponsesSent[0].requestId).toBe("hook-req-1");
 
 		// 2. canUseTool triggered approval creation (not auto-approve)
@@ -316,8 +319,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		collector.onApprovalRequest(async (_procId, request) => {
 			const toolCallId =
 				(request.request.tool_use_id as string) ?? request.request_id;
-			const toolName =
-				(request.request.tool_name as string) ?? "ExitPlanMode";
+			const toolName = (request.request.tool_name as string) ?? "ExitPlanMode";
 
 			const approval = Approval.create({
 				executionProcessId: _procId,
@@ -401,18 +403,18 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		const processId = "test-real-format";
 		const hookResponsesSent: Array<{ decision: string }> = [];
 
-		// All hook callbacks respond "allow" immediately
+		// tool_approval → "ask", others → "allow"
 		collector.onHookCallback((_procId, _request) => {
+			const callbackId = _request.request.callback_id as string | undefined;
 			hookResponsesSent.push({
-				decision: "allow",
+				decision: callbackId === TOOL_APPROVAL_CALLBACK_ID ? "ask" : "allow",
 			});
 		});
 
 		collector.onApprovalRequest((_procId, request) => {
 			const toolCallId =
 				(request.request.tool_use_id as string) ?? request.request_id;
-			const toolName =
-				(request.request.tool_name as string) ?? "ExitPlanMode";
+			const toolName = (request.request.tool_name as string) ?? "ExitPlanMode";
 			const approval = Approval.create({
 				executionProcessId: _procId,
 				toolName,
@@ -450,9 +452,9 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		collector.collect(processId, stdout, emptyStream());
 		await new Promise((r) => setTimeout(r, 100));
 
-		// hook_callback should have been recognized and responded with "allow"
+		// hook_callback should have been recognized and responded with "ask"
 		expect(hookResponsesSent).toHaveLength(1);
-		expect(hookResponsesSent[0].decision).toBe("allow");
+		expect(hookResponsesSent[0].decision).toBe("ask");
 
 		// Approval should be visible via listPending (client query)
 		const pending = approvalStore.listPending(processId);
@@ -478,8 +480,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		collector.onApprovalRequest((_procId, request) => {
 			const toolCallId =
 				(request.request.tool_use_id as string) ?? request.request_id;
-			const toolName =
-				(request.request.tool_name as string) ?? "ExitPlanMode";
+			const toolName = (request.request.tool_name as string) ?? "ExitPlanMode";
 			const approval = Approval.create({
 				executionProcessId: _procId,
 				toolName,
@@ -529,15 +530,19 @@ describe("ExitPlanMode approval flow (integration)", () => {
 	});
 
 	/**
-	 * Test that the initialize message always includes ExitPlanMode hook.
-	 * Non-plan modes also get auto-approve hook; plan mode does not.
+	 * Test that the initialize message always includes both ExitPlanMode
+	 * and auto-approve hooks, regardless of permission mode.
 	 */
-	test("initialize sends ExitPlanMode hook always, auto-approve only in non-plan modes", async () => {
+	test("initialize sends both ExitPlanMode and auto-approve hooks for all modes", async () => {
 		const { ClaudeCodeExecutor } = await import("./claude-code-executor");
 		const executor = new ClaudeCodeExecutor();
 
 		// Non-plan modes: ExitPlanMode + auto-approve hooks
-		for (const mode of ["default", "bypassPermissions", "acceptEdits"] as const) {
+		for (const mode of [
+			"default",
+			"bypassPermissions",
+			"acceptEdits",
+		] as const) {
 			const written: string[] = [];
 			const mockProcess = {
 				proc: {} as never,
@@ -559,12 +564,18 @@ describe("ExitPlanMode approval flow (integration)", () => {
 
 			const initMsg = JSON.parse(written[0].trim());
 			expect(initMsg.request.hooks.PreToolUse).toHaveLength(2);
-			expect(initMsg.request.hooks.PreToolUse[0].matcher).toBe("^ExitPlanMode$");
-			expect(initMsg.request.hooks.PreToolUse[1].matcher).toBe("^(?!ExitPlanMode$).*");
-			expect(initMsg.request.hooks.PreToolUse[1].hookCallbackIds).toEqual([AUTO_APPROVE_CALLBACK_ID]);
+			expect(initMsg.request.hooks.PreToolUse[0].matcher).toBe(
+				"^ExitPlanMode$",
+			);
+			expect(initMsg.request.hooks.PreToolUse[1].matcher).toBe(
+				"^(?!ExitPlanMode$).*",
+			);
+			expect(initMsg.request.hooks.PreToolUse[1].hookCallbackIds).toEqual([
+				AUTO_APPROVE_CALLBACK_ID,
+			]);
 		}
 
-		// Plan mode: only ExitPlanMode hook (read tools allowed natively, write tools blocked natively)
+		// Plan mode: both hooks registered (auto-approve needed after ExitPlanMode approval)
 		{
 			const written: string[] = [];
 			const mockProcess = {
@@ -582,9 +593,19 @@ describe("ExitPlanMode approval flow (integration)", () => {
 			await executor.initialize(mockProcess, "plan");
 
 			const initMsg = JSON.parse(written[0].trim());
-			expect(initMsg.request.hooks.PreToolUse).toHaveLength(1);
-			expect(initMsg.request.hooks.PreToolUse[0].matcher).toBe("^ExitPlanMode$");
-			expect(initMsg.request.hooks.PreToolUse[0].hookCallbackIds).toEqual(["tool_approval"]);
+			expect(initMsg.request.hooks.PreToolUse).toHaveLength(2);
+			expect(initMsg.request.hooks.PreToolUse[0].matcher).toBe(
+				"^ExitPlanMode$",
+			);
+			expect(initMsg.request.hooks.PreToolUse[1].matcher).toBe(
+				"^(?!ExitPlanMode$).*",
+			);
+			expect(initMsg.request.hooks.PreToolUse[1].hookCallbackIds).toEqual([
+				AUTO_APPROVE_CALLBACK_ID,
+			]);
+			expect(initMsg.request.hooks.PreToolUse[0].hookCallbackIds).toEqual([
+				TOOL_APPROVAL_CALLBACK_ID,
+			]);
 		}
 	});
 });

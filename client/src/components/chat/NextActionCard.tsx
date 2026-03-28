@@ -41,7 +41,8 @@ export function NextActionCard({
 	const { files, added, removed } = computeDiffStats(entries);
 
 	// Don't render if there's nothing to show
-	const hasActions = !!onRetry || (!!onOpenDiffs && files > 0) || !!onStartAgent;
+	const hasActions =
+		!!onRetry || (!!onOpenDiffs && files > 0) || !!onStartAgent;
 	if (!hasActions && files === 0) return null;
 
 	return (

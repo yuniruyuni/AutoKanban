@@ -1,17 +1,17 @@
 import { AlertTriangle, Bot, Minimize2, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSnapshot } from "valtio";
-import type { AttemptSummary } from "@/components/chat/AttemptSwitcher";
 import { Dialog, DialogContent } from "@/components/atoms/Dialog";
 import { TabBar } from "@/components/atoms/TabBar";
+import type { AttemptSummary } from "@/components/chat/AttemptSwitcher";
 import { ConversationPanel } from "@/components/chat/ConversationPanel";
 import { BranchInfo } from "@/components/task/BranchInfo";
 import { DiffPanel } from "@/components/task/diff-panel";
 import { GitOperationButtons } from "@/components/task/GitOperationButtons";
 import { PreviewPanel } from "@/components/task/PreviewPanel";
-import { useDevServerPreview } from "@/hooks/useDevServerPreview";
 import { useAttemptExecution } from "@/hooks/useAttemptExecution";
 import { useAttempts } from "@/hooks/useAttempts";
+import { useDevServerPreview } from "@/hooks/useDevServerPreview";
 import { useExecutionStatus } from "@/hooks/useExecution";
 import { useFollowUp } from "@/hooks/useFollowUp";
 import { useBranchStatus } from "@/hooks/useGit";
@@ -166,7 +166,7 @@ export function TaskDetailFullscreen({
 			if (e.defaultPrevented) return;
 
 			const tag = (e.target as HTMLElement)?.tagName;
-			const isInput =
+			const _isInput =
 				tag === "INPUT" ||
 				tag === "TEXTAREA" ||
 				tag === "SELECT" ||
@@ -187,9 +187,7 @@ export function TaskDetailFullscreen({
 			// Ctrl+n / Ctrl+p: scroll chat area (even in input fields)
 			if (e.ctrlKey && (e.key === "n" || e.key === "p")) {
 				e.preventDefault();
-				const chatScroll = splitRef.current?.querySelector(
-					".overflow-y-auto",
-				);
+				const chatScroll = splitRef.current?.querySelector(".overflow-y-auto");
 				if (chatScroll) {
 					chatScroll.scrollBy({
 						top: e.key === "n" ? 300 : -300,
@@ -198,7 +196,6 @@ export function TaskDetailFullscreen({
 				}
 				return;
 			}
-
 		};
 
 		document.addEventListener("keydown", handleKeyDown);
@@ -291,7 +288,9 @@ Please fix these conflicts and complete the rebase.
 						<h1
 							className="text-xl font-semibold text-[#0A0A0B] cursor-text rounded px-1 -mx-1 hover:bg-[#EBEBEB]"
 							onClick={titleEdit.startEditing}
-							onKeyDown={(e) => { if (e.key === "Enter") titleEdit.startEditing(); }}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") titleEdit.startEditing();
+							}}
 						>
 							{task.title}
 						</h1>
@@ -394,7 +393,10 @@ Please fix these conflicts and complete the rebase.
 			{/* Main content - split view */}
 			<div ref={splitRef} className="flex flex-1 overflow-hidden">
 				{/* Left panel - Conversation (resizable) */}
-				<div className="min-w-0 h-full overflow-hidden" style={{ width: `${splitRatio * 100}%` }}>
+				<div
+					className="min-w-0 h-full overflow-hidden"
+					style={{ width: `${splitRatio * 100}%` }}
+				>
 					<ConversationPanel
 						workspaceId={workspaceId}
 						executionProcessId={executionProcessId}
@@ -430,7 +432,10 @@ Please fix these conflicts and complete the rebase.
 				/>
 
 				{/* Right panel - Tabs (Description / Changes) with bg-[#F5F5F5] */}
-				<div className="min-w-0 h-full flex flex-col overflow-hidden bg-[#F5F5F5]" style={{ width: `${(1 - splitRatio) * 100}%` }}>
+				<div
+					className="min-w-0 h-full flex flex-col overflow-hidden bg-[#F5F5F5]"
+					style={{ width: `${(1 - splitRatio) * 100}%` }}
+				>
 					<TabBar tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
 					<div className="flex-1 overflow-hidden">
 						{activeTab === "description" ? (
@@ -453,7 +458,9 @@ Please fix these conflicts and complete the rebase.
 									<p
 										className="text-sm leading-[1.6] text-[#71717A] whitespace-pre-wrap cursor-text rounded px-2 -mx-2 py-1 hover:bg-[#EBEBEB] min-h-[2em]"
 										onClick={descEdit.startEditing}
-										onKeyDown={(e) => { if (e.key === "Enter") descEdit.startEditing(); }}
+										onKeyDown={(e) => {
+											if (e.key === "Enter") descEdit.startEditing();
+										}}
 									>
 										{task.description || "Add description..."}
 									</p>

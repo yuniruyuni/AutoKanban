@@ -50,9 +50,7 @@ export function AttemptSwitcher({
 	if (attempts.length < 2) return null;
 
 	// Sort newest first for dropdown display
-	const sortedAttempts = [...attempts].sort(
-		(a, b) => b.attempt - a.attempt,
-	);
+	const sortedAttempts = [...attempts].sort((a, b) => b.attempt - a.attempt);
 
 	return (
 		<div ref={ref} className="relative">
@@ -90,7 +88,8 @@ export function AttemptSwitcher({
 								<span
 									className={cn(
 										"rounded px-1.5 py-0.5 text-[10px]",
-										statusColors[attempt.latestStatus] ?? "bg-secondary text-muted",
+										statusColors[attempt.latestStatus] ??
+											"bg-secondary text-muted",
 									)}
 								>
 									{attempt.latestStatus}

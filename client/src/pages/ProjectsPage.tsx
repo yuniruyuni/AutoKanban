@@ -1,13 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useSnapshot } from "valtio";
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";
-import { ShortcutHelp } from "@/components/atoms/ShortcutHelp";
 import { Dialog, DialogContent, DialogHeader } from "@/components/atoms/Dialog";
+import { ShortcutHelp } from "@/components/atoms/ShortcutHelp";
 import { ProjectForm } from "@/components/project/ProjectForm";
 import { ProjectList } from "@/components/project/ProjectList";
 import { SidebarLayout } from "@/components/project/SidebarLayout";
 import { useProjectKeyboardNav } from "@/hooks/useProjectKeyboardNav";
-import { useProject, useProjectMutations, useProjects } from "@/hooks/useProjects";
+import {
+	useProject,
+	useProjectMutations,
+	useProjects,
+} from "@/hooks/useProjects";
 import { useTaskNavigation } from "@/hooks/useTaskNavigation";
 import { paths } from "@/lib/paths";
 import { uiActions, uiStore } from "@/store";

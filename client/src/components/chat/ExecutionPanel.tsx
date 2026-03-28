@@ -143,7 +143,9 @@ export function ExecutionPanel({
 							<ChatContainer
 								executionProcessId={executionProcessId}
 								isRunning={isRunning}
-								isAwaitingApproval={showPlanResponseInput || showPermissionResponseInput}
+								isAwaitingApproval={
+									showPlanResponseInput || showPermissionResponseInput
+								}
 								sessionId={sessionId}
 							/>
 						) : (
@@ -154,9 +156,7 @@ export function ExecutionPanel({
 					</div>
 
 					{/* Input area */}
-					<div className="border-t bg-secondary">
-						{renderInput()}
-					</div>
+					<div className="border-t bg-secondary">{renderInput()}</div>
 				</>
 			);
 		}

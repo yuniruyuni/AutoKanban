@@ -1,7 +1,7 @@
 import {
 	findPendingToolUses,
-	parseLogsToConversation,
 	type PendingToolUse,
+	parseLogsToConversation,
 } from "../../lib/conversation-parser";
 import { fail } from "../../models/common";
 import { ExecutionProcess } from "../../models/execution-process";

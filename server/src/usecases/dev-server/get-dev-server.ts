@@ -15,8 +15,7 @@ export const getDevServer = (input: GetDevServerInput) =>
 				{ limit: 1, sort: ExecutionProcess.defaultSort },
 			);
 			return {
-				executionProcess:
-					page.items.length > 0 ? page.items[0] : null,
+				executionProcess: page.items.length > 0 ? page.items[0] : null,
 			};
 		},
 	});

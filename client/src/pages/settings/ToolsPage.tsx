@@ -68,7 +68,9 @@ export function ToolsPage() {
 			<div className="flex flex-col gap-8 py-8 px-10">
 				{/* Header */}
 				<div className="flex flex-col gap-1">
-					<h1 className="text-[28px] font-bold text-primary-foreground">Tools</h1>
+					<h1 className="text-[28px] font-bold text-primary-foreground">
+						Tools
+					</h1>
 					<p className="text-sm text-secondary-foreground">
 						Configure external tools and integrations
 					</p>

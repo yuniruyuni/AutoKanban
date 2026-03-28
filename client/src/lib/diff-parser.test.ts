@@ -28,7 +28,12 @@ describe("buildFileTree", () => {
 
 	test("nested file creates directory nodes", () => {
 		const diffs: GitDiff[] = [
-			{ filePath: "src/lib/utils.ts", status: "added", additions: 10, deletions: 0 },
+			{
+				filePath: "src/lib/utils.ts",
+				status: "added",
+				additions: 10,
+				deletions: 0,
+			},
 		];
 		const tree = buildFileTree(diffs);
 		const src = tree.children.get("src");
@@ -61,22 +66,46 @@ describe("parseDiffLines", () => {
 		const lines = parseDiffLines(diff);
 
 		expect(lines[0]).toEqual({ type: "hunk", content: "@@ -1,3 +1,4 @@" });
-		expect(lines[1]).toEqual({ type: "context", content: " context", oldLineNum: 1, newLineNum: 1 });
-		expect(lines[2]).toEqual({ type: "addition", content: "+addition", newLineNum: 2 });
-		expect(lines[3]).toEqual({ type: "deletion", content: "-deletion", oldLineNum: 2 });
+		expect(lines[1]).toEqual({
+			type: "context",
+			content: " context",
+			oldLineNum: 1,
+			newLineNum: 1,
+		});
+		expect(lines[2]).toEqual({
+			type: "addition",
+			content: "+addition",
+			newLineNum: 2,
+		});
+		expect(lines[3]).toEqual({
+			type: "deletion",
+			content: "-deletion",
+			oldLineNum: 2,
+		});
 	});
 
 	test("skips diff metadata lines", () => {
-		const diff = "diff --git a/file b/file\nindex abc..def\n--- a/file\n+++ b/file\n@@ -1 +1 @@\n-old\n+new";
+		const diff =
+			"diff --git a/file b/file\nindex abc..def\n--- a/file\n+++ b/file\n@@ -1 +1 @@\n-old\n+new";
 		const lines = parseDiffLines(diff);
 
 		expect(lines[0].type).toBe("hunk");
-		expect(lines[1]).toEqual({ type: "deletion", content: "-old", oldLineNum: 1 });
-		expect(lines[2]).toEqual({ type: "addition", content: "+new", newLineNum: 1 });
+		expect(lines[1]).toEqual({
+			type: "deletion",
+			content: "-old",
+			oldLineNum: 1,
+		});
+		expect(lines[2]).toEqual({
+			type: "addition",
+			content: "+new",
+			newLineNum: 1,
+		});
 	});
 
 	test("empty input returns empty array", () => {
-		expect(parseDiffLines("")).toEqual([{ type: "context", content: "", oldLineNum: 1, newLineNum: 1 }]);
+		expect(parseDiffLines("")).toEqual([
+			{ type: "context", content: "", oldLineNum: 1, newLineNum: 1 },
+		]);
 	});
 });
 

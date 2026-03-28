@@ -183,14 +183,21 @@ export function filterWhitespaceHunks(rawDiff: string): string {
 			const hunkLines: string[] = [line];
 			i++;
 
-			while (i < lines.length && !lines[i].startsWith("@@") && !lines[i].startsWith("diff ")) {
+			while (
+				i < lines.length &&
+				!lines[i].startsWith("@@") &&
+				!lines[i].startsWith("diff ")
+			) {
 				hunkLines.push(lines[i]);
 				i++;
 			}
 
 			// Check if all +/- lines in this hunk are whitespace-only
-			const changedLines = hunkLines.filter((l) => l.startsWith("+") || l.startsWith("-"));
-			const allWhitespace = changedLines.length > 0 && changedLines.every(isWhitespaceOnlyChange);
+			const changedLines = hunkLines.filter(
+				(l) => l.startsWith("+") || l.startsWith("-"),
+			);
+			const allWhitespace =
+				changedLines.length > 0 && changedLines.every(isWhitespaceOnlyChange);
 
 			if (!allWhitespace) {
 				// Keep this hunk, but filter out individual whitespace-only change pairs

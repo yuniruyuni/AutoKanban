@@ -1,16 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import {
-	PLAN_APPROVAL_PATTERN,
-	PLAN_REJECTION_PATTERN,
 	computeDefaultPlanStatus,
 	determinePlanStatusFromText,
+	PLAN_APPROVAL_PATTERN,
+	PLAN_REJECTION_PATTERN,
 } from "./plan-status";
 
 describe("determinePlanStatusFromText", () => {
 	test("detects plan approval", () => {
-		expect(determinePlanStatusFromText(PLAN_APPROVAL_PATTERN)).toBe(
-			"approved",
-		);
+		expect(determinePlanStatusFromText(PLAN_APPROVAL_PATTERN)).toBe("approved");
 	});
 
 	test("detects plan rejection", () => {

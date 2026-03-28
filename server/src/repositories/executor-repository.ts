@@ -1,11 +1,19 @@
 import { randomUUID } from "node:crypto";
+import {
+	buildContextFromLogs,
+	buildContextRestoredPrompt,
+} from "../lib/context-builder";
 import { Approval } from "../models/approval";
-import type { ClaudeControlRequestMessage } from "../models/claude-protocol";
 import { CodingAgentTurn } from "../models/coding-agent-turn";
 import { ExecutionProcess } from "../models/execution-process";
 import { Session } from "../models/session";
 import { Task } from "../models/task";
 import { Workspace } from "../models/workspace";
+import type {
+	DriverApprovalRequest,
+	DriverProcess,
+	ICodingAgentDriver,
+} from "../types/coding-agent-driver";
 import type { ILogger } from "../types/logger";
 import type {
 	ExecutorProcessInfo,
@@ -21,21 +29,12 @@ import type {
 	ITaskRepository,
 	IWorkspaceRepository,
 } from "../types/repository";
-import {
-	AUTO_APPROVE_CALLBACK_ID,
-	type ClaudeCodeExecutor,
-	type ClaudeCodeOptions,
-	type ClaudeCodeProcess,
-	type PermissionMode,
-} from "./claude-code-executor";
 import { LogCollector } from "./log-collector";
-import { buildContextFromLogs, buildContextRestoredPrompt } from "../lib/context-builder";
 import { logStoreManager } from "./log-store";
-import { ProtocolLogCollector } from "./protocol-log-collector";
 
 export interface RunningProcess extends ExecutorProcessInfo {
-	process: ClaudeCodeProcess;
-	permissionMode?: PermissionMode;
+	process: DriverProcess;
+	driver: ICodingAgentDriver;
 	/** Options used to start this process, for retry without resume on failure */
 	startOptions?: ExecutorStartProtocolOptions;
 }
@@ -57,16 +56,15 @@ export interface ProcessIdleInfo {
 export type ProcessIdleCallback = (info: ProcessIdleInfo) => void;
 
 /**
- * Repository for managing Claude Code process lifecycle.
- * Handles process spawning, stopping, and message sending.
- * Delegates log collection to LogCollector / ProtocolLogCollector.
+ * Generic orchestrator for coding agent process lifecycle.
+ * Delegates protocol-specific logic to ICodingAgentDriver implementations.
+ * Handles process spawning, stopping, approval flow, and completion.
  */
 export class ExecutorRepository implements IExecutorRepository {
 	private runningProcesses = new Map<string, RunningProcess>();
 	private completionCallbacks: ProcessCompletionCallback[] = [];
 	private idleCallbacks: ProcessIdleCallback[] = [];
 	private logCollector: LogCollector;
-	private protocolLogCollector: ProtocolLogCollector;
 	private logger: ILogger;
 
 	private approvalRepo?: IApprovalRepository;
@@ -78,7 +76,7 @@ export class ExecutorRepository implements IExecutorRepository {
 	constructor(
 		private executionProcessRepo: IExecutionProcessRepository,
 		private codingAgentTurnRepo: ICodingAgentTurnRepository | undefined,
-		private executor: ClaudeCodeExecutor,
+		private drivers: Map<string, ICodingAgentDriver>,
 		private executionProcessLogsRepo: IExecutionProcessLogsRepository,
 		logger: ILogger,
 	) {
@@ -87,48 +85,10 @@ export class ExecutorRepository implements IExecutorRepository {
 			executionProcessLogsRepo,
 			logger.child("LogCollector"),
 		);
-		this.protocolLogCollector = new ProtocolLogCollector(
-			executionProcessLogsRepo,
-			codingAgentTurnRepo,
-			logger.child("ProtocolLogCollector"),
-		);
-
-		// Wire up idle detection from protocol log collector
-		this.protocolLogCollector.onIdle((processId) => {
-			this.notifyIdleCallbacks(processId);
-		});
-
-		// Wire up session ID lookup for permission requests
-		this.protocolLogCollector.setSessionIdLookup((processId) => {
-			return this.runningProcesses.get(processId)?.sessionId;
-		});
-
-		// Wire up ExitPlanMode approval request handling
-		this.protocolLogCollector.onApprovalRequest((processId, request) => {
-			this.handleApprovalRequest(processId, request);
-		});
-
-		// Auto-approve non-ExitPlanMode permission requests.
-		// After ExitPlanMode approval, tools may go through canUseTool (no hook in plan mode).
-		this.protocolLogCollector.onAutoApprove((processId, request) => {
-			// can_use_tool uses "input" (not "tool_input") for the tool parameters
-			const toolInput = (request.request.input as Record<string, unknown>)
-				?? (request.request.tool_input as Record<string, unknown>)
-				?? {};
-			this.sendPermissionResponse(
-				processId, request.request_id, true, request.request.subtype,
-				undefined, undefined, toolInput,
-			);
-		});
-
-		// Handle hookCallback: auto-approve or escalate to canUseTool
-		this.protocolLogCollector.onHookCallback((processId, request) => {
-			this.handleHookCallback(processId, request);
-		});
 	}
 
 	/**
-	 * Sets the approval-related repos for ExitPlanMode handling.
+	 * Sets the approval-related repos for approval handling.
 	 * Called after construction to avoid circular dependencies.
 	 */
 	setApprovalDeps(deps: {
@@ -145,41 +105,34 @@ export class ExecutorRepository implements IExecutorRepository {
 		this.workspaceRepo = deps.workspaceRepo;
 	}
 
-	/**
-	 * Registers a callback to be called when any process completes.
-	 */
 	onProcessComplete(callback: ProcessCompletionCallback): void {
 		this.completionCallbacks.push(callback);
 	}
 
-	/**
-	 * Registers a callback to be called when any process becomes idle (waiting for input).
-	 */
 	onIdle(callback: ProcessIdleCallback): void {
 		this.idleCallbacks.push(callback);
 	}
 
 	/**
-	 * Starts a new Claude Code process in print mode (legacy one-shot).
+	 * Starts a new process in print mode (legacy one-shot).
+	 * Uses the default driver's spawn for backward compatibility.
 	 */
 	async start(options: ExecutorStartOptions): Promise<RunningProcess> {
 		const id = randomUUID();
 		const now = new Date();
 
-		const claudeOptions: ClaudeCodeOptions = {
+		const driver = this.getDriver(options.executor);
+		const process = driver.spawn({
 			workingDir: options.workingDir,
-			prompt: options.prompt,
-			dangerouslySkipPermissions: options.dangerouslySkipPermissions,
 			model: options.model,
-		};
-
-		const process = this.executor.spawn(claudeOptions);
+		});
 
 		const runningProcess: RunningProcess = {
 			id,
 			sessionId: options.sessionId,
 			runReason: options.runReason,
 			process,
+			driver,
 			startedAt: now,
 		};
 
@@ -204,8 +157,8 @@ export class ExecutorRepository implements IExecutorRepository {
 	}
 
 	/**
-	 * Starts a new Claude Code process in protocol mode.
-	 * Supports session resumption with --resume flag.
+	 * Starts a new process in protocol mode.
+	 * Delegates all protocol-specific logic to the driver.
 	 */
 	async startProtocol(
 		options: ExecutorStartProtocolOptions,
@@ -213,15 +166,14 @@ export class ExecutorRepository implements IExecutorRepository {
 		const id = randomUUID();
 		const now = new Date();
 
-		const permissionMode =
-			(options.permissionMode as PermissionMode) ?? "default";
+		const driver = this.getDriver(options.executor);
 
-		const process = this.executor.spawnProtocol({
+		const process = driver.spawn({
 			workingDir: options.workingDir,
 			model: options.model,
-			resumeSessionId: options.resumeSessionId,
-			resumeMessageId: options.resumeMessageId,
-			permissionMode,
+			permissionMode: options.permissionMode,
+			resumeToken: options.resumeSessionId,
+			messageToken: options.resumeMessageId,
 		});
 
 		const runningProcess: RunningProcess = {
@@ -229,8 +181,8 @@ export class ExecutorRepository implements IExecutorRepository {
 			sessionId: options.sessionId,
 			runReason: options.runReason,
 			process,
+			driver,
 			startedAt: now,
-			permissionMode,
 			startOptions: options.resumeSessionId ? options : undefined,
 		};
 
@@ -259,30 +211,43 @@ export class ExecutorRepository implements IExecutorRepository {
 
 		this.setupCompletionHandler(runningProcess);
 
-		// Start collecting logs BEFORE sending any messages
-		// (read stdout immediately to avoid missing early control messages)
-		this.protocolLogCollector.collect(id, process.stdout, process.stderr);
-
-		// Initialize the control protocol with hooks and permission mode
-		this.logger.info("[APPROVAL_FLOW] initializing protocol", {
+		// Initialize the driver: protocol handshake + log collection + event wiring
+		this.logger.info("[APPROVAL_FLOW] initializing driver", {
 			processId: id,
-			permissionMode,
-			variant: options.permissionMode,
+			driver: driver.name,
+			permissionMode: options.permissionMode,
 		});
-		await this.executor.initialize(process, permissionMode);
+		await driver.initialize(
+			process,
+			id,
+			{
+				onIdle: (pid) => this.notifyIdleCallbacks(pid),
+				onApprovalRequest: (pid, req) => this.handleApprovalRequest(pid, req),
+				onSessionInfo: () => {
+					// Session info is handled directly by the driver via codingAgentTurnRepo
+				},
+				onSummary: () => {
+					// Summary is handled directly by the driver via codingAgentTurnRepo
+				},
+			},
+			this.executionProcessLogsRepo,
+			this.codingAgentTurnRepo,
+		);
 
-		// If resuming with interrupted tools, send synthetic error results first
-		if (options.interruptedTools && options.interruptedTools.length > 0) {
-			const toolResults = options.interruptedTools.map((tool) => ({
-				toolId: tool.toolId,
-				content: `Task "${tool.toolName}" was interrupted due to server restart. Please retry if needed.`,
-				isError: true,
-			}));
-			await this.executor.sendToolResults(process, toolResults);
+		// If resuming with interrupted tools, send synthetic error results
+		if (
+			options.interruptedTools &&
+			options.interruptedTools.length > 0 &&
+			driver.sendInterruptedToolResults
+		) {
+			await driver.sendInterruptedToolResults(
+				process,
+				options.interruptedTools,
+			);
 		}
 
 		// Send the user message (prompt)
-		await this.executor.sendUserMessage(process, options.prompt);
+		await driver.sendMessage(process, options.prompt);
 
 		return runningProcess;
 	}
@@ -290,7 +255,6 @@ export class ExecutorRepository implements IExecutorRepository {
 	/**
 	 * Stops a running process by interrupting current generation (SIGINT).
 	 * The process stays alive and becomes idle, preserving conversation context.
-	 * Follow-up messages can be sent to the same process.
 	 */
 	async stop(processId: string): Promise<boolean> {
 		const runningProcess = this.runningProcesses.get(processId);
@@ -298,15 +262,12 @@ export class ExecutorRepository implements IExecutorRepository {
 			return false;
 		}
 
-		this.executor.interrupt(runningProcess.process);
-		// Process stays alive — don't remove from runningProcesses or update DB status.
-		// The completion handler will fire only if the process actually exits.
+		runningProcess.driver.interrupt(runningProcess.process);
 		return true;
 	}
 
 	/**
 	 * Kills a running process with SIGTERM.
-	 * Use this for hard stop when the process needs to be terminated.
 	 */
 	async kill(processId: string): Promise<boolean> {
 		const runningProcess = this.runningProcesses.get(processId);
@@ -314,7 +275,7 @@ export class ExecutorRepository implements IExecutorRepository {
 			return false;
 		}
 
-		this.executor.kill(runningProcess.process);
+		runningProcess.driver.kill(runningProcess.process);
 
 		const now = new Date();
 		const existing = this.executionProcessRepo.get(
@@ -344,7 +305,7 @@ export class ExecutorRepository implements IExecutorRepository {
 		}
 
 		try {
-			await this.executor.sendUserMessage(runningProcess.process, prompt);
+			await runningProcess.driver.sendMessage(runningProcess.process, prompt);
 
 			// Log the user's message so it appears in the conversation
 			const userMessage = {
@@ -367,6 +328,7 @@ export class ExecutorRepository implements IExecutorRepository {
 
 	/**
 	 * Sends a permission response (approve/deny) to a running process.
+	 * Kept for backward compatibility with respond-to-permission usecase.
 	 */
 	async sendPermissionResponse(
 		processId: string,
@@ -374,7 +336,7 @@ export class ExecutorRepository implements IExecutorRepository {
 		approved: boolean,
 		requestSubtype?: string,
 		reason?: string,
-		updatedPermissions?: Array<{
+		_updatedPermissions?: Array<{
 			type: string;
 			mode?: string;
 			destination?: string;
@@ -386,15 +348,24 @@ export class ExecutorRepository implements IExecutorRepository {
 			return false;
 		}
 
-		try {
-			await this.executor.sendPermissionResponse(
-				runningProcess.process,
+		// Construct a DriverApprovalRequest for the driver
+		const request: DriverApprovalRequest = {
+			toolName: "unknown",
+			toolCallId: requestId,
+			toolInput: toolInput ?? {},
+			protocolContext: {
 				requestId,
+				requestSubtype: requestSubtype ?? "canUseTool",
+				toolInput: toolInput ?? {},
+			},
+		};
+
+		try {
+			await runningProcess.driver.respondToApproval(
+				runningProcess.process,
+				request,
 				approved,
-				requestSubtype,
 				reason,
-				updatedPermissions,
-				toolInput,
 			);
 			return true;
 		} catch (error) {
@@ -404,70 +375,71 @@ export class ExecutorRepository implements IExecutorRepository {
 	}
 
 	/**
-	 * Gets a running process by ID.
+	 * Starts a protocol process and waits for it to exit.
+	 * Used for one-shot agent tasks like PR description generation.
 	 */
+	async startProtocolAndWait(
+		options: ExecutorStartProtocolOptions,
+	): Promise<{ exitCode: number }> {
+		const rp = await this.startProtocol(options);
+		return rp.driver.wait(rp.process);
+	}
+
 	get(processId: string): RunningProcess | undefined {
 		return this.runningProcesses.get(processId);
 	}
 
-	/**
-	 * Gets all running processes for a session.
-	 */
 	getBySession(sessionId: string): RunningProcess[] {
 		return Array.from(this.runningProcesses.values()).filter(
 			(p) => p.sessionId === sessionId,
 		);
 	}
 
-	/**
-	 * Gets the stdout stream for a process.
-	 */
 	getStdout(processId: string): ReadableStream<Uint8Array> | null {
 		const process = this.runningProcesses.get(processId);
 		return process?.process.stdout ?? null;
 	}
 
-	/**
-	 * Gets the stderr stream for a process.
-	 */
 	getStderr(processId: string): ReadableStream<Uint8Array> | null {
 		const process = this.runningProcesses.get(processId);
 		return process?.process.stderr ?? null;
 	}
 
 	// ============================================
-	// Approval Handling (ExitPlanMode)
+	// Approval Handling (generic)
 	// ============================================
 
+	/**
+	 * Handles an approval request emitted by a driver.
+	 * Creates an Approval record, transitions states, waits for user response,
+	 * then delegates the protocol-specific response to the driver.
+	 */
 	private async handleApprovalRequest(
 		processId: string,
-		request: ClaudeControlRequestMessage,
+		request: DriverApprovalRequest,
 	): Promise<void> {
 		this.logger.info("[APPROVAL_FLOW] handleApprovalRequest called", {
 			processId,
-			requestId: request.request_id,
-			subtype: request.request.subtype,
-			toolName: request.request.tool_name,
+			toolName: request.toolName,
+			toolCallId: request.toolCallId,
 		});
 
 		if (!this.approvalRepo || !this.approvalStoreRef) {
 			this.logger.error(
 				"Approval repos not configured, falling back to auto-approve",
 			);
-			// Auto-approve if no approval deps configured
-			await this.sendPermissionResponse(processId, request.request_id, true, request.request.subtype);
+			const rp = this.runningProcesses.get(processId);
+			if (rp) {
+				await rp.driver.respondToApproval(rp.process, request, true);
+			}
 			return;
 		}
-
-		const toolCallId =
-			(request.request.tool_use_id as string) ?? request.request_id;
-		const toolName = (request.request.tool_name as string) ?? "ExitPlanMode";
 
 		// Create approval record
 		const approval = Approval.create({
 			executionProcessId: processId,
-			toolName,
-			toolCallId,
+			toolName: request.toolName,
+			toolCallId: request.toolCallId,
 		});
 
 		// Transition execution process to awaiting_approval
@@ -495,11 +467,14 @@ export class ExecutorRepository implements IExecutorRepository {
 			}
 		}
 
-		this.logger.info("[APPROVAL_FLOW] approval created, waiting for user response", {
-			processId,
-			approvalId: approval.id,
-			toolName: approval.toolName,
-		});
+		this.logger.info(
+			"[APPROVAL_FLOW] approval created, waiting for user response",
+			{
+				processId,
+				approvalId: approval.id,
+				toolName: approval.toolName,
+			},
+		);
 
 		try {
 			// Wait for user response (blocks until respond() is called)
@@ -508,41 +483,22 @@ export class ExecutorRepository implements IExecutorRepository {
 				this.approvalRepo,
 			);
 
-			// Send permission response back to Claude.
 			const approved = response.status === "approved";
-			this.logger.info("[APPROVAL_FLOW] sending canUseTool response", {
+			this.logger.info("[APPROVAL_FLOW] sending approval response", {
 				processId,
-				requestId: request.request_id,
 				approved,
-				requestSubtype: request.request.subtype,
-				toolName: request.request.tool_name,
+				toolName: request.toolName,
 			});
-			// can_use_tool uses "input" (not "tool_input") for the tool parameters
-			const toolInput = (request.request.input as Record<string, unknown>)
-				?? (request.request.tool_input as Record<string, unknown>)
-				?? {};
-			await this.sendPermissionResponse(
-				processId,
-				request.request_id,
-				approved,
-				request.request.subtype,
-				response.reason ?? undefined,
-				undefined,
-				toolInput,
-			);
 
-			// Update server-side permission mode after approval
-			// so subsequent hookCallbacks allow tools instead of denying.
-			if (approved) {
-				const rp = this.runningProcesses.get(processId);
-				if (rp) {
-					this.logger.info("[APPROVAL_FLOW] updating permissionMode after approval", {
-						processId,
-						from: rp.permissionMode,
-						to: "bypassPermissions",
-					});
-					rp.permissionMode = "bypassPermissions";
-				}
+			// Delegate protocol-specific response to the driver
+			const rp = this.runningProcesses.get(processId);
+			if (rp) {
+				await rp.driver.respondToApproval(
+					rp.process,
+					request,
+					approved,
+					response.reason ?? undefined,
+				);
 			}
 
 			// Transition execution process back to running
@@ -573,9 +529,6 @@ export class ExecutorRepository implements IExecutorRepository {
 		}
 	}
 
-	/**
-	 * Find the task ID associated with a process (via session -> workspace -> task).
-	 */
 	private findTaskIdForProcess(processId: string): string | null {
 		const runningProcess = this.runningProcesses.get(processId);
 		if (!runningProcess || !this.sessionRepo || !this.workspaceRepo)
@@ -598,19 +551,17 @@ export class ExecutorRepository implements IExecutorRepository {
 		}
 	}
 
-	/**
-	 * Collects all execution process logs for a given session.
-	 */
 	private collectSessionLogs(sessionId: string): string[] {
-		const sessions = this.sessionRepo
-			? [{ id: sessionId }]
-			: [];
+		const sessions = this.sessionRepo ? [{ id: sessionId }] : [];
 		const logs: string[] = [];
 
 		for (const s of sessions) {
 			const epPage = this.executionProcessRepo.list(
 				ExecutionProcess.BySessionId(s.id),
-				{ limit: 100, sort: { keys: ["createdAt", "id"], order: "asc" } },
+				{
+					limit: 100,
+					sort: { keys: ["createdAt", "id"], order: "asc" },
+				},
 			);
 			for (const ep of epPage.items) {
 				const epLogs = this.executionProcessLogsRepo.getLogs(ep.id);
@@ -624,64 +575,7 @@ export class ExecutorRepository implements IExecutorRepository {
 	}
 
 	// ============================================
-	// Hook Callback Handling
-	// ============================================
-
-	/**
-	 * Handles hookCallback control requests from Claude Code.
-	 * All hook callbacks get "allow" immediately. For ExitPlanMode, the actual
-	 * approval gating happens via the simultaneous can_use_tool request
-	 * (handleApprovalRequest). Claude Code sends hook_callback and can_use_tool
-	 * simultaneously (~2ms apart), so the hook must not block or create its own
-	 * approval — that would cause a double-approval problem.
-	 */
-	private async handleHookCallback(
-		processId: string,
-		request: ClaudeControlRequestMessage,
-	): Promise<void> {
-		this.logger.info("[APPROVAL_FLOW] handleHookCallback called", {
-			processId,
-			requestId: request.request_id,
-			callbackId: request.request.callback_id,
-		});
-
-		// Always respond "allow" to hook callbacks.
-		// - AUTO_APPROVE: auto-approve as before.
-		// - tool_approval (ExitPlanMode): let it pass; the gating happens
-		//   via the simultaneous can_use_tool → handleApprovalRequest.
-		await this.sendHookResponse(processId, request.request_id, "allow");
-	}
-
-	/**
-	 * Sends a hook callback response to a running process.
-	 */
-	private async sendHookResponse(
-		processId: string,
-		requestId: string,
-		decision: "allow" | "deny" | "ask",
-		reason?: string,
-	): Promise<boolean> {
-		const runningProcess = this.runningProcesses.get(processId);
-		if (!runningProcess) {
-			return false;
-		}
-
-		try {
-			await this.executor.sendHookResponse(
-				runningProcess.process,
-				requestId,
-				decision,
-				reason,
-			);
-			return true;
-		} catch (error) {
-			this.logger.error("Failed to send hook response:", error);
-			return false;
-		}
-	}
-
-	// ============================================
-	// Idle Handling
+	// Idle & Completion Handling
 	// ============================================
 
 	private notifyIdleCallbacks(processId: string): void {
@@ -702,12 +596,8 @@ export class ExecutorRepository implements IExecutorRepository {
 		}
 	}
 
-	// ============================================
-	// Completion Handling
-	// ============================================
-
 	private setupCompletionHandler(runningProcess: RunningProcess): void {
-		this.executor.wait(runningProcess.process).then(async (result) => {
+		runningProcess.driver.wait(runningProcess.process).then(async (result) => {
 			const now = new Date();
 			const status: ExecutionProcess.Status = result.killed
 				? "killed"
@@ -735,17 +625,20 @@ export class ExecutorRepository implements IExecutorRepository {
 			// Retry without resume if a resumed process failed quickly
 			const elapsed = now.getTime() - runningProcess.startedAt.getTime();
 			if (
-				(status === "failed" || (status === "killed" && result.exitCode !== null)) &&
+				(status === "failed" ||
+					(status === "killed" && result.exitCode !== null)) &&
 				runningProcess.startOptions?.resumeSessionId &&
 				elapsed < 15000
 			) {
-				this.logger.info("[RESUME_RETRY] Resume failed quickly, retrying without resume", {
-					processId: runningProcess.id,
-					elapsed,
-					sessionId: runningProcess.sessionId,
-				});
+				this.logger.info(
+					"[RESUME_RETRY] Resume failed quickly, retrying without resume",
+					{
+						processId: runningProcess.id,
+						elapsed,
+						sessionId: runningProcess.sessionId,
+					},
+				);
 				try {
-					// Build context from previous conversation logs
 					const allLogs = this.collectSessionLogs(runningProcess.sessionId);
 					const contextSummary = buildContextFromLogs(allLogs);
 					const contextPrompt = buildContextRestoredPrompt(
@@ -760,9 +653,12 @@ export class ExecutorRepository implements IExecutorRepository {
 						resumeMessageId: undefined,
 						interruptedTools: undefined,
 					});
-					return; // Don't fire completion callbacks — new process takes over
+					return;
 				} catch (retryError) {
-					this.logger.error("[RESUME_RETRY] Retry without resume also failed", retryError);
+					this.logger.error(
+						"[RESUME_RETRY] Retry without resume also failed",
+						retryError,
+					);
 				}
 			}
 
@@ -785,5 +681,20 @@ export class ExecutorRepository implements IExecutorRepository {
 				}
 			}
 		});
+	}
+
+	// ============================================
+	// Driver Lookup
+	// ============================================
+
+	private getDriver(executorName?: string): ICodingAgentDriver {
+		const name = executorName ?? "claude-code";
+		const driver = this.drivers.get(name);
+		if (!driver) {
+			throw new Error(
+				`Unknown executor driver: "${name}". Available: ${Array.from(this.drivers.keys()).join(", ")}`,
+			);
+		}
+		return driver;
 	}
 }

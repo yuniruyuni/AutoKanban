@@ -3,15 +3,14 @@ import {
 	ClaudeJsonParser,
 	extractSummaryFromContent,
 	type ParsedResult,
-} from "../lib/claude-json-parser";
-import type { ClaudeControlRequestMessage } from "../models/claude-protocol";
-import type { ILogger } from "../types/logger";
+} from "../../../lib/claude-json-parser";
+import type { ClaudeControlRequestMessage } from "../../../models/claude-protocol";
+import type { ILogger } from "../../../types/logger";
 import type {
 	ICodingAgentTurnRepository,
 	IExecutionProcessLogsRepository,
-} from "../types/repository";
-import { type LogStore, logStoreManager } from "./log-store";
-import { permissionStore } from "./permission-store";
+} from "../../../types/repository";
+import { type LogStore, logStoreManager } from "../../log-store";
 
 export type IdleCallback = (processId: string) => void;
 export type ApprovalRequestCallback = (
@@ -38,6 +37,8 @@ export class ProtocolLogCollector {
 	private approvalRequestCallbacks: ApprovalRequestCallback[] = [];
 	private autoApproveCallbacks: AutoApproveCallback[] = [];
 	private hookCallbacks: HookCallback[] = [];
+	private sessionIdLookup: ((processId: string) => string | undefined) | null =
+		null;
 
 	private logger: ILogger;
 
@@ -243,26 +244,37 @@ export class ProtocolLogCollector {
 						subtype === "canUseTool" ||
 						subtype === "can_use_tool"
 					) {
-						const toolName =
-							(request.request.tool_name as string) ?? "unknown";
+						const toolName = (request.request.tool_name as string) ?? "unknown";
 
 						// ExitPlanMode goes through ApprovalStore for DB persistence
 						if (toolName === "ExitPlanMode") {
-							this.logger.info("[APPROVAL_FLOW] ExitPlanMode → approval callback", { processId });
+							this.logger.info(
+								"[APPROVAL_FLOW] ExitPlanMode → approval callback",
+								{ processId },
+							);
 							this.notifyApprovalRequestCallbacks(processId, request);
 						} else {
-							this.logger.info("[APPROVAL_FLOW] non-ExitPlanMode → auto-approve", { processId, toolName });
+							this.logger.info(
+								"[APPROVAL_FLOW] non-ExitPlanMode → auto-approve",
+								{ processId, toolName },
+							);
 							// Auto-approve non-ExitPlanMode permission requests
 							this.notifyAutoApproveCallbacks(processId, request);
 						}
-					} else if (subtype === "hookCallback" || subtype === "hook_callback") {
+					} else if (
+						subtype === "hookCallback" ||
+						subtype === "hook_callback"
+					) {
 						this.logger.info("[APPROVAL_FLOW] hookCallback → hook handler", {
 							processId,
 							callbackId: request.request.callback_id,
 						});
 						this.notifyHookCallbacks(processId, request);
 					} else {
-						this.logger.info("[APPROVAL_FLOW] unhandled subtype", { processId, subtype });
+						this.logger.info("[APPROVAL_FLOW] unhandled subtype", {
+							processId,
+							subtype,
+						});
 					}
 					break;
 				}
@@ -274,18 +286,8 @@ export class ProtocolLogCollector {
 		}
 	}
 
-	/**
-	 * Sets a callback to look up session ID for a process ID.
-	 * This is needed for permission request registration.
-	 */
-	private sessionIdLookup?: (processId: string) => string | undefined;
-
 	setSessionIdLookup(lookup: (processId: string) => string | undefined): void {
 		this.sessionIdLookup = lookup;
-	}
-
-	private getSessionIdForProcess(processId: string): string | undefined {
-		return this.sessionIdLookup?.(processId);
 	}
 
 	/**

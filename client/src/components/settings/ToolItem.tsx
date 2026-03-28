@@ -35,7 +35,9 @@ export function ToolItem({
 				<DynamicIcon name={iconName} className="h-5 w-5 text-white" />
 			</div>
 			<div className="min-w-0 flex-1 flex flex-col gap-1">
-				<p className="text-[15px] font-semibold text-primary-foreground">{name}</p>
+				<p className="text-[15px] font-semibold text-primary-foreground">
+					{name}
+				</p>
 				<p className="truncate text-xs text-muted font-mono">{command}</p>
 			</div>
 			<div className="flex shrink-0 items-center gap-2">

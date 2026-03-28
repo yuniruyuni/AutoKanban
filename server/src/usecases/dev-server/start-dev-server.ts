@@ -22,9 +22,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 			}
 
 			// Get project
-			const project = ctx.repos.project.get(
-				Project.ById(task.projectId),
-			);
+			const project = ctx.repos.project.get(Project.ById(task.projectId));
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
 					projectId: task.projectId,

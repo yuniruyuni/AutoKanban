@@ -30,7 +30,9 @@ export function AgentItem({
 					{letter}
 				</div>
 				<div className="flex flex-col gap-0.5">
-					<p className="text-[15px] font-semibold text-primary-foreground">{name}</p>
+					<p className="text-[15px] font-semibold text-primary-foreground">
+						{name}
+					</p>
 					<p className="text-[13px] text-muted">{statusText}</p>
 				</div>
 			</div>

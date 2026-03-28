@@ -35,7 +35,9 @@ export function ApprovalCard({ toolName, status }: ApprovalCardProps) {
 		<div className={cn("mt-2 rounded-md p-4", borderColor)}>
 			<div className="flex items-center gap-2 text-sm">
 				<ShieldCheck className="h-4 w-4 text-accent" />
-				<span className="font-semibold text-primary-foreground">{toolName}</span>
+				<span className="font-semibold text-primary-foreground">
+					{toolName}
+				</span>
 				{status === "pending_approval" && (
 					<span className="text-xs text-muted">Awaiting approval</span>
 				)}

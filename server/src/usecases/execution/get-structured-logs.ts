@@ -36,7 +36,7 @@ export const getStructuredLogs = (input: GetStructuredLogsInput) =>
 			const logs = ctx.repos.executionProcessLogs.getLogs(
 				input.executionProcessId,
 			);
-			if (!logs || !logs.logs) {
+			if (!logs?.logs) {
 				// Return empty entries if no logs yet
 				const result: GetStructuredLogsResult = { entries: [], isIdle: false };
 				return result;

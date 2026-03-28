@@ -44,7 +44,9 @@ describe("initialize", () => {
 		expect(initMsg.request.subtype).toBe("initialize");
 		expect(initMsg.request.hooks.PreToolUse).toHaveLength(2);
 		expect(initMsg.request.hooks.PreToolUse[0].matcher).toBe("^ExitPlanMode$");
-		expect(initMsg.request.hooks.PreToolUse[1].matcher).toBe("^(?!ExitPlanMode$).*");
+		expect(initMsg.request.hooks.PreToolUse[1].matcher).toBe(
+			"^(?!ExitPlanMode$).*",
+		);
 	});
 
 	test("registers both hooks in bypassPermissions mode", async () => {
@@ -56,13 +58,16 @@ describe("initialize", () => {
 		expect(initMsg.request.hooks.PreToolUse).toHaveLength(2);
 	});
 
-	test("registers only ExitPlanMode hook in plan mode", async () => {
+	test("registers both ExitPlanMode and auto-approve hooks in plan mode", async () => {
 		const { process, written } = createMockProcess();
 		await executor.initialize(process, "plan");
 
 		const initMsg = JSON.parse(written[0].trim());
-		expect(initMsg.request.hooks.PreToolUse).toHaveLength(1);
+		expect(initMsg.request.hooks.PreToolUse).toHaveLength(2);
 		expect(initMsg.request.hooks.PreToolUse[0].matcher).toBe("^ExitPlanMode$");
+		expect(initMsg.request.hooks.PreToolUse[1].matcher).toBe(
+			"^(?!ExitPlanMode$).*",
+		);
 	});
 
 	test("sends set_permission_mode after initialize", async () => {
@@ -133,12 +138,7 @@ describe("sendPermissionResponse", () => {
 
 	test("uses new format for canUseTool subtype (approved)", async () => {
 		const { process, written } = createMockProcess();
-		await executor.sendPermissionResponse(
-			process,
-			"req-3",
-			true,
-			"canUseTool",
-		);
+		await executor.sendPermissionResponse(process, "req-3", true, "canUseTool");
 
 		expect(written).toHaveLength(1);
 		const msg = JSON.parse(written[0].trim());
@@ -214,9 +214,9 @@ describe("sendHookResponse", () => {
 		expect(msg.response.response.hookSpecificOutput.permissionDecision).toBe(
 			"allow",
 		);
-		expect(
-			msg.response.response.hookSpecificOutput.hookEventName,
-		).toBe("PreToolUse");
+		expect(msg.response.response.hookSpecificOutput.hookEventName).toBe(
+			"PreToolUse",
+		);
 	});
 
 	test("sends ask decision with reason", async () => {

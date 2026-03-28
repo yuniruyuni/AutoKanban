@@ -66,9 +66,7 @@ export class DevServerRepository implements IDevServerRepository {
 
 		// Handle process completion
 		process.exited.then((exitCode) => {
-			this.logger.info(
-				`Dev server ${processId} exited with code ${exitCode}`,
-			);
+			this.logger.info(`Dev server ${processId} exited with code ${exitCode}`);
 			this.runningProcesses.delete(processId);
 		});
 	}

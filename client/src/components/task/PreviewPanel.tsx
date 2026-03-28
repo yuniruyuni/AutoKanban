@@ -11,7 +11,11 @@ interface PreviewPanelProps {
 	isStreaming: boolean;
 }
 
-export function PreviewPanel({ preview, logs, isStreaming }: PreviewPanelProps) {
+export function PreviewPanel({
+	preview,
+	logs,
+	isStreaming,
+}: PreviewPanelProps) {
 	const { urls, canStart, isRunning, start, stop, status } = preview;
 	const [activeSubTab, setActiveSubTab] = useState("logs");
 
@@ -78,7 +82,7 @@ export function PreviewPanel({ preview, logs, isStreaming }: PreviewPanelProps) 
 	// Ensure activeSubTab is valid
 	const resolvedTab = subTabs.find((t) => t.id === activeSubTab)
 		? activeSubTab
-		: subTabs[0]?.id ?? "logs";
+		: (subTabs[0]?.id ?? "logs");
 
 	return (
 		<div className="flex h-full flex-col">

@@ -131,7 +131,9 @@ export function ToolForm({
 						</div>
 
 						<div className="flex flex-col gap-1.5 flex-1">
-							<p className="text-[13px] text-secondary-foreground">Choose an icon</p>
+							<p className="text-[13px] text-secondary-foreground">
+								Choose an icon
+							</p>
 							{/* Icon grid */}
 							<div className="flex gap-2">
 								{AVAILABLE_ICONS.map((item) => (

@@ -90,9 +90,9 @@ export const getPendingApprovals = (input: GetPendingApprovalsInput) =>
 			}
 
 			// Fallback to DB for pending approvals (server restart recovery)
-			const spec = Approval.ByExecutionProcessId(
-				input.executionProcessId,
-			).and(Approval.ByStatus("pending"));
+			const spec = Approval.ByExecutionProcessId(input.executionProcessId).and(
+				Approval.ByStatus("pending"),
+			);
 			const page = ctx.repos.approval.list(spec, { limit: 100 });
 			return { approvals: page.items };
 		},

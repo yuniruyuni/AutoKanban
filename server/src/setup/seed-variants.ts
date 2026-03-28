@@ -18,6 +18,11 @@ const DEFAULT_VARIANTS = [
 		name: "PLAN",
 		permissionMode: "plan",
 	},
+	{
+		executor: "gemini-cli",
+		name: "DEFAULT",
+		permissionMode: "bypassPermissions",
+	},
 ] as const;
 
 export function seedDefaultVariants(db: Database): void {
@@ -43,6 +48,10 @@ export function seedDefaultVariants(db: Database): void {
 		Variant.ByExecutorAndName("claude-code", "DEFAULT"),
 	);
 	if (existingDefault && existingDefault.permissionMode !== "default") {
-		repo.upsert({ ...existingDefault, permissionMode: "default", updatedAt: new Date() });
+		repo.upsert({
+			...existingDefault,
+			permissionMode: "default",
+			updatedAt: new Date(),
+		});
 	}
 }

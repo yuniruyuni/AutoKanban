@@ -93,6 +93,7 @@ export function KanbanPage() {
 					{isPanelOpen && taskId ? (
 						<>
 							{/* biome-ignore lint/a11y/useKeyWithClickEvents: click-to-close background interaction */}
+							{/* biome-ignore lint/a11y/noStaticElementInteractions: click-to-close background interaction */}
 							<div
 								className="min-w-0 h-full overflow-auto"
 								style={{ width: `${leftPanelRatio * 100}%` }}

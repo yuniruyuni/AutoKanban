@@ -30,9 +30,13 @@ export const createProject = (input: CreateProjectInput) =>
 			// Validate that repoPath is a git repository with at least one commit
 			const isRepo = await ctx.repos.git.isGitRepo(input.repoPath);
 			if (!isRepo) {
-				return fail("INVALID_INPUT", "The specified path is not a git repository", {
-					repoPath: input.repoPath,
-				});
+				return fail(
+					"INVALID_INPUT",
+					"The specified path is not a git repository",
+					{
+						repoPath: input.repoPath,
+					},
+				);
 			}
 
 			const branches = await ctx.repos.git.listBranches(input.repoPath);

@@ -30,7 +30,9 @@ export function NavItem({
 				size === "sm"
 					? "gap-2.5 px-3 py-2 text-[13px]"
 					: "gap-3 px-3 py-2.5 text-sm",
-				isActive ? "bg-hover text-accent" : "text-primary-foreground hover:bg-hover",
+				isActive
+					? "bg-hover text-accent"
+					: "text-primary-foreground hover:bg-hover",
 				className,
 			)}
 		>
@@ -75,7 +77,9 @@ export function NavGroup({
 				)}
 			>
 				<div className="flex items-center gap-3">
-					<span className="text-secondary-foreground flex items-center">{icon}</span>
+					<span className="text-secondary-foreground flex items-center">
+						{icon}
+					</span>
 					<span>{label}</span>
 				</div>
 				<ChevronDown

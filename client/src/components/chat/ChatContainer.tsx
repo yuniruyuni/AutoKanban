@@ -229,7 +229,11 @@ function VirtualizedList({
 						const item = displayEntries[index];
 						content =
 							"kind" in item && item.kind === "group" ? (
-								<AggregatedToolGroup group={item} sessionId={sessionId} isProcessRunning={isRunning} />
+								<AggregatedToolGroup
+									group={item}
+									sessionId={sessionId}
+									isProcessRunning={isRunning}
+								/>
 							) : (
 								<ChatMessage
 									entry={item as ConversationEntry}

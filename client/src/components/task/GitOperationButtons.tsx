@@ -1,4 +1,10 @@
-import { AlertCircle, CheckCircle, ChevronDown, ExternalLink, RefreshCw } from "lucide-react";
+import {
+	AlertCircle,
+	CheckCircle,
+	ChevronDown,
+	ExternalLink,
+	RefreshCw,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/atoms/Button";
 import { Dialog, DialogContent, DialogHeader } from "@/components/atoms/Dialog";
@@ -44,7 +50,9 @@ export function GitOperationButtons({
 		status?.targetBranch ?? "main",
 	);
 	const [error, setError] = useState<string | null>(null);
-	const [primaryAction, setPrimaryAction] = useState<"merge" | "createPR">("createPR");
+	const [primaryAction, setPrimaryAction] = useState<"merge" | "createPR">(
+		"createPR",
+	);
 	const [showActionMenu, setShowActionMenu] = useState(false);
 	const actionMenuRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +65,10 @@ export function GitOperationButtons({
 	useEffect(() => {
 		if (!showActionMenu) return;
 		const handleClickOutside = (e: MouseEvent) => {
-			if (actionMenuRef.current && !actionMenuRef.current.contains(e.target as Node)) {
+			if (
+				actionMenuRef.current &&
+				!actionMenuRef.current.contains(e.target as Node)
+			) {
 				setShowActionMenu(false);
 			}
 		};
@@ -84,7 +95,13 @@ export function GitOperationButtons({
 					finalizingRef.current = false;
 				});
 		}
-	}, [status?.prState, workspaceId, projectId, finalizePrMerge, isFinalizingPrMerge]);
+	}, [
+		status?.prState,
+		workspaceId,
+		projectId,
+		finalizePrMerge,
+		isFinalizingPrMerge,
+	]);
 
 	if (!workspaceId || !projectId || !status) {
 		return null;
@@ -243,13 +260,16 @@ export function GitOperationButtons({
 									disabled={
 										primaryAction === "merge"
 											? !canMerge
-											: isCreatingPR || (status.ahead === 0 && diffs.length === 0)
+											: isCreatingPR ||
+												(status.ahead === 0 && diffs.length === 0)
 									}
 									className={cn(
 										"flex items-center justify-center rounded-l-md bg-[#E87B35] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed",
 									)}
 									title={
-										primaryAction === "merge" && isReviewState && status.behind > 0
+										primaryAction === "merge" &&
+										isReviewState &&
+										status.behind > 0
 											? "Rebase required before merge (not fast-forwardable)"
 											: undefined
 									}
@@ -280,7 +300,9 @@ export function GitOperationButtons({
 										}}
 										className={cn(
 											"flex w-full items-center px-3 py-2 text-sm transition-colors hover:bg-[#F5F5F5]",
-											primaryAction === "merge" ? "font-semibold text-[#E87B35]" : "text-[#0A0A0B]",
+											primaryAction === "merge"
+												? "font-semibold text-[#E87B35]"
+												: "text-[#0A0A0B]",
 										)}
 									>
 										Merge
@@ -293,7 +315,9 @@ export function GitOperationButtons({
 										}}
 										className={cn(
 											"flex w-full items-center px-3 py-2 text-sm transition-colors hover:bg-[#F5F5F5]",
-											primaryAction === "createPR" ? "font-semibold text-[#E87B35]" : "text-[#0A0A0B]",
+											primaryAction === "createPR"
+												? "font-semibold text-[#E87B35]"
+												: "text-[#0A0A0B]",
 										)}
 									>
 										Create PR

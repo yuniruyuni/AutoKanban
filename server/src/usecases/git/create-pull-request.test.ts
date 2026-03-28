@@ -23,6 +23,9 @@ describe("createPullRequest", () => {
 			project: { get: () => project } as never,
 			worktree: createMockWorktreeRepository(),
 			workspaceRepo: { listByWorkspace: () => [], upsert: () => {} } as never,
+			session: { list: () => ({ items: [], hasMore: false }) } as never,
+			codingAgentTurn: { findLatestResumeInfoByWorkspaceId: () => null } as never,
+			executor: { startProtocolAndWait: async () => ({ exitCode: 1 }) } as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "feature/test",
 				push: async () => {
@@ -45,9 +48,7 @@ describe("createPullRequest", () => {
 		if (result.ok) {
 			expect(result.value.success).toBe(true);
 			expect(result.value.branch).toBe("feature/test");
-			expect(result.value.prUrl).toBe(
-				"https://github.com/test/repo/pull/42",
-			);
+			expect(result.value.prUrl).toBe("https://github.com/test/repo/pull/42");
 		}
 		expect(pushCalled).toBe(true);
 		expect(prCreated).toBe(true);
@@ -69,6 +70,9 @@ describe("createPullRequest", () => {
 				],
 				upsert: () => {},
 			} as never,
+			session: { list: () => ({ items: [], hasMore: false }) } as never,
+			codingAgentTurn: { findLatestResumeInfoByWorkspaceId: () => null } as never,
+			executor: { startProtocolAndWait: async () => ({ exitCode: 1 }) } as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "feature/test",
 				createPullRequest: async (

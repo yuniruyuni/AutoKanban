@@ -49,7 +49,10 @@ describe("finalizePrMerge", () => {
 				},
 			}),
 			git: createMockGitRepository({
-				getPrStatus: async () => ({ state: "merged" as const, mergedAt: "2025-01-15T10:00:00Z" }),
+				getPrStatus: async () => ({
+					state: "merged" as const,
+					mergedAt: "2025-01-15T10:00:00Z",
+				}),
 				pullBranch: async () => {
 					pullBranchCalled = true;
 				},

@@ -1,10 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import type { ClaudeControlRequestMessage } from "../models/claude-protocol";
-import type {
-	ICodingAgentTurnRepository,
-	IExecutionProcessLogsRepository,
-} from "../types/repository";
-import type { ILogger } from "../types/logger";
+import type { ClaudeControlRequestMessage } from "../../../models/claude-protocol";
+import type { ILogger } from "../../../types/logger";
+import type { IExecutionProcessLogsRepository } from "../../../types/repository";
 import { ProtocolLogCollector } from "./protocol-log-collector";
 
 // ============================================
@@ -34,7 +31,7 @@ function createMockLogsRepo(): IExecutionProcessLogsRepository {
  */
 function makeStream(lines: object[]): ReadableStream<Uint8Array> {
 	const encoder = new TextEncoder();
-	const data = lines.map((l) => JSON.stringify(l)).join("\n") + "\n";
+	const data = `${lines.map((l) => JSON.stringify(l)).join("\n")}\n`;
 	return new ReadableStream({
 		start(controller) {
 			controller.enqueue(encoder.encode(data));
@@ -286,7 +283,9 @@ describe("ProtocolLogCollector callback routing", () => {
 		await new Promise((r) => setTimeout(r, 50));
 
 		expect(hookRequests).toHaveLength(1);
-		expect(hookRequests[0].request.callback_id).toBe("AUTO_APPROVE_CALLBACK_ID");
+		expect(hookRequests[0].request.callback_id).toBe(
+			"AUTO_APPROVE_CALLBACK_ID",
+		);
 		expect(approvalRequests).toHaveLength(0);
 	});
 

@@ -48,7 +48,11 @@ export function useExecutionStatus(executionProcessId: string | null) {
 			refetchInterval: (data) => {
 				const status = data?.state?.data?.executionProcess.status;
 				// Stop polling only when execution is truly complete
-				if (status === "completed" || status === "failed" || status === "killed") {
+				if (
+					status === "completed" ||
+					status === "failed" ||
+					status === "killed"
+				) {
 					return false;
 				}
 				return 2000; // Poll every 2 seconds while active

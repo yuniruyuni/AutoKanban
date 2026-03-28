@@ -84,10 +84,12 @@ export function DiffViewer({
 						onClick={() => setHideWhitespace(!hideWhitespace)}
 						className="flex items-center gap-1.5 rounded-sm bg-[#EBEBEB] px-2.5 py-1.5 text-xs font-medium text-[#71717A] transition-colors hover:opacity-80"
 					>
-						<div className={cn(
-							"h-3.5 w-3.5 rounded-[3px] border border-[#E4E4E7]",
-							hideWhitespace ? "bg-[#E87B35]" : "bg-white",
-						)} />
+						<div
+							className={cn(
+								"h-3.5 w-3.5 rounded-[3px] border border-[#E4E4E7]",
+								hideWhitespace ? "bg-[#E87B35]" : "bg-white",
+							)}
+						/>
 						Hide whitespace
 					</button>
 				</div>

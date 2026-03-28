@@ -6,7 +6,11 @@ interface UseInlineEditOptions {
 	multiline?: boolean;
 }
 
-export function useInlineEdit({ value, onSave, multiline }: UseInlineEditOptions) {
+export function useInlineEdit({
+	value,
+	onSave,
+	multiline,
+}: UseInlineEditOptions) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [draft, setDraft] = useState(value);
 	const ref = useRef<HTMLInputElement | HTMLTextAreaElement>(null);

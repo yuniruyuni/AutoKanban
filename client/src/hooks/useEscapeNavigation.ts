@@ -12,8 +12,13 @@ import { useTaskNavigation } from "./useTaskNavigation";
  * Skipped when a dialog is open or focus is in a text input.
  */
 export function useEscapeNavigation() {
-	const { isFullscreen, isPanelOpen, exitFullscreen, closePanel, goToProjects } =
-		useTaskNavigation();
+	const {
+		isFullscreen,
+		isPanelOpen,
+		exitFullscreen,
+		closePanel,
+		goToProjects,
+	} = useTaskNavigation();
 	const { isShortcutHelpOpen } = useSnapshot(uiStore);
 
 	useEffect(() => {
@@ -45,5 +50,12 @@ export function useEscapeNavigation() {
 
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [isFullscreen, isPanelOpen, exitFullscreen, closePanel, goToProjects, isShortcutHelpOpen]);
+	}, [
+		isFullscreen,
+		isPanelOpen,
+		exitFullscreen,
+		closePanel,
+		goToProjects,
+		isShortcutHelpOpen,
+	]);
 }

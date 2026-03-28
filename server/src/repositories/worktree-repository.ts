@@ -130,9 +130,7 @@ export class WorktreeRepository {
 			try {
 				await this.gitRepository.deleteBranch(project.repoPath, branch, true);
 			} catch (error) {
-				this.logger.warn(
-					`Failed to delete branch ${branch}: ${error}`,
-				);
+				this.logger.warn(`Failed to delete branch ${branch}: ${error}`);
 			}
 		}
 

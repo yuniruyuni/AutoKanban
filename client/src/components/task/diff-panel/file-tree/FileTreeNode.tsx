@@ -1,9 +1,4 @@
-import {
-	ChevronDown,
-	ChevronRight,
-	Folder,
-	FolderOpen,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react";
 import { useState } from "react";
 import type { GitDiff } from "@/hooks/useGit";
 import type { TreeNode } from "@/lib/diff-parser";

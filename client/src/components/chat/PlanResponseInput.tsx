@@ -31,7 +31,7 @@ export function PlanResponseInput({
 		if (!el) return;
 		el.style.height = "auto";
 		el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
-	}, [feedback]);
+	}, []);
 
 	const handleApprove = useCallback(async () => {
 		try {

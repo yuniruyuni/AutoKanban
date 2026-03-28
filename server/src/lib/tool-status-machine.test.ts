@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import {
-	type ControlResponseInput,
 	applyControlRequest,
 	applyControlResponse,
 	applyToolResult,
+	type ControlResponseInput,
 	normalizeControlResponse,
 } from "./tool-status-machine";
 
@@ -154,12 +154,7 @@ describe("applyControlResponse", () => {
 	});
 
 	test("approved non-ExitPlanMode with plan action → running without planStatus", () => {
-		const result = applyControlResponse(
-			true,
-			undefined,
-			"OtherTool",
-			"plan",
-		);
+		const result = applyControlResponse(true, undefined, "OtherTool", "plan");
 		expect(result).toEqual({ newStatus: "running" });
 	});
 });

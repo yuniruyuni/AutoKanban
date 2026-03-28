@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createTestVariant } from "../../../test/factories";
 import { createMockContext } from "../../../test/helpers/context";
-import { Variant } from "../../models/variant";
+import type { Variant } from "../../models/variant";
 import { createVariant } from "./create-variant";
 import { deleteVariant } from "./delete-variant";
 import { listVariants } from "./list-variants";
@@ -59,7 +59,7 @@ describe("listVariants", () => {
 
 describe("createVariant", () => {
 	test("creates a variant with specified fields", async () => {
-		let upserted: Variant | null = null;
+		let upserted = null as Variant | null;
 
 		const ctx = createMockContext({
 			variant: {
@@ -87,7 +87,7 @@ describe("createVariant", () => {
 			expect(result.value.id).toBeDefined();
 		}
 		expect(upserted).not.toBeNull();
-		expect(upserted!.name).toBe("CUSTOM");
+		expect(upserted?.name).toBe("CUSTOM");
 	});
 
 	test("uses default permissionMode when not specified", async () => {
@@ -121,7 +121,7 @@ describe("updateVariant", () => {
 			model: null,
 		});
 
-		let upserted: Variant | null = null;
+		let upserted = null as Variant | null;
 
 		const ctx = createMockContext({
 			variant: {
@@ -149,7 +149,7 @@ describe("updateVariant", () => {
 			expect(result.value.model).toBe("opus");
 			expect(result.value.id).toBe(existing.id);
 		}
-		expect(upserted!.name).toBe("NEW");
+		expect(upserted?.name).toBe("NEW");
 	});
 
 	test("preserves unchanged fields", async () => {

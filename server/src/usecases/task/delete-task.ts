@@ -25,16 +25,14 @@ export const deleteTask = (input: DeleteTaskInput) =>
 			const sessionIds: string[] = [];
 			const executionProcessIds: string[] = [];
 
-			const workspaces = ctx.repos.workspace.list(
-				Workspace.ByTaskId(task.id),
-				{ limit: 10000 },
-			);
+			const workspaces = ctx.repos.workspace.list(Workspace.ByTaskId(task.id), {
+				limit: 10000,
+			});
 			for (const ws of workspaces.items) {
 				workspaceIds.push(ws.id);
-				const sessions = ctx.repos.session.list(
-					Session.ByWorkspaceId(ws.id),
-					{ limit: 10000 },
-				);
+				const sessions = ctx.repos.session.list(Session.ByWorkspaceId(ws.id), {
+					limit: 10000,
+				});
 				for (const session of sessions.items) {
 					sessionIds.push(session.id);
 					const processes = ctx.repos.executionProcess.list(

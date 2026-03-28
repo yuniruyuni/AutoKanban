@@ -50,7 +50,8 @@ export function useProjectKeyboardNav({
 
 			let nextIndex: number;
 			if (e.key === "j") {
-				nextIndex = currentIndex < projects.length - 1 ? currentIndex + 1 : currentIndex;
+				nextIndex =
+					currentIndex < projects.length - 1 ? currentIndex + 1 : currentIndex;
 			} else {
 				nextIndex = currentIndex > 0 ? currentIndex - 1 : 0;
 			}

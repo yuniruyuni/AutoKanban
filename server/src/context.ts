@@ -3,8 +3,10 @@ import { LogStreamer } from "./presentation/log-streamer";
 import { AgentConfigRepository } from "./repositories/agent-config-repository";
 import { ApprovalRepository } from "./repositories/approval-repository";
 import { approvalStore } from "./repositories/approval-store";
-import { ClaudeCodeExecutor } from "./repositories/claude-code-executor";
+import { ClaudeCodeDriver } from "./repositories/drivers/claude-code";
+import { GeminiCliDriver } from "./repositories/drivers/gemini-cli";
 import { CodingAgentTurnRepository } from "./repositories/coding-agent-turn-repository";
+import { DevServerRepository } from "./repositories/dev-server-repository";
 import { draftRepository } from "./repositories/draft-repository";
 import { ExecutionProcessLogsRepository } from "./repositories/execution-process-logs-repository";
 import { ExecutionProcessRepository } from "./repositories/execution-process-repository";
@@ -21,7 +23,6 @@ import { ToolRepository } from "./repositories/tool-repository";
 import { VariantRepository } from "./repositories/variant-repository";
 import { WorkspaceRepoRepository } from "./repositories/workspace-repo-repository";
 import { WorkspaceRepository } from "./repositories/workspace-repository";
-import { DevServerRepository } from "./repositories/dev-server-repository";
 import { WorktreeRepository } from "./repositories/worktree-repository";
 import { setupQueueProcessor } from "./setup/queue-processor";
 import type { Context } from "./types/context";
@@ -40,10 +41,13 @@ export function createContext(db: Database, logger: ILogger): Context {
 	const gitRepo = new GitRepository();
 	const worktreeRepo = new WorktreeRepository(logger);
 	const executionProcessLogsRepo = new ExecutionProcessLogsRepository(db);
+	const drivers = new Map();
+	drivers.set("claude-code", new ClaudeCodeDriver(logger));
+	drivers.set("gemini-cli", new GeminiCliDriver(logger));
 	const executor = new ExecutorRepository(
 		executionProcessRepo,
 		codingAgentTurnRepo,
-		new ClaudeCodeExecutor(),
+		drivers,
 		executionProcessLogsRepo,
 		logger,
 	);

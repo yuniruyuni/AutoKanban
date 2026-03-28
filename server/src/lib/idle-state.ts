@@ -26,7 +26,11 @@ export function computeIdleState(
 	if (messageType === "assistant" || messageType === "user") {
 		return false;
 	}
-	if (messageType === "control_request" && controlSubtype && APPROVAL_SUBTYPES.has(controlSubtype)) {
+	if (
+		messageType === "control_request" &&
+		controlSubtype &&
+		APPROVAL_SUBTYPES.has(controlSubtype)
+	) {
 		return true;
 	}
 	return null;

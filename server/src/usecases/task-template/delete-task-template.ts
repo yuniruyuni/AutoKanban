@@ -9,9 +9,7 @@ export interface DeleteTaskTemplateInput {
 export const deleteTaskTemplate = (input: DeleteTaskTemplateInput) =>
 	usecase({
 		read: (ctx) => {
-			const template = ctx.repos.taskTemplate.get(
-				TaskTemplate.ById(input.id),
-			);
+			const template = ctx.repos.taskTemplate.get(TaskTemplate.ById(input.id));
 			if (!template) {
 				return fail("NOT_FOUND", "Task template not found");
 			}

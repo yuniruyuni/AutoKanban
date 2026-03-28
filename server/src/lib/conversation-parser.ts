@@ -28,14 +28,17 @@ import type {
 	ToolStatus,
 } from "../types/conversation";
 import { computeIdleState } from "./idle-state";
-import { computeDefaultPlanStatus, determinePlanStatusFromText } from "./plan-status";
+import {
+	computeDefaultPlanStatus,
+	determinePlanStatusFromText,
+} from "./plan-status";
 import { mapToolNameToAction } from "./tool-action-mapper";
 import { extractExitCode, formatToolOutput } from "./tool-result-formatter";
 import {
-	type ControlResponseInput,
 	applyControlRequest,
 	applyControlResponse,
 	applyToolResult,
+	type ControlResponseInput,
 	normalizeControlResponse,
 } from "./tool-status-machine";
 
@@ -116,7 +119,6 @@ function parseLogLine(line: string): ParsedLogLine | null {
 	};
 }
 
-
 /**
  * Parse raw database logs into structured ParseResult.
  */
@@ -156,9 +158,10 @@ export function parseLogsToConversation(rawLogs: string): ParseResult {
 			const json = JSON.parse(data) as ClaudeJsonMessage;
 
 			// Track idle state based on message type
-			const controlSubtype = json.type === "control_request"
-				? (json as ClaudeControlRequestMessage).request.subtype
-				: undefined;
+			const controlSubtype =
+				json.type === "control_request"
+					? (json as ClaudeControlRequestMessage).request.subtype
+					: undefined;
 			const idleChange = computeIdleState(json.type, controlSubtype);
 			if (idleChange !== null) {
 				isIdle = idleChange;

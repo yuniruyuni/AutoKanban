@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-	type PreviewUrlInfo,
 	detectPreviewUrl,
+	type PreviewUrlInfo,
 } from "@/lib/detect-preview-url";
 import { trpc } from "@/trpc";
 import { type LogEntry, useLogStream } from "./useLogStream";
@@ -67,21 +67,18 @@ export function useDevServerPreview(
 	}, [devServerData, status]);
 
 	// Handle log entries to detect URLs
-	const onLog = useCallback(
-		(entry: { data: string }) => {
-			const info = detectPreviewUrl(entry.data);
-			if (!info) return;
+	const onLog = useCallback((entry: { data: string }) => {
+		const info = detectPreviewUrl(entry.data);
+		if (!info) return;
 
-			// Deduplicate by port (or full URL if no port)
-			const key = info.port ? String(info.port) : info.url;
-			if (seenPorts.current.has(key)) return;
-			seenPorts.current.add(key);
+		// Deduplicate by port (or full URL if no port)
+		const key = info.port ? String(info.port) : info.url;
+		if (seenPorts.current.has(key)) return;
+		seenPorts.current.add(key);
 
-			setUrls((prev) => [...prev, info]);
-			setStatus("ready");
-		},
-		[],
-	);
+		setUrls((prev) => [...prev, info]);
+		setStatus("ready");
+	}, []);
 
 	// Subscribe to dev server logs via SSE
 	const { logs, isStreaming } = useLogStream({

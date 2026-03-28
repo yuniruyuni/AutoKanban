@@ -6,10 +6,7 @@ import { updateTaskTemplate } from "../../usecases/task-template/update-task-tem
 import { handleResult } from "../handle-result";
 import { publicProcedure, router } from "../trpc";
 
-const conditionSchema = z
-	.enum(["no_dev_server"])
-	.nullable()
-	.optional();
+const conditionSchema = z.enum(["no_dev_server"]).nullable().optional();
 
 export const taskTemplateRouter = router({
 	list: publicProcedure.query(async ({ ctx }) =>

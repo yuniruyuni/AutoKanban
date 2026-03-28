@@ -236,7 +236,7 @@ async function buildContextTool(
 			"workspace.findByPath",
 			{ worktreePath: cwd },
 		);
-		if (!result || !result.ok || !result.value) return null;
+		if (!result?.ok || !result.value) return null;
 
 		const context = result.value;
 		return {

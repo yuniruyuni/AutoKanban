@@ -200,7 +200,9 @@ export function TaskDetailPanel({
 							<h3
 								className="text-lg font-semibold text-primary-foreground cursor-text rounded px-1 -mx-1 hover:bg-hover"
 								onClick={titleEdit.startEditing}
-								onKeyDown={(e) => { if (e.key === "Enter") titleEdit.startEditing(); }}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") titleEdit.startEditing();
+								}}
 							>
 								{task.title}
 							</h3>
@@ -220,7 +222,9 @@ export function TaskDetailPanel({
 							<p
 								className="text-sm text-secondary-foreground leading-[1.5] cursor-text rounded px-1 -mx-1 hover:bg-hover min-h-[1.5em]"
 								onClick={descEdit.startEditing}
-								onKeyDown={(e) => { if (e.key === "Enter") descEdit.startEditing(); }}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") descEdit.startEditing();
+								}}
 							>
 								{task.description || "Add description..."}
 							</p>

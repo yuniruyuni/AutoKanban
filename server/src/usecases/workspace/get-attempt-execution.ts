@@ -42,8 +42,7 @@ export const getAttemptExecution = (input: GetAttemptExecutionInput) =>
 			return {
 				workspaceId: input.workspaceId,
 				sessionId: session.id,
-				executionProcessId:
-					epPage.items.length > 0 ? epPage.items[0].id : null,
+				executionProcessId: epPage.items.length > 0 ? epPage.items[0].id : null,
 			};
 		},
 	});

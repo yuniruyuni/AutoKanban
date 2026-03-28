@@ -1,7 +1,13 @@
 import { filterWhitespaceHunks } from "@/lib/diff-parser";
 import { cn } from "@/lib/utils";
 
-export function UnifiedDiff({ rawDiff, hideWhitespace }: { rawDiff: string; hideWhitespace: boolean }) {
+export function UnifiedDiff({
+	rawDiff,
+	hideWhitespace,
+}: {
+	rawDiff: string;
+	hideWhitespace: boolean;
+}) {
 	const filtered = hideWhitespace ? filterWhitespaceHunks(rawDiff) : rawDiff;
 	const lines = filtered.split("\n");
 	let oldLineNum = 0;

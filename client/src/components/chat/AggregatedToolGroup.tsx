@@ -40,7 +40,12 @@ export function AggregatedToolGroup({
 				<div className="border-t border bg-primary">
 					<div className="flex flex-col gap-2 p-2">
 						{group.entries.map((entry) => (
-							<ChatMessage key={entry.id} entry={entry} sessionId={sessionId} isProcessRunning={isProcessRunning} />
+							<ChatMessage
+								key={entry.id}
+								entry={entry}
+								sessionId={sessionId}
+								isProcessRunning={isProcessRunning}
+							/>
 						))}
 					</div>
 				</div>

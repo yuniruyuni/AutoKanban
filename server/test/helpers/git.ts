@@ -61,7 +61,9 @@ export function createMockGitRepository(
 		push: async () => {},
 
 		// PR operations
-		createPullRequest: async () => ({ url: "https://github.com/test/repo/pull/1" }),
+		createPullRequest: async () => ({
+			url: "https://github.com/test/repo/pull/1",
+		}),
 
 		// Branch status
 		getBranchStatus: async () => createTestBranchStatus(),

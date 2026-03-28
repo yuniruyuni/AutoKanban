@@ -54,9 +54,7 @@ export function ToolEntryComponent({
 
 	// If the process is no longer running, treat "running" tools as interrupted
 	const effectiveStatus =
-		entry.status === "running" && !isProcessRunning
-			? "failed"
-			: entry.status;
+		entry.status === "running" && !isProcessRunning ? "failed" : entry.status;
 
 	const statusIcon = {
 		running: <Loader2 className="h-4 w-4 animate-spin text-accent" />,
@@ -86,9 +84,7 @@ export function ToolEntryComponent({
 					{entry.toolName}
 				</span>
 				{actionLabel && (
-					<span className="truncate text-sm text-muted">
-						{actionLabel}
-					</span>
+					<span className="truncate text-sm text-muted">{actionLabel}</span>
 				)}
 				{entry.action.type === "command" &&
 					entry.result?.exitCode !== undefined && (
@@ -243,7 +239,9 @@ function ActionDetail({ action }: { action: ToolAction }) {
 							Agent: {action.subagentType}
 						</div>
 					)}
-					<p className="text-sm text-secondary-foreground">{action.description}</p>
+					<p className="text-sm text-secondary-foreground">
+						{action.description}
+					</p>
 				</div>
 			);
 		case "todo_management":

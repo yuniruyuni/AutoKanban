@@ -45,6 +45,9 @@ const CLAUDE_CODE_PACKAGE = "@anthropic-ai/claude-code@2.1.32";
 // Hook callback ID for auto-approving non-ExitPlanMode tools
 export const AUTO_APPROVE_CALLBACK_ID = "AUTO_APPROVE_CALLBACK_ID";
 
+// Hook callback ID for ExitPlanMode approval flow
+export const TOOL_APPROVAL_CALLBACK_ID = "tool_approval";
+
 // ============================================
 // Control Protocol Message Types
 // ============================================
@@ -121,28 +124,23 @@ export class ClaudeCodeExecutor {
 		process: ClaudeCodeProcess,
 		permissionMode: PermissionMode = "default",
 	): Promise<void> {
-		// Register PreToolUse hooks based on permission mode.
-		// In plan mode: only hook ExitPlanMode for approval flow.
-		//   Read-only tools are allowed by Claude Code's plan mode natively.
-		//   Write tools are blocked by Claude Code's plan mode natively.
-		//   After ExitPlanMode approval, tools go through canUseTool → auto-approve callback.
-		// In non-plan modes: also register auto-approve hook for all other tools.
-		const preToolUseHooks = [
-			{
-				matcher: "^ExitPlanMode$",
-				hookCallbackIds: ["tool_approval"],
-			},
-		];
-
-		if (permissionMode !== "plan") {
-			preToolUseHooks.push({
-				matcher: "^(?!ExitPlanMode$).*",
-				hookCallbackIds: [AUTO_APPROVE_CALLBACK_ID],
-			});
-		}
-
+		// Register PreToolUse hooks for all permission modes.
+		// ExitPlanMode → "tool_approval" hook (triggers user approval via can_use_tool).
+		// All other tools → auto-approve hook (immediately allowed).
+		// Both hooks are registered even in plan mode so that after ExitPlanMode
+		// approval (when mode switches to bypassPermissions), subsequent tools
+		// are auto-approved via the hook callback.
 		const hooks = {
-			PreToolUse: preToolUseHooks,
+			PreToolUse: [
+				{
+					matcher: "^ExitPlanMode$",
+					hookCallbackIds: [TOOL_APPROVAL_CALLBACK_ID],
+				},
+				{
+					matcher: "^(?!ExitPlanMode$).*",
+					hookCallbackIds: [AUTO_APPROVE_CALLBACK_ID],
+				},
+			],
 		};
 
 		// Send initialize request with hooks

@@ -54,10 +54,7 @@ export const getBranchStatus = (input: GetBranchStatusInput) =>
 			let prState: "open" | "closed" | "merged" | null = null;
 			if (prUrl) {
 				try {
-					const pr = await ctx.repos.git.getPrStatus(
-						project.repoPath,
-						prUrl,
-					);
+					const pr = await ctx.repos.git.getPrStatus(project.repoPath, prUrl);
 					prState = pr.state;
 				} catch {
 					// PR status check failed — return null prState

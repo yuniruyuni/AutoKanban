@@ -74,7 +74,9 @@ export function InlineDiff({ path, oldString, newString }: InlineDiffProps) {
 		return (
 			<div className="space-y-2 bg-secondary p-3">
 				<div className="flex items-center justify-between">
-					<span className="font-mono text-sm text-secondary-foreground">{path}</span>
+					<span className="font-mono text-sm text-secondary-foreground">
+						{path}
+					</span>
 					<div className="flex items-center gap-2 text-xs">
 						{removed > 0 && (
 							<span className="flex items-center text-red-600">
@@ -130,7 +132,9 @@ export function InlineDiff({ path, oldString, newString }: InlineDiffProps) {
 						expanded && "rotate-90",
 					)}
 				/>
-				<span className="font-mono text-sm text-secondary-foreground">{path}</span>
+				<span className="font-mono text-sm text-secondary-foreground">
+					{path}
+				</span>
 				<div className="ml-auto flex items-center gap-2 text-xs">
 					{removed > 0 && (
 						<span className="flex items-center text-red-600">

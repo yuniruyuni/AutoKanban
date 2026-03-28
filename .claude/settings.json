@@ -1,29 +1,29 @@
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bun run lint"
-          },
-          {
-            "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bun run typecheck"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bun run lint && bun run test"
-          }
-        ]
-      }
-    ]
-  }
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cd \"$CLAUDE_PROJECT_DIR\" && bun run lint"
+					},
+					{
+						"type": "command",
+						"command": "cd \"$CLAUDE_PROJECT_DIR\" && bun run typecheck"
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cd \"$CLAUDE_PROJECT_DIR\" && bun run lint && bun run test"
+					}
+				]
+			}
+		]
+	}
 }

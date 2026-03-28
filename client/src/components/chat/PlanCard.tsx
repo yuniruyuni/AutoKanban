@@ -33,7 +33,8 @@ export function PlanCard({ entry }: PlanCardProps) {
 	const isPlanApproved = planStatus === "approved";
 	const isPlanRejected = planStatus === "rejected";
 
-	const planContent = planAction.plan ?? entry.result?.output ?? "Plan content loading...";
+	const planContent =
+		planAction.plan ?? entry.result?.output ?? "Plan content loading...";
 
 	const statusIcon =
 		entry.status === "running" ? (
@@ -81,7 +82,9 @@ export function PlanCard({ entry }: PlanCardProps) {
 				<div className={`border-t ${borderColor}`}>
 					<div className="p-4">
 						<div className="prose prose-sm prose-orange max-w-none">
-							<ReactMarkdown remarkPlugins={[remarkGfm]}>{planContent}</ReactMarkdown>
+							<ReactMarkdown remarkPlugins={[remarkGfm]}>
+								{planContent}
+							</ReactMarkdown>
 						</div>
 					</div>
 
