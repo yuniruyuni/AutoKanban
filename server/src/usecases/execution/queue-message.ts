@@ -41,9 +41,11 @@ export interface QueueMessageResult {
  */
 export const queueMessage = (input: QueueMessageInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Verify session exists
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,
@@ -51,7 +53,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 			}
 
 			// Get the workspace
-			const workspace = ctx.repos.workspace.get(
+			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(session.workspaceId),
 			);
 			if (!workspace) {
@@ -61,7 +63,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 			}
 
 			// Get the latest execution process for this session
-			const executionProcessPage = ctx.repos.executionProcess.list(
+			const executionProcessPage = await ctx.repos.executionProcess.list(
 				ExecutionProcess.BySessionId(input.sessionId),
 				{ limit: 1, sort: ExecutionProcess.defaultSort },
 			);
@@ -72,7 +74,9 @@ export const queueMessage = (input: QueueMessageInput) =>
 			let isRunning = false;
 			if (latestProcess?.status === "running") {
 				isRunning = true;
-				const logs = ctx.repos.executionProcessLogs.getLogs(latestProcess.id);
+				const logs = await ctx.repos.executionProcessLogs.getLogs(
+					latestProcess.id,
+				);
 				if (logs?.logs) {
 					const parseResult = parseLogsToConversation(logs.logs);
 					isIdle = parseResult.isIdle;
@@ -80,24 +84,26 @@ export const queueMessage = (input: QueueMessageInput) =>
 			}
 
 			// Get the project for the workspace (to get worktree path)
-			const workspaceReposPage = ctx.repos.workspaceRepo.list(
+			const workspaceReposPage = await ctx.repos.workspaceRepo.list(
 				WorkspaceRepo.ByWorkspaceId(workspace.id),
 				{ limit: 1, sort: WorkspaceRepo.defaultSort },
 			);
 			const workspaceRepo = workspaceReposPage.items[0];
 			const project = workspaceRepo
-				? ctx.repos.project.get(Project.ById(workspaceRepo.projectId))
+				? await ctx.repos.project.get(Project.ById(workspaceRepo.projectId))
 				: null;
 
 			// Get resume info for continuing the Claude Code session
-			const resumeInfo = ctx.repos.codingAgentTurn.findLatestResumeInfo(
+			const resumeInfo = await ctx.repos.codingAgentTurn.findLatestResumeInfo(
 				input.sessionId,
 			);
 
 			// Find interrupted tools if resuming from a killed/failed EP
 			let interruptedTools: PendingToolUse[] = [];
 			if (resumeInfo && latestProcess && latestProcess.status !== "running") {
-				const logs = ctx.repos.executionProcessLogs.getLogs(latestProcess.id);
+				const logs = await ctx.repos.executionProcessLogs.getLogs(
+					latestProcess.id,
+				);
 				if (logs?.logs) {
 					interruptedTools = findPendingToolUses(logs.logs);
 				}
@@ -106,7 +112,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 			// Look up variant entity to get permissionMode and model
 			const executor = input.executor ?? "claude-code";
 			const variantEntity = input.variant
-				? ctx.repos.variant.get(
+				? await ctx.repos.variant.get(
 						Variant.ByExecutorAndName(executor, input.variant),
 					)
 				: null;
@@ -287,9 +293,11 @@ export interface GetQueueStatusResult {
 
 export const getQueueStatus = (input: GetQueueStatusInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Verify session exists
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,
@@ -319,9 +327,11 @@ export interface CancelQueueResult {
 
 export const cancelQueue = (input: CancelQueueInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Verify session exists
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,

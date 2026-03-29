@@ -8,16 +8,16 @@ export interface DeleteToolInput {
 
 export const deleteTool = (input: DeleteToolInput) =>
 	usecase({
-		read: (ctx) => {
-			const tool = ctx.repos.tool.get(Tool.ById(input.toolId));
+		read: async (ctx) => {
+			const tool = await ctx.repos.tool.get(Tool.ById(input.toolId));
 			if (!tool) {
 				return fail("NOT_FOUND", "Tool not found", { toolId: input.toolId });
 			}
 			return { tool };
 		},
 
-		write: (ctx, { tool }) => {
-			ctx.repos.tool.delete(Tool.ById(tool.id));
+		write: async (ctx, { tool }) => {
+			await ctx.repos.tool.delete(Tool.ById(tool.id));
 			return { success: true };
 		},
 	});

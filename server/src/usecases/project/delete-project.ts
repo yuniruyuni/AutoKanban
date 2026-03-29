@@ -16,8 +16,10 @@ export interface DeleteProjectInput {
 
 export const deleteProject = (input: DeleteProjectInput) =>
 	usecase({
-		read: (ctx) => {
-			const project = ctx.repos.project.get(Project.ById(input.projectId));
+		read: async (ctx) => {
+			const project = await ctx.repos.project.get(
+				Project.ById(input.projectId),
+			);
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
 					projectId: input.projectId,
@@ -25,7 +27,7 @@ export const deleteProject = (input: DeleteProjectInput) =>
 			}
 
 			// Collect all related entity IDs for cascade deletion
-			const tasks = ctx.repos.task.list(Task.ByProject(input.projectId), {
+			const tasks = await ctx.repos.task.list(Task.ByProject(input.projectId), {
 				limit: 10000,
 			});
 			const taskIds = tasks.items.map((t) => t.id);
@@ -35,19 +37,19 @@ export const deleteProject = (input: DeleteProjectInput) =>
 			const executionProcessIds: string[] = [];
 
 			for (const taskId of taskIds) {
-				const workspaces = ctx.repos.workspace.list(
+				const workspaces = await ctx.repos.workspace.list(
 					Workspace.ByTaskId(taskId),
 					{ limit: 10000 },
 				);
 				for (const ws of workspaces.items) {
 					workspaceIds.push(ws.id);
-					const sessions = ctx.repos.session.list(
+					const sessions = await ctx.repos.session.list(
 						Session.ByWorkspaceId(ws.id),
 						{ limit: 10000 },
 					);
 					for (const session of sessions.items) {
 						sessionIds.push(session.id);
-						const processes = ctx.repos.executionProcess.list(
+						const processes = await ctx.repos.executionProcess.list(
 							ExecutionProcess.BySessionId(session.id),
 							{ limit: 10000 },
 						);
@@ -67,7 +69,7 @@ export const deleteProject = (input: DeleteProjectInput) =>
 			};
 		},
 
-		write: (
+		write: async (
 			ctx,
 			{ project, taskIds, workspaceIds, sessionIds, executionProcessIds },
 		) => {
@@ -75,41 +77,43 @@ export const deleteProject = (input: DeleteProjectInput) =>
 
 			// 1. approvals & coding_agent_turns & execution_process_logs (depend on execution_processes)
 			for (const epId of executionProcessIds) {
-				ctx.repos.approval.delete(Approval.ByExecutionProcessId(epId));
-				ctx.repos.codingAgentTurn.delete(
+				await ctx.repos.approval.delete(Approval.ByExecutionProcessId(epId));
+				await ctx.repos.codingAgentTurn.delete(
 					CodingAgentTurn.ByExecutionProcessId(epId),
 				);
-				ctx.repos.executionProcessLogs.deleteLogs(epId);
+				await ctx.repos.executionProcessLogs.deleteLogs(epId);
 			}
 
 			// 2. execution_processes (depend on sessions)
 			for (const sessionId of sessionIds) {
-				ctx.repos.executionProcess.delete(
+				await ctx.repos.executionProcess.delete(
 					ExecutionProcess.BySessionId(sessionId),
 				);
 			}
 
 			// 3. sessions (depend on workspaces)
 			for (const wsId of workspaceIds) {
-				ctx.repos.session.delete(Session.ByWorkspaceId(wsId));
+				await ctx.repos.session.delete(Session.ByWorkspaceId(wsId));
 			}
 
 			// 4. workspace_repos (depend on workspaces and projects)
 			for (const wsId of workspaceIds) {
-				ctx.repos.workspaceRepo.delete(WorkspaceRepo.ByWorkspaceId(wsId));
+				await ctx.repos.workspaceRepo.delete(WorkspaceRepo.ByWorkspaceId(wsId));
 			}
-			ctx.repos.workspaceRepo.delete(WorkspaceRepo.ByProjectId(project.id));
+			await ctx.repos.workspaceRepo.delete(
+				WorkspaceRepo.ByProjectId(project.id),
+			);
 
 			// 5. workspaces (depend on tasks)
 			for (const taskId of taskIds) {
-				ctx.repos.workspace.delete(Workspace.ByTaskId(taskId));
+				await ctx.repos.workspace.delete(Workspace.ByTaskId(taskId));
 			}
 
 			// 6. tasks (depend on project)
-			ctx.repos.task.delete(Task.ByProject(project.id));
+			await ctx.repos.task.delete(Task.ByProject(project.id));
 
 			// 7. project
-			ctx.repos.project.delete(Project.ById(project.id));
+			await ctx.repos.project.delete(Project.ById(project.id));
 
 			return { deleted: true, projectId: project.id, workspaceIds, project };
 		},

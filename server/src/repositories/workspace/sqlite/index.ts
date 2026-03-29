@@ -12,30 +12,30 @@ import { upsert } from "./upsert";
 export class WorkspaceRepository implements IWorkspaceRepository {
 	constructor(private db: Database) {}
 
-	get(spec: Workspace.Spec): Workspace | null {
+	async get(spec: Workspace.Spec): Promise<Workspace | null> {
 		return get(this.db, spec);
 	}
 
-	list(
+	async list(
 		spec: Workspace.Spec,
 		cursor: Cursor<Workspace.SortKey>,
-	): Page<Workspace> {
+	): Promise<Page<Workspace>> {
 		return list(this.db, spec, cursor);
 	}
 
-	findByWorktreePath(worktreePath: string): Workspace | null {
+	async findByWorktreePath(worktreePath: string): Promise<Workspace | null> {
 		return findByWorktreePath(this.db, worktreePath);
 	}
 
-	getMaxAttempt(taskId: string): number {
+	async getMaxAttempt(taskId: string): Promise<number> {
 		return getMaxAttempt(this.db, taskId);
 	}
 
-	upsert(workspace: Workspace): void {
+	async upsert(workspace: Workspace): Promise<void> {
 		upsert(this.db, workspace);
 	}
 
-	delete(spec: Workspace.Spec): number {
+	async delete(spec: Workspace.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 }

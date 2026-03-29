@@ -10,19 +10,22 @@ import { upsert } from "./upsert";
 export class SessionRepository implements ISessionRepository {
 	constructor(private db: Database) {}
 
-	get(spec: Session.Spec): Session | null {
+	async get(spec: Session.Spec): Promise<Session | null> {
 		return get(this.db, spec);
 	}
 
-	list(spec: Session.Spec, cursor: Cursor<Session.SortKey>): Page<Session> {
+	async list(
+		spec: Session.Spec,
+		cursor: Cursor<Session.SortKey>,
+	): Promise<Page<Session>> {
 		return list(this.db, spec, cursor);
 	}
 
-	upsert(session: Session): void {
+	async upsert(session: Session): Promise<void> {
 		upsert(this.db, session);
 	}
 
-	delete(spec: Session.Spec): number {
+	async delete(spec: Session.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 }

@@ -9,8 +9,10 @@ export interface SaveDraftInput {
 
 export const saveDraft = (input: SaveDraftInput) =>
 	usecase({
-		read: (ctx) => {
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+		read: async (ctx) => {
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,
@@ -31,8 +33,10 @@ export interface GetDraftInput {
 
 export const getDraft = (input: GetDraftInput) =>
 	usecase({
-		read: (ctx) => {
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+		read: async (ctx) => {
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,

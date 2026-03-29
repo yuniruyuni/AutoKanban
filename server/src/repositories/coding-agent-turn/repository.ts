@@ -5,24 +5,26 @@ import type {
 import type { Cursor, Page } from "../../models/common";
 
 export interface ICodingAgentTurnRepository {
-	get(spec: CodingAgentTurn.Spec): CodingAgentTurn | null;
+	get(spec: CodingAgentTurn.Spec): Promise<CodingAgentTurn | null>;
 	list(
 		spec: CodingAgentTurn.Spec,
 		cursor: Cursor<CodingAgentTurn.SortKey>,
-	): Page<CodingAgentTurn>;
-	upsert(turn: CodingAgentTurn): void;
-	delete(spec: CodingAgentTurn.Spec): number;
+	): Promise<Page<CodingAgentTurn>>;
+	upsert(turn: CodingAgentTurn): Promise<void>;
+	delete(spec: CodingAgentTurn.Spec): Promise<number>;
 	updateAgentSessionId(
 		executionProcessId: string,
 		agentSessionId: string,
-	): void;
+	): Promise<void>;
 	updateAgentMessageId(
 		executionProcessId: string,
 		agentMessageId: string,
-	): void;
-	updateSummary(executionProcessId: string, summary: string): void;
-	findLatestResumeInfo(sessionId: string): CodingAgentResumeInfo | null;
+	): Promise<void>;
+	updateSummary(executionProcessId: string, summary: string): Promise<void>;
+	findLatestResumeInfo(
+		sessionId: string,
+	): Promise<CodingAgentResumeInfo | null>;
 	findLatestResumeInfoByWorkspaceId(
 		workspaceId: string,
-	): CodingAgentResumeInfo | null;
+	): Promise<CodingAgentResumeInfo | null>;
 }

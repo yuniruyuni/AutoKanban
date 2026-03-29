@@ -28,8 +28,10 @@ export interface ForkConversationResult {
  */
 export const forkConversation = (input: ForkConversationInput) =>
 	usecase({
-		read: (ctx) => {
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+		read: async (ctx) => {
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,
@@ -37,7 +39,7 @@ export const forkConversation = (input: ForkConversationInput) =>
 			}
 
 			// Get the latest execution process
-			const executionProcessPage = ctx.repos.executionProcess.list(
+			const executionProcessPage = await ctx.repos.executionProcess.list(
 				ExecutionProcess.BySessionId(input.sessionId),
 				{ limit: 1, sort: ExecutionProcess.defaultSort },
 			);
@@ -56,7 +58,7 @@ export const forkConversation = (input: ForkConversationInput) =>
 			}
 
 			// Get resume info from CodingAgentTurn
-			const resumeInfo = ctx.repos.codingAgentTurn?.findLatestResumeInfo(
+			const resumeInfo = await ctx.repos.codingAgentTurn?.findLatestResumeInfo(
 				input.sessionId,
 			);
 			if (!resumeInfo?.agentSessionId) {
@@ -80,7 +82,7 @@ export const forkConversation = (input: ForkConversationInput) =>
 
 		post: async (ctx, { session, agentSessionId, messageUuid, prompt }) => {
 			// Get workspace to find working directory
-			const workspace = ctx.repos.workspace.get(
+			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(session.workspaceId),
 			);
 

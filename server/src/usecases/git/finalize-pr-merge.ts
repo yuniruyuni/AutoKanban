@@ -12,19 +12,21 @@ export interface FinalizePrMergeInput {
 export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 	usecase({
 		read: async (ctx) => {
-			const workspace = ctx.repos.workspace.get(
+			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(input.workspaceId),
 			);
 			if (!workspace) {
 				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
 			}
 
-			const project = ctx.repos.project.get(Project.ById(input.projectId));
+			const project = await ctx.repos.project.get(
+				Project.ById(input.projectId),
+			);
 			if (!project) {
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
-			const task = ctx.repos.task.get(Task.ById(workspace.taskId));
+			const task = await ctx.repos.task.get(Task.ById(workspace.taskId));
 			if (!task) {
 				return fail("NOT_FOUND", `Task not found: ${workspace.taskId}`);
 			}
@@ -34,9 +36,12 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 				return { workspace, project, task, alreadyDone: true as const };
 			}
 
-			const workspaceRepo = ctx.repos.workspaceRepo
-				.listByWorkspace(workspace.id)
-				.find((wr) => wr.projectId === input.projectId);
+			const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
+				workspace.id,
+			);
+			const workspaceRepo = workspaceRepos.find(
+				(wr) => wr.projectId === input.projectId,
+			);
 
 			if (!workspaceRepo?.prUrl) {
 				return fail("VALIDATION", "No PR URL found for this workspace repo");
@@ -73,7 +78,11 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 			await ctx.repos.git.pullBranch(project.repoPath, targetBranch);
 
 			// Mark task as done
-			ctx.repos.task.upsert({ ...task, status: "done", updatedAt: ctx.now });
+			await ctx.repos.task.upsert({
+				...task,
+				status: "done",
+				updatedAt: ctx.now,
+			});
 
 			// Remove worktree
 			await ctx.repos.worktree.removeWorktree(data.workspace.id, project);

@@ -191,11 +191,11 @@ export interface IApprovalStore {
 		status: "approved" | "denied",
 		reason: string | null,
 		repo: IApprovalRepository,
-	): boolean;
+	): Promise<boolean>;
 	getRespondedStatus(
 		approvalId: string,
 		repo: IApprovalRepository,
-	): { status: Approval.Status; reason: string | null } | null;
+	): Promise<{ status: Approval.Status; reason: string | null } | null>;
 	hasPending(executionProcessId: string): boolean;
 	listPending(executionProcessId: string): Approval[];
 	clear(): void;

@@ -12,9 +12,9 @@ export interface StartDevServerInput {
 
 export const startDevServer = (input: StartDevServerInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Get task
-			const task = ctx.repos.task.get(Task.ById(input.taskId));
+			const task = await ctx.repos.task.get(Task.ById(input.taskId));
 			if (!task) {
 				return fail("NOT_FOUND", "Task not found", {
 					taskId: input.taskId,
@@ -22,7 +22,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 			}
 
 			// Get project
-			const project = ctx.repos.project.get(Project.ById(task.projectId));
+			const project = await ctx.repos.project.get(Project.ById(task.projectId));
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
 					projectId: task.projectId,
@@ -34,7 +34,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 			}
 
 			// Find active workspace
-			const workspace = ctx.repos.workspace.get(
+			const workspace = await ctx.repos.workspace.get(
 				Workspace.ByTaskIdActive(input.taskId),
 			);
 			if (!workspace) {
@@ -54,7 +54,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 			);
 
 			// Find latest session
-			const sessionPage = ctx.repos.session.list(
+			const sessionPage = await ctx.repos.session.list(
 				Session.ByWorkspaceId(workspace.id),
 				{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 			);
@@ -64,7 +64,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 			const session = sessionPage.items[0];
 
 			// Check for existing running dev server in this session
-			const existingPage = ctx.repos.executionProcess.list(
+			const existingPage = await ctx.repos.executionProcess.list(
 				ExecutionProcess.BySessionId(session.id)
 					.and(ExecutionProcess.ByRunReason("devserver"))
 					.and(ExecutionProcess.ByStatus("running")),
@@ -96,9 +96,9 @@ export const startDevServer = (input: StartDevServerInput) =>
 			return { ...data, executionProcess: ep };
 		},
 
-		write: (ctx, data) => {
+		write: async (ctx, data) => {
 			if (data.alreadyRunning) return data;
-			ctx.repos.executionProcess.upsert(data.executionProcess);
+			await ctx.repos.executionProcess.upsert(data.executionProcess);
 			return data;
 		},
 

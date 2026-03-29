@@ -4,11 +4,11 @@ export function createMockWorkspaceRepoRepository(
 	overrides: Partial<IWorkspaceRepoRepository> = {},
 ): IWorkspaceRepoRepository {
 	return {
-		get: () => null,
-		list: () => ({ items: [], hasMore: false }),
-		listByWorkspace: () => [],
-		upsert: () => {},
-		delete: () => 0,
+		get: async () => null,
+		list: async () => ({ items: [], hasMore: false }),
+		listByWorkspace: async () => [],
+		upsert: async () => {},
+		delete: async () => 0,
 		...overrides,
 	} as IWorkspaceRepoRepository;
 }

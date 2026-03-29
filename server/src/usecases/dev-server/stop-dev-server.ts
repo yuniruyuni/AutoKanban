@@ -8,8 +8,8 @@ export interface StopDevServerInput {
 
 export const stopDevServer = (input: StopDevServerInput) =>
 	usecase({
-		read: (ctx) => {
-			const ep = ctx.repos.executionProcess.get(
+		read: async (ctx) => {
+			const ep = await ctx.repos.executionProcess.get(
 				ExecutionProcess.ById(input.executionProcessId),
 			);
 			if (!ep) {
@@ -24,13 +24,13 @@ export const stopDevServer = (input: StopDevServerInput) =>
 			return { executionProcess: ep };
 		},
 
-		write: (ctx, { executionProcess }) => {
+		write: async (ctx, { executionProcess }) => {
 			const updated = ExecutionProcess.complete(
 				executionProcess,
 				"killed",
 				null,
 			);
-			ctx.repos.executionProcess.upsert(updated);
+			await ctx.repos.executionProcess.upsert(updated);
 			return { executionProcess: updated };
 		},
 

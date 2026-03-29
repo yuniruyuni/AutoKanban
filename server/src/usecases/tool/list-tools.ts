@@ -2,8 +2,8 @@ import { usecase } from "../runner";
 
 export const listTools = () =>
 	usecase({
-		read: (ctx) => {
-			const tools = ctx.repos.tool.listAll();
+		read: async (ctx) => {
+			const tools = await ctx.repos.tool.listAll();
 			return { items: tools };
 		},
 	});

@@ -13,8 +13,8 @@ export interface UpdateToolInput {
 
 export const updateTool = (input: UpdateToolInput) =>
 	usecase({
-		read: (ctx) => {
-			const tool = ctx.repos.tool.get(Tool.ById(input.toolId));
+		read: async (ctx) => {
+			const tool = await ctx.repos.tool.get(Tool.ById(input.toolId));
 			if (!tool) {
 				return fail("NOT_FOUND", "Tool not found", { toolId: input.toolId });
 			}
@@ -34,8 +34,8 @@ export const updateTool = (input: UpdateToolInput) =>
 			return { tool: updatedTool };
 		},
 
-		write: (ctx, { tool }) => {
-			ctx.repos.tool.upsert(tool);
+		write: async (ctx, { tool }) => {
+			await ctx.repos.tool.upsert(tool);
 			return tool;
 		},
 	});

@@ -13,8 +13,8 @@ export interface UpdateTaskInput {
 
 export const updateTask = (input: UpdateTaskInput) =>
 	usecase({
-		read: (ctx) => {
-			const task = ctx.repos.task.get(Task.ById(input.taskId));
+		read: async (ctx) => {
+			const task = await ctx.repos.task.get(Task.ById(input.taskId));
 			if (!task) {
 				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
 			}
@@ -26,9 +26,9 @@ export const updateTask = (input: UpdateTaskInput) =>
 			let project: Project | null = null;
 
 			if (needsChatReset) {
-				project = ctx.repos.project.get(Project.ById(task.projectId));
+				project = await ctx.repos.project.get(Project.ById(task.projectId));
 
-				const workspaces = ctx.repos.workspace.list(
+				const workspaces = await ctx.repos.workspace.list(
 					Workspace.ByTaskId(task.id),
 					{ limit: 10000 },
 				);
@@ -75,18 +75,18 @@ export const updateTask = (input: UpdateTaskInput) =>
 			return { task: updated, ...rest };
 		},
 
-		write: (ctx, { task, needsChatReset, workspaceIds, project }) => {
-			ctx.repos.task.upsert(task);
+		write: async (ctx, { task, needsChatReset, workspaceIds, project }) => {
+			await ctx.repos.task.upsert(task);
 
 			if (needsChatReset) {
 				// Archive active workspaces instead of deleting them (preserve history)
-				const workspaces = ctx.repos.workspace.list(
+				const workspaces = await ctx.repos.workspace.list(
 					Workspace.ByTaskId(task.id),
 					{ limit: 10000 },
 				);
 				for (const ws of workspaces.items) {
 					if (!ws.archived) {
-						ctx.repos.workspace.upsert({
+						await ctx.repos.workspace.upsert({
 							...ws,
 							archived: true,
 							updatedAt: ctx.now,

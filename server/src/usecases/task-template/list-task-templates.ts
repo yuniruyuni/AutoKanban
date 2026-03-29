@@ -2,7 +2,7 @@ import { usecase } from "../runner";
 
 export const listTaskTemplates = () =>
 	usecase({
-		read: (ctx) => {
-			return { templates: ctx.repos.taskTemplate.listAll() };
+		read: async (ctx) => {
+			return { templates: await ctx.repos.taskTemplate.listAll() };
 		},
 	});

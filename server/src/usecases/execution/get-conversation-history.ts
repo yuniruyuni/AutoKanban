@@ -28,9 +28,11 @@ export interface GetConversationHistoryResult {
  */
 export const getConversationHistory = (input: GetConversationHistoryInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Verify session exists
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,
@@ -43,7 +45,7 @@ export const getConversationHistory = (input: GetConversationHistoryInput) =>
 			let cursor: Record<string, string> | undefined;
 
 			while (hasMore) {
-				const page = ctx.repos.executionProcess.list(
+				const page = await ctx.repos.executionProcess.list(
 					ExecutionProcess.BySessionId(input.sessionId),
 					{
 						limit: 100,
@@ -66,7 +68,7 @@ export const getConversationHistory = (input: GetConversationHistoryInput) =>
 					continue;
 				}
 
-				const turn = ctx.repos.codingAgentTurn.get(
+				const turn = await ctx.repos.codingAgentTurn.get(
 					CodingAgentTurn.ByExecutionProcessId(process.id),
 				);
 

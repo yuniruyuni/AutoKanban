@@ -10,19 +10,22 @@ import { upsert } from "./upsert";
 export class ApprovalRepository implements IApprovalRepository {
 	constructor(private db: Database) {}
 
-	get(spec: Approval.Spec): Approval | null {
+	async get(spec: Approval.Spec): Promise<Approval | null> {
 		return get(this.db, spec);
 	}
 
-	list(spec: Approval.Spec, cursor: Cursor<Approval.SortKey>): Page<Approval> {
+	async list(
+		spec: Approval.Spec,
+		cursor: Cursor<Approval.SortKey>,
+	): Promise<Page<Approval>> {
 		return list(this.db, spec, cursor);
 	}
 
-	upsert(approval: Approval): void {
+	async upsert(approval: Approval): Promise<void> {
 		upsert(this.db, approval);
 	}
 
-	delete(spec: Approval.Spec): number {
+	async delete(spec: Approval.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 }

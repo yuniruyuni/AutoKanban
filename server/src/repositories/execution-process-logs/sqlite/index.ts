@@ -11,19 +11,21 @@ export class ExecutionProcessLogsRepository
 {
 	constructor(private db: Database) {}
 
-	getLogs(executionProcessId: string): ExecutionProcessLogs | null {
+	async getLogs(
+		executionProcessId: string,
+	): Promise<ExecutionProcessLogs | null> {
 		return getLogs(this.db, executionProcessId);
 	}
 
-	upsertLogs(logs: ExecutionProcessLogs): void {
+	async upsertLogs(logs: ExecutionProcessLogs): Promise<void> {
 		upsertLogs(this.db, logs);
 	}
 
-	appendLogs(executionProcessId: string, newLogs: string): void {
+	async appendLogs(executionProcessId: string, newLogs: string): Promise<void> {
 		appendLogs(this.db, executionProcessId, newLogs);
 	}
 
-	deleteLogs(executionProcessId: string): void {
+	async deleteLogs(executionProcessId: string): Promise<void> {
 		deleteLogs(this.db, executionProcessId);
 	}
 }

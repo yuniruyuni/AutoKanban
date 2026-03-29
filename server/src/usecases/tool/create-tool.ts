@@ -22,8 +22,8 @@ export const createTool = (input: CreateToolInput) =>
 			return { tool };
 		},
 
-		write: (ctx, { tool }) => {
-			ctx.repos.tool.upsert(tool);
+		write: async (ctx, { tool }) => {
+			await ctx.repos.tool.upsert(tool);
 			return tool;
 		},
 	});

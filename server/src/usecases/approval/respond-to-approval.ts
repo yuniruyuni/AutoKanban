@@ -23,9 +23,11 @@ export interface RespondToApprovalResult {
  */
 export const respondToApproval = (input: RespondToApprovalInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Verify approval exists
-			const approval = ctx.repos.approval.get(Approval.ById(input.approvalId));
+			const approval = await ctx.repos.approval.get(
+				Approval.ById(input.approvalId),
+			);
 			if (!approval) {
 				return fail("NOT_FOUND", "Approval not found", {
 					approvalId: input.approvalId,
@@ -54,7 +56,7 @@ export const respondToApproval = (input: RespondToApprovalInput) =>
 		},
 
 		post: async (ctx, { approval }) => {
-			const success = ctx.repos.approvalStore.respond(
+			const success = await ctx.repos.approvalStore.respond(
 				approval.id,
 				input.status,
 				input.reason ?? null,
@@ -80,7 +82,7 @@ export interface GetPendingApprovalsInput {
  */
 export const getPendingApprovals = (input: GetPendingApprovalsInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// First check in-memory store (normal flow)
 			const inMemory = ctx.repos.approvalStore.listPending(
 				input.executionProcessId,
@@ -93,7 +95,7 @@ export const getPendingApprovals = (input: GetPendingApprovalsInput) =>
 			const spec = Approval.ByExecutionProcessId(input.executionProcessId).and(
 				Approval.ByStatus("pending"),
 			);
-			const page = ctx.repos.approval.list(spec, { limit: 100 });
+			const page = await ctx.repos.approval.list(spec, { limit: 100 });
 			return { approvals: page.items };
 		},
 

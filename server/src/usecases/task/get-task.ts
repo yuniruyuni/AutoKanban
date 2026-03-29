@@ -8,8 +8,8 @@ export interface GetTaskInput {
 
 export const getTask = (input: GetTaskInput) =>
 	usecase({
-		read: (ctx) => {
-			const task = ctx.repos.task.get(Task.ById(input.taskId));
+		read: async (ctx) => {
+			const task = await ctx.repos.task.get(Task.ById(input.taskId));
 			if (!task) {
 				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
 			}

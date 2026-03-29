@@ -20,9 +20,9 @@ export interface GetStructuredLogsResult {
  */
 export const getStructuredLogs = (input: GetStructuredLogsInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Verify execution process exists
-			const executionProcess = ctx.repos.executionProcess.get(
+			const executionProcess = await ctx.repos.executionProcess.get(
 				ExecutionProcess.ById(input.executionProcessId),
 			);
 
@@ -33,7 +33,7 @@ export const getStructuredLogs = (input: GetStructuredLogsInput) =>
 			}
 
 			// Get logs
-			const logs = ctx.repos.executionProcessLogs.getLogs(
+			const logs = await ctx.repos.executionProcessLogs.getLogs(
 				input.executionProcessId,
 			);
 			if (!logs?.logs) {

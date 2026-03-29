@@ -8,9 +8,9 @@ export interface StopExecutionInput {
 
 export const stopExecution = (input: StopExecutionInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Verify execution process exists
-			const executionProcess = ctx.repos.executionProcess.get(
+			const executionProcess = await ctx.repos.executionProcess.get(
 				ExecutionProcess.ById(input.executionProcessId),
 			);
 

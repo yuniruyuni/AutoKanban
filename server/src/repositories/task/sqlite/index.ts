@@ -11,23 +11,26 @@ import { upsert } from "./upsert";
 export class TaskRepository implements ITaskRepository {
 	constructor(private db: Database) {}
 
-	get(spec: Task.Spec): Task | null {
+	async get(spec: Task.Spec): Promise<Task | null> {
 		return get(this.db, spec);
 	}
 
-	list(spec: Task.Spec, cursor: Cursor<Task.SortKey>): Page<Task> {
+	async list(
+		spec: Task.Spec,
+		cursor: Cursor<Task.SortKey>,
+	): Promise<Page<Task>> {
 		return list(this.db, spec, cursor);
 	}
 
-	upsert(task: Task): void {
+	async upsert(task: Task): Promise<void> {
 		upsert(this.db, task);
 	}
 
-	delete(spec: Task.Spec): number {
+	async delete(spec: Task.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 
-	count(spec: Task.Spec): number {
+	async count(spec: Task.Spec): Promise<number> {
 		return count(this.db, spec);
 	}
 }

@@ -14,7 +14,9 @@ export interface Branch {
 export const listBranches = (input: ListBranchesInput) =>
 	usecase({
 		read: async (ctx) => {
-			const project = ctx.repos.project.get(Project.ById(input.projectId));
+			const project = await ctx.repos.project.get(
+				Project.ById(input.projectId),
+			);
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found");
 			}

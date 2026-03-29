@@ -7,8 +7,8 @@ export interface GetDevServerInput {
 
 export const getDevServer = (input: GetDevServerInput) =>
 	usecase({
-		read: (ctx) => {
-			const page = ctx.repos.executionProcess.list(
+		read: async (ctx) => {
+			const page = await ctx.repos.executionProcess.list(
 				ExecutionProcess.BySessionId(input.sessionId).and(
 					ExecutionProcess.ByRunReason("devserver"),
 				),

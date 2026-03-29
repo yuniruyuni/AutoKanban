@@ -16,8 +16,8 @@ export interface WorkspaceContext {
 
 export const findWorkspaceByPath = (input: FindWorkspaceByPathInput) =>
 	usecase({
-		read: (ctx): WorkspaceContext | Fail => {
-			const workspace = ctx.repos.workspace.findByWorktreePath(
+		read: async (ctx): Promise<WorkspaceContext | Fail> => {
+			const workspace = await ctx.repos.workspace.findByWorktreePath(
 				input.worktreePath,
 			);
 			if (!workspace) {
@@ -26,14 +26,14 @@ export const findWorkspaceByPath = (input: FindWorkspaceByPathInput) =>
 				});
 			}
 
-			const task = ctx.repos.task.get(Task.ById(workspace.taskId));
+			const task = await ctx.repos.task.get(Task.ById(workspace.taskId));
 			if (!task) {
 				return fail("NOT_FOUND", "Task not found for workspace", {
 					taskId: workspace.taskId,
 				});
 			}
 
-			const project = ctx.repos.project.get(Project.ById(task.projectId));
+			const project = await ctx.repos.project.get(Project.ById(task.projectId));
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found for task", {
 					projectId: task.projectId,

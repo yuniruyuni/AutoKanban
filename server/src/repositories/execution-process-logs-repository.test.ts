@@ -9,11 +9,11 @@ let db: Database;
 let logsRepo: ExecutionProcessLogsRepository;
 let EXECUTION_PROCESS_ID: string;
 
-beforeEach(() => {
+beforeEach(async () => {
 	db = createTestDB();
 	logsRepo = new ExecutionProcessLogsRepository(db);
 
-	const seed = seedFullChain(db);
+	const seed = await seedFullChain(db);
 	EXECUTION_PROCESS_ID = seed.executionProcess.id;
 });
 
@@ -26,27 +26,27 @@ afterEach(() => {
 // ============================================
 
 describe("ExecutionProcessLogsRepository round-trip", () => {
-	test("upsertLogs and getLogs preserves data", () => {
+	test("upsertLogs and getLogs preserves data", async () => {
 		const logs = createTestExecutionProcessLogs({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			logs: "line1\nline2\nline3",
 		});
-		logsRepo.upsertLogs(logs);
+		await logsRepo.upsertLogs(logs);
 
-		const retrieved = logsRepo.getLogs(EXECUTION_PROCESS_ID);
+		const retrieved = await logsRepo.getLogs(EXECUTION_PROCESS_ID);
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.executionProcessId).toBe(EXECUTION_PROCESS_ID);
 		expect(retrieved?.logs).toBe("line1\nline2\nline3");
 	});
 
-	test("preserves empty string logs", () => {
+	test("preserves empty string logs", async () => {
 		const logs = createTestExecutionProcessLogs({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			logs: "",
 		});
-		logsRepo.upsertLogs(logs);
+		await logsRepo.upsertLogs(logs);
 
-		const retrieved = logsRepo.getLogs(EXECUTION_PROCESS_ID);
+		const retrieved = await logsRepo.getLogs(EXECUTION_PROCESS_ID);
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.logs).toBe("");
 	});
@@ -57,22 +57,22 @@ describe("ExecutionProcessLogsRepository round-trip", () => {
 // ============================================
 
 describe("ExecutionProcessLogsRepository update round-trip", () => {
-	test("upsertLogs overwrites existing logs", () => {
-		logsRepo.upsertLogs(
+	test("upsertLogs overwrites existing logs", async () => {
+		await logsRepo.upsertLogs(
 			createTestExecutionProcessLogs({
 				executionProcessId: EXECUTION_PROCESS_ID,
 				logs: "original",
 			}),
 		);
 
-		logsRepo.upsertLogs(
+		await logsRepo.upsertLogs(
 			createTestExecutionProcessLogs({
 				executionProcessId: EXECUTION_PROCESS_ID,
 				logs: "replaced",
 			}),
 		);
 
-		const retrieved = logsRepo.getLogs(EXECUTION_PROCESS_ID);
+		const retrieved = await logsRepo.getLogs(EXECUTION_PROCESS_ID);
 		expect(retrieved?.logs).toBe("replaced");
 	});
 });
@@ -82,8 +82,8 @@ describe("ExecutionProcessLogsRepository update round-trip", () => {
 // ============================================
 
 describe("ExecutionProcessLogsRepository empty collection", () => {
-	test("getLogs returns null for non-existent id", () => {
-		expect(logsRepo.getLogs("non-existent")).toBeNull();
+	test("getLogs returns null for non-existent id", async () => {
+		expect(await logsRepo.getLogs("non-existent")).toBeNull();
 	});
 });
 
@@ -92,34 +92,34 @@ describe("ExecutionProcessLogsRepository empty collection", () => {
 // ============================================
 
 describe("ExecutionProcessLogsRepository appendLogs", () => {
-	test("appends to existing logs", () => {
-		logsRepo.upsertLogs(
+	test("appends to existing logs", async () => {
+		await logsRepo.upsertLogs(
 			createTestExecutionProcessLogs({
 				executionProcessId: EXECUTION_PROCESS_ID,
 				logs: "first",
 			}),
 		);
 
-		logsRepo.appendLogs(EXECUTION_PROCESS_ID, "-second");
+		await logsRepo.appendLogs(EXECUTION_PROCESS_ID, "-second");
 
-		const retrieved = logsRepo.getLogs(EXECUTION_PROCESS_ID);
+		const retrieved = await logsRepo.getLogs(EXECUTION_PROCESS_ID);
 		expect(retrieved?.logs).toBe("first-second");
 	});
 
-	test("appends to empty table (INSERT side)", () => {
-		logsRepo.appendLogs(EXECUTION_PROCESS_ID, "initial-logs");
+	test("appends to empty table (INSERT side)", async () => {
+		await logsRepo.appendLogs(EXECUTION_PROCESS_ID, "initial-logs");
 
-		const retrieved = logsRepo.getLogs(EXECUTION_PROCESS_ID);
+		const retrieved = await logsRepo.getLogs(EXECUTION_PROCESS_ID);
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.logs).toBe("initial-logs");
 	});
 
-	test("multiple appends concatenate correctly", () => {
-		logsRepo.appendLogs(EXECUTION_PROCESS_ID, "A");
-		logsRepo.appendLogs(EXECUTION_PROCESS_ID, "B");
-		logsRepo.appendLogs(EXECUTION_PROCESS_ID, "C");
+	test("multiple appends concatenate correctly", async () => {
+		await logsRepo.appendLogs(EXECUTION_PROCESS_ID, "A");
+		await logsRepo.appendLogs(EXECUTION_PROCESS_ID, "B");
+		await logsRepo.appendLogs(EXECUTION_PROCESS_ID, "C");
 
-		const retrieved = logsRepo.getLogs(EXECUTION_PROCESS_ID);
+		const retrieved = await logsRepo.getLogs(EXECUTION_PROCESS_ID);
 		expect(retrieved?.logs).toBe("ABC");
 	});
 });

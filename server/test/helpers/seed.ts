@@ -29,7 +29,7 @@ export interface SeedResult {
  * Build the full FK dependency chain in the DB and return all created entities.
  * projects → tasks → workspaces → sessions → execution_processes
  */
-export function seedFullChain(db: Database): SeedResult {
+export async function seedFullChain(db: Database): Promise<SeedResult> {
 	const project = createTestProject();
 	const task = createTestTask({ projectId: project.id });
 	const workspace = createTestWorkspace({ taskId: task.id });
@@ -38,11 +38,11 @@ export function seedFullChain(db: Database): SeedResult {
 		sessionId: session.id,
 	});
 
-	new ProjectRepository(db).upsert(project);
-	new TaskRepository(db).upsert(task);
-	new WorkspaceRepository(db).upsert(workspace);
-	new SessionRepository(db).upsert(session);
-	new ExecutionProcessRepository(db).upsert(executionProcess);
+	await new ProjectRepository(db).upsert(project);
+	await new TaskRepository(db).upsert(task);
+	await new WorkspaceRepository(db).upsert(workspace);
+	await new SessionRepository(db).upsert(session);
+	await new ExecutionProcessRepository(db).upsert(executionProcess);
 
 	return { project, task, workspace, session, executionProcess };
 }

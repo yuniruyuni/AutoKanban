@@ -8,8 +8,8 @@ export interface GetProjectInput {
 
 export const getProject = (input: GetProjectInput) =>
 	usecase({
-		read: (ctx): ProjectWithStats | Fail => {
-			const project = ctx.repos.project.getWithStats(input.projectId);
+		read: async (ctx): Promise<ProjectWithStats | Fail> => {
+			const project = await ctx.repos.project.getWithStats(input.projectId);
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
 					projectId: input.projectId,

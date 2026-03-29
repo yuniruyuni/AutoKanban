@@ -13,31 +13,34 @@ import { upsert } from "./upsert";
 export class ProjectRepository implements IProjectRepository {
 	constructor(private db: Database) {}
 
-	get(spec: Project.Spec): Project | null {
+	async get(spec: Project.Spec): Promise<Project | null> {
 		return get(this.db, spec);
 	}
 
-	list(spec: Project.Spec, cursor: Cursor<Project.SortKey>): Page<Project> {
+	async list(
+		spec: Project.Spec,
+		cursor: Cursor<Project.SortKey>,
+	): Promise<Page<Project>> {
 		return list(this.db, spec, cursor);
 	}
 
-	listAll(): Project[] {
+	async listAll(): Promise<Project[]> {
 		return listAll(this.db);
 	}
 
-	listAllWithStats(): ProjectWithStats[] {
+	async listAllWithStats(): Promise<ProjectWithStats[]> {
 		return listAllWithStats(this.db);
 	}
 
-	getWithStats(projectId: string): ProjectWithStats | null {
+	async getWithStats(projectId: string): Promise<ProjectWithStats | null> {
 		return getWithStats(this.db, projectId);
 	}
 
-	upsert(project: Project): void {
+	async upsert(project: Project): Promise<void> {
 		upsert(this.db, project);
 	}
 
-	delete(spec: Project.Spec): number {
+	async delete(spec: Project.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 }

@@ -49,22 +49,24 @@ export function setupQueueProcessor(deps: QueueProcessorDependencies): void {
 	const logger = parentLogger.child("QueueProcessor");
 
 	// Helper to move a task associated with a session to In Review
-	const moveTaskToInReview = (sessionId: string) => {
+	const moveTaskToInReview = async (sessionId: string) => {
 		try {
-			const session = sessionRepo.get(Session.ById(sessionId));
+			const session = await sessionRepo.get(Session.ById(sessionId));
 			if (!session) return;
 
-			const workspace = workspaceRepo.get(Workspace.ById(session.workspaceId));
+			const workspace = await workspaceRepo.get(
+				Workspace.ById(session.workspaceId),
+			);
 			if (!workspace?.taskId) return;
 
-			const task = taskRepo.get(Task.ById(workspace.taskId));
+			const task = await taskRepo.get(Task.ById(workspace.taskId));
 			if (!task) return;
 
 			// Only move to In Review if currently In Progress
 			if (task.status !== "inprogress") return;
 
 			const now = new Date();
-			taskRepo.upsert({
+			await taskRepo.upsert({
 				...task,
 				status: "inreview",
 				updatedAt: now,
@@ -108,39 +110,41 @@ export function setupQueueProcessor(deps: QueueProcessorDependencies): void {
 		}
 
 		// No queued message - move task to In Review
-		moveTaskToInReview(info.sessionId);
+		await moveTaskToInReview(info.sessionId);
 	});
 
 	executor.onProcessComplete(async (info: ProcessCompletionInfo) => {
 		// For failed/killed processes, move task to In Review
 		if (info.status !== "completed") {
-			moveTaskToInReview(info.sessionId);
+			await moveTaskToInReview(info.sessionId);
 			return;
 		}
 
 		// Check if there's a queued message for this session
 		const queuedMessage = messageQueue.consume(info.sessionId);
 		if (!queuedMessage) {
-			moveTaskToInReview(info.sessionId);
+			await moveTaskToInReview(info.sessionId);
 			return;
 		}
 
 		try {
 			// Get session and workspace info for the follow-up
-			const session = sessionRepo.get(Session.ById(info.sessionId));
+			const session = await sessionRepo.get(Session.ById(info.sessionId));
 			if (!session) return;
 
-			const workspace = workspaceRepo.get(Workspace.ById(session.workspaceId));
+			const workspace = await workspaceRepo.get(
+				Workspace.ById(session.workspaceId),
+			);
 			if (!workspace) return;
 
 			// Determine working directory
-			const workspaceReposPage = workspaceRepoRepo.list(
+			const workspaceReposPage = await workspaceRepoRepo.list(
 				WorkspaceRepo.ByWorkspaceId(workspace.id),
 				{ limit: 1, sort: WorkspaceRepo.defaultSort },
 			);
 			const workspaceRepo_ = workspaceReposPage.items[0];
 			const project = workspaceRepo_
-				? projectRepo.get(Project.ById(workspaceRepo_.projectId))
+				? await projectRepo.get(Project.ById(workspaceRepo_.projectId))
 				: null;
 
 			let workingDir: string;

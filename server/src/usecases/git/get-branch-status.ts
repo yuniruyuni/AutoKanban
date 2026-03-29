@@ -11,14 +11,16 @@ export interface GetBranchStatusInput {
 export const getBranchStatus = (input: GetBranchStatusInput) =>
 	usecase({
 		read: async (ctx) => {
-			const workspace = ctx.repos.workspace.get(
+			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(input.workspaceId),
 			);
 			if (!workspace) {
 				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
 			}
 
-			const project = ctx.repos.project.get(Project.ById(input.projectId));
+			const project = await ctx.repos.project.get(
+				Project.ById(input.projectId),
+			);
 			if (!project) {
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
@@ -39,9 +41,12 @@ export const getBranchStatus = (input: GetBranchStatusInput) =>
 			}
 
 			// Get branch status
-			const workspaceRepo = ctx.repos.workspaceRepo
-				.listByWorkspace(workspace.id)
-				.find((wr) => wr.projectId === input.projectId);
+			const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
+				workspace.id,
+			);
+			const workspaceRepo = workspaceRepos.find(
+				(wr) => wr.projectId === input.projectId,
+			);
 
 			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
 			const status = await ctx.repos.git.getBranchStatus(

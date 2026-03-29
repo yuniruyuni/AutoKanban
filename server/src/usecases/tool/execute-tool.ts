@@ -13,7 +13,7 @@ export interface ExecuteToolInput {
 
 export const executeTool = (input: ExecuteToolInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			if (!input.taskId && !input.projectId) {
 				return fail(
 					"INVALID_INPUT",
@@ -21,7 +21,7 @@ export const executeTool = (input: ExecuteToolInput) =>
 				);
 			}
 
-			const tool = ctx.repos.tool.get(Tool.ById(input.toolId));
+			const tool = await ctx.repos.tool.get(Tool.ById(input.toolId));
 			if (!tool) {
 				return fail("NOT_FOUND", "Tool not found", { toolId: input.toolId });
 			}
@@ -31,13 +31,15 @@ export const executeTool = (input: ExecuteToolInput) =>
 
 			if (input.taskId) {
 				// Get task to find the project
-				const task = ctx.repos.task.get(Task.ById(input.taskId));
+				const task = await ctx.repos.task.get(Task.ById(input.taskId));
 				if (!task) {
 					return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
 				}
 
 				// Get project to get project name
-				const project = ctx.repos.project.get(Project.ById(task.projectId));
+				const project = await ctx.repos.project.get(
+					Project.ById(task.projectId),
+				);
 				if (!project) {
 					return fail("NOT_FOUND", "Project not found", {
 						projectId: task.projectId,
@@ -45,7 +47,7 @@ export const executeTool = (input: ExecuteToolInput) =>
 				}
 
 				// Get workspace to get workspaceId
-				const workspace = ctx.repos.workspace.get(
+				const workspace = await ctx.repos.workspace.get(
 					Workspace.ByTaskIdActive(input.taskId),
 				);
 				if (workspace) {
@@ -59,7 +61,9 @@ export const executeTool = (input: ExecuteToolInput) =>
 					targetPath = project.repoPath;
 				}
 			} else if (input.projectId) {
-				const project = ctx.repos.project.get(Project.ById(input.projectId));
+				const project = await ctx.repos.project.get(
+					Project.ById(input.projectId),
+				);
 				if (!project) {
 					return fail("NOT_FOUND", "Project not found", {
 						projectId: input.projectId,
@@ -87,7 +91,7 @@ export const executeTool = (input: ExecuteToolInput) =>
 			}
 
 			try {
-				ctx.repos.tool.executeCommand(command, path || undefined);
+				await ctx.repos.tool.executeCommand(command, path || undefined);
 
 				return { success: true, command };
 			} catch (error) {

@@ -4,10 +4,10 @@ export function createMockExecutionProcessLogsRepository(
 	overrides: Partial<IExecutionProcessLogsRepository> = {},
 ): IExecutionProcessLogsRepository {
 	return {
-		getLogs: () => null,
-		upsertLogs: () => {},
-		appendLogs: () => {},
-		deleteLogs: () => {},
+		getLogs: async () => null,
+		upsertLogs: async () => {},
+		appendLogs: async () => {},
+		deleteLogs: async () => {},
 		...overrides,
 	} as IExecutionProcessLogsRepository;
 }

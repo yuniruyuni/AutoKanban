@@ -26,49 +26,49 @@ afterEach(() => {
 // ============================================
 
 describe("ProjectRepository upsert + get", () => {
-	test("inserts and retrieves a project", () => {
+	test("inserts and retrieves a project", async () => {
 		const project = createTestProject();
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		const retrieved = projectRepo.get(Project.ById(project.id));
+		const retrieved = await projectRepo.get(Project.ById(project.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.name).toBe(project.name);
 		expect(retrieved?.repoPath).toBe(project.repoPath);
 	});
 
-	test("updates existing project on conflict", () => {
+	test("updates existing project on conflict", async () => {
 		const project = createTestProject();
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
 		const updated = { ...project, name: "Updated Name", updatedAt: new Date() };
-		projectRepo.upsert(updated);
+		await projectRepo.upsert(updated);
 
-		const retrieved = projectRepo.get(Project.ById(project.id));
+		const retrieved = await projectRepo.get(Project.ById(project.id));
 		expect(retrieved?.name).toBe("Updated Name");
 	});
 
-	test("returns null for non-existent id", () => {
-		expect(projectRepo.get(Project.ById("non-existent"))).toBeNull();
+	test("returns null for non-existent id", async () => {
+		expect(await projectRepo.get(Project.ById("non-existent"))).toBeNull();
 	});
 
-	test("ByName finds project", () => {
+	test("ByName finds project", async () => {
 		const project = createTestProject({ name: "unique-name" });
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		const retrieved = projectRepo.get(Project.ByName("unique-name"));
+		const retrieved = await projectRepo.get(Project.ByName("unique-name"));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(project.id);
 	});
 
-	test("ByRepoPath finds project", () => {
+	test("ByRepoPath finds project", async () => {
 		const project = createTestProject({ repoPath: "/unique/path" });
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		const retrieved = projectRepo.get(Project.ByRepoPath("/unique/path"));
+		const retrieved = await projectRepo.get(Project.ByRepoPath("/unique/path"));
 		expect(retrieved).not.toBeNull();
 	});
 
-	test("P1: round-trip preserves all fields", () => {
+	test("P1: round-trip preserves all fields", async () => {
 		const project = createTestProject({
 			name: "Round Trip Project",
 			description: "Full description",
@@ -78,9 +78,9 @@ describe("ProjectRepository upsert + get", () => {
 			cleanupScript: "npm run clean",
 			devServerScript: "npm run dev",
 		});
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		const retrieved = projectRepo.get(Project.ById(project.id));
+		const retrieved = await projectRepo.get(Project.ById(project.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Project, project, [
 			"createdAt",
@@ -88,9 +88,9 @@ describe("ProjectRepository upsert + get", () => {
 		]);
 	});
 
-	test("P2: update round-trip reflects all changed fields", () => {
+	test("P2: update round-trip reflects all changed fields", async () => {
 		const project = createTestProject();
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
 		const updated: Project = {
 			...project,
@@ -103,9 +103,9 @@ describe("ProjectRepository upsert + get", () => {
 			devServerScript: "bun run dev",
 			updatedAt: new Date(),
 		};
-		projectRepo.upsert(updated);
+		await projectRepo.upsert(updated);
 
-		const retrieved = projectRepo.get(Project.ById(project.id));
+		const retrieved = await projectRepo.get(Project.ById(project.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Project, updated, [
 			"createdAt",
@@ -113,16 +113,16 @@ describe("ProjectRepository upsert + get", () => {
 		]);
 	});
 
-	test("P1: round-trip with null optional fields", () => {
+	test("P1: round-trip with null optional fields", async () => {
 		const project = createTestProject({
 			description: null,
 			setupScript: null,
 			cleanupScript: null,
 			devServerScript: null,
 		});
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		const retrieved = projectRepo.get(Project.ById(project.id));
+		const retrieved = await projectRepo.get(Project.ById(project.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Project, project, [
 			"createdAt",
@@ -136,22 +136,26 @@ describe("ProjectRepository upsert + get", () => {
 // ============================================
 
 describe("ProjectRepository list", () => {
-	test("lists projects with pagination", () => {
+	test("lists projects with pagination", async () => {
 		for (let i = 0; i < 5; i++) {
-			projectRepo.upsert(createTestProject({ repoPath: `/tmp/repo-${i}` }));
+			await projectRepo.upsert(
+				createTestProject({ repoPath: `/tmp/repo-${i}` }),
+			);
 		}
 
-		const page = projectRepo.list(Project.All(), { limit: 3 });
+		const page = await projectRepo.list(Project.All(), { limit: 3 });
 		expect(page.items).toHaveLength(3);
 		expect(page.hasMore).toBe(true);
 	});
 
-	test("listAll returns all projects", () => {
+	test("listAll returns all projects", async () => {
 		for (let i = 0; i < 3; i++) {
-			projectRepo.upsert(createTestProject({ repoPath: `/tmp/repo-${i}` }));
+			await projectRepo.upsert(
+				createTestProject({ repoPath: `/tmp/repo-${i}` }),
+			);
 		}
 
-		const all = projectRepo.listAll();
+		const all = await projectRepo.listAll();
 		expect(all).toHaveLength(3);
 	});
 });
@@ -161,18 +165,24 @@ describe("ProjectRepository list", () => {
 // ============================================
 
 describe("ProjectRepository stats", () => {
-	test("listAllWithStats includes task statistics", () => {
+	test("listAllWithStats includes task statistics", async () => {
 		const project = createTestProject();
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		taskRepo.upsert(createTestTask({ projectId: project.id, status: "todo" }));
-		taskRepo.upsert(createTestTask({ projectId: project.id, status: "todo" }));
-		taskRepo.upsert(
+		await taskRepo.upsert(
+			createTestTask({ projectId: project.id, status: "todo" }),
+		);
+		await taskRepo.upsert(
+			createTestTask({ projectId: project.id, status: "todo" }),
+		);
+		await taskRepo.upsert(
 			createTestTask({ projectId: project.id, status: "inprogress" }),
 		);
-		taskRepo.upsert(createTestTask({ projectId: project.id, status: "done" }));
+		await taskRepo.upsert(
+			createTestTask({ projectId: project.id, status: "done" }),
+		);
 
-		const results = projectRepo.listAllWithStats();
+		const results = await projectRepo.listAllWithStats();
 		expect(results).toHaveLength(1);
 		expect(results[0].taskStats.todo).toBe(2);
 		expect(results[0].taskStats.inProgress).toBe(1);
@@ -181,28 +191,28 @@ describe("ProjectRepository stats", () => {
 		expect(results[0].taskStats.cancelled).toBe(0);
 	});
 
-	test("getWithStats returns stats for specific project", () => {
+	test("getWithStats returns stats for specific project", async () => {
 		const project = createTestProject();
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		taskRepo.upsert(
+		await taskRepo.upsert(
 			createTestTask({ projectId: project.id, status: "inreview" }),
 		);
 
-		const result = projectRepo.getWithStats(project.id);
+		const result = await projectRepo.getWithStats(project.id);
 		expect(result).not.toBeNull();
 		expect(result?.taskStats.inReview).toBe(1);
 	});
 
-	test("getWithStats returns null for non-existent project", () => {
-		expect(projectRepo.getWithStats("non-existent")).toBeNull();
+	test("getWithStats returns null for non-existent project", async () => {
+		expect(await projectRepo.getWithStats("non-existent")).toBeNull();
 	});
 
-	test("stats are zero for project with no tasks", () => {
+	test("stats are zero for project with no tasks", async () => {
 		const project = createTestProject();
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		const results = projectRepo.listAllWithStats();
+		const results = await projectRepo.listAllWithStats();
 		expect(results[0].taskStats.todo).toBe(0);
 		expect(results[0].taskStats.inProgress).toBe(0);
 		expect(results[0].taskStats.done).toBe(0);
@@ -214,16 +224,16 @@ describe("ProjectRepository stats", () => {
 // ============================================
 
 describe("ProjectRepository delete", () => {
-	test("deletes a project", () => {
+	test("deletes a project", async () => {
 		const project = createTestProject();
-		projectRepo.upsert(project);
+		await projectRepo.upsert(project);
 
-		const deleted = projectRepo.delete(Project.ById(project.id));
+		const deleted = await projectRepo.delete(Project.ById(project.id));
 		expect(deleted).toBe(1);
-		expect(projectRepo.get(Project.ById(project.id))).toBeNull();
+		expect(await projectRepo.get(Project.ById(project.id))).toBeNull();
 	});
 
-	test("returns 0 when nothing to delete", () => {
-		expect(projectRepo.delete(Project.ById("non-existent"))).toBe(0);
+	test("returns 0 when nothing to delete", async () => {
+		expect(await projectRepo.delete(Project.ById("non-existent"))).toBe(0);
 	});
 });

@@ -10,7 +10,7 @@ export interface ListTasksInput {
 
 export const listTasks = (input: ListTasksInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			const specs: Task.Spec[] = [Task.ByProject(input.projectId)];
 
 			if (input.status) {
@@ -27,7 +27,7 @@ export const listTasks = (input: ListTasksInput) =>
 				sort: Task.defaultSort,
 			};
 
-			const page = ctx.repos.task.list(spec, cursor);
+			const page = await ctx.repos.task.list(spec, cursor);
 			return page;
 		},
 	});

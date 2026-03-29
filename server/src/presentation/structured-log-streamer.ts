@@ -34,7 +34,7 @@ export class StructuredLogStreamer {
 		const sentEntryIds = new Set<string>();
 
 		// Send initial snapshot
-		const initial = this.parseCurrentLogs(executionProcessId);
+		const initial = await this.parseCurrentLogs(executionProcessId);
 		if (initial) {
 			yield {
 				type: "snapshot",
@@ -63,7 +63,7 @@ export class StructuredLogStreamer {
 
 			if (signal.aborted) break;
 
-			const current = this.parseCurrentLogs(executionProcessId);
+			const current = await this.parseCurrentLogs(executionProcessId);
 			if (!current) continue;
 
 			// Check for new entries
@@ -97,8 +97,11 @@ export class StructuredLogStreamer {
 		}
 	}
 
-	private parseCurrentLogs(executionProcessId: string): ParseResult | null {
-		const logs = this.executionProcessLogsRepo.getLogs(executionProcessId);
+	private async parseCurrentLogs(
+		executionProcessId: string,
+	): Promise<ParseResult | null> {
+		const logs =
+			await this.executionProcessLogsRepo.getLogs(executionProcessId);
 		if (!logs?.logs) return null;
 		return parseLogsToConversation(logs.logs);
 	}

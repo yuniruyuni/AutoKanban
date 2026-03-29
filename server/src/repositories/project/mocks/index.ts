@@ -4,13 +4,13 @@ export function createMockProjectRepository(
 	overrides: Partial<IProjectRepository> = {},
 ): IProjectRepository {
 	return {
-		get: () => null,
-		list: () => ({ items: [], hasMore: false }),
-		listAll: () => [],
-		listAllWithStats: () => [],
-		getWithStats: () => null,
-		upsert: () => {},
-		delete: () => 0,
+		get: async () => null,
+		list: async () => ({ items: [], hasMore: false }),
+		listAll: async () => [],
+		listAllWithStats: async () => [],
+		getWithStats: async () => null,
+		upsert: async () => {},
+		delete: async () => 0,
 		...overrides,
 	} as IProjectRepository;
 }

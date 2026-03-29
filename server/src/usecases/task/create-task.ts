@@ -11,8 +11,10 @@ export interface CreateTaskInput {
 
 export const createTask = (input: CreateTaskInput) =>
 	usecase({
-		read: (ctx) => {
-			const project = ctx.repos.project.get(Project.ById(input.projectId));
+		read: async (ctx) => {
+			const project = await ctx.repos.project.get(
+				Project.ById(input.projectId),
+			);
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
 					projectId: input.projectId,
@@ -30,8 +32,8 @@ export const createTask = (input: CreateTaskInput) =>
 			return { task };
 		},
 
-		write: (ctx, { task }) => {
-			ctx.repos.task.upsert(task);
+		write: async (ctx, { task }) => {
+			await ctx.repos.task.upsert(task);
 			return task;
 		},
 	});

@@ -29,7 +29,7 @@ export async function generatePrDescription(
 	},
 ): Promise<{ title: string; body: string } | null> {
 	const resumeInfo =
-		ctx.repos.codingAgentTurn.findLatestResumeInfoByWorkspaceId(
+		await ctx.repos.codingAgentTurn.findLatestResumeInfoByWorkspaceId(
 			params.workspaceId,
 		);
 

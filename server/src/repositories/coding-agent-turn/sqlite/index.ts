@@ -18,50 +18,55 @@ import { upsert } from "./upsert";
 export class CodingAgentTurnRepository implements ICodingAgentTurnRepository {
 	constructor(private db: Database) {}
 
-	get(spec: CodingAgentTurn.Spec): CodingAgentTurn | null {
+	async get(spec: CodingAgentTurn.Spec): Promise<CodingAgentTurn | null> {
 		return get(this.db, spec);
 	}
 
-	list(
+	async list(
 		spec: CodingAgentTurn.Spec,
 		cursor: Cursor<CodingAgentTurn.SortKey>,
-	): Page<CodingAgentTurn> {
+	): Promise<Page<CodingAgentTurn>> {
 		return list(this.db, spec, cursor);
 	}
 
-	upsert(turn: CodingAgentTurn): void {
+	async upsert(turn: CodingAgentTurn): Promise<void> {
 		upsert(this.db, turn);
 	}
 
-	delete(spec: CodingAgentTurn.Spec): number {
+	async delete(spec: CodingAgentTurn.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 
-	updateAgentSessionId(
+	async updateAgentSessionId(
 		executionProcessId: string,
 		agentSessionId: string,
-	): void {
+	): Promise<void> {
 		updateAgentSessionId(this.db, executionProcessId, agentSessionId);
 	}
 
-	updateAgentMessageId(
+	async updateAgentMessageId(
 		executionProcessId: string,
 		agentMessageId: string,
-	): void {
+	): Promise<void> {
 		updateAgentMessageId(this.db, executionProcessId, agentMessageId);
 	}
 
-	updateSummary(executionProcessId: string, summary: string): void {
+	async updateSummary(
+		executionProcessId: string,
+		summary: string,
+	): Promise<void> {
 		updateSummary(this.db, executionProcessId, summary);
 	}
 
-	findLatestResumeInfo(sessionId: string): CodingAgentResumeInfo | null {
+	async findLatestResumeInfo(
+		sessionId: string,
+	): Promise<CodingAgentResumeInfo | null> {
 		return findLatestResumeInfo(this.db, sessionId);
 	}
 
-	findLatestResumeInfoByWorkspaceId(
+	async findLatestResumeInfoByWorkspaceId(
 		workspaceId: string,
-	): CodingAgentResumeInfo | null {
+	): Promise<CodingAgentResumeInfo | null> {
 		return findLatestResumeInfoByWorkspaceId(this.db, workspaceId);
 	}
 }

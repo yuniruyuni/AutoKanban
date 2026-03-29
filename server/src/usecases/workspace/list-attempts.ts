@@ -24,9 +24,9 @@ export interface ListAttemptsResult {
 
 export const listAttempts = (input: ListAttemptsInput) =>
 	usecase({
-		read: (ctx): ListAttemptsResult => {
+		read: async (ctx): Promise<ListAttemptsResult> => {
 			// Get all workspaces for this task (including archived)
-			const workspacePage = ctx.repos.workspace.list(
+			const workspacePage = await ctx.repos.workspace.list(
 				Workspace.ByTaskId(input.taskId),
 				{ limit: 100, sort: { keys: ["createdAt", "id"], order: "asc" } },
 			);
@@ -36,7 +36,7 @@ export const listAttempts = (input: ListAttemptsInput) =>
 
 			for (const workspace of workspacePage.items) {
 				// Get latest session for this workspace
-				const sessionPage = ctx.repos.session.list(
+				const sessionPage = await ctx.repos.session.list(
 					Session.ByWorkspaceId(workspace.id),
 					{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 				);
@@ -47,7 +47,7 @@ export const listAttempts = (input: ListAttemptsInput) =>
 
 				if (session) {
 					// Get latest codingagent execution process for this session
-					const epPage = ctx.repos.executionProcess.list(
+					const epPage = await ctx.repos.executionProcess.list(
 						ExecutionProcess.BySessionId(session.id).and(
 							ExecutionProcess.ByRunReason("codingagent"),
 						),

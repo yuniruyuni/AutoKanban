@@ -9,7 +9,7 @@ import type { Database } from "bun:sqlite";
  * @param db - The database instance
  * @returns The number of processes that were recovered (marked as killed)
  */
-export function recoverOrphanedProcesses(db: Database): number {
+export async function recoverOrphanedProcesses(db: Database): Promise<number> {
 	const now = new Date().toISOString();
 
 	// Move tasks associated with orphaned processes to 'inreview'.

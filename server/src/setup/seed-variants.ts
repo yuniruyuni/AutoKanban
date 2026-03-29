@@ -25,15 +25,15 @@ const DEFAULT_VARIANTS = [
 	},
 ] as const;
 
-export function seedDefaultVariants(db: Database): void {
+export async function seedDefaultVariants(db: Database): Promise<void> {
 	const repo = new VariantRepository(db);
 
 	for (const def of DEFAULT_VARIANTS) {
-		const existing = repo.get(
+		const existing = await repo.get(
 			Variant.ByExecutorAndName(def.executor, def.name),
 		);
 		if (!existing) {
-			repo.upsert(
+			await repo.upsert(
 				Variant.create({
 					executor: def.executor,
 					name: def.name,
@@ -44,11 +44,11 @@ export function seedDefaultVariants(db: Database): void {
 	}
 
 	// Migrate existing DEFAULT variant from bypassPermissions/plan to default mode
-	const existingDefault = repo.get(
+	const existingDefault = await repo.get(
 		Variant.ByExecutorAndName("claude-code", "DEFAULT"),
 	);
 	if (existingDefault && existingDefault.permissionMode !== "default") {
-		repo.upsert({
+		await repo.upsert({
 			...existingDefault,
 			permissionMode: "default",
 			updatedAt: new Date(),

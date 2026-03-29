@@ -17,8 +17,8 @@ export interface GetExecutionResult {
 
 export const getExecution = (input: GetExecutionInput) =>
 	usecase({
-		read: (ctx) => {
-			const executionProcess = ctx.repos.executionProcess.get(
+		read: async (ctx) => {
+			const executionProcess = await ctx.repos.executionProcess.get(
 				ExecutionProcess.ById(input.executionProcessId),
 			);
 
@@ -30,7 +30,9 @@ export const getExecution = (input: GetExecutionInput) =>
 
 			let logs: ExecutionProcessLogs | null = null;
 			if (input.includeLogs) {
-				logs = ctx.repos.executionProcessLogs.getLogs(input.executionProcessId);
+				logs = await ctx.repos.executionProcessLogs.getLogs(
+					input.executionProcessId,
+				);
 			}
 
 			const result: GetExecutionResult = { executionProcess, logs };

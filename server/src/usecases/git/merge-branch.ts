@@ -13,14 +13,16 @@ export interface MergeBranchInput {
 export const mergeBranch = (input: MergeBranchInput) =>
 	usecase({
 		read: async (ctx) => {
-			const workspace = ctx.repos.workspace.get(
+			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(input.workspaceId),
 			);
 			if (!workspace) {
 				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
 			}
 
-			const project = ctx.repos.project.get(Project.ById(input.projectId));
+			const project = await ctx.repos.project.get(
+				Project.ById(input.projectId),
+			);
 			if (!project) {
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
@@ -39,7 +41,7 @@ export const mergeBranch = (input: MergeBranchInput) =>
 				return fail("NOT_FOUND", "Worktree does not exist");
 			}
 
-			const task = ctx.repos.task.get(Task.ById(workspace.taskId));
+			const task = await ctx.repos.task.get(Task.ById(workspace.taskId));
 
 			return { worktreePath, workspace, project, task };
 		},
@@ -63,7 +65,7 @@ export const mergeBranch = (input: MergeBranchInput) =>
 
 			// Merge succeeded → transition task to done
 			if (task && task.status !== "done") {
-				ctx.repos.task.upsert({
+				await ctx.repos.task.upsert({
 					...task,
 					status: "done",
 					updatedAt: ctx.now,

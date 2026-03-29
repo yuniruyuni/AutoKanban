@@ -11,23 +11,26 @@ import { upsert } from "./upsert";
 export class VariantRepository implements IVariantRepository {
 	constructor(private db: Database) {}
 
-	get(spec: Variant.Spec): Variant | null {
+	async get(spec: Variant.Spec): Promise<Variant | null> {
 		return get(this.db, spec);
 	}
 
-	list(spec: Variant.Spec, cursor: Cursor<Variant.SortKey>): Page<Variant> {
+	async list(
+		spec: Variant.Spec,
+		cursor: Cursor<Variant.SortKey>,
+	): Promise<Page<Variant>> {
 		return list(this.db, spec, cursor);
 	}
 
-	listByExecutor(executor: string): Variant[] {
+	async listByExecutor(executor: string): Promise<Variant[]> {
 		return listByExecutor(this.db, executor);
 	}
 
-	upsert(variant: Variant): void {
+	async upsert(variant: Variant): Promise<void> {
 		upsert(this.db, variant);
 	}
 
-	delete(spec: Variant.Spec): number {
+	async delete(spec: Variant.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 }

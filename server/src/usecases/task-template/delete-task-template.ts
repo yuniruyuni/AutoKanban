@@ -8,16 +8,18 @@ export interface DeleteTaskTemplateInput {
 
 export const deleteTaskTemplate = (input: DeleteTaskTemplateInput) =>
 	usecase({
-		read: (ctx) => {
-			const template = ctx.repos.taskTemplate.get(TaskTemplate.ById(input.id));
+		read: async (ctx) => {
+			const template = await ctx.repos.taskTemplate.get(
+				TaskTemplate.ById(input.id),
+			);
 			if (!template) {
 				return fail("NOT_FOUND", "Task template not found");
 			}
 			return { template };
 		},
 
-		write: (ctx, { template }) => {
-			ctx.repos.taskTemplate.delete(TaskTemplate.ById(template.id));
+		write: async (ctx, { template }) => {
+			await ctx.repos.taskTemplate.delete(TaskTemplate.ById(template.id));
 			return { deleted: true };
 		},
 	});

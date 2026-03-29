@@ -16,61 +16,64 @@ import { deleteTask } from "./delete-task";
 describe("deleteTask", () => {
 	test("deletes a task with no related entities", async () => {
 		const db = createTestDB();
-		const { project } = seedFullChain(db);
+		const { project } = await seedFullChain(db);
 		// Create a standalone task with no workspaces
 		const standaloneTask = Task.create({
 			projectId: project.id,
 			title: "Standalone",
 		});
 		const ctx = createIntegrationContext(db);
-		ctx.repos.task.upsert(standaloneTask);
+		await ctx.repos.task.upsert(standaloneTask);
 
 		const result = await deleteTask({ taskId: standaloneTask.id }).run(ctx);
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.value.deleted).toBe(true);
 		}
-		expect(ctx.repos.task.get(Task.ById(standaloneTask.id))).toBeNull();
+		expect(await ctx.repos.task.get(Task.ById(standaloneTask.id))).toBeNull();
 	});
 
 	test("cascade deletes all related entities", async () => {
 		const db = createTestDB();
-		const { task, workspace, session, executionProcess } = seedFullChain(db);
+		const { task, workspace, session, executionProcess } =
+			await seedFullChain(db);
 		const ctx = createIntegrationContext(db);
 
 		// Add child entities that depend on execution_process
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: executionProcess.id,
 		});
-		ctx.repos.codingAgentTurn.upsert(turn);
+		await ctx.repos.codingAgentTurn.upsert(turn);
 
 		const logs = createTestExecutionProcessLogs({
 			executionProcessId: executionProcess.id,
 		});
-		ctx.repos.executionProcessLogs.upsertLogs(logs);
+		await ctx.repos.executionProcessLogs.upsertLogs(logs);
 
 		const approval = Approval.create({
 			executionProcessId: executionProcess.id,
 			toolName: "TestTool",
 			toolCallId: "call-1",
 		});
-		ctx.repos.approval.upsert(approval);
+		await ctx.repos.approval.upsert(approval);
 
 		// Delete task
 		const result = await deleteTask({ taskId: task.id }).run(ctx);
 		expect(result.ok).toBe(true);
 
 		// Verify all entities are gone
-		expect(ctx.repos.task.get(Task.ById(task.id))).toBeNull();
-		expect(ctx.repos.workspace.get(Workspace.ById(workspace.id))).toBeNull();
-		expect(ctx.repos.session.get(Session.ById(session.id))).toBeNull();
+		expect(await ctx.repos.task.get(Task.ById(task.id))).toBeNull();
 		expect(
-			ctx.repos.executionProcess.get(
+			await ctx.repos.workspace.get(Workspace.ById(workspace.id)),
+		).toBeNull();
+		expect(await ctx.repos.session.get(Session.ById(session.id))).toBeNull();
+		expect(
+			await ctx.repos.executionProcess.get(
 				ExecutionProcess.ById(executionProcess.id),
 			),
 		).toBeNull();
 		expect(
-			ctx.repos.executionProcessLogs.getLogs(executionProcess.id),
+			await ctx.repos.executionProcessLogs.getLogs(executionProcess.id),
 		).toBeNull();
 	});
 

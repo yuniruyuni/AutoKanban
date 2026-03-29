@@ -28,8 +28,8 @@ export const createTaskTemplate = (input: CreateTaskTemplateInput) =>
 			return { template };
 		},
 
-		write: (ctx, { template }) => {
-			ctx.repos.taskTemplate.upsert(template);
+		write: async (ctx, { template }) => {
+			await ctx.repos.taskTemplate.upsert(template);
 			return template;
 		},
 	});

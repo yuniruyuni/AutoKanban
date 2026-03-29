@@ -2,11 +2,11 @@ import type { Cursor, Page } from "../../models/common";
 import type { ExecutionProcess } from "../../models/execution-process";
 
 export interface IExecutionProcessRepository {
-	get(spec: ExecutionProcess.Spec): ExecutionProcess | null;
+	get(spec: ExecutionProcess.Spec): Promise<ExecutionProcess | null>;
 	list(
 		spec: ExecutionProcess.Spec,
 		cursor: Cursor<ExecutionProcess.SortKey>,
-	): Page<ExecutionProcess>;
-	upsert(process: ExecutionProcess): void;
-	delete(spec: ExecutionProcess.Spec): number;
+	): Promise<Page<ExecutionProcess>>;
+	upsert(process: ExecutionProcess): Promise<void>;
+	delete(spec: ExecutionProcess.Spec): Promise<number>;
 }

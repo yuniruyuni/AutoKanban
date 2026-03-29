@@ -12,8 +12,10 @@ export interface UpdateTaskTemplateInput {
 
 export const updateTaskTemplate = (input: UpdateTaskTemplateInput) =>
 	usecase({
-		read: (ctx) => {
-			const template = ctx.repos.taskTemplate.get(TaskTemplate.ById(input.id));
+		read: async (ctx) => {
+			const template = await ctx.repos.taskTemplate.get(
+				TaskTemplate.ById(input.id),
+			);
 			if (!template) {
 				return fail("NOT_FOUND", "Task template not found");
 			}
@@ -36,8 +38,8 @@ export const updateTaskTemplate = (input: UpdateTaskTemplateInput) =>
 			return { template: updated };
 		},
 
-		write: (ctx, { template }) => {
-			ctx.repos.taskTemplate.upsert(template);
+		write: async (ctx, { template }) => {
+			await ctx.repos.taskTemplate.upsert(template);
 			return template;
 		},
 	});

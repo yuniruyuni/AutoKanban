@@ -7,8 +7,8 @@ export interface ListProjectsOutput {
 
 export const listProjects = () =>
 	usecase({
-		read: (ctx) => {
-			const projects = ctx.repos.project.listAllWithStats();
+		read: async (ctx) => {
+			const projects = await ctx.repos.project.listAllWithStats();
 			return { projects };
 		},
 

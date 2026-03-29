@@ -4,11 +4,11 @@ export function createMockVariantRepository(
 	overrides: Partial<IVariantRepository> = {},
 ): IVariantRepository {
 	return {
-		get: () => null,
-		list: () => ({ items: [], hasMore: false }),
-		listByExecutor: () => [],
-		upsert: () => {},
-		delete: () => 0,
+		get: async () => null,
+		list: async () => ({ items: [], hasMore: false }),
+		listByExecutor: async () => [],
+		upsert: async () => {},
+		delete: async () => 0,
 		...overrides,
 	} as IVariantRepository;
 }

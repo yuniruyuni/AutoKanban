@@ -14,8 +14,8 @@ export interface DeleteTaskInput {
 
 export const deleteTask = (input: DeleteTaskInput) =>
 	usecase({
-		read: (ctx) => {
-			const task = ctx.repos.task.get(Task.ById(input.taskId));
+		read: async (ctx) => {
+			const task = await ctx.repos.task.get(Task.ById(input.taskId));
 			if (!task) {
 				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
 			}
@@ -25,17 +25,23 @@ export const deleteTask = (input: DeleteTaskInput) =>
 			const sessionIds: string[] = [];
 			const executionProcessIds: string[] = [];
 
-			const workspaces = ctx.repos.workspace.list(Workspace.ByTaskId(task.id), {
-				limit: 10000,
-			});
+			const workspaces = await ctx.repos.workspace.list(
+				Workspace.ByTaskId(task.id),
+				{
+					limit: 10000,
+				},
+			);
 			for (const ws of workspaces.items) {
 				workspaceIds.push(ws.id);
-				const sessions = ctx.repos.session.list(Session.ByWorkspaceId(ws.id), {
-					limit: 10000,
-				});
+				const sessions = await ctx.repos.session.list(
+					Session.ByWorkspaceId(ws.id),
+					{
+						limit: 10000,
+					},
+				);
 				for (const session of sessions.items) {
 					sessionIds.push(session.id);
-					const processes = ctx.repos.executionProcess.list(
+					const processes = await ctx.repos.executionProcess.list(
 						ExecutionProcess.BySessionId(session.id),
 						{ limit: 10000 },
 					);
@@ -48,40 +54,43 @@ export const deleteTask = (input: DeleteTaskInput) =>
 			return { task, workspaceIds, sessionIds, executionProcessIds };
 		},
 
-		write: (ctx, { task, workspaceIds, sessionIds, executionProcessIds }) => {
+		write: async (
+			ctx,
+			{ task, workspaceIds, sessionIds, executionProcessIds },
+		) => {
 			// Delete in reverse dependency order
 
 			// 1. approvals & coding_agent_turns & execution_process_logs (depend on execution_processes)
 			for (const epId of executionProcessIds) {
-				ctx.repos.approval.delete(Approval.ByExecutionProcessId(epId));
-				ctx.repos.codingAgentTurn.delete(
+				await ctx.repos.approval.delete(Approval.ByExecutionProcessId(epId));
+				await ctx.repos.codingAgentTurn.delete(
 					CodingAgentTurn.ByExecutionProcessId(epId),
 				);
-				ctx.repos.executionProcessLogs.deleteLogs(epId);
+				await ctx.repos.executionProcessLogs.deleteLogs(epId);
 			}
 
 			// 2. execution_processes (depend on sessions)
 			for (const sessionId of sessionIds) {
-				ctx.repos.executionProcess.delete(
+				await ctx.repos.executionProcess.delete(
 					ExecutionProcess.BySessionId(sessionId),
 				);
 			}
 
 			// 3. sessions (depend on workspaces)
 			for (const wsId of workspaceIds) {
-				ctx.repos.session.delete(Session.ByWorkspaceId(wsId));
+				await ctx.repos.session.delete(Session.ByWorkspaceId(wsId));
 			}
 
 			// 4. workspace_repos (depend on workspaces)
 			for (const wsId of workspaceIds) {
-				ctx.repos.workspaceRepo.delete(WorkspaceRepo.ByWorkspaceId(wsId));
+				await ctx.repos.workspaceRepo.delete(WorkspaceRepo.ByWorkspaceId(wsId));
 			}
 
 			// 5. workspaces (depend on tasks)
-			ctx.repos.workspace.delete(Workspace.ByTaskId(task.id));
+			await ctx.repos.workspace.delete(Workspace.ByTaskId(task.id));
 
 			// 6. task
-			ctx.repos.task.delete(Task.ById(task.id));
+			await ctx.repos.task.delete(Task.ById(task.id));
 
 			return { deleted: true, taskId: task.id };
 		},

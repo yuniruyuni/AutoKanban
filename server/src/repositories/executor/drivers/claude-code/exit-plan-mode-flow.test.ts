@@ -365,7 +365,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 
 		// Simulate user approving
 		const approvalId = pending[0].id;
-		const success = approvalStore.respond(
+		const success = await approvalStore.respond(
 			approvalId,
 			"approved",
 			null,

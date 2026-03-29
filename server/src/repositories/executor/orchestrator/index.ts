@@ -134,7 +134,7 @@ export class ExecutorRepository implements IExecutorRepository {
 
 		this.runningProcesses.set(id, runningProcess);
 
-		this.executionProcessRepo.upsert({
+		await this.executionProcessRepo.upsert({
 			id,
 			sessionId: options.sessionId,
 			runReason: options.runReason,
@@ -180,7 +180,7 @@ export class ExecutorRepository implements IExecutorRepository {
 
 		this.runningProcesses.set(id, runningProcess);
 
-		this.executionProcessRepo.upsert({
+		await this.executionProcessRepo.upsert({
 			id,
 			sessionId: options.sessionId,
 			runReason: options.runReason,
@@ -197,7 +197,7 @@ export class ExecutorRepository implements IExecutorRepository {
 				executionProcessId: id,
 				prompt: options.prompt,
 			});
-			this.codingAgentTurnRepo.upsert(turn);
+			await this.codingAgentTurnRepo.upsert(turn);
 		}
 
 		this.setupCompletionHandler(runningProcess);
@@ -250,12 +250,12 @@ export class ExecutorRepository implements IExecutorRepository {
 		runningProcess.driver.kill(runningProcess.process);
 
 		const now = new Date();
-		const existing = this.executionProcessRepo.get(
+		const existing = await this.executionProcessRepo.get(
 			ExecutionProcess.ById(processId),
 		);
 
 		if (existing) {
-			this.executionProcessRepo.upsert({
+			await this.executionProcessRepo.upsert({
 				...existing,
 				status: "killed",
 				completedAt: now,
@@ -285,7 +285,7 @@ export class ExecutorRepository implements IExecutorRepository {
 			};
 			const timestamp = new Date().toISOString();
 			const logEntry = `[${timestamp}] [stdout] ${JSON.stringify(userMessage)}\n`;
-			this.executionProcessLogsRepo.appendLogs(processId, logEntry);
+			await this.executionProcessLogsRepo.appendLogs(processId, logEntry);
 
 			return true;
 		} catch (error) {
@@ -408,22 +408,22 @@ export class ExecutorRepository implements IExecutorRepository {
 			toolCallId: request.toolCallId,
 		});
 
-		const execProcess = this.executionProcessRepo.get(
+		const execProcess = await this.executionProcessRepo.get(
 			ExecutionProcess.ById(processId),
 		);
 		if (execProcess && execProcess.status === "running") {
-			this.executionProcessRepo.upsert({
+			await this.executionProcessRepo.upsert({
 				...execProcess,
 				status: "awaiting_approval",
 				updatedAt: new Date(),
 			});
 		}
 
-		const taskId = this.findTaskIdForProcess(processId);
+		const taskId = await this.findTaskIdForProcess(processId);
 		if (taskId && this.taskRepo) {
-			const task = this.taskRepo.get(Task.ById(taskId));
+			const task = await this.taskRepo.get(Task.ById(taskId));
 			if (task && task.status === "inprogress") {
-				this.taskRepo.upsert({
+				await this.taskRepo.upsert({
 					...task,
 					status: "inreview",
 					updatedAt: new Date(),
@@ -449,11 +449,11 @@ export class ExecutorRepository implements IExecutorRepository {
 				);
 			}
 
-			const currentProcess = this.executionProcessRepo.get(
+			const currentProcess = await this.executionProcessRepo.get(
 				ExecutionProcess.ById(processId),
 			);
 			if (currentProcess && currentProcess.status === "awaiting_approval") {
-				this.executionProcessRepo.upsert({
+				await this.executionProcessRepo.upsert({
 					...currentProcess,
 					status: "running",
 					updatedAt: new Date(),
@@ -461,9 +461,9 @@ export class ExecutorRepository implements IExecutorRepository {
 			}
 
 			if (taskId && this.taskRepo) {
-				const task = this.taskRepo.get(Task.ById(taskId));
+				const task = await this.taskRepo.get(Task.ById(taskId));
 				if (task && task.status === "inreview") {
-					this.taskRepo.upsert({
+					await this.taskRepo.upsert({
 						...task,
 						status: "inprogress",
 						updatedAt: new Date(),
@@ -475,18 +475,20 @@ export class ExecutorRepository implements IExecutorRepository {
 		}
 	}
 
-	private findTaskIdForProcess(processId: string): string | null {
+	private async findTaskIdForProcess(
+		processId: string,
+	): Promise<string | null> {
 		const runningProcess = this.runningProcesses.get(processId);
 		if (!runningProcess || !this.sessionRepo || !this.workspaceRepo)
 			return null;
 
 		try {
-			const session = this.sessionRepo.get(
+			const session = await this.sessionRepo.get(
 				Session.ById(runningProcess.sessionId),
 			);
 			if (!session) return null;
 
-			const workspace = this.workspaceRepo.get(
+			const workspace = await this.workspaceRepo.get(
 				Workspace.ById(session.workspaceId),
 			);
 			if (!workspace) return null;
@@ -497,12 +499,12 @@ export class ExecutorRepository implements IExecutorRepository {
 		}
 	}
 
-	private collectSessionLogs(sessionId: string): string[] {
+	private async collectSessionLogs(sessionId: string): Promise<string[]> {
 		const sessions = this.sessionRepo ? [{ id: sessionId }] : [];
 		const logs: string[] = [];
 
 		for (const s of sessions) {
-			const epPage = this.executionProcessRepo.list(
+			const epPage = await this.executionProcessRepo.list(
 				ExecutionProcess.BySessionId(s.id),
 				{
 					limit: 100,
@@ -510,7 +512,7 @@ export class ExecutorRepository implements IExecutorRepository {
 				},
 			);
 			for (const ep of epPage.items) {
-				const epLogs = this.executionProcessLogsRepo.getLogs(ep.id);
+				const epLogs = await this.executionProcessLogsRepo.getLogs(ep.id);
 				if (epLogs?.logs) {
 					logs.push(epLogs.logs);
 				}
@@ -551,12 +553,12 @@ export class ExecutorRepository implements IExecutorRepository {
 					? "completed"
 					: "failed";
 
-			const existing = this.executionProcessRepo.get(
+			const existing = await this.executionProcessRepo.get(
 				ExecutionProcess.ById(runningProcess.id),
 			);
 
 			if (existing) {
-				this.executionProcessRepo.upsert({
+				await this.executionProcessRepo.upsert({
 					...existing,
 					status,
 					exitCode: result.exitCode,
@@ -584,7 +586,9 @@ export class ExecutorRepository implements IExecutorRepository {
 					},
 				);
 				try {
-					const allLogs = this.collectSessionLogs(runningProcess.sessionId);
+					const allLogs = await this.collectSessionLogs(
+						runningProcess.sessionId,
+					);
 					const contextSummary = buildContextFromLogs(allLogs);
 					const contextPrompt = buildContextRestoredPrompt(
 						runningProcess.startOptions.prompt ?? "",

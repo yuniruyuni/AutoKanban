@@ -16,15 +16,15 @@ let db: Database;
 let workspaceRepo: WorkspaceRepository;
 let TASK_ID: string;
 
-beforeEach(() => {
+beforeEach(async () => {
 	db = createTestDB();
 	workspaceRepo = new WorkspaceRepository(db);
 
 	// FK chain: project → task
 	const project = createTestProject();
-	new ProjectRepository(db).upsert(project);
+	await new ProjectRepository(db).upsert(project);
 	const task = createTestTask({ projectId: project.id });
-	new TaskRepository(db).upsert(task);
+	await new TaskRepository(db).upsert(task);
 	TASK_ID = task.id;
 });
 
@@ -37,7 +37,7 @@ afterEach(() => {
 // ============================================
 
 describe("WorkspaceRepository round-trip", () => {
-	test("preserves all fields", () => {
+	test("preserves all fields", async () => {
 		const ws = createTestWorkspace({
 			taskId: TASK_ID,
 			containerRef: "container-abc",
@@ -45,63 +45,63 @@ describe("WorkspaceRepository round-trip", () => {
 			worktreePath: "/tmp/worktree",
 			setupComplete: true,
 		});
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Workspace, ws, ["createdAt", "updatedAt"]);
 	});
 
-	test("preserves null worktreePath", () => {
+	test("preserves null worktreePath", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID, worktreePath: null });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.worktreePath).toBeNull();
 	});
 
-	test("preserves setupComplete false", () => {
+	test("preserves setupComplete false", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID, setupComplete: false });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.setupComplete).toBe(false);
 	});
 
-	test("preserves setupComplete true", () => {
+	test("preserves setupComplete true", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID, setupComplete: true });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.setupComplete).toBe(true);
 	});
 
-	test("preserves attempt", () => {
+	test("preserves attempt", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID, attempt: 3 });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.attempt).toBe(3);
 	});
 
-	test("preserves archived false", () => {
+	test("preserves archived false", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID, archived: false });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.archived).toBe(false);
 	});
 
-	test("preserves archived true", () => {
+	test("preserves archived true", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID, archived: true });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.archived).toBe(true);
 	});
@@ -112,9 +112,9 @@ describe("WorkspaceRepository round-trip", () => {
 // ============================================
 
 describe("WorkspaceRepository update round-trip", () => {
-	test("reflects all changed fields", () => {
+	test("reflects all changed fields", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
 		const updated: Workspace = {
 			...ws,
@@ -124,9 +124,9 @@ describe("WorkspaceRepository update round-trip", () => {
 			setupComplete: true,
 			updatedAt: new Date(),
 		};
-		workspaceRepo.upsert(updated);
+		await workspaceRepo.upsert(updated);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Workspace, updated, [
 			"createdAt",
@@ -140,12 +140,12 @@ describe("WorkspaceRepository update round-trip", () => {
 // ============================================
 
 describe("WorkspaceRepository empty collection", () => {
-	test("get returns null for non-existent id", () => {
-		expect(workspaceRepo.get(Workspace.ById("non-existent"))).toBeNull();
+	test("get returns null for non-existent id", async () => {
+		expect(await workspaceRepo.get(Workspace.ById("non-existent"))).toBeNull();
 	});
 
-	test("list returns empty page", () => {
-		const page = workspaceRepo.list(Workspace.ByTaskId("non-existent"), {
+	test("list returns empty page", async () => {
+		const page = await workspaceRepo.list(Workspace.ByTaskId("non-existent"), {
 			limit: 10,
 		});
 		expect(page.items).toHaveLength(0);
@@ -158,12 +158,14 @@ describe("WorkspaceRepository empty collection", () => {
 // ============================================
 
 describe("WorkspaceRepository multiple elements", () => {
-	test("stores and retrieves multiple workspaces", () => {
+	test("stores and retrieves multiple workspaces", async () => {
 		for (let i = 0; i < 3; i++) {
-			workspaceRepo.upsert(createTestWorkspace({ taskId: TASK_ID }));
+			await workspaceRepo.upsert(createTestWorkspace({ taskId: TASK_ID }));
 		}
 
-		const page = workspaceRepo.list(Workspace.ByTaskId(TASK_ID), { limit: 50 });
+		const page = await workspaceRepo.list(Workspace.ByTaskId(TASK_ID), {
+			limit: 50,
+		});
 		expect(page.items).toHaveLength(3);
 	});
 });
@@ -173,17 +175,17 @@ describe("WorkspaceRepository multiple elements", () => {
 // ============================================
 
 describe("WorkspaceRepository delete", () => {
-	test("deletes and confirms absence", () => {
+	test("deletes and confirms absence", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const deleted = workspaceRepo.delete(Workspace.ById(ws.id));
+		const deleted = await workspaceRepo.delete(Workspace.ById(ws.id));
 		expect(deleted).toBe(1);
-		expect(workspaceRepo.get(Workspace.ById(ws.id))).toBeNull();
+		expect(await workspaceRepo.get(Workspace.ById(ws.id))).toBeNull();
 	});
 
-	test("returns 0 when nothing to delete", () => {
-		expect(workspaceRepo.delete(Workspace.ById("non-existent"))).toBe(0);
+	test("returns 0 when nothing to delete", async () => {
+		expect(await workspaceRepo.delete(Workspace.ById("non-existent"))).toBe(0);
 	});
 });
 
@@ -192,20 +194,22 @@ describe("WorkspaceRepository delete", () => {
 // ============================================
 
 describe("WorkspaceRepository spec filtering", () => {
-	test("ById finds correct workspace", () => {
+	test("ById finds correct workspace", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ById(ws.id));
+		const retrieved = await workspaceRepo.get(Workspace.ById(ws.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(ws.id);
 	});
 
-	test("ByTaskId filters by task", () => {
+	test("ByTaskId filters by task", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const page = workspaceRepo.list(Workspace.ByTaskId(TASK_ID), { limit: 50 });
+		const page = await workspaceRepo.list(Workspace.ByTaskId(TASK_ID), {
+			limit: 50,
+		});
 		expect(page.items).toHaveLength(1);
 		expect(page.items[0].taskId).toBe(TASK_ID);
 	});
@@ -216,24 +220,28 @@ describe("WorkspaceRepository spec filtering", () => {
 // ============================================
 
 describe("WorkspaceRepository ByTaskIdActive", () => {
-	test("finds non-archived workspace", () => {
+	test("finds non-archived workspace", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID, archived: false });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ByTaskIdActive(TASK_ID));
+		const retrieved = await workspaceRepo.get(
+			Workspace.ByTaskIdActive(TASK_ID),
+		);
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(ws.id);
 	});
 
-	test("excludes archived workspace", () => {
+	test("excludes archived workspace", async () => {
 		const ws = createTestWorkspace({ taskId: TASK_ID, archived: true });
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const retrieved = workspaceRepo.get(Workspace.ByTaskIdActive(TASK_ID));
+		const retrieved = await workspaceRepo.get(
+			Workspace.ByTaskIdActive(TASK_ID),
+		);
 		expect(retrieved).toBeNull();
 	});
 
-	test("returns active workspace when both active and archived exist", () => {
+	test("returns active workspace when both active and archived exist", async () => {
 		const archived = createTestWorkspace({
 			taskId: TASK_ID,
 			archived: true,
@@ -244,10 +252,12 @@ describe("WorkspaceRepository ByTaskIdActive", () => {
 			archived: false,
 			attempt: 2,
 		});
-		workspaceRepo.upsert(archived);
-		workspaceRepo.upsert(active);
+		await workspaceRepo.upsert(archived);
+		await workspaceRepo.upsert(active);
 
-		const retrieved = workspaceRepo.get(Workspace.ByTaskIdActive(TASK_ID));
+		const retrieved = await workspaceRepo.get(
+			Workspace.ByTaskIdActive(TASK_ID),
+		);
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(active.id);
 	});
@@ -258,16 +268,22 @@ describe("WorkspaceRepository ByTaskIdActive", () => {
 // ============================================
 
 describe("WorkspaceRepository getMaxAttempt", () => {
-	test("returns 0 when no workspaces exist", () => {
-		expect(workspaceRepo.getMaxAttempt("non-existent")).toBe(0);
+	test("returns 0 when no workspaces exist", async () => {
+		expect(await workspaceRepo.getMaxAttempt("non-existent")).toBe(0);
 	});
 
-	test("returns max attempt for task", () => {
-		workspaceRepo.upsert(createTestWorkspace({ taskId: TASK_ID, attempt: 1 }));
-		workspaceRepo.upsert(createTestWorkspace({ taskId: TASK_ID, attempt: 3 }));
-		workspaceRepo.upsert(createTestWorkspace({ taskId: TASK_ID, attempt: 2 }));
+	test("returns max attempt for task", async () => {
+		await workspaceRepo.upsert(
+			createTestWorkspace({ taskId: TASK_ID, attempt: 1 }),
+		);
+		await workspaceRepo.upsert(
+			createTestWorkspace({ taskId: TASK_ID, attempt: 3 }),
+		);
+		await workspaceRepo.upsert(
+			createTestWorkspace({ taskId: TASK_ID, attempt: 2 }),
+		);
 
-		expect(workspaceRepo.getMaxAttempt(TASK_ID)).toBe(3);
+		expect(await workspaceRepo.getMaxAttempt(TASK_ID)).toBe(3);
 	});
 });
 
@@ -276,21 +292,21 @@ describe("WorkspaceRepository getMaxAttempt", () => {
 // ============================================
 
 describe("WorkspaceRepository findByWorktreePath", () => {
-	test("finds workspace by worktree path", () => {
+	test("finds workspace by worktree path", async () => {
 		const ws = createTestWorkspace({
 			taskId: TASK_ID,
 			worktreePath: "/tmp/my-worktree",
 		});
-		workspaceRepo.upsert(ws);
+		await workspaceRepo.upsert(ws);
 
-		const found = workspaceRepo.findByWorktreePath("/tmp/my-worktree");
+		const found = await workspaceRepo.findByWorktreePath("/tmp/my-worktree");
 		expect(found).not.toBeNull();
 		expect(found?.id).toBe(ws.id);
 	});
 
-	test("returns null for non-existent worktree path", () => {
+	test("returns null for non-existent worktree path", async () => {
 		expect(
-			workspaceRepo.findByWorktreePath("/tmp/no-such-worktree"),
+			await workspaceRepo.findByWorktreePath("/tmp/no-such-worktree"),
 		).toBeNull();
 	});
 });

@@ -24,8 +24,10 @@ export interface RespondToPermissionResult {
  */
 export const respondToPermission = (input: RespondToPermissionInput) =>
 	usecase({
-		read: (ctx) => {
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+		read: async (ctx) => {
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,
@@ -40,7 +42,7 @@ export const respondToPermission = (input: RespondToPermissionInput) =>
 			}
 
 			// Get the execution process
-			const executionProcessPage = ctx.repos.executionProcess.list(
+			const executionProcessPage = await ctx.repos.executionProcess.list(
 				ExecutionProcess.BySessionId(input.sessionId),
 				{ limit: 1, sort: ExecutionProcess.defaultSort },
 			);
@@ -78,8 +80,10 @@ export const respondToPermission = (input: RespondToPermissionInput) =>
  */
 export const getPendingPermissions = (input: { sessionId: string }) =>
 	usecase({
-		read: (ctx) => {
-			const session = ctx.repos.session.get(Session.ById(input.sessionId));
+		read: async (ctx) => {
+			const session = await ctx.repos.session.get(
+				Session.ById(input.sessionId),
+			);
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
 					sessionId: input.sessionId,

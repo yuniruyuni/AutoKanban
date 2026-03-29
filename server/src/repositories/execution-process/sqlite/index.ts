@@ -10,22 +10,22 @@ import { upsert } from "./upsert";
 export class ExecutionProcessRepository implements IExecutionProcessRepository {
 	constructor(private db: Database) {}
 
-	get(spec: ExecutionProcess.Spec): ExecutionProcess | null {
+	async get(spec: ExecutionProcess.Spec): Promise<ExecutionProcess | null> {
 		return get(this.db, spec);
 	}
 
-	list(
+	async list(
 		spec: ExecutionProcess.Spec,
 		cursor: Cursor<ExecutionProcess.SortKey>,
-	): Page<ExecutionProcess> {
+	): Promise<Page<ExecutionProcess>> {
 		return list(this.db, spec, cursor);
 	}
 
-	upsert(process: ExecutionProcess): void {
+	async upsert(process: ExecutionProcess): Promise<void> {
 		upsert(this.db, process);
 	}
 
-	delete(spec: ExecutionProcess.Spec): number {
+	async delete(spec: ExecutionProcess.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 }

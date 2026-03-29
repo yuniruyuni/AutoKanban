@@ -43,15 +43,15 @@ export interface StartExecutionResult {
 
 export const startExecution = (input: StartExecutionInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Verify task exists
-			const task = ctx.repos.task.get(Task.ById(input.taskId));
+			const task = await ctx.repos.task.get(Task.ById(input.taskId));
 			if (!task) {
 				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
 			}
 
 			// Get the project (Project = 1 Repo)
-			const project = ctx.repos.project.get(Project.ById(task.projectId));
+			const project = await ctx.repos.project.get(Project.ById(task.projectId));
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
 					projectId: task.projectId,
@@ -59,7 +59,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			}
 
 			// Check if there's already an active workspace for this task
-			const activeWorkspace = ctx.repos.workspace.get(
+			const activeWorkspace = await ctx.repos.workspace.get(
 				Workspace.ByTaskIdActive(input.taskId),
 			);
 
@@ -68,7 +68,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			// Resume from killed state is handled by queueMessage (follow-up).
 			let activeHasSessions = false;
 			if (activeWorkspace) {
-				const sessionsPage = ctx.repos.session.list(
+				const sessionsPage = await ctx.repos.session.list(
 					Session.ByWorkspaceId(activeWorkspace.id),
 					{ limit: 1 },
 				);
@@ -76,12 +76,12 @@ export const startExecution = (input: StartExecutionInput) =>
 			}
 
 			// Get max attempt for this task
-			const maxAttempt = ctx.repos.workspace.getMaxAttempt(input.taskId);
+			const maxAttempt = await ctx.repos.workspace.getMaxAttempt(input.taskId);
 
 			// Determine resume info only when reusing the same workspace (no new attempt)
 			const resumeInfo =
 				activeWorkspace && !activeHasSessions
-					? ctx.repos.codingAgentTurn.findLatestResumeInfoByWorkspaceId(
+					? await ctx.repos.codingAgentTurn.findLatestResumeInfoByWorkspaceId(
 							activeWorkspace.id,
 						)
 					: null;
@@ -91,7 +91,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			let interruptedTools: PendingToolUse[] = [];
 			if (resumeInfo && activeWorkspace) {
 				// Find the latest session in this workspace
-				const sessionsPage = ctx.repos.session.list(
+				const sessionsPage = await ctx.repos.session.list(
 					Session.ByWorkspaceId(activeWorkspace.id),
 					{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 				);
@@ -99,7 +99,7 @@ export const startExecution = (input: StartExecutionInput) =>
 
 				if (latestSession) {
 					// Find the latest execution process for this session
-					const processesPage = ctx.repos.executionProcess.list(
+					const processesPage = await ctx.repos.executionProcess.list(
 						ExecutionProcess.BySessionId(latestSession.id),
 						{ limit: 1, sort: ExecutionProcess.defaultSort },
 					);
@@ -107,7 +107,7 @@ export const startExecution = (input: StartExecutionInput) =>
 
 					if (latestProcess) {
 						// Get logs and find interrupted Task tools
-						const logs = ctx.repos.executionProcessLogs.getLogs(
+						const logs = await ctx.repos.executionProcessLogs.getLogs(
 							latestProcess.id,
 						);
 						if (logs?.logs) {
@@ -120,7 +120,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			// Look up variant entity if specified
 			const executor = input.executor ?? "claude-code";
 			const variantEntity = input.variant
-				? ctx.repos.variant.get(
+				? await ctx.repos.variant.get(
 						Variant.ByExecutorAndName(executor, input.variant),
 					)
 				: null;
@@ -212,7 +212,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			};
 		},
 
-		write: (
+		write: async (
 			ctx,
 			{
 				task,
@@ -230,7 +230,7 @@ export const startExecution = (input: StartExecutionInput) =>
 		) => {
 			// Archive the previous workspace if needed
 			if (workspaceToArchive) {
-				ctx.repos.workspace.upsert({
+				await ctx.repos.workspace.upsert({
 					...workspaceToArchive,
 					archived: true,
 					updatedAt: ctx.now,
@@ -239,16 +239,16 @@ export const startExecution = (input: StartExecutionInput) =>
 
 			// Save workspace if new
 			if (isNewWorkspace) {
-				ctx.repos.workspace.upsert(workspace);
-				ctx.repos.workspaceRepo.upsert(workspaceRepo);
+				await ctx.repos.workspace.upsert(workspace);
+				await ctx.repos.workspaceRepo.upsert(workspaceRepo);
 			}
 
 			// Save session
-			ctx.repos.session.upsert(session);
+			await ctx.repos.session.upsert(session);
 
 			// Move task to inprogress atomically with the execution start
 			if (task.status !== "inprogress") {
-				ctx.repos.task.upsert({
+				await ctx.repos.task.upsert({
 					...task,
 					status: "inprogress",
 					updatedAt: ctx.now,
@@ -305,7 +305,7 @@ export const startExecution = (input: StartExecutionInput) =>
 					workspace.id,
 				);
 				workspace.updatedAt = ctx.now;
-				ctx.repos.workspace.upsert(workspace);
+				await ctx.repos.workspace.upsert(workspace);
 			}
 
 			// Determine working directory

@@ -5,7 +5,7 @@ import { generateId } from "../models/common";
  * Seeds default task templates if none exist yet.
  * Called during DB initialization.
  */
-export function seedTaskTemplates(db: Database): void {
+export async function seedTaskTemplates(db: Database): Promise<void> {
 	const row = db
 		.query<{ c: number }, []>(
 			"SELECT COUNT(*) as c FROM project_task_templates",

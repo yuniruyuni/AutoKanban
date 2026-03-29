@@ -12,8 +12,10 @@ export interface UpdateVariantInput {
 
 export const updateVariant = (input: UpdateVariantInput) =>
 	usecase({
-		read: (ctx) => {
-			const variant = ctx.repos.variant.get(Variant.ById(input.variantId));
+		read: async (ctx) => {
+			const variant = await ctx.repos.variant.get(
+				Variant.ById(input.variantId),
+			);
 			if (!variant) {
 				return fail("NOT_FOUND", "Variant not found", {
 					variantId: input.variantId,
@@ -37,8 +39,8 @@ export const updateVariant = (input: UpdateVariantInput) =>
 			return { variant: updatedVariant };
 		},
 
-		write: (ctx, { variant }) => {
-			ctx.repos.variant.upsert(variant);
+		write: async (ctx, { variant }) => {
+			await ctx.repos.variant.upsert(variant);
 			return variant;
 		},
 	});

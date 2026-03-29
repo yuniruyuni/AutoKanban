@@ -13,8 +13,10 @@ export interface UpdateProjectInput {
 
 export const updateProject = (input: UpdateProjectInput) =>
 	usecase({
-		read: (ctx) => {
-			const project = ctx.repos.project.get(Project.ById(input.projectId));
+		read: async (ctx) => {
+			const project = await ctx.repos.project.get(
+				Project.ById(input.projectId),
+			);
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
 					projectId: input.projectId,
@@ -44,8 +46,8 @@ export const updateProject = (input: UpdateProjectInput) =>
 			return { project: updated };
 		},
 
-		write: (ctx, { project }) => {
-			ctx.repos.project.upsert(project);
+		write: async (ctx, { project }) => {
+			await ctx.repos.project.upsert(project);
 			return project;
 		},
 	});

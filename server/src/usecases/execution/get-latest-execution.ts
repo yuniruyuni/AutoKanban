@@ -24,9 +24,9 @@ export interface GetLatestExecutionResult {
  */
 export const getLatestExecution = (input: GetLatestExecutionInput) =>
 	usecase({
-		read: (ctx) => {
+		read: async (ctx) => {
 			// Find workspace by taskId
-			const workspace = ctx.repos.workspace.get(
+			const workspace = await ctx.repos.workspace.get(
 				Workspace.ByTaskIdActive(input.taskId),
 			);
 
@@ -41,7 +41,7 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 			}
 
 			// Find latest session for this workspace
-			const sessionPage = ctx.repos.session.list(
+			const sessionPage = await ctx.repos.session.list(
 				Session.ByWorkspaceId(workspace.id),
 				{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 			);
@@ -58,7 +58,7 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 			const session = sessionPage.items[0];
 
 			// Find latest execution process for this session
-			const executionPage = ctx.repos.executionProcess.list(
+			const executionPage = await ctx.repos.executionProcess.list(
 				ExecutionProcess.BySessionId(session.id),
 				{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 			);
@@ -77,7 +77,9 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 			// Optionally include logs
 			let logs: ExecutionProcessLogs | null = null;
 			if (input.includeLogs) {
-				logs = ctx.repos.executionProcessLogs.getLogs(executionProcess.id);
+				logs = await ctx.repos.executionProcessLogs.getLogs(
+					executionProcess.id,
+				);
 			}
 
 			const result: GetLatestExecutionResult = {

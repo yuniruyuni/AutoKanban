@@ -14,9 +14,9 @@ export interface GetAttemptExecutionResult {
 
 export const getAttemptExecution = (input: GetAttemptExecutionInput) =>
 	usecase({
-		read: (ctx): GetAttemptExecutionResult => {
+		read: async (ctx): Promise<GetAttemptExecutionResult> => {
 			// Find latest session for this workspace
-			const sessionPage = ctx.repos.session.list(
+			const sessionPage = await ctx.repos.session.list(
 				Session.ByWorkspaceId(input.workspaceId),
 				{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 			);
@@ -32,7 +32,7 @@ export const getAttemptExecution = (input: GetAttemptExecutionInput) =>
 			const session = sessionPage.items[0];
 
 			// Find latest codingagent execution process for this session
-			const epPage = ctx.repos.executionProcess.list(
+			const epPage = await ctx.repos.executionProcess.list(
 				ExecutionProcess.BySessionId(session.id).and(
 					ExecutionProcess.ByRunReason("codingagent"),
 				),

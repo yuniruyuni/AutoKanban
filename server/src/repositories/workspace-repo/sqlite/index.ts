@@ -11,26 +11,26 @@ import { upsert } from "./upsert";
 export class WorkspaceRepoRepository implements IWorkspaceRepoRepository {
 	constructor(private db: Database) {}
 
-	get(spec: WorkspaceRepo.Spec): WorkspaceRepo | null {
+	async get(spec: WorkspaceRepo.Spec): Promise<WorkspaceRepo | null> {
 		return get(this.db, spec);
 	}
 
-	list(
+	async list(
 		spec: WorkspaceRepo.Spec,
 		cursor: Cursor<WorkspaceRepo.SortKey>,
-	): Page<WorkspaceRepo> {
+	): Promise<Page<WorkspaceRepo>> {
 		return list(this.db, spec, cursor);
 	}
 
-	listByWorkspace(workspaceId: string): WorkspaceRepo[] {
+	async listByWorkspace(workspaceId: string): Promise<WorkspaceRepo[]> {
 		return listByWorkspace(this.db, workspaceId);
 	}
 
-	upsert(workspaceRepo: WorkspaceRepo): void {
+	async upsert(workspaceRepo: WorkspaceRepo): Promise<void> {
 		upsert(this.db, workspaceRepo);
 	}
 
-	delete(spec: WorkspaceRepo.Spec): number {
+	async delete(spec: WorkspaceRepo.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 }

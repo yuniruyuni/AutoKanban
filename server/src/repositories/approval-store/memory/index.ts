@@ -19,9 +19,9 @@ export class ApprovalStore implements IApprovalStore {
 		approval: Approval,
 		repo: IApprovalRepository,
 	): Promise<ApprovalResponse> {
-		repo.upsert(approval);
+		await repo.upsert(approval);
 
-		const existing = repo.get(Approval.ById(approval.id));
+		const existing = await repo.get(Approval.ById(approval.id));
 		if (existing && existing.status !== "pending") {
 			return { status: existing.status, reason: existing.reason };
 		}
@@ -31,17 +31,17 @@ export class ApprovalStore implements IApprovalStore {
 		});
 	}
 
-	respond(
+	async respond(
 		id: string,
 		status: "approved" | "denied",
 		reason: string | null,
 		repo: IApprovalRepository,
-	): boolean {
-		const existing = repo.get(Approval.ById(id));
+	): Promise<boolean> {
+		const existing = await repo.get(Approval.ById(id));
 		if (!existing) return false;
 
 		const updated = Approval.respond(existing, status, reason);
-		repo.upsert(updated);
+		await repo.upsert(updated);
 
 		const pending = this.pending.get(id);
 		if (pending) {
@@ -53,11 +53,11 @@ export class ApprovalStore implements IApprovalStore {
 		return true;
 	}
 
-	getRespondedStatus(
+	async getRespondedStatus(
 		approvalId: string,
 		repo: IApprovalRepository,
-	): ApprovalResponse | null {
-		const approval = repo.get(Approval.ById(approvalId));
+	): Promise<ApprovalResponse | null> {
+		const approval = await repo.get(Approval.ById(approvalId));
 		if (!approval || approval.status === "pending") return null;
 		return { status: approval.status, reason: approval.reason };
 	}

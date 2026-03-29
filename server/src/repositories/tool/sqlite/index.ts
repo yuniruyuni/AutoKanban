@@ -22,27 +22,30 @@ export class ToolRepository implements IToolRepository {
 		this.spawnFn = spawnFn ?? spawn;
 	}
 
-	get(spec: Tool.Spec): Tool | null {
+	async get(spec: Tool.Spec): Promise<Tool | null> {
 		return get(this.db, spec);
 	}
 
-	list(spec: Tool.Spec, cursor: Cursor<Tool.SortKey>): Page<Tool> {
+	async list(
+		spec: Tool.Spec,
+		cursor: Cursor<Tool.SortKey>,
+	): Promise<Page<Tool>> {
 		return list(this.db, spec, cursor);
 	}
 
-	listAll(): Tool[] {
+	async listAll(): Promise<Tool[]> {
 		return listAll(this.db);
 	}
 
-	upsert(tool: Tool): void {
+	async upsert(tool: Tool): Promise<void> {
 		upsert(this.db, tool);
 	}
 
-	delete(spec: Tool.Spec): number {
+	async delete(spec: Tool.Spec): Promise<number> {
 		return del(this.db, spec);
 	}
 
-	executeCommand(command: string, cwd?: string): void {
+	async executeCommand(command: string, cwd?: string): Promise<void> {
 		executeCommand(this.spawnFn, command, cwd);
 	}
 }

@@ -6,8 +6,8 @@ export interface ListVariantsInput {
 
 export const listVariants = (input: ListVariantsInput) =>
 	usecase({
-		read: (ctx) => {
-			const items = ctx.repos.variant.listByExecutor(input.executor);
+		read: async (ctx) => {
+			const items = await ctx.repos.variant.listByExecutor(input.executor);
 			return { items };
 		},
 	});

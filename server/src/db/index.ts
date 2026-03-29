@@ -24,7 +24,7 @@ export async function initDatabase(dbPath: string): Promise<Database> {
 	db = new Database(dbPath);
 	db.exec("PRAGMA foreign_keys = ON");
 
-	seedTaskTemplates(db);
+	await seedTaskTemplates(db);
 
 	return db;
 }

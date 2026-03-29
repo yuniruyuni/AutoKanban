@@ -18,11 +18,11 @@ let EXECUTION_PROCESS_ID: string;
 let SESSION_ID: string;
 let WORKSPACE_ID: string;
 
-beforeEach(() => {
+beforeEach(async () => {
 	db = createTestDB();
 	turnRepo = new CodingAgentTurnRepository(db);
 
-	const seed = seedFullChain(db);
+	const seed = await seedFullChain(db);
 	EXECUTION_PROCESS_ID = seed.executionProcess.id;
 	SESSION_ID = seed.session.id;
 	WORKSPACE_ID = seed.workspace.id;
@@ -37,7 +37,7 @@ afterEach(() => {
 // ============================================
 
 describe("CodingAgentTurnRepository round-trip", () => {
-	test("preserves all fields", () => {
+	test("preserves all fields", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: "session-abc",
@@ -46,9 +46,9 @@ describe("CodingAgentTurnRepository round-trip", () => {
 			summary: "Feature X implemented",
 			seen: true,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const retrieved = turnRepo.get(CodingAgentTurn.ById(turn.id));
+		const retrieved = await turnRepo.get(CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as CodingAgentTurn, turn, [
 			"createdAt",
@@ -56,7 +56,7 @@ describe("CodingAgentTurnRepository round-trip", () => {
 		]);
 	});
 
-	test("preserves null fields", () => {
+	test("preserves null fields", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: null,
@@ -65,9 +65,9 @@ describe("CodingAgentTurnRepository round-trip", () => {
 			summary: null,
 			seen: false,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const retrieved = turnRepo.get(CodingAgentTurn.ById(turn.id));
+		const retrieved = await turnRepo.get(CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.agentSessionId).toBeNull();
 		expect(retrieved?.agentMessageId).toBeNull();
@@ -76,14 +76,14 @@ describe("CodingAgentTurnRepository round-trip", () => {
 		expect(retrieved?.seen).toBe(false);
 	});
 
-	test("preserves seen=true", () => {
+	test("preserves seen=true", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			seen: true,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const retrieved = turnRepo.get(CodingAgentTurn.ById(turn.id));
+		const retrieved = await turnRepo.get(CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.seen).toBe(true);
 	});
@@ -94,11 +94,11 @@ describe("CodingAgentTurnRepository round-trip", () => {
 // ============================================
 
 describe("CodingAgentTurnRepository update round-trip", () => {
-	test("reflects all changed fields", () => {
+	test("reflects all changed fields", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
 		const updated: CodingAgentTurn = {
 			...turn,
@@ -109,9 +109,9 @@ describe("CodingAgentTurnRepository update round-trip", () => {
 			seen: true,
 			updatedAt: new Date(),
 		};
-		turnRepo.upsert(updated);
+		await turnRepo.upsert(updated);
 
-		const retrieved = turnRepo.get(CodingAgentTurn.ById(turn.id));
+		const retrieved = await turnRepo.get(CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as CodingAgentTurn, updated, [
 			"createdAt",
@@ -125,12 +125,12 @@ describe("CodingAgentTurnRepository update round-trip", () => {
 // ============================================
 
 describe("CodingAgentTurnRepository empty collection", () => {
-	test("get returns null for non-existent id", () => {
-		expect(turnRepo.get(CodingAgentTurn.ById("non-existent"))).toBeNull();
+	test("get returns null for non-existent id", async () => {
+		expect(await turnRepo.get(CodingAgentTurn.ById("non-existent"))).toBeNull();
 	});
 
-	test("list returns empty page", () => {
-		const page = turnRepo.list(
+	test("list returns empty page", async () => {
+		const page = await turnRepo.list(
 			CodingAgentTurn.ByExecutionProcessId("non-existent"),
 			{ limit: 10 },
 		);
@@ -144,7 +144,7 @@ describe("CodingAgentTurnRepository empty collection", () => {
 // ============================================
 
 describe("CodingAgentTurnRepository multiple elements", () => {
-	test("stores and retrieves multiple turns", () => {
+	test("stores and retrieves multiple turns", async () => {
 		// Need multiple execution processes (unique FK constraint)
 		const _sessionRepo = new SessionRepository(db);
 		const epRepo = new ExecutionProcessRepository(db);
@@ -152,18 +152,27 @@ describe("CodingAgentTurnRepository multiple elements", () => {
 		const ep1 = createTestExecutionProcess({ sessionId: SESSION_ID });
 		const ep2 = createTestExecutionProcess({ sessionId: SESSION_ID });
 		const ep3 = createTestExecutionProcess({ sessionId: SESSION_ID });
-		epRepo.upsert(ep1);
-		epRepo.upsert(ep2);
-		epRepo.upsert(ep3);
+		await epRepo.upsert(ep1);
+		await epRepo.upsert(ep2);
+		await epRepo.upsert(ep3);
 
-		turnRepo.upsert(createTestCodingAgentTurn({ executionProcessId: ep1.id }));
-		turnRepo.upsert(createTestCodingAgentTurn({ executionProcessId: ep2.id }));
-		turnRepo.upsert(createTestCodingAgentTurn({ executionProcessId: ep3.id }));
+		await turnRepo.upsert(
+			createTestCodingAgentTurn({ executionProcessId: ep1.id }),
+		);
+		await turnRepo.upsert(
+			createTestCodingAgentTurn({ executionProcessId: ep2.id }),
+		);
+		await turnRepo.upsert(
+			createTestCodingAgentTurn({ executionProcessId: ep3.id }),
+		);
 
 		// Use HasAgentSessionId (defaults to null, so use All-like query)
-		const page = turnRepo.list(CodingAgentTurn.ByExecutionProcessId(ep1.id), {
-			limit: 50,
-		});
+		const page = await turnRepo.list(
+			CodingAgentTurn.ByExecutionProcessId(ep1.id),
+			{
+				limit: 50,
+			},
+		);
 		expect(page.items).toHaveLength(1);
 	});
 });
@@ -173,19 +182,19 @@ describe("CodingAgentTurnRepository multiple elements", () => {
 // ============================================
 
 describe("CodingAgentTurnRepository delete", () => {
-	test("deletes and confirms absence", () => {
+	test("deletes and confirms absence", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const deleted = turnRepo.delete(CodingAgentTurn.ById(turn.id));
+		const deleted = await turnRepo.delete(CodingAgentTurn.ById(turn.id));
 		expect(deleted).toBe(1);
-		expect(turnRepo.get(CodingAgentTurn.ById(turn.id))).toBeNull();
+		expect(await turnRepo.get(CodingAgentTurn.ById(turn.id))).toBeNull();
 	});
 
-	test("returns 0 when nothing to delete", () => {
-		expect(turnRepo.delete(CodingAgentTurn.ById("non-existent"))).toBe(0);
+	test("returns 0 when nothing to delete", async () => {
+		expect(await turnRepo.delete(CodingAgentTurn.ById("non-existent"))).toBe(0);
 	});
 });
 
@@ -194,48 +203,48 @@ describe("CodingAgentTurnRepository delete", () => {
 // ============================================
 
 describe("CodingAgentTurnRepository spec filtering", () => {
-	test("ById finds correct turn", () => {
+	test("ById finds correct turn", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const retrieved = turnRepo.get(CodingAgentTurn.ById(turn.id));
+		const retrieved = await turnRepo.get(CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(turn.id);
 	});
 
-	test("ByExecutionProcessId filters correctly", () => {
+	test("ByExecutionProcessId filters correctly", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const retrieved = turnRepo.get(
+		const retrieved = await turnRepo.get(
 			CodingAgentTurn.ByExecutionProcessId(EXECUTION_PROCESS_ID),
 		);
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.executionProcessId).toBe(EXECUTION_PROCESS_ID);
 	});
 
-	test("ByAgentSessionId filters correctly", () => {
+	test("ByAgentSessionId filters correctly", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: "unique-session",
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const retrieved = turnRepo.get(
+		const retrieved = await turnRepo.get(
 			CodingAgentTurn.ByAgentSessionId("unique-session"),
 		);
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.agentSessionId).toBe("unique-session");
 	});
 
-	test("HasAgentSessionId filters turns with non-null agent session", () => {
+	test("HasAgentSessionId filters turns with non-null agent session", async () => {
 		const epRepo = new ExecutionProcessRepository(db);
 		const ep2 = createTestExecutionProcess({ sessionId: SESSION_ID });
-		epRepo.upsert(ep2);
+		await epRepo.upsert(ep2);
 
 		const turnWith = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
@@ -245,10 +254,10 @@ describe("CodingAgentTurnRepository spec filtering", () => {
 			executionProcessId: ep2.id,
 			agentSessionId: null,
 		});
-		turnRepo.upsert(turnWith);
-		turnRepo.upsert(turnWithout);
+		await turnRepo.upsert(turnWith);
+		await turnRepo.upsert(turnWithout);
 
-		const page = turnRepo.list(CodingAgentTurn.HasAgentSessionId(), {
+		const page = await turnRepo.list(CodingAgentTurn.HasAgentSessionId(), {
 			limit: 50,
 		});
 		expect(page.items).toHaveLength(1);
@@ -261,16 +270,19 @@ describe("CodingAgentTurnRepository spec filtering", () => {
 // ============================================
 
 describe("CodingAgentTurnRepository updateAgentSessionId", () => {
-	test("updates only agent session id", () => {
+	test("updates only agent session id", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: null,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		turnRepo.updateAgentSessionId(EXECUTION_PROCESS_ID, "new-agent-session");
+		await turnRepo.updateAgentSessionId(
+			EXECUTION_PROCESS_ID,
+			"new-agent-session",
+		);
 
-		const retrieved = turnRepo.get(CodingAgentTurn.ById(turn.id));
+		const retrieved = await turnRepo.get(CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.agentSessionId).toBe("new-agent-session");
 		// Other fields should remain unchanged
@@ -279,16 +291,16 @@ describe("CodingAgentTurnRepository updateAgentSessionId", () => {
 });
 
 describe("CodingAgentTurnRepository updateAgentMessageId", () => {
-	test("updates only agent message id", () => {
+	test("updates only agent message id", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentMessageId: null,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		turnRepo.updateAgentMessageId(EXECUTION_PROCESS_ID, "new-msg-id");
+		await turnRepo.updateAgentMessageId(EXECUTION_PROCESS_ID, "new-msg-id");
 
-		const retrieved = turnRepo.get(CodingAgentTurn.ById(turn.id));
+		const retrieved = await turnRepo.get(CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.agentMessageId).toBe("new-msg-id");
 		expect(retrieved?.prompt).toBe(turn.prompt);
@@ -296,16 +308,19 @@ describe("CodingAgentTurnRepository updateAgentMessageId", () => {
 });
 
 describe("CodingAgentTurnRepository updateSummary", () => {
-	test("updates only summary", () => {
+	test("updates only summary", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			summary: null,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		turnRepo.updateSummary(EXECUTION_PROCESS_ID, "Task completed successfully");
+		await turnRepo.updateSummary(
+			EXECUTION_PROCESS_ID,
+			"Task completed successfully",
+		);
 
-		const retrieved = turnRepo.get(CodingAgentTurn.ById(turn.id));
+		const retrieved = await turnRepo.get(CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.summary).toBe("Task completed successfully");
 		expect(retrieved?.prompt).toBe(turn.prompt);
@@ -313,57 +328,59 @@ describe("CodingAgentTurnRepository updateSummary", () => {
 });
 
 describe("CodingAgentTurnRepository findLatestResumeInfo", () => {
-	test("returns resume info for session with agent session", () => {
+	test("returns resume info for session with agent session", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: "resume-session",
 			agentMessageId: "resume-msg",
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const info = turnRepo.findLatestResumeInfo(SESSION_ID);
+		const info = await turnRepo.findLatestResumeInfo(SESSION_ID);
 		expect(info).not.toBeNull();
 		expect(info?.agentSessionId).toBe("resume-session");
 		expect(info?.agentMessageId).toBe("resume-msg");
 	});
 
-	test("returns null when no turns have agent session id", () => {
+	test("returns null when no turns have agent session id", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: null,
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		expect(turnRepo.findLatestResumeInfo(SESSION_ID)).toBeNull();
+		expect(await turnRepo.findLatestResumeInfo(SESSION_ID)).toBeNull();
 	});
 
-	test("returns null for non-existent session", () => {
-		expect(turnRepo.findLatestResumeInfo("non-existent")).toBeNull();
+	test("returns null for non-existent session", async () => {
+		expect(await turnRepo.findLatestResumeInfo("non-existent")).toBeNull();
 	});
 });
 
 describe("CodingAgentTurnRepository findLatestResumeInfoByWorkspaceId", () => {
-	test("returns resume info across workspace sessions (3-table JOIN)", () => {
+	test("returns resume info across workspace sessions (3-table JOIN)", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: "ws-resume-session",
 			agentMessageId: "ws-resume-msg",
 		});
-		turnRepo.upsert(turn);
+		await turnRepo.upsert(turn);
 
-		const info = turnRepo.findLatestResumeInfoByWorkspaceId(WORKSPACE_ID);
+		const info = await turnRepo.findLatestResumeInfoByWorkspaceId(WORKSPACE_ID);
 		expect(info).not.toBeNull();
 		expect(info?.agentSessionId).toBe("ws-resume-session");
 		expect(info?.agentMessageId).toBe("ws-resume-msg");
 	});
 
-	test("returns null for workspace with no agent sessions", () => {
-		expect(turnRepo.findLatestResumeInfoByWorkspaceId(WORKSPACE_ID)).toBeNull();
+	test("returns null for workspace with no agent sessions", async () => {
+		expect(
+			await turnRepo.findLatestResumeInfoByWorkspaceId(WORKSPACE_ID),
+		).toBeNull();
 	});
 
-	test("returns null for non-existent workspace", () => {
+	test("returns null for non-existent workspace", async () => {
 		expect(
-			turnRepo.findLatestResumeInfoByWorkspaceId("non-existent"),
+			await turnRepo.findLatestResumeInfoByWorkspaceId("non-existent"),
 		).toBeNull();
 	});
 });

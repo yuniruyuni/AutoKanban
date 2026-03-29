@@ -22,8 +22,8 @@ export const createVariant = (input: CreateVariantInput) =>
 			return { variant };
 		},
 
-		write: (ctx, { variant }) => {
-			ctx.repos.variant.upsert(variant);
+		write: async (ctx, { variant }) => {
+			await ctx.repos.variant.upsert(variant);
 			return variant;
 		},
 	});

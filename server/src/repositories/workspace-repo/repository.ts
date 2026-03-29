@@ -2,12 +2,12 @@ import type { Cursor, Page } from "../../models/common";
 import type { WorkspaceRepo } from "../../models/workspace-repo";
 
 export interface IWorkspaceRepoRepository {
-	get(spec: WorkspaceRepo.Spec): WorkspaceRepo | null;
+	get(spec: WorkspaceRepo.Spec): Promise<WorkspaceRepo | null>;
 	list(
 		spec: WorkspaceRepo.Spec,
 		cursor: Cursor<WorkspaceRepo.SortKey>,
-	): Page<WorkspaceRepo>;
-	listByWorkspace(workspaceId: string): WorkspaceRepo[];
-	upsert(workspaceRepo: WorkspaceRepo): void;
-	delete(spec: WorkspaceRepo.Spec): number;
+	): Promise<Page<WorkspaceRepo>>;
+	listByWorkspace(workspaceId: string): Promise<WorkspaceRepo[]>;
+	upsert(workspaceRepo: WorkspaceRepo): Promise<void>;
+	delete(spec: WorkspaceRepo.Spec): Promise<number>;
 }

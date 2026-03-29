@@ -49,7 +49,7 @@ export const createProject = (input: CreateProjectInput) =>
 			}
 
 			// Check if a project with this repo path already exists
-			const existing = ctx.repos.project.get(
+			const existing = await ctx.repos.project.get(
 				Project.ByRepoPath(input.repoPath),
 			);
 			if (existing) {
@@ -78,11 +78,11 @@ export const createProject = (input: CreateProjectInput) =>
 			return { project };
 		},
 
-		write: (ctx, { project }) => {
-			ctx.repos.project.upsert(project);
+		write: async (ctx, { project }) => {
+			await ctx.repos.project.upsert(project);
 
 			// Generate default tasks from templates
-			const templates = ctx.repos.taskTemplate.listAll();
+			const templates = await ctx.repos.taskTemplate.listAll();
 			for (const tmpl of templates) {
 				if (
 					tmpl.condition === "no_dev_server" &&
@@ -96,7 +96,7 @@ export const createProject = (input: CreateProjectInput) =>
 					title: tmpl.title,
 					description: tmpl.description,
 				});
-				ctx.repos.task.upsert(task);
+				await ctx.repos.task.upsert(task);
 			}
 
 			return project;

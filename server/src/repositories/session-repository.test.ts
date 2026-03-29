@@ -11,11 +11,11 @@ let db: Database;
 let sessionRepo: SessionRepository;
 let WORKSPACE_ID: string;
 
-beforeEach(() => {
+beforeEach(async () => {
 	db = createTestDB();
 	sessionRepo = new SessionRepository(db);
 
-	const seed = seedFullChain(db);
+	const seed = await seedFullChain(db);
 	WORKSPACE_ID = seed.workspace.id;
 });
 
@@ -28,15 +28,15 @@ afterEach(() => {
 // ============================================
 
 describe("SessionRepository round-trip", () => {
-	test("preserves all fields", () => {
+	test("preserves all fields", async () => {
 		const session = createTestSession({
 			workspaceId: WORKSPACE_ID,
 			executor: "claude-code",
 			variant: "opus",
 		});
-		sessionRepo.upsert(session);
+		await sessionRepo.upsert(session);
 
-		const retrieved = sessionRepo.get(Session.ById(session.id));
+		const retrieved = await sessionRepo.get(Session.ById(session.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Session, session, [
 			"createdAt",
@@ -44,29 +44,29 @@ describe("SessionRepository round-trip", () => {
 		]);
 	});
 
-	test("preserves null executor and variant", () => {
+	test("preserves null executor and variant", async () => {
 		const session = createTestSession({
 			workspaceId: WORKSPACE_ID,
 			executor: null,
 			variant: null,
 		});
-		sessionRepo.upsert(session);
+		await sessionRepo.upsert(session);
 
-		const retrieved = sessionRepo.get(Session.ById(session.id));
+		const retrieved = await sessionRepo.get(Session.ById(session.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.executor).toBeNull();
 		expect(retrieved?.variant).toBeNull();
 	});
 
-	test("preserves string executor and variant", () => {
+	test("preserves string executor and variant", async () => {
 		const session = createTestSession({
 			workspaceId: WORKSPACE_ID,
 			executor: "custom-executor",
 			variant: "custom-variant",
 		});
-		sessionRepo.upsert(session);
+		await sessionRepo.upsert(session);
 
-		const retrieved = sessionRepo.get(Session.ById(session.id));
+		const retrieved = await sessionRepo.get(Session.ById(session.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.executor).toBe("custom-executor");
 		expect(retrieved?.variant).toBe("custom-variant");
@@ -78,9 +78,9 @@ describe("SessionRepository round-trip", () => {
 // ============================================
 
 describe("SessionRepository update round-trip", () => {
-	test("reflects all changed fields", () => {
+	test("reflects all changed fields", async () => {
 		const session = createTestSession({ workspaceId: WORKSPACE_ID });
-		sessionRepo.upsert(session);
+		await sessionRepo.upsert(session);
 
 		const updated: Session = {
 			...session,
@@ -88,9 +88,9 @@ describe("SessionRepository update round-trip", () => {
 			variant: "new-variant",
 			updatedAt: new Date(),
 		};
-		sessionRepo.upsert(updated);
+		await sessionRepo.upsert(updated);
 
-		const retrieved = sessionRepo.get(Session.ById(session.id));
+		const retrieved = await sessionRepo.get(Session.ById(session.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Session, updated, [
 			"createdAt",
@@ -104,12 +104,12 @@ describe("SessionRepository update round-trip", () => {
 // ============================================
 
 describe("SessionRepository empty collection", () => {
-	test("get returns null for non-existent id", () => {
-		expect(sessionRepo.get(Session.ById("non-existent"))).toBeNull();
+	test("get returns null for non-existent id", async () => {
+		expect(await sessionRepo.get(Session.ById("non-existent"))).toBeNull();
 	});
 
-	test("list returns empty page", () => {
-		const page = sessionRepo.list(Session.ByWorkspaceId("non-existent"), {
+	test("list returns empty page", async () => {
+		const page = await sessionRepo.list(Session.ByWorkspaceId("non-existent"), {
 			limit: 10,
 		});
 		expect(page.items).toHaveLength(0);
@@ -122,13 +122,15 @@ describe("SessionRepository empty collection", () => {
 // ============================================
 
 describe("SessionRepository multiple elements", () => {
-	test("stores and retrieves multiple sessions", () => {
+	test("stores and retrieves multiple sessions", async () => {
 		// seedFullChain already created 1 session for this workspace
 		for (let i = 0; i < 3; i++) {
-			sessionRepo.upsert(createTestSession({ workspaceId: WORKSPACE_ID }));
+			await sessionRepo.upsert(
+				createTestSession({ workspaceId: WORKSPACE_ID }),
+			);
 		}
 
-		const page = sessionRepo.list(Session.ByWorkspaceId(WORKSPACE_ID), {
+		const page = await sessionRepo.list(Session.ByWorkspaceId(WORKSPACE_ID), {
 			limit: 50,
 		});
 		expect(page.items).toHaveLength(4); // 1 from seed + 3 new
@@ -140,17 +142,17 @@ describe("SessionRepository multiple elements", () => {
 // ============================================
 
 describe("SessionRepository delete", () => {
-	test("deletes and confirms absence", () => {
+	test("deletes and confirms absence", async () => {
 		const session = createTestSession({ workspaceId: WORKSPACE_ID });
-		sessionRepo.upsert(session);
+		await sessionRepo.upsert(session);
 
-		const deleted = sessionRepo.delete(Session.ById(session.id));
+		const deleted = await sessionRepo.delete(Session.ById(session.id));
 		expect(deleted).toBe(1);
-		expect(sessionRepo.get(Session.ById(session.id))).toBeNull();
+		expect(await sessionRepo.get(Session.ById(session.id))).toBeNull();
 	});
 
-	test("returns 0 when nothing to delete", () => {
-		expect(sessionRepo.delete(Session.ById("non-existent"))).toBe(0);
+	test("returns 0 when nothing to delete", async () => {
+		expect(await sessionRepo.delete(Session.ById("non-existent"))).toBe(0);
 	});
 });
 
@@ -159,21 +161,21 @@ describe("SessionRepository delete", () => {
 // ============================================
 
 describe("SessionRepository spec filtering", () => {
-	test("ById finds correct session", () => {
+	test("ById finds correct session", async () => {
 		const session = createTestSession({ workspaceId: WORKSPACE_ID });
-		sessionRepo.upsert(session);
+		await sessionRepo.upsert(session);
 
-		const retrieved = sessionRepo.get(Session.ById(session.id));
+		const retrieved = await sessionRepo.get(Session.ById(session.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(session.id);
 	});
 
-	test("ByWorkspaceId filters by workspace", () => {
+	test("ByWorkspaceId filters by workspace", async () => {
 		const session = createTestSession({ workspaceId: WORKSPACE_ID });
-		sessionRepo.upsert(session);
+		await sessionRepo.upsert(session);
 
 		// seedFullChain already created 1 session for this workspace
-		const page = sessionRepo.list(Session.ByWorkspaceId(WORKSPACE_ID), {
+		const page = await sessionRepo.list(Session.ByWorkspaceId(WORKSPACE_ID), {
 			limit: 50,
 		});
 		expect(page.items).toHaveLength(2); // 1 from seed + 1 new

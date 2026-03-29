@@ -8,8 +8,10 @@ export interface DeleteVariantInput {
 
 export const deleteVariant = (input: DeleteVariantInput) =>
 	usecase({
-		read: (ctx) => {
-			const variant = ctx.repos.variant.get(Variant.ById(input.variantId));
+		read: async (ctx) => {
+			const variant = await ctx.repos.variant.get(
+				Variant.ById(input.variantId),
+			);
 			if (!variant) {
 				return fail("NOT_FOUND", "Variant not found", {
 					variantId: input.variantId,
@@ -18,8 +20,8 @@ export const deleteVariant = (input: DeleteVariantInput) =>
 			return { variant };
 		},
 
-		write: (ctx, { variant }) => {
-			ctx.repos.variant.delete(Variant.ById(variant.id));
+		write: async (ctx, { variant }) => {
+			await ctx.repos.variant.delete(Variant.ById(variant.id));
 			return { success: true };
 		},
 	});

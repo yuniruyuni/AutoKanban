@@ -25,7 +25,7 @@ const logger = createLogger();
 const db = await initDatabase(DB_PATH);
 
 // Recover any processes that were left running when the server last shut down
-const recoveredCount = recoverOrphanedProcesses(db);
+const recoveredCount = await recoverOrphanedProcesses(db);
 if (recoveredCount > 0) {
 	logger.info(
 		`Recovered ${recoveredCount} orphaned process(es) from previous server session`,
@@ -33,7 +33,7 @@ if (recoveredCount > 0) {
 }
 
 // Seed default variants if they don't exist
-seedDefaultVariants(db);
+await seedDefaultVariants(db);
 
 const ctx = createContext(db, logger);
 

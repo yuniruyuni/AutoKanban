@@ -11,14 +11,16 @@ export interface AbortRebaseInput {
 export const abortRebase = (input: AbortRebaseInput) =>
 	usecase({
 		read: async (ctx) => {
-			const workspace = ctx.repos.workspace.get(
+			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(input.workspaceId),
 			);
 			if (!workspace) {
 				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
 			}
 
-			const project = ctx.repos.project.get(Project.ById(input.projectId));
+			const project = await ctx.repos.project.get(
+				Project.ById(input.projectId),
+			);
 			if (!project) {
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
