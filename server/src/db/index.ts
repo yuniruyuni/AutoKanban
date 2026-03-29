@@ -2,7 +2,6 @@ import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { runMigrations } from "./migrate";
-import { syncSchemaConstraints } from "./schema-sync";
 import { seedTaskTemplates } from "./seed-templates";
 
 let db: Database | null = null;
@@ -24,14 +23,6 @@ export async function initDatabase(dbPath: string): Promise<Database> {
 	// Then open the database
 	db = new Database(dbPath);
 	db.exec("PRAGMA foreign_keys = ON");
-
-	// Fix CHECK constraints that sqlite-auto-migrator can't update
-	const syncedCount = syncSchemaConstraints(db);
-	if (syncedCount > 0) {
-		console.log(
-			`Schema sync: recreated ${syncedCount} table(s) to fix CHECK constraints`,
-		);
-	}
 
 	seedTaskTemplates(db);
 

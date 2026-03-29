@@ -20,8 +20,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   project_id TEXT NOT NULL REFERENCES projects(id),
   title TEXT NOT NULL,
   description TEXT,
-  status TEXT NOT NULL DEFAULT 'todo'
-    CHECK(status IN ('todo', 'inprogress', 'inreview', 'done', 'cancelled')),
+  status TEXT NOT NULL DEFAULT 'todo',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -61,10 +60,8 @@ CREATE INDEX IF NOT EXISTS idx_sessions_workspace_id ON sessions(workspace_id);
 CREATE TABLE IF NOT EXISTS execution_processes (
   id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL REFERENCES sessions(id),
-  run_reason TEXT NOT NULL DEFAULT 'setupscript'
-    CHECK(run_reason IN ('setupscript', 'codingagent', 'devserver', 'cleanupscript')),
-  status TEXT NOT NULL DEFAULT 'running'
-    CHECK(status IN ('running', 'completed', 'failed', 'killed', 'awaiting_approval')),
+  run_reason TEXT NOT NULL DEFAULT 'setupscript',
+  status TEXT NOT NULL DEFAULT 'running',
   exit_code INTEGER,
   started_at TEXT NOT NULL DEFAULT (datetime('now')),
   completed_at TEXT,
@@ -115,8 +112,7 @@ CREATE TABLE IF NOT EXISTS approvals (
   execution_process_id TEXT NOT NULL REFERENCES execution_processes(id),
   tool_name TEXT NOT NULL,
   tool_call_id TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending'
-    CHECK(status IN ('pending', 'approved', 'denied')),
+  status TEXT NOT NULL DEFAULT 'pending',
   reason TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   responded_at TEXT,

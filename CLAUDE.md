@@ -36,6 +36,7 @@ Model → Repository → Usecase → Presentation
 - DB操作は **upsert** (`INSERT ... ON CONFLICT DO UPDATE`)
 - クライアントimport: `@/` エイリアス = `client/src/`
 - Schema変更: `server/schema.sql` 編集 → dev起動時に自動マイグレーション（sqlite-auto-migrator）
+- **DB制約ルール**: schema.sqlでは `CHECK()` 制約を使用しない（SQLiteのALTER TABLEで変更不可のため）。値の制約はRepository層のupsert()でバリデーションする
 
 ## ルールファイル
 
