@@ -20,14 +20,14 @@ dist/
 .DS_Store
 Thumbs.db
 
-# Database
+# Database (legacy SQLite)
 *.db
 *.db-journal
 *.db-wal
 *.db-shm
 
-# SQLite migrations (auto-generated at startup from schema.sql)
-server/migrations/
+# PostgreSQL test data
+server/.test-pg-data/
 
 # Logs
 *.log

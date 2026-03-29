@@ -1,3 +1,2 @@
 export type { IVariantRepository } from "./repository";
-export { VariantRepository } from "./sqlite";
-export { PgVariantRepository } from "./postgres";
+export { VariantRepository } from "./postgres";

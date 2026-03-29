@@ -2,7 +2,7 @@
 
 ローカル専用AIエージェント＋タスク管理アプリ（カンバンボード）。
 TypeScriptフルスタックモノレポ、Bunランタイム。
-サーバー: Hono + tRPC + SQLite(bun:sqlite)、クライアント: React 19 + Vite + Tailwind + Valtio。
+サーバー: Hono + tRPC + PostgreSQL(embedded-postgres + pgschema)、クライアント: React 19 + Vite + Tailwind + Valtio。
 
 ## 開発コマンド
 

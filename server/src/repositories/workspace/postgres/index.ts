@@ -9,7 +9,7 @@ import { getMaxAttempt } from "./get-max-attempt";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class PgWorkspaceRepository implements IWorkspaceRepository {
+export class WorkspaceRepository implements IWorkspaceRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: Workspace.Spec): Promise<Workspace | null> {

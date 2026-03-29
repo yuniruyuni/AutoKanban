@@ -1,24 +1,24 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestExecutionProcessLogs } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
+import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { seedFullChain } from "../../test/helpers/seed";
 import { ExecutionProcessLogsRepository } from "./execution-process-logs";
 
-let db: Database;
+let db: PgDatabase;
 let logsRepo: ExecutionProcessLogsRepository;
 let EXECUTION_PROCESS_ID: string;
 
 beforeEach(async () => {
-	db = createTestDB();
+	db = await createTestDB();
 	logsRepo = new ExecutionProcessLogsRepository(db);
 
 	const seed = await seedFullChain(db);
 	EXECUTION_PROCESS_ID = seed.executionProcess.id;
 });
 
-afterEach(() => {
-	db.close();
+afterEach(async () => {
+	await closeTestDB(db);
 });
 
 // ============================================

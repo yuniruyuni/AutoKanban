@@ -1,20 +1,20 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestProject, createTestTask } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
+import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { and } from "../models/common";
 import { Task } from "../models/task";
 import { ProjectRepository } from "./project";
 import { TaskRepository } from "./task";
 
-let db: Database;
+let db: PgDatabase;
 let taskRepo: TaskRepository;
 let projectRepo: ProjectRepository;
 const PROJECT_ID = "test-project-1";
 
 beforeEach(async () => {
-	db = createTestDB();
+	db = await createTestDB();
 	taskRepo = new TaskRepository(db);
 	projectRepo = new ProjectRepository(db);
 	// Insert a project so FK constraints are satisfied
@@ -25,8 +25,8 @@ beforeEach(async () => {
 	await projectRepo.upsert(project);
 });
 
-afterEach(() => {
-	db.close();
+afterEach(async () => {
+	await closeTestDB(db);
 });
 
 // ============================================

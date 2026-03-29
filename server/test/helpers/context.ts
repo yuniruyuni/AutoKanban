@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../../src/db/pg-client";
 import type { ILogStreamer } from "../../src/presentation/log-streamer";
 import { ApprovalRepository } from "../../src/repositories/approval";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn";
@@ -50,7 +50,7 @@ export function createMockContext(repoOverrides: Partial<Repos> = {}): Context {
  * Create an integration context with real DB repositories.
  * External system repos (git, worktree, executor, etc.) are mocked.
  */
-export function createIntegrationContext(db: Database): Context {
+export function createIntegrationContext(db: PgDatabase): Context {
 	return {
 		now: new Date("2025-01-15T10:00:00.000Z"),
 		logger: createMockLogger(),

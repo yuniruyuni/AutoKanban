@@ -8,7 +8,7 @@ import { list } from "./list";
 import { listByExecutor } from "./listByExecutor";
 import { upsert } from "./upsert";
 
-export class PgVariantRepository implements IVariantRepository {
+export class VariantRepository implements IVariantRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: Variant.Spec): Promise<Variant | null> {

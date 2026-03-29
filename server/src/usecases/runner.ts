@@ -96,9 +96,7 @@ export function usecase<
 				let state: unknown = await (def.pre?.(preCtx) ?? {});
 				if (isFail(state)) return { ok: false, error: state };
 
-				// read → process → write (inside transaction)
-				// Note: bun:sqlite transactions are synchronous, but our steps may be async
-				// For simplicity, we run them sequentially here
+				// read → process → write (sequential execution)
 
 				state = await (def.read?.(readCtx, state as Unfail<TPre>) ?? state);
 				if (isFail(state)) return { ok: false, error: state };

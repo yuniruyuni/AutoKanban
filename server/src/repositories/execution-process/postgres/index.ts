@@ -7,7 +7,7 @@ import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class PgExecutionProcessRepository
+export class ExecutionProcessRepository
 	implements IExecutionProcessRepository
 {
 	constructor(private db: PgDatabase) {}

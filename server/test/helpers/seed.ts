@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../../src/db/pg-client";
 import type { ExecutionProcess } from "../../src/models/execution-process";
 import type { Project } from "../../src/models/project";
 import type { Session } from "../../src/models/session";
@@ -29,7 +29,7 @@ export interface SeedResult {
  * Build the full FK dependency chain in the DB and return all created entities.
  * projects → tasks → workspaces → sessions → execution_processes
  */
-export async function seedFullChain(db: Database): Promise<SeedResult> {
+export async function seedFullChain(db: PgDatabase): Promise<SeedResult> {
 	const project = createTestProject();
 	const task = createTestTask({ projectId: project.id });
 	const workspace = createTestWorkspace({ taskId: task.id });

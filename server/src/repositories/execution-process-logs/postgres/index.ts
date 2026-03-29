@@ -6,7 +6,7 @@ import { deleteLogs } from "./delete-logs";
 import { getLogs } from "./get-logs";
 import { upsertLogs } from "./upsert-logs";
 
-export class PgExecutionProcessLogsRepository
+export class ExecutionProcessLogsRepository
 	implements IExecutionProcessLogsRepository
 {
 	constructor(private db: PgDatabase) {}

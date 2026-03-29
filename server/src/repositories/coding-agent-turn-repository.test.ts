@@ -1,10 +1,10 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
 	createTestCodingAgentTurn,
 	createTestExecutionProcess,
 } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
+import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
 import { CodingAgentTurn } from "../models/coding-agent-turn";
@@ -12,14 +12,14 @@ import { CodingAgentTurnRepository } from "./coding-agent-turn";
 import { ExecutionProcessRepository } from "./execution-process";
 import { SessionRepository } from "./session";
 
-let db: Database;
+let db: PgDatabase;
 let turnRepo: CodingAgentTurnRepository;
 let EXECUTION_PROCESS_ID: string;
 let SESSION_ID: string;
 let WORKSPACE_ID: string;
 
 beforeEach(async () => {
-	db = createTestDB();
+	db = await createTestDB();
 	turnRepo = new CodingAgentTurnRepository(db);
 
 	const seed = await seedFullChain(db);
@@ -28,8 +28,8 @@ beforeEach(async () => {
 	WORKSPACE_ID = seed.workspace.id;
 });
 
-afterEach(() => {
-	db.close();
+afterEach(async () => {
+	await closeTestDB(db);
 });
 
 // ============================================

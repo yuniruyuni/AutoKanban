@@ -1,13 +1,13 @@
 import type { PgDatabase } from "./db/pg-client";
 import { LogStreamer } from "./presentation/log-streamer";
 import { AgentConfigRepository } from "./repositories/agent-config";
-import { PgApprovalRepository } from "./repositories/approval";
+import { ApprovalRepository } from "./repositories/approval";
 import { approvalStore } from "./repositories/approval-store";
-import { PgCodingAgentTurnRepository } from "./repositories/coding-agent-turn";
+import { CodingAgentTurnRepository } from "./repositories/coding-agent-turn";
 import { DevServerRepository } from "./repositories/dev-server";
 import { draftRepository } from "./repositories/draft";
-import { PgExecutionProcessRepository } from "./repositories/execution-process";
-import { PgExecutionProcessLogsRepository } from "./repositories/execution-process-logs";
+import { ExecutionProcessRepository } from "./repositories/execution-process";
+import { ExecutionProcessLogsRepository } from "./repositories/execution-process-logs";
 import { ExecutorRepository } from "./repositories/executor";
 import { ClaudeCodeDriver } from "./repositories/executor/drivers/claude-code";
 import { GeminiCliDriver } from "./repositories/executor/drivers/gemini-cli";
@@ -15,32 +15,32 @@ import { GitRepository } from "./repositories/git";
 import { logStoreManager } from "./repositories/log-store";
 import { messageQueueRepository } from "./repositories/message-queue";
 import { permissionStore } from "./repositories/permission-store";
-import { PgProjectRepository } from "./repositories/project";
-import { PgSessionRepository } from "./repositories/session";
-import { PgTaskRepository } from "./repositories/task";
-import { PgTaskTemplateRepository } from "./repositories/task-template";
-import { PgToolRepository } from "./repositories/tool";
-import { PgVariantRepository } from "./repositories/variant";
-import { PgWorkspaceRepository } from "./repositories/workspace";
-import { PgWorkspaceRepoRepository } from "./repositories/workspace-repo";
+import { ProjectRepository } from "./repositories/project";
+import { SessionRepository } from "./repositories/session";
+import { TaskRepository } from "./repositories/task";
+import { TaskTemplateRepository } from "./repositories/task-template";
+import { ToolRepository } from "./repositories/tool";
+import { VariantRepository } from "./repositories/variant";
+import { WorkspaceRepository } from "./repositories/workspace";
+import { WorkspaceRepoRepository } from "./repositories/workspace-repo";
 import { WorktreeRepository } from "./repositories/worktree";
 import { setupQueueProcessor } from "./setup/queue-processor";
 import type { Context } from "./types/context";
 import type { ILogger } from "./types/logger";
 
 export function createContext(db: PgDatabase, logger: ILogger): Context {
-	const executionProcessRepo = new PgExecutionProcessRepository(db);
-	const codingAgentTurnRepo = new PgCodingAgentTurnRepository(db);
-	const sessionRepo = new PgSessionRepository(db);
-	const workspaceRepo = new PgWorkspaceRepository(db);
-	const workspaceRepoRepo = new PgWorkspaceRepoRepository(db);
-	const projectRepo = new PgProjectRepository(db);
+	const executionProcessRepo = new ExecutionProcessRepository(db);
+	const codingAgentTurnRepo = new CodingAgentTurnRepository(db);
+	const sessionRepo = new SessionRepository(db);
+	const workspaceRepo = new WorkspaceRepository(db);
+	const workspaceRepoRepo = new WorkspaceRepoRepository(db);
+	const projectRepo = new ProjectRepository(db);
 
-	const taskRepo = new PgTaskRepository(db);
-	const taskTemplateRepo = new PgTaskTemplateRepository(db);
+	const taskRepo = new TaskRepository(db);
+	const taskTemplateRepo = new TaskTemplateRepository(db);
 	const gitRepo = new GitRepository();
 	const worktreeRepo = new WorktreeRepository(logger);
-	const executionProcessLogsRepo = new PgExecutionProcessLogsRepository(db);
+	const executionProcessLogsRepo = new ExecutionProcessLogsRepository(db);
 	const drivers = new Map();
 	drivers.set("claude-code", new ClaudeCodeDriver(logger));
 	drivers.set("gemini-cli", new GeminiCliDriver(logger));
@@ -51,7 +51,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		executionProcessLogsRepo,
 		logger,
 	);
-	const approvalRepo = new PgApprovalRepository(db);
+	const approvalRepo = new ApprovalRepository(db);
 
 	// Wire up approval dependencies for ExitPlanMode handling
 	executor.setApprovalDeps({
@@ -92,8 +92,8 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 			executionProcess: executionProcessRepo,
 			executionProcessLogs: executionProcessLogsRepo,
 			codingAgentTurn: codingAgentTurnRepo,
-			tool: new PgToolRepository(db),
-			variant: new PgVariantRepository(db),
+			tool: new ToolRepository(db),
+			variant: new VariantRepository(db),
 			git: gitRepo,
 			worktree: worktreeRepo,
 			executor,

@@ -1,6 +1,6 @@
 import type { PgDatabase } from "../db/pg-client";
 import { Variant } from "../models/variant";
-import { PgVariantRepository } from "../repositories/variant";
+import { VariantRepository } from "../repositories/variant";
 
 const DEFAULT_VARIANTS = [
 	{
@@ -26,7 +26,7 @@ const DEFAULT_VARIANTS = [
 ] as const;
 
 export async function seedDefaultVariants(db: PgDatabase): Promise<void> {
-	const repo = new PgVariantRepository(db);
+	const repo = new VariantRepository(db);
 
 	for (const def of DEFAULT_VARIANTS) {
 		const existing = await repo.get(

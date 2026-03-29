@@ -1,23 +1,23 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
 	createTestProject,
 	createTestTask,
 	createTestWorkspace,
 } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
+import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { Workspace } from "../models/workspace";
 import { ProjectRepository } from "./project";
 import { TaskRepository } from "./task";
 import { WorkspaceRepository } from "./workspace";
 
-let db: Database;
+let db: PgDatabase;
 let workspaceRepo: WorkspaceRepository;
 let TASK_ID: string;
 
 beforeEach(async () => {
-	db = createTestDB();
+	db = await createTestDB();
 	workspaceRepo = new WorkspaceRepository(db);
 
 	// FK chain: project → task
@@ -28,8 +28,8 @@ beforeEach(async () => {
 	TASK_ID = task.id;
 });
 
-afterEach(() => {
-	db.close();
+afterEach(async () => {
+	await closeTestDB(db);
 });
 
 // ============================================

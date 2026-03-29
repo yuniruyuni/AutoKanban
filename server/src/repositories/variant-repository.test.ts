@@ -1,21 +1,21 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestVariant } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
+import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { Variant } from "../models/variant";
 import { VariantRepository } from "./variant";
 
-let db: Database;
+let db: PgDatabase;
 let variantRepo: VariantRepository;
 
-beforeEach(() => {
-	db = createTestDB();
+beforeEach(async () => {
+	db = await createTestDB();
 	variantRepo = new VariantRepository(db);
 });
 
-afterEach(() => {
-	db.close();
+afterEach(async () => {
+	await closeTestDB(db);
 });
 
 // ============================================

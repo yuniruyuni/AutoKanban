@@ -8,7 +8,7 @@ import { list } from "./list";
 import { listByWorkspace } from "./listByWorkspace";
 import { upsert } from "./upsert";
 
-export class PgWorkspaceRepoRepository implements IWorkspaceRepoRepository {
+export class WorkspaceRepoRepository implements IWorkspaceRepoRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: WorkspaceRepo.Spec): Promise<WorkspaceRepo | null> {

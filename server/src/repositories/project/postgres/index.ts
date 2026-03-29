@@ -10,7 +10,7 @@ import { listAll } from "./list-all";
 import { listAllWithStats } from "./list-all-with-stats";
 import { upsert } from "./upsert";
 
-export class PgProjectRepository implements IProjectRepository {
+export class ProjectRepository implements IProjectRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: Project.Spec): Promise<Project | null> {

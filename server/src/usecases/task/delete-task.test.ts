@@ -15,7 +15,7 @@ import { deleteTask } from "./delete-task";
 
 describe("deleteTask", () => {
 	test("deletes a task with no related entities", async () => {
-		const db = createTestDB();
+		const db = await createTestDB();
 		const { project } = await seedFullChain(db);
 		// Create a standalone task with no workspaces
 		const standaloneTask = Task.create({
@@ -34,7 +34,7 @@ describe("deleteTask", () => {
 	});
 
 	test("cascade deletes all related entities", async () => {
-		const db = createTestDB();
+		const db = await createTestDB();
 		const { task, workspace, session, executionProcess } =
 			await seedFullChain(db);
 		const ctx = createIntegrationContext(db);
@@ -78,7 +78,7 @@ describe("deleteTask", () => {
 	});
 
 	test("returns NOT_FOUND for non-existent task", async () => {
-		const db = createTestDB();
+		const db = await createTestDB();
 		const ctx = createIntegrationContext(db);
 
 		const result = await deleteTask({ taskId: "non-existent" }).run(ctx);

@@ -7,7 +7,7 @@ import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class PgSessionRepository implements ISessionRepository {
+export class SessionRepository implements ISessionRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: Session.Spec): Promise<Session | null> {

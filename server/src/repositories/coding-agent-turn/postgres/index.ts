@@ -15,7 +15,7 @@ import { updateAgentSessionId } from "./updateAgentSessionId";
 import { updateSummary } from "./updateSummary";
 import { upsert } from "./upsert";
 
-export class PgCodingAgentTurnRepository
+export class CodingAgentTurnRepository
 	implements ICodingAgentTurnRepository
 {
 	constructor(private db: PgDatabase) {}

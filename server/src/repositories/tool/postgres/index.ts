@@ -12,7 +12,7 @@ import { upsert } from "./upsert";
 
 export type { SpawnFn } from "./executeCommand";
 
-export class PgToolRepository implements IToolRepository {
+export class ToolRepository implements IToolRepository {
 	private spawnFn: SpawnFn;
 
 	constructor(

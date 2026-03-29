@@ -22,8 +22,8 @@ Model → Repository → Usecase → Presentation
 - SQLカラム: snake_case / TypeScript: camelCase
 - Repository標準メソッド: `get(spec)`, `list(spec, cursor)`, `upsert(entity)`, `delete(spec)`
 - DB操作は **upsert** (`INSERT ... ON CONFLICT DO UPDATE`)
-- Schema変更: `server/schema.sql` 編集 → dev起動時に自動マイグレーション（sqlite-auto-migrator）
-- **DB制約ルール**: schema.sqlでは `CHECK()` 制約を使用しない（SQLiteのALTER TABLEで変更不可のため）。値の制約はRepository層のupsert()でバリデーションする
+- Schema変更: `server/schema.sql` 編集 → 起動時にpgschemaが差分を自動適用（migration script不要）
+- DB: PostgreSQL（embedded-postgres）。`PgDatabase`ラッパー経由でクエリ実行。Repository層のメソッドは全て`async`
 
 ## Usecase
 

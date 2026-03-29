@@ -7,7 +7,7 @@ import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class PgApprovalRepository implements IApprovalRepository {
+export class ApprovalRepository implements IApprovalRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: Approval.Spec): Promise<Approval | null> {

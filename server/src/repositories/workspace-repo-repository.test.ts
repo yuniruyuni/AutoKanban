@@ -1,23 +1,23 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
 	createTestProject,
 	createTestWorkspaceRepo,
 } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
+import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
 import { WorkspaceRepo } from "../models/workspace-repo";
 import { ProjectRepository } from "./project";
 import { WorkspaceRepoRepository } from "./workspace-repo";
 
-let db: Database;
+let db: PgDatabase;
 let wsRepoRepo: WorkspaceRepoRepository;
 let WORKSPACE_ID: string;
 let PROJECT_ID: string;
 
 beforeEach(async () => {
-	db = createTestDB();
+	db = await createTestDB();
 	wsRepoRepo = new WorkspaceRepoRepository(db);
 
 	const seed = await seedFullChain(db);
@@ -25,8 +25,8 @@ beforeEach(async () => {
 	PROJECT_ID = seed.project.id;
 });
 
-afterEach(() => {
-	db.close();
+afterEach(async () => {
+	await closeTestDB(db);
 });
 
 // ============================================

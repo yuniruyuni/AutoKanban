@@ -1,24 +1,24 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestProject, createTestTask } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
+import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { Project } from "../models/project";
 import { ProjectRepository } from "./project";
 import { TaskRepository } from "./task";
 
-let db: Database;
+let db: PgDatabase;
 let projectRepo: ProjectRepository;
 let taskRepo: TaskRepository;
 
-beforeEach(() => {
-	db = createTestDB();
+beforeEach(async () => {
+	db = await createTestDB();
 	projectRepo = new ProjectRepository(db);
 	taskRepo = new TaskRepository(db);
 });
 
-afterEach(() => {
-	db.close();
+afterEach(async () => {
+	await closeTestDB(db);
 });
 
 // ============================================

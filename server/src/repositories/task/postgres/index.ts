@@ -8,7 +8,7 @@ import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class PgTaskRepository implements ITaskRepository {
+export class TaskRepository implements ITaskRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: Task.Spec): Promise<Task | null> {
