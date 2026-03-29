@@ -15,7 +15,7 @@ Architectural Decision Record（ADR）は、アーキテクチャ上の重要な
 
 | ID | タイトル | ステータス | 日付 |
 |----|----------|------------|------|
-| [ADR-0001](./0001-database-selection.md) | データベースエンジンの選定 | 採用 | 2026-02-28 |
+| [ADR-0001](./0001-database-selection.md) | データベースエンジンの選定 | 廃止 | 2026-02-28 |
 | [ADR-0002](./0002-typescript-unification.md) | TypeScript統一（Rust不採用） | 採用 | 2026-02-28 |
 | [ADR-0003](./0003-trpc-adoption.md) | tRPC採用（REST/GraphQL不採用） | 採用 | 2026-02-28 |
 | [ADR-0004](./0004-raw-sql-adoption.md) | Raw SQL採用（ORM不採用） | 採用 | 2026-02-28 |
@@ -23,7 +23,8 @@ Architectural Decision Record（ADR）は、アーキテクチャ上の重要な
 | [ADR-0006](./0006-valtio-adoption.md) | Valtio採用（Zustand不採用） | 採用 | 2026-02-28 |
 | [ADR-0007](./0007-step-based-usecase.md) | ステップベースUsecase設計 | 採用 | 2026-02-28 |
 | [ADR-0008](./0008-specification-pattern.md) | Specification Pattern採用 | 採用 | 2026-02-28 |
-| [ADR-0009](./0009-sqlite-auto-migrator.md) | sqlite-auto-migrator採用 | 採用 | 2026-02-28 |
+| [ADR-0009](./0009-sqlite-auto-migrator.md) | sqlite-auto-migrator採用 | 廃止 | 2026-02-28 |
+| [ADR-0011](./0011-postgresql-migration.md) | PostgreSQL移行 (embedded-postgres + pgschema) | 採用 | 2026-03-29 |
 
 ## ステータスの定義
 

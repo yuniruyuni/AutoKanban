@@ -1,8 +1,8 @@
+import { generatePrDescription } from "../../lib/generate-pr-description";
 import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
-import { generatePrDescription } from "../../lib/generate-pr-description";
 import { usecase } from "../runner";
 
 export interface CreatePullRequestInput {
