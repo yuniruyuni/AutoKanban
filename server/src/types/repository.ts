@@ -4,7 +4,6 @@
 import type { Approval } from "../models/approval";
 import type { BranchStatus, ConflictOp } from "../models/branch-status";
 import type { LogStoreSubscription, PendingPermission } from "../models/common";
-import type { ExecutionProcess } from "../models/execution-process";
 import type { GitDiff } from "../models/git-diff";
 import type { Project } from "../models/project";
 import type { Workspace } from "../models/workspace";

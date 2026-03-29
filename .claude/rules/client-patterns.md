@@ -5,6 +5,10 @@ paths:
 
 # Client Patterns
 
+## コーディング規約
+
+- import: `@/` エイリアス = `client/src/`
+
 ## 状態管理
 
 - サーバーデータ: tRPC + React Query

@@ -5,6 +5,26 @@ paths:
 
 # Server Patterns
 
+## アーキテクチャ（4層）
+
+Model → Repository → Usecase → Presentation
+
+- レイヤー間データは **Model型のみ**（DTOなし）
+- **Usecase間の相互呼び出し禁止**
+- Repository interface: `server/src/types/repository.ts`
+- Context定義: `server/src/types/context.ts`（step別Context型: PreContext, ReadContext, ProcessContext, WriteContext, PostContext）
+- 補助ディレクトリ: `lib/`（純粋関数ユーティリティ）、`setup/`（起動時初期化）、`mcp/`（MCPサーバー実装）、`db/`（DB初期化・マイグレーション）
+
+## コーディング規約
+
+- ID生成: `generateId()` (`crypto.randomUUID()`) — `server/src/models/common.ts`
+- 日時: Model内は `Date` 型、DB格納時は `dateToSQL()` / `dateFromSQL()` — `server/src/repositories/common.ts`
+- SQLカラム: snake_case / TypeScript: camelCase
+- Repository標準メソッド: `get(spec)`, `list(spec, cursor)`, `upsert(entity)`, `delete(spec)`
+- DB操作は **upsert** (`INSERT ... ON CONFLICT DO UPDATE`)
+- Schema変更: `server/schema.sql` 編集 → dev起動時に自動マイグレーション（sqlite-auto-migrator）
+- **DB制約ルール**: schema.sqlでは `CHECK()` 制約を使用しない（SQLiteのALTER TABLEで変更不可のため）。値の制約はRepository層のupsert()でバリデーションする
+
 ## Usecase
 
 `usecase({ pre, read, process, write, post, result })` — 全ステップ省略可能。
