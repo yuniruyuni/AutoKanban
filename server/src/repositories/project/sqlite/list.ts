@@ -4,8 +4,8 @@ import { Project } from "../../../models/project";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type ProjectRow,
 	columnName,
+	type ProjectRow,
 	projectSpecToSQL,
 	rowToProject,
 } from "./common";

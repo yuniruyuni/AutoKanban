@@ -24,8 +24,12 @@ describe("createPullRequest", () => {
 			worktree: createMockWorktreeRepository(),
 			workspaceRepo: { listByWorkspace: () => [], upsert: () => {} } as never,
 			session: { list: () => ({ items: [], hasMore: false }) } as never,
-			codingAgentTurn: { findLatestResumeInfoByWorkspaceId: () => null } as never,
-			executor: { startProtocolAndWait: async () => ({ exitCode: 1 }) } as never,
+			codingAgentTurn: {
+				findLatestResumeInfoByWorkspaceId: () => null,
+			} as never,
+			executor: {
+				startProtocolAndWait: async () => ({ exitCode: 1 }),
+			} as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "feature/test",
 				push: async () => {
@@ -71,8 +75,12 @@ describe("createPullRequest", () => {
 				upsert: () => {},
 			} as never,
 			session: { list: () => ({ items: [], hasMore: false }) } as never,
-			codingAgentTurn: { findLatestResumeInfoByWorkspaceId: () => null } as never,
-			executor: { startProtocolAndWait: async () => ({ exitCode: 1 }) } as never,
+			codingAgentTurn: {
+				findLatestResumeInfoByWorkspaceId: () => null,
+			} as never,
+			executor: {
+				startProtocolAndWait: async () => ({ exitCode: 1 }),
+			} as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "feature/test",
 				createPullRequest: async (

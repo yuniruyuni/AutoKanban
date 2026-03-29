@@ -100,7 +100,7 @@ export function ExecutionPanel({
 			return (
 				<PlanResponseInput
 					approvalId={planApproval.id}
-					executionProcessId={executionProcessId!}
+					executionProcessId={executionProcessId as string}
 				/>
 			);
 		}

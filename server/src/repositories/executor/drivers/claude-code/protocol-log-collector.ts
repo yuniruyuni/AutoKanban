@@ -37,8 +37,6 @@ export class ProtocolLogCollector {
 	private approvalRequestCallbacks: ApprovalRequestCallback[] = [];
 	private autoApproveCallbacks: AutoApproveCallback[] = [];
 	private hookCallbacks: HookCallback[] = [];
-	private sessionIdLookup: ((processId: string) => string | undefined) | null =
-		null;
 
 	private logger: ILogger;
 
@@ -262,10 +260,6 @@ export class ProtocolLogCollector {
 					break;
 			}
 		}
-	}
-
-	setSessionIdLookup(lookup: (processId: string) => string | undefined): void {
-		this.sessionIdLookup = lookup;
 	}
 
 	/**

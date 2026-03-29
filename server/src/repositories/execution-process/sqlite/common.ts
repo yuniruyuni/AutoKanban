@@ -1,4 +1,4 @@
-import { ExecutionProcess } from "../../../models/execution-process";
+import type { ExecutionProcess } from "../../../models/execution-process";
 import { dateFromSQL } from "../../common";
 import { type SQLFragment, sql } from "../../sql";
 

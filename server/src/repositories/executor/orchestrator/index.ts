@@ -344,6 +344,25 @@ export class ExecutorRepository implements IExecutorRepository {
 		return rp.driver.wait(rp.process);
 	}
 
+	/**
+	 * Runs a one-shot prompt with structured output via the specified driver.
+	 * Uses --json-schema for guaranteed JSON format.
+	 */
+	async runStructured<T>(
+		executorName: string | undefined,
+		options: {
+			workingDir: string;
+			prompt: string;
+			schema: Record<string, unknown>;
+			resumeSessionId?: string;
+			model?: string;
+		},
+	): Promise<T | null> {
+		const driver = this.getDriver(executorName);
+		if (!driver.runStructured) return null;
+		return driver.runStructured<T>(options);
+	}
+
 	get(processId: string): RunningProcess | undefined {
 		return this.runningProcesses.get(processId);
 	}

@@ -118,10 +118,7 @@ describe("ClaudeCodeDriver E2E (actual claude-code)", () => {
 				const result = await Promise.race([
 					driver.wait(process),
 					new Promise<{ exitCode: number; killed: boolean }>((r) =>
-						setTimeout(
-							() => r({ exitCode: -1, killed: true }),
-							60_000,
-						),
+						setTimeout(() => r({ exitCode: -1, killed: true }), 60_000),
 					),
 				]);
 

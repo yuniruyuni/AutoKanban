@@ -1,4 +1,4 @@
-import { Project, type ProjectWithStats } from "../../../models/project";
+import type { Project, ProjectWithStats } from "../../../models/project";
 import { dateFromSQL } from "../../common";
 import { type SQLFragment, sql } from "../../sql";
 

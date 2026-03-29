@@ -3,8 +3,8 @@ import type { WorkspaceRepo } from "../../../models/workspace-repo";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type WorkspaceRepoRow,
 	rowToWorkspaceRepo,
+	type WorkspaceRepoRow,
 	workspaceRepoSpecToSQL,
 } from "./common";
 

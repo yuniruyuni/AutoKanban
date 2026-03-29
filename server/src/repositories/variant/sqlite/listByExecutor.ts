@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import type { Variant } from "../../../models/variant";
-import { type VariantRow, rowToVariant } from "./common";
+import { rowToVariant, type VariantRow } from "./common";
 
 export function listByExecutor(db: Database, executor: string): Variant[] {
 	const rows = db

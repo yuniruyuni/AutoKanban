@@ -1,4 +1,4 @@
-import { WorkspaceRepo } from "../../../models/workspace-repo";
+import type { WorkspaceRepo } from "../../../models/workspace-repo";
 import { dateFromSQL } from "../../common";
 import { type SQLFragment, sql } from "../../sql";
 

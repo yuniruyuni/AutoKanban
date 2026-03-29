@@ -4,8 +4,8 @@ import { ExecutionProcess } from "../../../models/execution-process";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type ExecutionProcessRow,
 	columnName,
+	type ExecutionProcessRow,
 	executionProcessSpecToSQL,
 	rowToExecutionProcess,
 } from "./common";

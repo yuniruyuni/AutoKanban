@@ -1,4 +1,4 @@
-import { Task } from "../../../models/task";
+import type { Task } from "../../../models/task";
 import { dateFromSQL } from "../../common";
 import { type SQLFragment, sql } from "../../sql";
 

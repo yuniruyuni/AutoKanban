@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import type { Workspace } from "../../../models/workspace";
-import { type WorkspaceRow, rowToWorkspace } from "./common";
+import { rowToWorkspace, type WorkspaceRow } from "./common";
 
 export function findByWorktreePath(
 	db: Database,

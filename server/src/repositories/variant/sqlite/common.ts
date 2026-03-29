@@ -1,4 +1,4 @@
-import { Variant } from "../../../models/variant";
+import type { Variant } from "../../../models/variant";
 import { dateFromSQL } from "../../common";
 import { type SQLFragment, sql } from "../../sql";
 

@@ -106,7 +106,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 			if (data.alreadyRunning) return data;
 			ctx.repos.devServer.start({
 				processId: data.executionProcess.id,
-				command: data.project.devServerScript!,
+				command: data.project.devServerScript as string,
 				workingDir: data.worktreePath,
 			});
 			return data;

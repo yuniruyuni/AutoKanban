@@ -1,7 +1,5 @@
 import type { Database, SQLQueryBindings } from "bun:sqlite";
-import {
-	CodingAgentTurn,
-} from "../../../models/coding-agent-turn";
+import { CodingAgentTurn } from "../../../models/coding-agent-turn";
 import type { Cursor, Page } from "../../../models/common";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";

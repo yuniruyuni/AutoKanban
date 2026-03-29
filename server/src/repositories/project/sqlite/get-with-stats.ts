@@ -1,9 +1,6 @@
 import type { Database } from "bun:sqlite";
 import type { ProjectWithStats } from "../../../models/project";
-import {
-	type ProjectWithStatsRow,
-	rowToProjectWithStats,
-} from "./common";
+import { type ProjectWithStatsRow, rowToProjectWithStats } from "./common";
 
 export function getWithStats(
 	db: Database,

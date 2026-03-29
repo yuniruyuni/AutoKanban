@@ -4,9 +4,9 @@ import { TaskTemplate } from "../../../models/task-template";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type TaskTemplateRow,
 	columnName,
 	rowToTaskTemplate,
+	type TaskTemplateRow,
 	taskTemplateSpecToSQL,
 } from "./common";
 
@@ -38,9 +38,7 @@ export function list(
 
 	const lastItem = items[items.length - 1];
 	const nextCursor =
-		hasMore && lastItem
-			? TaskTemplate.cursor(lastItem, sort.keys)
-			: undefined;
+		hasMore && lastItem ? TaskTemplate.cursor(lastItem, sort.keys) : undefined;
 
 	return { items, hasMore, nextCursor };
 }

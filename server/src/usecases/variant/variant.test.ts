@@ -246,6 +246,7 @@ describe("deleteVariant", () => {
 		if (result.ok) {
 			expect(result.value.success).toBe(true);
 		}
+		// biome-ignore lint/style/noNonNullAssertion: test assertion after mock capture
 		expect(deletedId!).toBe(existing.id);
 	});
 

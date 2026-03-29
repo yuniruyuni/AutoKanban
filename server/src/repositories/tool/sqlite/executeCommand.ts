@@ -1,4 +1,4 @@
-import { spawn } from "bun";
+import type { spawn } from "bun";
 
 export type SpawnFn = typeof spawn;
 

@@ -3,17 +3,14 @@ import type { Cursor, Page } from "../../../models/common";
 import { Task } from "../../../models/task";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
-import { type TaskRow, columnName, rowToTask, taskSpecToSQL } from "./common";
+import { columnName, rowToTask, type TaskRow, taskSpecToSQL } from "./common";
 
 export function list(
 	db: Database,
 	spec: Task.Spec,
 	cursor: Cursor<Task.SortKey>,
 ): Page<Task> {
-	const where = compToSQL(
-		spec,
-		taskSpecToSQL as (s: unknown) => SQLFragment,
-	);
+	const where = compToSQL(spec, taskSpecToSQL as (s: unknown) => SQLFragment);
 
 	const sort = cursor.sort ?? {
 		keys: ["createdAt", "id"] as const,

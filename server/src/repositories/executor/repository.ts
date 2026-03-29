@@ -49,6 +49,16 @@ export interface IExecutorRepository {
 	startProtocolAndWait(
 		options: ExecutorStartProtocolOptions,
 	): Promise<{ exitCode: number }>;
+	runStructured<T>(
+		executorName: string | undefined,
+		options: {
+			workingDir: string;
+			prompt: string;
+			schema: Record<string, unknown>;
+			resumeSessionId?: string;
+			model?: string;
+		},
+	): Promise<T | null>;
 	get(processId: string): ExecutorProcessInfo | undefined;
 	getBySession(sessionId: string): ExecutorProcessInfo[];
 	getStdout(processId: string): ReadableStream<Uint8Array> | null;

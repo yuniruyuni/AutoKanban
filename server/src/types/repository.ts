@@ -3,49 +3,24 @@
 
 import type { Approval } from "../models/approval";
 import type { BranchStatus, ConflictOp } from "../models/branch-status";
-import type {
-	CodingAgentResumeInfo,
-	CodingAgentTurn,
-} from "../models/coding-agent-turn";
-import type {
-	Cursor,
-	Draft,
-	LogStoreSubscription,
-	Page,
-	PendingPermission,
-} from "../models/common";
-import type {
-	ExecutionProcess,
-	ExecutionProcessLogs,
-} from "../models/execution-process";
+import type { LogStoreSubscription, PendingPermission } from "../models/common";
+import type { ExecutionProcess } from "../models/execution-process";
 import type { GitDiff } from "../models/git-diff";
-import type { Project, ProjectWithStats } from "../models/project";
-import type { Session } from "../models/session";
-import type { Task } from "../models/task";
-import type { TaskTemplate } from "../models/task-template";
-import type { Tool } from "../models/tool";
-import type { Variant } from "../models/variant";
+import type { Project } from "../models/project";
 import type { Workspace } from "../models/workspace";
-import type { WorkspaceRepo } from "../models/workspace-repo";
 import type { WorktreeInfo } from "../models/worktree-info";
 
-export type { ITaskRepository } from "../repositories/task/repository";
-
-export type { ITaskTemplateRepository } from "../repositories/task-template/repository";
-export type { IProjectRepository } from "../repositories/project/repository";
-export type { IWorkspaceRepository } from "../repositories/workspace/repository";
-
-export type { IWorkspaceRepoRepository } from "../repositories/workspace-repo/repository";
-
-export type { ISessionRepository } from "../repositories/session/repository";
+export type { ICodingAgentTurnRepository } from "../repositories/coding-agent-turn/repository";
 export type { IExecutionProcessRepository } from "../repositories/execution-process/repository";
 export type { IExecutionProcessLogsRepository } from "../repositories/execution-process-logs/repository";
-
+export type { IProjectRepository } from "../repositories/project/repository";
+export type { ISessionRepository } from "../repositories/session/repository";
+export type { ITaskRepository } from "../repositories/task/repository";
+export type { ITaskTemplateRepository } from "../repositories/task-template/repository";
 export type { IToolRepository } from "../repositories/tool/repository";
-
 export type { IVariantRepository } from "../repositories/variant/repository";
-
-export type { ICodingAgentTurnRepository } from "../repositories/coding-agent-turn/repository";
+export type { IWorkspaceRepository } from "../repositories/workspace/repository";
+export type { IWorkspaceRepoRepository } from "../repositories/workspace-repo/repository";
 
 // ============================================
 // External System Repositories
@@ -185,76 +160,25 @@ export interface IWorktreeRepository {
 	pruneWorktrees(project: Project): Promise<void>;
 }
 
-export interface ExecutorStartOptions {
-	sessionId: string;
-	runReason: ExecutionProcess.RunReason;
-	workingDir: string;
-	prompt: string;
-	dangerouslySkipPermissions?: boolean;
-	model?: string;
-	/** Which driver to use. Defaults to "claude-code". */
-	executor?: string;
-}
-
-export interface ExecutorStartProtocolOptions {
-	sessionId: string;
-	runReason: ExecutionProcess.RunReason;
-	workingDir: string;
-	prompt: string;
-	model?: string;
-	permissionMode?: string;
-	resumeSessionId?: string;
-	resumeMessageId?: string;
-	interruptedTools?: Array<{ toolId: string; toolName: string }>;
-	/** Which driver to use. Defaults to "claude-code". */
-	executor?: string;
-}
-
-export interface ExecutorProcessInfo {
-	id: string;
-	sessionId: string;
-	runReason: ExecutionProcess.RunReason;
-	startedAt: Date;
-}
-
-export interface IExecutorRepository {
-	start(options: ExecutorStartOptions): Promise<ExecutorProcessInfo>;
-	startProtocol(
-		options: ExecutorStartProtocolOptions,
-	): Promise<ExecutorProcessInfo>;
-	stop(processId: string): Promise<boolean>;
-	sendMessage(processId: string, prompt: string): Promise<boolean>;
-	sendPermissionResponse(
-		processId: string,
-		requestId: string,
-		approved: boolean,
-		requestSubtype?: string,
-		reason?: string,
-	): Promise<boolean>;
-	startProtocolAndWait(
-		options: ExecutorStartProtocolOptions,
-	): Promise<{ exitCode: number }>;
-	get(processId: string): ExecutorProcessInfo | undefined;
-	getBySession(sessionId: string): ExecutorProcessInfo[];
-	getStdout(processId: string): ReadableStream<Uint8Array> | null;
-	getStderr(processId: string): ReadableStream<Uint8Array> | null;
-}
-
+export type { IAgentConfigRepository } from "../repositories/agent-config";
+export type {
+	ExecutorProcessInfo,
+	ExecutorStartOptions,
+	ExecutorStartProtocolOptions,
+	IExecutorRepository,
+} from "../repositories/executor/repository";
 export type {
 	IMessageQueueRepository,
 	QueuedMessage,
 	QueueStatus,
 } from "../repositories/message-queue/repository";
 
-export type { IAgentConfigRepository } from "../repositories/agent-config";
-
 // ============================================
 // In-memory Store Repositories
 // ============================================
 
-export type { IDraftRepository } from "../repositories/draft/repository";
-
 export type { IApprovalRepository } from "../repositories/approval/repository";
+export type { IDraftRepository } from "../repositories/draft/repository";
 
 import type { IApprovalRepository } from "../repositories/approval/repository";
 

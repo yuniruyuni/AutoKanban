@@ -22,6 +22,7 @@ import type {
 	IExecutionProcessLogsRepository,
 } from "../../../../types/repository";
 import { ApprovalStore } from "../../../approval-store";
+import type { ClaudeCodeProcess } from "./claude-code-executor";
 import {
 	AUTO_APPROVE_CALLBACK_ID,
 	TOOL_APPROVAL_CALLBACK_ID,
@@ -379,6 +380,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		expect(approvalStore.listPending(processId)).toHaveLength(0);
 
 		// Response should have resolved
+		// biome-ignore lint/style/noNonNullAssertion: test assertion after null check
 		expect(approvalResponse!).toEqual({ status: "approved", reason: null });
 	});
 
@@ -588,7 +590,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 				} as never,
 				stdout: new ReadableStream<Uint8Array>(),
 				stderr: new ReadableStream<Uint8Array>(),
-			} as any;
+			} as unknown as ClaudeCodeProcess;
 
 			await executor.initialize(mockProcess, "plan");
 

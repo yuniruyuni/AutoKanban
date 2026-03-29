@@ -242,7 +242,7 @@ export function ConversationPanel({
 				planApproval && (
 					<PlanResponseInput
 						approvalId={planApproval.id}
-						executionProcessId={executionProcessId!}
+						executionProcessId={executionProcessId as string}
 					/>
 				)}
 			{!isHistoricalView && sessionId && showPermissionResponseInput && (

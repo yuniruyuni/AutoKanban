@@ -2,13 +2,13 @@ import type { Database } from "bun:sqlite";
 import type { ILogStreamer } from "../../src/presentation/log-streamer";
 import { ApprovalRepository } from "../../src/repositories/approval";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn";
-import { ExecutionProcessLogsRepository } from "../../src/repositories/execution-process-logs";
 import { ExecutionProcessRepository } from "../../src/repositories/execution-process";
+import { ExecutionProcessLogsRepository } from "../../src/repositories/execution-process-logs";
 import { ProjectRepository } from "../../src/repositories/project";
 import { SessionRepository } from "../../src/repositories/session";
 import { TaskRepository } from "../../src/repositories/task";
-import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo";
 import { WorkspaceRepository } from "../../src/repositories/workspace";
+import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo";
 import type { Context, Repos } from "../../src/types/context";
 import { createMockLogger } from "./logger";
 

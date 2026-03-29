@@ -14,9 +14,7 @@ export interface TaskTemplateRow {
 
 type TaskTemplateSpecData = { type: "ById"; id: string } | { type: "All" };
 
-export function taskTemplateSpecToSQL(
-	spec: TaskTemplateSpecData,
-): SQLFragment {
+export function taskTemplateSpecToSQL(spec: TaskTemplateSpecData): SQLFragment {
 	switch (spec.type) {
 		case "ById":
 			return sql`id = ${spec.id}`;

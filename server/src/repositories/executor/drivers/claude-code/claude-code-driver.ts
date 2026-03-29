@@ -219,6 +219,16 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		}
 	}
 
+	async runStructured<T>(options: {
+		workingDir: string;
+		prompt: string;
+		schema: Record<string, unknown>;
+		resumeSessionId?: string;
+		model?: string;
+	}): Promise<T | null> {
+		return this.executor.runStructured<T>(options);
+	}
+
 	interrupt(process: DriverProcess): void {
 		const nativeProcess = process as unknown as ClaudeCodeProcess;
 		this.executor.interrupt(nativeProcess);

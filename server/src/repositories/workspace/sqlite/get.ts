@@ -2,7 +2,11 @@ import type { Database, SQLQueryBindings } from "bun:sqlite";
 import type { Workspace } from "../../../models/workspace";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
-import { type WorkspaceRow, rowToWorkspace, workspaceSpecToSQL } from "./common";
+import {
+	rowToWorkspace,
+	type WorkspaceRow,
+	workspaceSpecToSQL,
+} from "./common";
 
 export function get(db: Database, spec: Workspace.Spec): Workspace | null {
 	const where = compToSQL(

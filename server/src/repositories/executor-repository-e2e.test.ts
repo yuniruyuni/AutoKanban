@@ -6,17 +6,14 @@
  * and that approval response reaches Claude Code.
  */
 
-import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Approval } from "../models/approval";
+import type { Approval } from "../models/approval";
 import type { ILogger } from "../types/logger";
 import type {
 	IApprovalRepository,
-	IApprovalStore,
-	ICodingAgentTurnRepository,
 	IExecutionProcessLogsRepository,
 	IExecutionProcessRepository,
 	ISessionRepository,
@@ -24,8 +21,8 @@ import type {
 	IWorkspaceRepository,
 } from "../types/repository";
 import { ApprovalStore } from "./approval-store";
-import { ClaudeCodeDriver } from "./executor/drivers/claude-code";
 import { ExecutorRepository } from "./executor";
+import { ClaudeCodeDriver } from "./executor/drivers/claude-code";
 
 function createMockLogger(): ILogger {
 	const noop = () => {};
@@ -65,7 +62,7 @@ function createMockApprovalRepo(): IApprovalRepository {
 	const store = new Map<string, Approval>();
 	return {
 		get: (spec: { type?: string; id?: string }) => {
-			if (spec.type === "ById") return store.get(spec.id!) ?? null;
+			if (spec.type === "ById" && spec.id) return store.get(spec.id) ?? null;
 			return null;
 		},
 		upsert: (a: Approval) => store.set(a.id, a),
@@ -78,17 +75,14 @@ describe("ExecutorRepository E2E (actual claude-code)", () => {
 	test(
 		"plan mode: ExitPlanMode creates approval via ExecutorRepository",
 		async () => {
-			const tmpDir = await mkdtemp(
-				join(tmpdir(), "executor-repo-e2e-"),
-			);
+			const tmpDir = await mkdtemp(join(tmpdir(), "executor-repo-e2e-"));
 
 			try {
 				const logger = createMockLogger();
 				const drivers = new Map();
 				drivers.set("claude-code", new ClaudeCodeDriver(logger));
 
-				const executionProcessRepo =
-					createMockExecutionProcessRepo();
+				const executionProcessRepo = createMockExecutionProcessRepo();
 				const approvalStore = new ApprovalStore();
 				const approvalRepo = createMockApprovalRepo();
 
@@ -118,7 +112,8 @@ describe("ExecutorRepository E2E (actual claude-code)", () => {
 					sessionId: "test-session-1",
 					runReason: "codingagent",
 					workingDir: tmpDir,
-					prompt: 'Create a file called hello.txt with "hello". Very simple task.',
+					prompt:
+						'Create a file called hello.txt with "hello". Very simple task.',
 					permissionMode: "plan",
 				});
 
@@ -146,12 +141,7 @@ describe("ExecutorRepository E2E (actual claude-code)", () => {
 				console.log("[E2E] Approval verified! Responding...");
 
 				// Approve it
-				approvalStore.respond(
-					pending[0].id,
-					"approved",
-					null,
-					approvalRepo,
-				);
+				approvalStore.respond(pending[0].id, "approved", null, approvalRepo);
 
 				// Wait briefly for response to be sent
 				await new Promise((r) => setTimeout(r, 3000));

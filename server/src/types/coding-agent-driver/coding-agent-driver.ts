@@ -1,4 +1,7 @@
-import type { ICodingAgentTurnRepository, IExecutionProcessLogsRepository } from "../repository";
+import type {
+	ICodingAgentTurnRepository,
+	IExecutionProcessLogsRepository,
+} from "../repository";
 import type { DriverApprovalRequest } from "./driver-approval-request";
 import type { DriverCallbacks } from "./driver-callbacks";
 import type { DriverProcess } from "./driver-process";
@@ -68,4 +71,17 @@ export interface ICodingAgentDriver {
 
 	/** Wait for the process to exit. */
 	wait(process: DriverProcess): Promise<{ exitCode: number; killed: boolean }>;
+
+	/**
+	 * Run a one-shot prompt with structured output (JSON schema validation).
+	 * Supports session context inheritance via resumeSessionId.
+	 * Optional — not all drivers support structured output.
+	 */
+	runStructured?<T>(options: {
+		workingDir: string;
+		prompt: string;
+		schema: Record<string, unknown>;
+		resumeSessionId?: string;
+		model?: string;
+	}): Promise<T | null>;
 }

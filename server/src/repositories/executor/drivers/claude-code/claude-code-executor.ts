@@ -340,6 +340,50 @@ export class ClaudeCodeExecutor {
 		process.proc.kill(2); // SIGINT
 	}
 
+	/**
+	 * Runs Claude Code in print mode with --json-schema for structured output.
+	 * Supports --resume + --fork-session for context inheritance.
+	 * Returns the parsed structured_output or null on failure.
+	 */
+	async runStructured<T>(options: {
+		workingDir: string;
+		prompt: string;
+		schema: Record<string, unknown>;
+		resumeSessionId?: string;
+		model?: string;
+	}): Promise<T | null> {
+		const args: string[] = [
+			"--print",
+			"--output-format=json",
+			"--json-schema",
+			JSON.stringify(options.schema),
+			"--dangerously-skip-permissions",
+		];
+
+		if (options.model) {
+			args.push("--model", options.model);
+		}
+
+		if (options.resumeSessionId) {
+			args.push("--resume", options.resumeSessionId, "--fork-session");
+		}
+
+		args.push(options.prompt);
+
+		const process = this.spawnProcess(options.workingDir, args);
+		const exitCode = await process.proc.exited;
+
+		if (exitCode !== 0) return null;
+
+		const stdout = await new Response(process.stdout).text();
+		try {
+			const result = JSON.parse(stdout);
+			return (result.structured_output as T) ?? null;
+		} catch {
+			return null;
+		}
+	}
+
 	// ============================================
 	// Private Methods
 	// ============================================

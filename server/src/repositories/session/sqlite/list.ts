@@ -4,9 +4,9 @@ import { Session } from "../../../models/session";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type SessionRow,
 	columnName,
 	rowToSession,
+	type SessionRow,
 	sessionSpecToSQL,
 } from "./common";
 

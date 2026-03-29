@@ -196,7 +196,6 @@ export function TaskDetailPanel({
 								className="text-lg font-semibold text-primary-foreground bg-transparent border-b border-border outline-none"
 							/>
 						) : (
-							// biome-ignore lint/a11y/noStaticElementInteractions: inline edit trigger
 							<h3
 								className="text-lg font-semibold text-primary-foreground cursor-text rounded px-1 -mx-1 hover:bg-hover"
 								onClick={titleEdit.startEditing}
@@ -218,7 +217,6 @@ export function TaskDetailPanel({
 								className="text-sm text-secondary-foreground leading-[1.5] bg-transparent border border-border rounded outline-none resize-y p-1"
 							/>
 						) : (
-							// biome-ignore lint/a11y/noStaticElementInteractions: inline edit trigger
 							<p
 								className="text-sm text-secondary-foreground leading-[1.5] cursor-text rounded px-1 -mx-1 hover:bg-hover min-h-[1.5em]"
 								onClick={descEdit.startEditing}

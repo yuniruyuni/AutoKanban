@@ -4,9 +4,9 @@ import { WorkspaceRepo } from "../../../models/workspace-repo";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type WorkspaceRepoRow,
 	columnName,
 	rowToWorkspaceRepo,
+	type WorkspaceRepoRow,
 	workspaceRepoSpecToSQL,
 } from "./common";
 
@@ -41,9 +41,7 @@ export function list(
 
 	const lastItem = items[items.length - 1];
 	const nextCursor =
-		hasMore && lastItem
-			? WorkspaceRepo.cursor(lastItem, sort.keys)
-			: undefined;
+		hasMore && lastItem ? WorkspaceRepo.cursor(lastItem, sort.keys) : undefined;
 
 	return { items, hasMore, nextCursor };
 }

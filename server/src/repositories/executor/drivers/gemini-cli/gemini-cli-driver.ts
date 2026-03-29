@@ -78,7 +78,7 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 	async initialize(
 		driverProcess: DriverProcess,
 		processId: string,
-		callbacks: DriverCallbacks,
+		_callbacks: DriverCallbacks,
 		logsRepo: IExecutionProcessLogsRepository,
 		_codingAgentTurnRepo?: ICodingAgentTurnRepository,
 	): Promise<void> {
@@ -111,7 +111,9 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 		_reason?: string,
 	): Promise<void> {
 		// Gemini CLI in headless/yolo mode does not support approval flow.
-		this.logger.warn("respondToApproval called but not supported in headless mode");
+		this.logger.warn(
+			"respondToApproval called but not supported in headless mode",
+		);
 	}
 
 	interrupt(driverProcess: DriverProcess): void {
@@ -151,10 +153,7 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 
 				const data = decoder.decode(value, { stream: true });
 				const timestamp = new Date().toISOString();
-				logsRepo.appendLogs(
-					processId,
-					`[${timestamp}] [${source}] ${data}\n`,
-				);
+				logsRepo.appendLogs(processId, `[${timestamp}] [${source}] ${data}\n`);
 			}
 		} catch (error) {
 			this.logger.error(`Error collecting ${source}:`, error);

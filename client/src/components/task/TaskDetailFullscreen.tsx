@@ -284,7 +284,6 @@ Please fix these conflicts and complete the rebase.
 							className="text-xl font-semibold text-[#0A0A0B] bg-transparent border-b border-[#E4E4E7] outline-none"
 						/>
 					) : (
-						// biome-ignore lint/a11y/noStaticElementInteractions: inline edit trigger
 						<h1
 							className="text-xl font-semibold text-[#0A0A0B] cursor-text rounded px-1 -mx-1 hover:bg-[#EBEBEB]"
 							onClick={titleEdit.startEditing}
@@ -454,7 +453,6 @@ Please fix these conflicts and complete the rebase.
 										className="w-full text-sm leading-[1.6] text-[#71717A] bg-transparent border border-[#E4E4E7] rounded outline-none resize-y p-2"
 									/>
 								) : (
-									// biome-ignore lint/a11y/noStaticElementInteractions: inline edit trigger
 									<p
 										className="text-sm leading-[1.6] text-[#71717A] whitespace-pre-wrap cursor-text rounded px-2 -mx-2 py-1 hover:bg-[#EBEBEB] min-h-[2em]"
 										onClick={descEdit.startEditing}

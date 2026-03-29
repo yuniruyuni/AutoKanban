@@ -1,7 +1,7 @@
 import type {
 	IMessageQueueRepository,
-	QueueStatus,
 	QueuedMessage,
+	QueueStatus,
 } from "../repository";
 
 export class MessageQueueRepository implements IMessageQueueRepository {

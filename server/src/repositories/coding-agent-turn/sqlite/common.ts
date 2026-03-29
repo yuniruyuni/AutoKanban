@@ -1,4 +1,4 @@
-import { CodingAgentTurn } from "../../../models/coding-agent-turn";
+import type { CodingAgentTurn } from "../../../models/coding-agent-turn";
 import { dateFromSQL } from "../../common";
 import { type SQLFragment, sql } from "../../sql";
 
@@ -35,9 +35,7 @@ export function codingAgentTurnSpecToSQL(
 	}
 }
 
-export function rowToCodingAgentTurn(
-	row: CodingAgentTurnRow,
-): CodingAgentTurn {
+export function rowToCodingAgentTurn(row: CodingAgentTurnRow): CodingAgentTurn {
 	return {
 		id: row.id,
 		executionProcessId: row.execution_process_id,

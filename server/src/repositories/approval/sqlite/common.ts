@@ -1,4 +1,4 @@
-import { Approval } from "../../../models/approval";
+import type { Approval } from "../../../models/approval";
 import { dateFromSQL } from "../../common";
 import { type SQLFragment, sql } from "../../sql";
 

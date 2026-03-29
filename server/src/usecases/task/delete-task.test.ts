@@ -16,7 +16,7 @@ import { deleteTask } from "./delete-task";
 describe("deleteTask", () => {
 	test("deletes a task with no related entities", async () => {
 		const db = createTestDB();
-		const { project, task } = seedFullChain(db);
+		const { project } = seedFullChain(db);
 		// Create a standalone task with no workspaces
 		const standaloneTask = Task.create({
 			projectId: project.id,

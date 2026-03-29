@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import type { WorkspaceRepo } from "../../../models/workspace-repo";
-import { type WorkspaceRepoRow, rowToWorkspaceRepo } from "./common";
+import { rowToWorkspaceRepo, type WorkspaceRepoRow } from "./common";
 
 export function listByWorkspace(
 	db: Database,

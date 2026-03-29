@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import type { TaskTemplate } from "../../../models/task-template";
-import { type TaskTemplateRow, rowToTaskTemplate } from "./common";
+import { rowToTaskTemplate, type TaskTemplateRow } from "./common";
 
 export function listAll(db: Database): TaskTemplate[] {
 	const rows = db
