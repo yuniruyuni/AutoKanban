@@ -231,14 +231,6 @@ export class ProtocolLogCollector {
 					const request = result.data;
 					const subtype = request.request.subtype;
 
-					this.logger.info("[APPROVAL_FLOW] control_request received", {
-						processId,
-						subtype,
-						toolName: request.request.tool_name,
-						callbackId: request.request.callback_id,
-						requestId: request.request_id,
-					});
-
 					if (
 						subtype === "permission_request" ||
 						subtype === "canUseTool" ||
@@ -246,32 +238,18 @@ export class ProtocolLogCollector {
 					) {
 						const toolName = (request.request.tool_name as string) ?? "unknown";
 
-						// ExitPlanMode goes through ApprovalStore for DB persistence
 						if (toolName === "ExitPlanMode") {
-							this.logger.info(
-								"[APPROVAL_FLOW] ExitPlanMode → approval callback",
-								{ processId },
-							);
 							this.notifyApprovalRequestCallbacks(processId, request);
 						} else {
-							this.logger.info(
-								"[APPROVAL_FLOW] non-ExitPlanMode → auto-approve",
-								{ processId, toolName },
-							);
-							// Auto-approve non-ExitPlanMode permission requests
 							this.notifyAutoApproveCallbacks(processId, request);
 						}
 					} else if (
 						subtype === "hookCallback" ||
 						subtype === "hook_callback"
 					) {
-						this.logger.info("[APPROVAL_FLOW] hookCallback → hook handler", {
-							processId,
-							callbackId: request.request.callback_id,
-						});
 						this.notifyHookCallbacks(processId, request);
 					} else {
-						this.logger.info("[APPROVAL_FLOW] unhandled subtype", {
+						this.logger.warn("Unhandled control_request subtype", {
 							processId,
 							subtype,
 						});

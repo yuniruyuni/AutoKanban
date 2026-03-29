@@ -211,12 +211,6 @@ export class ExecutorRepository implements IExecutorRepository {
 
 		this.setupCompletionHandler(runningProcess);
 
-		// Initialize the driver: protocol handshake + log collection + event wiring
-		this.logger.info("[APPROVAL_FLOW] initializing driver", {
-			processId: id,
-			driver: driver.name,
-			permissionMode: options.permissionMode,
-		});
 		await driver.initialize(
 			process,
 			id,
@@ -418,12 +412,6 @@ export class ExecutorRepository implements IExecutorRepository {
 		processId: string,
 		request: DriverApprovalRequest,
 	): Promise<void> {
-		this.logger.info("[APPROVAL_FLOW] handleApprovalRequest called", {
-			processId,
-			toolName: request.toolName,
-			toolCallId: request.toolCallId,
-		});
-
 		if (!this.approvalRepo || !this.approvalStoreRef) {
 			this.logger.error(
 				"Approval repos not configured, falling back to auto-approve",
@@ -467,15 +455,6 @@ export class ExecutorRepository implements IExecutorRepository {
 			}
 		}
 
-		this.logger.info(
-			"[APPROVAL_FLOW] approval created, waiting for user response",
-			{
-				processId,
-				approvalId: approval.id,
-				toolName: approval.toolName,
-			},
-		);
-
 		try {
 			// Wait for user response (blocks until respond() is called)
 			const response = await this.approvalStoreRef.createAndWait(
@@ -484,11 +463,6 @@ export class ExecutorRepository implements IExecutorRepository {
 			);
 
 			const approved = response.status === "approved";
-			this.logger.info("[APPROVAL_FLOW] sending approval response", {
-				processId,
-				approved,
-				toolName: request.toolName,
-			});
 
 			// Delegate protocol-specific response to the driver
 			const rp = this.runningProcesses.get(processId);
