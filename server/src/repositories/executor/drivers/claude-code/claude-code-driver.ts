@@ -13,10 +13,14 @@ import type {
 import {
 	ClaudeCodeExecutor,
 	type ClaudeCodeProcess,
-	type PermissionMode,
 	TOOL_APPROVAL_CALLBACK_ID,
 } from "./claude-code-executor";
 import { ProtocolLogCollector } from "./protocol-log-collector";
+import type {
+	PermissionMode,
+	PermissionUpdate,
+	PermissionUpdateSetMode,
+} from "./protocol-types";
 
 /**
  * Protocol-specific context stored in DriverApprovalRequest.protocolContext.
@@ -190,13 +194,13 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		const nativeProcess = process as unknown as ClaudeCodeProcess;
 		const ctx = request.protocolContext as ClaudeApprovalContext;
 
-		const updatedPermissions = approved
+		const updatedPermissions: PermissionUpdate[] | undefined = approved
 			? [
 					{
 						type: "setMode",
 						mode: "bypassPermissions",
 						destination: "session",
-					},
+					} satisfies PermissionUpdateSetMode,
 				]
 			: undefined;
 

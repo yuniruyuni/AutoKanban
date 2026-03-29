@@ -169,7 +169,11 @@ describe("sendPermissionResponse", () => {
 	test("passes updatedPermissions in new format (approved)", async () => {
 		const { process, written } = createMockProcess();
 		const perms = [
-			{ type: "setMode", mode: "bypassPermissions", destination: "session" },
+			{
+				type: "setMode" as const,
+				mode: "bypassPermissions" as const,
+				destination: "session" as const,
+			},
 		];
 		await executor.sendPermissionResponse(
 			process,

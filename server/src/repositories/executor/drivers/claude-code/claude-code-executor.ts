@@ -12,11 +12,11 @@ export interface ClaudeCodeOptions {
 	model?: string;
 }
 
-export type PermissionMode =
-	| "bypassPermissions"
-	| "default"
-	| "acceptEdits"
-	| "plan";
+import type {
+	PermissionMode as _PermissionMode,
+	PermissionUpdate,
+} from "./protocol-types";
+export type PermissionMode = _PermissionMode;
 
 export interface ClaudeCodeProtocolOptions {
 	workingDir: string;
@@ -179,11 +179,7 @@ export class ClaudeCodeExecutor {
 		approved: boolean,
 		requestSubtype?: string,
 		reason?: string,
-		updatedPermissions?: Array<{
-			type: string;
-			mode?: string;
-			destination?: string;
-		}>,
+		updatedPermissions?: PermissionUpdate[],
 		toolInput?: Record<string, unknown>,
 	): Promise<void> {
 		if (requestSubtype === "permission_request") {
