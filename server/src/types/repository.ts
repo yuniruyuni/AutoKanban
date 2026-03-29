@@ -29,13 +29,7 @@ import type { Workspace } from "../models/workspace";
 import type { WorkspaceRepo } from "../models/workspace-repo";
 import type { WorktreeInfo } from "../models/worktree-info";
 
-export interface ITaskRepository {
-	get(spec: Task.Spec): Task | null;
-	list(spec: Task.Spec, cursor: Cursor<Task.SortKey>): Page<Task>;
-	upsert(task: Task): void;
-	delete(spec: Task.Spec): number;
-	count(spec: Task.Spec): number;
-}
+export type { ITaskRepository } from "../repositories/task/repository";
 
 export interface ITaskTemplateRepository {
 	get(spec: TaskTemplate.Spec): TaskTemplate | null;

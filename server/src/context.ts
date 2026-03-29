@@ -17,7 +17,7 @@ import { messageQueueRepository } from "./repositories/message-queue-repository"
 import { permissionStore } from "./repositories/permission-store";
 import { ProjectRepository } from "./repositories/project-repository";
 import { SessionRepository } from "./repositories/session-repository";
-import { TaskRepository } from "./repositories/task-repository";
+import { TaskRepository } from "./repositories/task";
 import { TaskTemplateRepository } from "./repositories/task-template-repository";
 import { ToolRepository } from "./repositories/tool-repository";
 import { VariantRepository } from "./repositories/variant-repository";

@@ -9,7 +9,7 @@ import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { Workspace } from "../models/workspace";
 import { ProjectRepository } from "./project-repository";
-import { TaskRepository } from "./task-repository";
+import { TaskRepository } from "./task";
 import { WorkspaceRepository } from "./workspace-repository";
 
 let db: Database;

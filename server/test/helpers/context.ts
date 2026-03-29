@@ -6,7 +6,7 @@ import { ExecutionProcessLogsRepository } from "../../src/repositories/execution
 import { ExecutionProcessRepository } from "../../src/repositories/execution-process-repository";
 import { ProjectRepository } from "../../src/repositories/project-repository";
 import { SessionRepository } from "../../src/repositories/session-repository";
-import { TaskRepository } from "../../src/repositories/task-repository";
+import { TaskRepository } from "../../src/repositories/task";
 import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo-repository";
 import { WorkspaceRepository } from "../../src/repositories/workspace-repository";
 import type { Context, Repos } from "../../src/types/context";

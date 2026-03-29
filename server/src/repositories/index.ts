@@ -11,6 +11,6 @@ export * from "./project-repository";
 export * from "./drivers/claude-code";
 export * from "./session-repository";
 export * from "./sql";
-export * from "./task-repository";
+export * from "./task";
 export * from "./workspace-repository";
 export * from "./worktree-repository";

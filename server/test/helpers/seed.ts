@@ -7,7 +7,7 @@ import type { Workspace } from "../../src/models/workspace";
 import { ExecutionProcessRepository } from "../../src/repositories/execution-process-repository";
 import { ProjectRepository } from "../../src/repositories/project-repository";
 import { SessionRepository } from "../../src/repositories/session-repository";
-import { TaskRepository } from "../../src/repositories/task-repository";
+import { TaskRepository } from "../../src/repositories/task";
 import { WorkspaceRepository } from "../../src/repositories/workspace-repository";
 import {
 	createTestExecutionProcess,

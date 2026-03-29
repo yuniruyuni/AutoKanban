@@ -6,7 +6,7 @@ import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { and } from "../models/common";
 import { Task } from "../models/task";
 import { ProjectRepository } from "./project-repository";
-import { TaskRepository } from "./task-repository";
+import { TaskRepository } from "./task";
 
 let db: Database;
 let taskRepo: TaskRepository;
