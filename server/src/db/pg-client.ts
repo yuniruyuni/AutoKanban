@@ -1,18 +1,29 @@
-import pg, { type QueryResultRow } from "pg";
+import pg, { type PoolClient, type QueryResultRow } from "pg";
 import type { SQLFragment } from "../repositories/sql";
 
-export class PgDatabase {
-	private pool: pg.Pool;
+type Queryable = pg.Pool | PoolClient;
 
-	constructor(config: pg.PoolConfig) {
-		this.pool = new pg.Pool(config);
+export class PgDatabase {
+	private queryable: Queryable;
+	private isPool: boolean;
+
+	constructor(config: pg.PoolConfig);
+	constructor(client: PoolClient);
+	constructor(configOrClient: pg.PoolConfig | PoolClient) {
+		if ("query" in configOrClient && "release" in configOrClient) {
+			this.queryable = configOrClient;
+			this.isPool = false;
+		} else {
+			this.queryable = new pg.Pool(configOrClient);
+			this.isPool = true;
+		}
 	}
 
 	async queryGet<T extends QueryResultRow>(
 		fragment: SQLFragment,
 	): Promise<T | null> {
 		const { query, params } = finalize(fragment);
-		const result = await this.pool.query<T>(query, params);
+		const result = await this.queryable.query<T>(query, params);
 		return result.rows[0] ?? null;
 	}
 
@@ -20,18 +31,40 @@ export class PgDatabase {
 		fragment: SQLFragment,
 	): Promise<T[]> {
 		const { query, params } = finalize(fragment);
-		const result = await this.pool.query<T>(query, params);
+		const result = await this.queryable.query<T>(query, params);
 		return result.rows;
 	}
 
 	async queryRun(fragment: SQLFragment): Promise<{ rowCount: number }> {
 		const { query, params } = finalize(fragment);
-		const result = await this.pool.query(query, params);
+		const result = await this.queryable.query(query, params);
 		return { rowCount: result.rowCount ?? 0 };
 	}
 
+	async transaction<T>(fn: (tx: PgDatabase) => Promise<T>): Promise<T> {
+		if (!this.isPool) {
+			throw new Error("Cannot start a transaction on a PoolClient");
+		}
+		const pool = this.queryable as pg.Pool;
+		const client = await pool.connect();
+		try {
+			await client.query("BEGIN");
+			const txDb = new PgDatabase(client);
+			const result = await fn(txDb);
+			await client.query("COMMIT");
+			return result;
+		} catch (e) {
+			await client.query("ROLLBACK");
+			throw e;
+		} finally {
+			client.release();
+		}
+	}
+
 	async close(): Promise<void> {
-		await this.pool.end();
+		if (this.isPool) {
+			await (this.queryable as pg.Pool).end();
+		}
 	}
 }
 

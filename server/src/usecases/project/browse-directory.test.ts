@@ -3,6 +3,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createMockLogger } from "../../../test/helpers/logger";
+import type { PgDatabase } from "../../db/pg-client";
 import type { Context } from "../runner";
 import { browseDirectory } from "./browse-directory";
 
@@ -10,8 +11,13 @@ import { browseDirectory } from "./browse-directory";
 const mockContext: Context = {
 	now: new Date(),
 	logger: createMockLogger(),
+	db: {
+		transaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
+			fn({} as PgDatabase),
+	} as PgDatabase,
 	repos: {} as Context["repos"],
 	logStreamer: {} as Context["logStreamer"],
+	createTransactionRepos: (repos) => repos,
 };
 
 describe("browseDirectory", () => {

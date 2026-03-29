@@ -84,6 +84,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	return {
 		now: new Date(),
 		logger,
+		db,
 		repos: {
 			task: taskRepo,
 			taskTemplate: taskTemplateRepo,

@@ -1,5 +1,6 @@
 // Context types define the context available to usecases and procedures
 
+import type { PgDatabase } from "../db/pg-client";
 import type { ILogStreamer } from "../presentation/log-streamer";
 import type { ILogger } from "./logger";
 import type {
@@ -68,7 +69,10 @@ export type PostContext = { now: Date; logger: ILogger; repos: Repos };
 export interface Context {
 	now: Date;
 	logger: ILogger;
+	db: PgDatabase;
 	repos: Repos;
 	// Presentation-layer services (kept in Context for router access)
 	logStreamer: ILogStreamer;
+	// Override for testing: skip real transaction repos creation
+	createTransactionRepos?: (repos: Repos, tx: PgDatabase) => Repos;
 }

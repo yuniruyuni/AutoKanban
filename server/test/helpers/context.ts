@@ -38,11 +38,18 @@ export function createMockContext(repoOverrides: Partial<Repos> = {}): Context {
 		},
 	};
 
+	const mockDb = {
+		transaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
+			fn({} as PgDatabase),
+	} as PgDatabase;
+
 	return {
 		now: new Date("2025-01-15T10:00:00.000Z"),
 		logger: createMockLogger(),
+		db: mockDb,
 		repos: new Proxy({} as Repos, handler),
 		logStreamer: {} as ILogStreamer,
+		createTransactionRepos: (repos) => repos,
 	};
 }
 
@@ -54,6 +61,7 @@ export function createIntegrationContext(db: PgDatabase): Context {
 	return {
 		now: new Date("2025-01-15T10:00:00.000Z"),
 		logger: createMockLogger(),
+		db,
 		repos: {
 			task: new TaskRepository(db),
 			taskTemplate: {} as Repos["taskTemplate"],

@@ -1,10 +1,24 @@
+import type { PgDatabase } from "../db/pg-client";
 import { type Fail, fail, isFail, type Unfail } from "../models/common";
+import { ApprovalRepository } from "../repositories/approval";
+import { CodingAgentTurnRepository } from "../repositories/coding-agent-turn";
+import { ExecutionProcessRepository } from "../repositories/execution-process";
+import { ExecutionProcessLogsRepository } from "../repositories/execution-process-logs";
+import { ProjectRepository } from "../repositories/project";
+import { SessionRepository } from "../repositories/session";
+import { TaskRepository } from "../repositories/task";
+import { TaskTemplateRepository } from "../repositories/task-template";
+import { ToolRepository } from "../repositories/tool";
+import { VariantRepository } from "../repositories/variant";
+import { WorkspaceRepository } from "../repositories/workspace";
+import { WorkspaceRepoRepository } from "../repositories/workspace-repo";
 import type {
 	Context,
 	PostContext,
 	PreContext,
 	ProcessContext,
 	ReadContext,
+	Repos,
 	WriteContext,
 } from "../types/context";
 
@@ -57,6 +71,40 @@ interface UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult> {
 }
 
 // ============================================
+// Transaction-scoped repository creation
+// ============================================
+
+function createTransactionRepos(repos: Repos, tx: PgDatabase): Repos {
+	return {
+		// DB-backed: recreate with transaction-scoped PgDatabase
+		task: new TaskRepository(tx),
+		taskTemplate: new TaskTemplateRepository(tx),
+		project: new ProjectRepository(tx),
+		workspace: new WorkspaceRepository(tx),
+		workspaceRepo: new WorkspaceRepoRepository(tx),
+		session: new SessionRepository(tx),
+		executionProcess: new ExecutionProcessRepository(tx),
+		executionProcessLogs: new ExecutionProcessLogsRepository(tx),
+		codingAgentTurn: new CodingAgentTurnRepository(tx),
+		tool: new ToolRepository(tx),
+		variant: new VariantRepository(tx),
+		approval: new ApprovalRepository(tx),
+		// Non-DB: pass through
+		git: repos.git,
+		worktree: repos.worktree,
+		executor: repos.executor,
+		messageQueue: repos.messageQueue,
+		agentConfig: repos.agentConfig,
+		workspaceConfig: repos.workspaceConfig,
+		draft: repos.draft,
+		permissionStore: repos.permissionStore,
+		approvalStore: repos.approvalStore,
+		logStoreManager: repos.logStoreManager,
+		devServer: repos.devServer,
+	};
+}
+
+// ============================================
 // usecase function
 // ============================================
 
@@ -73,19 +121,8 @@ export function usecase<
 	return {
 		async run(ctx: Context): Promise<Result<TResult, Fail>> {
 			try {
-				// Construct step-specific contexts
 				const preCtx: PreContext = { now: ctx.now, logger: ctx.logger };
-				const readCtx: ReadContext = {
-					now: ctx.now,
-					logger: ctx.logger,
-					repos: ctx.repos,
-				};
 				const processCtx: ProcessContext = { now: ctx.now, logger: ctx.logger };
-				const writeCtx: WriteContext = {
-					now: ctx.now,
-					logger: ctx.logger,
-					repos: ctx.repos,
-				};
 				const postCtx: PostContext = {
 					now: ctx.now,
 					logger: ctx.logger,
@@ -96,17 +133,32 @@ export function usecase<
 				let state: unknown = await (def.pre?.(preCtx) ?? {});
 				if (isFail(state)) return { ok: false, error: state };
 
-				// read → process → write (sequential execution)
+				// read → process → write (inside transaction)
+				state = await ctx.db.transaction(async (tx) => {
+					const reposFactory =
+						ctx.createTransactionRepos ?? createTransactionRepos;
+					const txRepos = reposFactory(ctx.repos, tx);
+					const readCtx: ReadContext = {
+						now: ctx.now,
+						logger: ctx.logger,
+						repos: txRepos,
+					};
+					const writeCtx: WriteContext = {
+						now: ctx.now,
+						logger: ctx.logger,
+						repos: txRepos,
+					};
 
-				state = await (def.read?.(readCtx, state as Unfail<TPre>) ?? state);
-				if (isFail(state)) return { ok: false, error: state };
+					let s: unknown = await (def.read?.(readCtx, state as Unfail<TPre>) ??
+						state);
+					if (isFail(s)) return s;
 
-				state = await (def.process?.(processCtx, state as Unfail<TRead>) ??
-					state);
-				if (isFail(state)) return { ok: false, error: state };
+					s = await (def.process?.(processCtx, s as Unfail<TRead>) ?? s);
+					if (isFail(s)) return s;
 
-				state = await (def.write?.(writeCtx, state as Unfail<TProcess>) ??
-					state);
+					s = await (def.write?.(writeCtx, s as Unfail<TProcess>) ?? s);
+					return s;
+				});
 				if (isFail(state)) return { ok: false, error: state };
 
 				// post (outside transaction)

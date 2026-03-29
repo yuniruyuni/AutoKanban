@@ -1,15 +1,23 @@
 import { describe, expect, test } from "bun:test";
 import { createMockLogger } from "../../test/helpers/logger";
+import type { PgDatabase } from "../db/pg-client";
 import { fail } from "../models/common";
 import type { ILogStreamer } from "../presentation/log-streamer";
 import type { Context } from "../types/context";
 import { usecase } from "./runner";
 
+const mockDb = {
+	transaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
+		fn({} as PgDatabase),
+} as PgDatabase;
+
 const mockCtx: Context = {
 	now: new Date("2025-01-15T10:00:00.000Z"),
 	logger: createMockLogger(),
+	db: mockDb,
 	repos: {} as Context["repos"],
 	logStreamer: {} as ILogStreamer,
+	createTransactionRepos: (repos) => repos,
 };
 
 // ============================================
