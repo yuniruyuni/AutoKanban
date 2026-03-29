@@ -1,0 +1,21 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "auto-kanban.json",
+	"description": "AutoKanban workspace configuration file",
+	"type": "object",
+	"properties": {
+		"prepare": {
+			"type": "string",
+			"description": "Command to run after worktree creation, before agent execution"
+		},
+		"server": {
+			"type": "string",
+			"description": "Command to start the development server"
+		},
+		"cleanup": {
+			"type": "string",
+			"description": "Command to run before worktree deletion on session end"
+		}
+	},
+	"additionalProperties": false
+}
