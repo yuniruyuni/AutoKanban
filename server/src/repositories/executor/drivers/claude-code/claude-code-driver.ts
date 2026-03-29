@@ -193,7 +193,7 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		const updatedPermissions = approved
 			? [
 					{
-						type: "set-mode",
+						type: "setMode",
 						mode: "bypassPermissions",
 						destination: "session",
 					},

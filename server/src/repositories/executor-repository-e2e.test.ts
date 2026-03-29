@@ -24,7 +24,7 @@ import type {
 	IWorkspaceRepository,
 } from "../types/repository";
 import { ApprovalStore } from "./approval-store";
-import { ClaudeCodeDriver } from "./drivers/claude-code";
+import { ClaudeCodeDriver } from "./executor/drivers/claude-code";
 import { ExecutorRepository } from "./executor";
 
 function createMockLogger(): ILogger {
