@@ -1,4 +1,4 @@
--- Auto Kanban Database Schema
+-- Auto Kanban Database Schema (PostgreSQL)
 
 -- projects (Project = 1 Git Repository)
 CREATE TABLE IF NOT EXISTS projects (
@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS projects (
   setup_script TEXT,
   cleanup_script TEXT,
   dev_server_script TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- tasks
@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   title TEXT NOT NULL,
   description TEXT,
   status TEXT NOT NULL DEFAULT 'todo',
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks(project_id);
@@ -35,11 +35,11 @@ CREATE TABLE IF NOT EXISTS workspaces (
   container_ref TEXT NOT NULL,
   branch TEXT NOT NULL DEFAULT '',
   worktree_path TEXT,
-  setup_complete INTEGER DEFAULT 0,
+  setup_complete BOOLEAN DEFAULT false,
   attempt INTEGER NOT NULL DEFAULT 1,
-  archived INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  archived BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_workspaces_task_id ON workspaces(task_id);
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   workspace_id TEXT NOT NULL REFERENCES workspaces(id),
   executor TEXT,
   variant TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_sessions_workspace_id ON sessions(workspace_id);
@@ -63,10 +63,10 @@ CREATE TABLE IF NOT EXISTS execution_processes (
   run_reason TEXT NOT NULL DEFAULT 'setupscript',
   status TEXT NOT NULL DEFAULT 'running',
   exit_code INTEGER,
-  started_at TEXT NOT NULL DEFAULT (datetime('now')),
-  completed_at TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_execution_processes_session_id ON execution_processes(session_id);
@@ -82,13 +82,13 @@ CREATE TABLE IF NOT EXISTS execution_process_logs (
 CREATE TABLE IF NOT EXISTS coding_agent_turns (
   id TEXT PRIMARY KEY,
   execution_process_id TEXT NOT NULL UNIQUE REFERENCES execution_processes(id),
-  agent_session_id TEXT,          -- Claude側のセッションID (--resume用)
-  agent_message_id TEXT,          -- 最後のメッセージID (--resume-session-at用)
-  prompt TEXT,                    -- 送信したプロンプト
-  summary TEXT,                   -- 最終応答サマリー
-  seen INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  agent_session_id TEXT,
+  agent_message_id TEXT,
+  prompt TEXT,
+  summary TEXT,
+  seen BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_coding_agent_turns_agent_session ON coding_agent_turns(agent_session_id);
@@ -101,8 +101,8 @@ CREATE TABLE IF NOT EXISTS workspace_repos (
   project_id TEXT NOT NULL REFERENCES projects(id),
   target_branch TEXT NOT NULL,
   pr_url TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(workspace_id, project_id)
 );
 
@@ -114,9 +114,9 @@ CREATE TABLE IF NOT EXISTS approvals (
   tool_call_id TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'pending',
   reason TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  responded_at TEXT,
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  responded_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_approvals_execution_process_id ON approvals(execution_process_id);
@@ -130,8 +130,8 @@ CREATE TABLE IF NOT EXISTS variants (
   permission_mode TEXT NOT NULL DEFAULT 'bypassPermissions',
   model TEXT,
   append_prompt TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(executor, name)
 );
 
@@ -143,8 +143,8 @@ CREATE TABLE IF NOT EXISTS tools (
   icon_color TEXT NOT NULL DEFAULT '#6B7280',
   command TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- project_task_templates (default tasks created with new projects)
@@ -154,6 +154,6 @@ CREATE TABLE IF NOT EXISTS project_task_templates (
   description TEXT,
   condition TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
