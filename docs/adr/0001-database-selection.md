@@ -1,8 +1,12 @@
 # ADR-0001: データベースエンジンの選定
 
+## Status: Superseded
+
+このADRはPostgreSQL (embedded-postgres) への移行により廃止されました。embedded-postgresを採用し、pgschemaによる宣言的スキーマ管理を行っています。以下は当初の決定記録として残しています。
+
 ## ステータス
 
-採用 (Accepted)
+廃止 (Superseded)
 
 ## 日付
 

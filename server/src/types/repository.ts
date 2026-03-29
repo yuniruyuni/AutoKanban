@@ -1,5 +1,4 @@
-// Repository interfaces - no bun:sqlite dependency
-// These interfaces define the contract for data access and external system calls
+// Repository interfaces define the contract for data access and external system calls
 
 import type { Approval } from "../models/approval";
 import type { BranchStatus, ConflictOp } from "../models/branch-status";

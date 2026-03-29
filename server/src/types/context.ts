@@ -1,5 +1,4 @@
-// Context types - no bun:sqlite dependency
-// These types define the context available to usecases and procedures
+// Context types define the context available to usecases and procedures
 
 import type { ILogStreamer } from "../presentation/log-streamer";
 import type { ILogger } from "./logger";

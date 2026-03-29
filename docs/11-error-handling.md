@@ -155,7 +155,7 @@ export namespace Task {
 
 ### Repository Layer
 
-見つからない場合は`null`を返す。DB操作エラーは例外として発生する（bun:sqliteの仕様）。
+見つからない場合は`null`を返す。DB操作エラーは例外として発生する（pg node-postgresの仕様）。
 
 ```typescript
 // repositories/task-repository.ts

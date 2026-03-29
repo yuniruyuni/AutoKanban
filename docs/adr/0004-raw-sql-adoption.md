@@ -1,5 +1,7 @@
 # ADR-0004: Raw SQL採用（ORM不採用）
 
+> **注**: PostgreSQL (embedded-postgres) への移行後も、Raw SQLアプローチは `pg` (node-postgres) 経由で継続しています。`PgDatabase`ラッパーが`queryGet`/`queryAll`/`queryRun`メソッドを提供します。
+
 ## ステータス
 
 採用 (Accepted)

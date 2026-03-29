@@ -268,16 +268,16 @@ export class TaskRepository {
   // 標準メソッド: get(spec)
   get(spec: Comp<Task.Spec>): Task | null {
     const where = compToSQL(spec, taskSpecToSQL);
-    const row = this.db.query(sql`SELECT * FROM tasks WHERE ${where}`).get();
+    const row = this.db.queryGet(sql`SELECT * FROM tasks WHERE ${where}`);
     return row ? this.mapRow(row) : null;
   }
 
   // 標準メソッド: upsert(model)
   upsert(task: Task): void {
-    this.db.query(sql`
+    this.db.queryRun(sql`
       INSERT INTO tasks (id, project_id, title, ...) VALUES (...)
       ON CONFLICT(id) DO UPDATE SET ...
-    `).run(...);
+    `);
   }
 }
 ```
@@ -392,7 +392,7 @@ Frontend                 Presentation              Usecase Runner          Repos
     │                         │                         │ await write: task    │
     │                         │                         │─────────────────────▶│
     │                         │                         │                      │ INSERT INTO
-    │                         │                         │                      │─────▶ SQLite
+    │                         │                         │                      │─────▶ PostgreSQL
     │                         │                         │◀─────────────────────│
     │                         │                         │ ─── end tx ───       │
     │                         │                         │ post (省略)          │
@@ -420,7 +420,7 @@ Frontend                 Presentation           Usecase              Repository
     │                         │                    │ taskRepo.list()     │
     │                         │                    │────────────────────▶│
     │                         │                    │                     │ SELECT (limit+1)
-    │                         │                    │                     │─────▶ SQLite
+    │                         │                    │                     │─────▶ PostgreSQL
     │                         │                    │◀────────────────────│
     │                         │◀───────────────────│                     │
     │◀────────────────────────│                    │                     │
@@ -433,12 +433,12 @@ Frontend                 Presentation           Usecase              Repository
 
 ```typescript
 // presentation/context.ts
-import { Database } from 'bun:sqlite';
+import { PgDatabase } from '../db/pg-client';
 import { TaskRepositoryImpl } from '../repositories/task-repository';
 import { ProjectRepositoryImpl } from '../repositories/project-repository';
 
 export function createContext() {
-  const db = new Database('auto-kanban.db');
+  const db = new PgDatabase();
 
   return {
     db,

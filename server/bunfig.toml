@@ -1,2 +1,2 @@
 [run.watch]
-ignore = ["./data"]
+ignore = ["./.test-pg-data"]

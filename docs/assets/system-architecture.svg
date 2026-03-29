@@ -70,7 +70,7 @@
   <text x="575" y="165" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#00695c">外部システム</text>
 
   <rect x="490" y="180" width="170" height="35" rx="4" fill="#fff" stroke="#00796b" stroke-width="1"/>
-  <text x="575" y="203" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#00695c">SQLite (bun:sqlite)</text>
+  <text x="575" y="203" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#00695c">PostgreSQL (embedded-postgres)</text>
 
   <rect x="490" y="225" width="170" height="35" rx="4" fill="#fff" stroke="#00796b" stroke-width="1"/>
   <text x="575" y="248" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#00695c">Git Repos</text>

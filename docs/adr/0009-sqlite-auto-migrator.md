@@ -1,8 +1,12 @@
 # ADR-0009: sqlite-auto-migrator採用
 
+## Status: Superseded
+
+このADRはPostgreSQL (embedded-postgres) への移行に伴い、pgschemaに置き換えられました。pgschemaはschema.sqlの差分を自動検出し、起動時にPostgreSQLスキーマへ適用します。以下は当初の決定記録として残しています。
+
 ## ステータス
 
-採用 (Accepted)
+廃止 (Superseded)
 
 ## 日付
 

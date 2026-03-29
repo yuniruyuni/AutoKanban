@@ -6,7 +6,7 @@
 - **ランタイム**: Bun
 - **Webフレームワーク**: Hono
 - **API**: tRPC
-- **データベース**: SQLite (bun:sqlite) + Raw SQL
+- **データベース**: PostgreSQL (embedded-postgres) + Raw SQL
 
 ## レイヤードアーキテクチャ
 
@@ -953,7 +953,7 @@ export const badPattern = () => usecase({
 ### テスト戦略
 
 - **単体テスト**: 各usecaseに対してテストを記述
-- **DB**: テストごとに独立したSQLiteインスタンス（実際のDBを使用）
+- **DB**: テストごとに独立したPostgreSQLインスタンス（実際のDBを使用）
 - **外部サービス**: サービスレベルでモック
 - **トランザクション**: 1 usecase = 1 transaction が保証される
 
@@ -967,17 +967,17 @@ export const badPattern = () => usecase({
 
 ```typescript
 // presentation/context.ts
-import { Database } from 'bun:sqlite';
+import { PgDatabase } from '../db/pg-client';
 import { initializeDatabase } from '../repositories/database';
 import { GitRepositoryImpl } from '../repositories/git-repository';
 import { ExecutorRepositoryImpl } from '../repositories/executor-repository';
 import { Logger } from '../logger';
 
-let db: Database | null = null;
+let db: PgDatabase | null = null;
 
-export function createContext() {
+export async function createContext() {
   if (!db) {
-    db = initializeDatabase('./auto-kanban.db');
+    db = await initializeDatabase();
   }
 
   return {
