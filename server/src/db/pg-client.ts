@@ -42,13 +42,24 @@ export class PgDatabase {
 	}
 
 	async transaction<T>(fn: (tx: PgDatabase) => Promise<T>): Promise<T> {
+		return this.runTransaction("BEGIN", fn);
+	}
+
+	async readTransaction<T>(fn: (tx: PgDatabase) => Promise<T>): Promise<T> {
+		return this.runTransaction("BEGIN READ ONLY", fn);
+	}
+
+	private async runTransaction<T>(
+		begin: string,
+		fn: (tx: PgDatabase) => Promise<T>,
+	): Promise<T> {
 		if (!this.isPool) {
 			throw new Error("Cannot start a transaction on a PoolClient");
 		}
 		const pool = this.queryable as pg.Pool;
 		const client = await pool.connect();
 		try {
-			await client.query("BEGIN");
+			await client.query(begin);
 			const txDb = new PgDatabase(client);
 			const result = await fn(txDb);
 			await client.query("COMMIT");

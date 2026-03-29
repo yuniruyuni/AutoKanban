@@ -41,6 +41,8 @@ export function createMockContext(repoOverrides: Partial<Repos> = {}): Context {
 	const mockDb = {
 		transaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
 			fn({} as PgDatabase),
+		readTransaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
+			fn({} as PgDatabase),
 	} as PgDatabase;
 
 	return {

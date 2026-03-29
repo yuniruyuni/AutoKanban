@@ -11,6 +11,7 @@ import { TaskTemplateRepository } from "../repositories/task-template";
 import { ToolRepository } from "../repositories/tool";
 import { VariantRepository } from "../repositories/variant";
 import { WorkspaceRepository } from "../repositories/workspace";
+import { WorkspaceConfigRepository } from "../repositories/workspace-config";
 import { WorkspaceRepoRepository } from "../repositories/workspace-repo";
 import type {
 	Context,
@@ -133,32 +134,24 @@ export function usecase<
 				let state: unknown = await (def.pre?.(preCtx) ?? {});
 				if (isFail(state)) return { ok: false, error: state };
 
-				// read → process → write (inside transaction)
-				state = await ctx.db.transaction(async (tx) => {
-					const reposFactory =
-						ctx.createTransactionRepos ?? createTransactionRepos;
-					const txRepos = reposFactory(ctx.repos, tx);
-					const readCtx: ReadContext = {
-						now: ctx.now,
-						logger: ctx.logger,
-						repos: txRepos,
-					};
-					const writeCtx: WriteContext = {
-						now: ctx.now,
-						logger: ctx.logger,
-						repos: txRepos,
-					};
-
-					let s: unknown = await (def.read?.(readCtx, state as Unfail<TPre>) ??
-						state);
-					if (isFail(s)) return s;
-
-					s = await (def.process?.(processCtx, s as Unfail<TRead>) ?? s);
-					if (isFail(s)) return s;
-
-					s = await (def.write?.(writeCtx, s as Unfail<TProcess>) ?? s);
-					return s;
-				});
+				// read → process → write (transaction scope depends on steps)
+				if (def.write) {
+					// Write transaction: read → process → write
+					state = await ctx.db.transaction(async (tx) => {
+						return runReadProcessWrite(ctx, def, processCtx, tx, state);
+					});
+				} else if (def.read) {
+					// Read-only transaction: read → process
+					state = await ctx.db.readTransaction(async (tx) => {
+						return runReadProcessWrite(ctx, def, processCtx, tx, state);
+					});
+				} else {
+					// No DB steps: process only (no transaction)
+					state = await (def.process?.(
+						processCtx,
+						state as Unfail<TRead>,
+					) ?? state);
+				}
 				if (isFail(state)) return { ok: false, error: state };
 
 				// post (outside transaction)
@@ -177,4 +170,37 @@ export function usecase<
 			}
 		},
 	};
+}
+
+function runReadProcessWrite<TPre, TRead, TProcess, TWrite, TPost, TResult>(
+	ctx: Context,
+	def: UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult>,
+	processCtx: ProcessContext,
+	tx: PgDatabase,
+	state: unknown,
+): MaybePromise<unknown> {
+	const reposFactory = ctx.createTransactionRepos ?? createTransactionRepos;
+	const txRepos = reposFactory(ctx.repos, tx);
+	const readCtx: ReadContext = {
+		now: ctx.now,
+		logger: ctx.logger,
+		repos: txRepos,
+	};
+	const writeCtx: WriteContext = {
+		now: ctx.now,
+		logger: ctx.logger,
+		repos: txRepos,
+	};
+
+	return (async () => {
+		let s: unknown = await (def.read?.(readCtx, state as Unfail<TPre>) ??
+			state);
+		if (isFail(s)) return s;
+
+		s = await (def.process?.(processCtx, s as Unfail<TRead>) ?? s);
+		if (isFail(s)) return s;
+
+		s = await (def.write?.(writeCtx, s as Unfail<TProcess>) ?? s);
+		return s;
+	})();
 }

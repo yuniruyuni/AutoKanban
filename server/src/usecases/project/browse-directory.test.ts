@@ -14,6 +14,8 @@ const mockContext: Context = {
 	db: {
 		transaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
 			fn({} as PgDatabase),
+		readTransaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
+			fn({} as PgDatabase),
 	} as PgDatabase,
 	repos: {} as Context["repos"],
 	logStreamer: {} as Context["logStreamer"],
