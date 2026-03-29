@@ -26,6 +26,9 @@ Thumbs.db
 *.db-wal
 *.db-shm
 
+# SQLite migrations (auto-generated at startup from schema.sql)
+server/migrations/
+
 # Logs
 *.log
 logs/
