@@ -8,7 +8,7 @@ import { join } from "node:path";
  */
 export function createTestDB(): Database {
 	const db = new Database(":memory:");
-	const schemaPath = join(import.meta.dir, "../../schema.sql");
+	const schemaPath = join(import.meta.dir, "schema.sqlite.sql");
 	const schema = readFileSync(schemaPath, "utf-8");
 	db.exec(schema);
 	return db;

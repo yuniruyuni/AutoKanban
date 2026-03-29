@@ -1,37 +1,38 @@
-import { Database } from "bun:sqlite";
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
-import { runMigrations } from "./migrate";
+import { PgDatabase } from "./pg-client";
+import { ensurePgSchema } from "./pgschema";
+import { EmbeddedPostgresManager } from "./postgres";
 import { seedTaskTemplates } from "./seed-templates";
 
-let db: Database | null = null;
+let db: PgDatabase | null = null;
+let pgManager: EmbeddedPostgresManager | null = null;
 
-export function getDatabase(): Database {
+export function getDatabase(): PgDatabase {
 	if (!db) {
 		throw new Error("Database not initialized. Call initDatabase() first.");
 	}
 	return db;
 }
 
-export async function initDatabase(dbPath: string): Promise<Database> {
-	// Ensure the directory exists
-	mkdirSync(dirname(dbPath), { recursive: true });
+export async function initDatabase(): Promise<PgDatabase> {
+	pgManager = new EmbeddedPostgresManager();
+	await pgManager.start();
 
-	// Run migrations first
-	await runMigrations(dbPath);
+	await ensurePgSchema(pgManager.connectionParams);
 
-	// Then open the database
-	db = new Database(dbPath);
-	db.exec("PRAGMA foreign_keys = ON");
+	db = new PgDatabase(pgManager.poolConfig);
 
 	await seedTaskTemplates(db);
 
 	return db;
 }
 
-export function closeDatabase(): void {
+export async function closeDatabase(): Promise<void> {
 	if (db) {
-		db.close();
+		await db.close();
 		db = null;
+	}
+	if (pgManager) {
+		await pgManager.stop();
+		pgManager = null;
 	}
 }

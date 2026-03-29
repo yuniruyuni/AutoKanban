@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
 import { createContext } from "./context";
-import { initDatabase } from "./db";
+import { closeDatabase, initDatabase } from "./db";
 import { recoverOrphanedProcesses } from "./db/recovery";
 import { createLogger } from "./lib/logger";
 import { removePortFile, writePortFile } from "./lib/port-file";
@@ -17,12 +17,11 @@ if (process.argv.includes("--mcp")) {
 	// runMcpServer blocks until the parent disconnects — unreachable below
 }
 
-const DB_PATH = process.env.DB_PATH ?? "./data/auto-kanban.db";
 const PORT = Number(process.env.PORT ?? 3000);
 
 const logger = createLogger();
 
-const db = await initDatabase(DB_PATH);
+const db = await initDatabase();
 
 // Recover any processes that were left running when the server last shut down
 const recoveredCount = await recoverOrphanedProcesses(db);
@@ -105,15 +104,16 @@ app.get("/sse/logs/:executionProcessId", async (c) => {
 
 // Write port file for MCP server discovery
 writePortFile(PORT);
+
+async function shutdown() {
+	removePortFile();
+	await closeDatabase();
+	process.exit(0);
+}
+
 process.on("exit", removePortFile);
-process.on("SIGINT", () => {
-	removePortFile();
-	process.exit(0);
-});
-process.on("SIGTERM", () => {
-	removePortFile();
-	process.exit(0);
-});
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
 logger.info(`Server running on http://localhost:${PORT}`);
 

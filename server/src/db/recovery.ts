@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite";
+import type { PgDatabase } from "./pg-client";
 
 /**
  * Recovers orphaned processes after server restart.
@@ -9,15 +9,15 @@ import type { Database } from "bun:sqlite";
  * @param db - The database instance
  * @returns The number of processes that were recovered (marked as killed)
  */
-export async function recoverOrphanedProcesses(db: Database): Promise<number> {
+export async function recoverOrphanedProcesses(
+	db: PgDatabase,
+): Promise<number> {
 	const now = new Date().toISOString();
 
 	// Move tasks associated with orphaned processes to 'inreview'.
-	// Task → inreview signals to the user that the agent stopped
-	// and the task needs manual review or re-execution.
-	db.run(
-		`
-    UPDATE tasks SET status = 'inreview', updated_at = ?
+	await db.queryRun({
+		query: `
+    UPDATE tasks SET status = 'inreview', updated_at = $1
     WHERE status IN ('inprogress', 'inreview')
       AND id IN (
         SELECT w.task_id
@@ -28,33 +28,32 @@ export async function recoverOrphanedProcesses(db: Database): Promise<number> {
           AND w.task_id IS NOT NULL
       )
   `,
-		[now],
-	);
+		params: [now],
+	});
 
 	// Mark orphaned 'running' and 'awaiting_approval' processes as 'killed'.
-	// Both states require a live OS process which no longer exists after restart.
-	const result = db.run(
-		`
+	const result = await db.queryRun({
+		query: `
     UPDATE execution_processes
     SET status = 'killed',
-        completed_at = ?,
-        updated_at = ?
+        completed_at = $1,
+        updated_at = $2
     WHERE status IN ('running', 'awaiting_approval')
   `,
-		[now, now],
-	);
+		params: [now, now],
+	});
 
 	// Clean up stale approvals that were pending when server crashed
-	db.run(
-		`
+	await db.queryRun({
+		query: `
     UPDATE approvals
     SET status = 'denied',
         reason = 'Server restarted',
-        updated_at = ?
+        updated_at = $1
     WHERE status = 'pending'
   `,
-		[now],
-	);
+		params: [now],
+	});
 
-	return result.changes;
+	return result.rowCount;
 }

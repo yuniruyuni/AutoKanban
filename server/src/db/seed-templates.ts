@@ -1,17 +1,16 @@
-import type { Database } from "bun:sqlite";
 import { generateId } from "../models/common";
+import type { PgDatabase } from "./pg-client";
 
 /**
  * Seeds default task templates if none exist yet.
  * Called during DB initialization.
  */
-export async function seedTaskTemplates(db: Database): Promise<void> {
-	const row = db
-		.query<{ c: number }, []>(
-			"SELECT COUNT(*) as c FROM project_task_templates",
-		)
-		.get();
-	if (row && row.c > 0) return;
+export async function seedTaskTemplates(db: PgDatabase): Promise<void> {
+	const row = await db.queryGet<{ c: string }>({
+		query: "SELECT COUNT(*) as c FROM project_task_templates",
+		params: [],
+	});
+	if (row && Number(row.c) > 0) return;
 
 	const now = new Date().toISOString();
 	const templates = [
@@ -24,20 +23,19 @@ export async function seedTaskTemplates(db: Database): Promise<void> {
 		},
 	];
 
-	const stmt = db.query(
-		`INSERT INTO project_task_templates (id, title, description, condition, sort_order, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-	);
-
 	for (const tmpl of templates) {
-		stmt.run(
-			generateId(),
-			tmpl.title,
-			tmpl.description,
-			tmpl.condition,
-			tmpl.sortOrder,
-			now,
-			now,
-		);
+		await db.queryRun({
+			query: `INSERT INTO project_task_templates (id, title, description, condition, sort_order, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			params: [
+				generateId(),
+				tmpl.title,
+				tmpl.description,
+				tmpl.condition,
+				tmpl.sortOrder,
+				now,
+				now,
+			],
+		});
 	}
 }
