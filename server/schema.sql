@@ -7,9 +7,6 @@ CREATE TABLE IF NOT EXISTS projects (
   description TEXT,
   repo_path TEXT NOT NULL UNIQUE,
   branch TEXT NOT NULL DEFAULT 'main',
-  setup_script TEXT,
-  cleanup_script TEXT,
-  dev_server_script TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

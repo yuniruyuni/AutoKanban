@@ -33,14 +33,12 @@ export function ProjectsPage() {
 	const handleEditSubmit = async (data: {
 		name: string;
 		description?: string;
-		devScript?: string;
 	}) => {
 		if (!uiState.editingProjectId) return;
 		await updateProject({
 			projectId: uiState.editingProjectId,
 			name: data.name,
 			description: data.description ?? null,
-			devServerScript: data.devScript ?? null,
 		});
 		uiActions.closeProjectForm();
 	};
@@ -89,7 +87,6 @@ export function ProjectsPage() {
 							initialValues={{
 								name: editingProject.name,
 								description: editingProject.description,
-								devScript: editingProject.devServerScript,
 							}}
 							onSubmit={handleEditSubmit}
 							onCancel={() => uiActions.closeProjectForm()}

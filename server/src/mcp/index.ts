@@ -19,7 +19,7 @@ export async function runMcpServer(): Promise<void> {
 		{
 			capabilities: { tools: {}, resources: {} },
 			instructions:
-				"A task and project management server. If you need to create or update tickets or tasks then use these tools. Most of them absolutely require that you pass the `project_id` of the project that you are currently working on. You can get project ids by using `list_projects`. Call `list_tasks` to fetch the `task_ids` of all the tasks in a project. TOOLS: 'list_projects', 'list_tasks', 'create_task', 'start_workspace_session', 'get_task', 'update_task', 'delete_task', 'update_setup_script', 'update_cleanup_script', 'update_dev_server_script'. Make sure to pass `project_id` or `task_id` where required. You can use list tools to get the available ids.",
+				"A task and project management server. If you need to create or update tickets or tasks then use these tools. Most of them absolutely require that you pass the `project_id` of the project that you are currently working on. You can get project ids by using `list_projects`. Call `list_tasks` to fetch the `task_ids` of all the tasks in a project. TOOLS: 'list_projects', 'list_tasks', 'create_task', 'start_workspace_session', 'get_task', 'update_task', 'delete_task'. Make sure to pass `project_id` or `task_id` where required. You can use list tools to get the available ids. WORKSPACE CONFIG: Project workspace settings are managed via `auto-kanban.json` (JSONC format) at the worktree root. Fields: `prepare` (setup command), `server` (dev server command), `cleanup` (teardown command). Schema available via MCP resource `auto-kanban://schema`.",
 		},
 	);
 

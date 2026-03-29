@@ -7,9 +7,6 @@ export function mapProject(data: {
 	description: string | null;
 	repoPath: string;
 	branch: string;
-	setupScript: string | null;
-	cleanupScript: string | null;
-	devServerScript: string | null;
 	createdAt: string;
 	updatedAt: string;
 }) {
@@ -19,9 +16,6 @@ export function mapProject(data: {
 		description: data.description,
 		repoPath: data.repoPath,
 		branch: data.branch,
-		setupScript: data.setupScript,
-		cleanupScript: data.cleanupScript,
-		devServerScript: data.devServerScript,
 		createdAt: data.createdAt,
 		updatedAt: data.updatedAt,
 	};
@@ -33,9 +27,6 @@ export function mapProjectWithStats(data: {
 	description: string | null;
 	repoPath: string;
 	branch: string;
-	setupScript: string | null;
-	cleanupScript: string | null;
-	devServerScript: string | null;
 	createdAt: string;
 	updatedAt: string;
 	taskStats: TaskStatistics;

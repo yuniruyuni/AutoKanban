@@ -6,9 +6,6 @@ export interface Project {
 	description: string | null;
 	repoPath: string;
 	branch: string;
-	setupScript: string | null;
-	cleanupScript: string | null;
-	devServerScript: string | null;
 	createdAt: string;
 	updatedAt: string;
 }

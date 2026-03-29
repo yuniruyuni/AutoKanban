@@ -6,9 +6,6 @@ export interface UpdateProjectInput {
 	projectId: string;
 	name?: string;
 	description?: string | null;
-	setupScript?: string | null;
-	cleanupScript?: string | null;
-	devServerScript?: string | null;
 }
 
 export const updateProject = (input: UpdateProjectInput) =>
@@ -31,15 +28,6 @@ export const updateProject = (input: UpdateProjectInput) =>
 				...(input.name !== undefined && { name: input.name }),
 				...(input.description !== undefined && {
 					description: input.description,
-				}),
-				...(input.setupScript !== undefined && {
-					setupScript: input.setupScript,
-				}),
-				...(input.cleanupScript !== undefined && {
-					cleanupScript: input.cleanupScript,
-				}),
-				...(input.devServerScript !== undefined && {
-					devServerScript: input.devServerScript,
 				}),
 				updatedAt: new Date(),
 			};

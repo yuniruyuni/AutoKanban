@@ -83,24 +83,4 @@ describe("updateProject", () => {
 			expect(result.value.description).toBe("Original desc");
 		}
 	});
-
-	test("updates setup script", async () => {
-		const project = createTestProject();
-		const ctx = createMockContext({
-			project: {
-				get: () => project,
-				upsert: () => {},
-			} as never,
-		});
-
-		const result = await updateProject({
-			projectId: project.id,
-			setupScript: "npm install",
-		}).run(ctx);
-
-		expect(result.ok).toBe(true);
-		if (result.ok) {
-			expect(result.value.setupScript).toBe("npm install");
-		}
-	});
 });

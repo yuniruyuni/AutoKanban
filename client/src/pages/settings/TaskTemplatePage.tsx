@@ -20,7 +20,7 @@ interface TaskTemplateFormData {
 
 const CONDITION_LABELS: Record<string, string> = {
 	"": "常に適用",
-	no_dev_server: "devServerScript 未設定時のみ",
+	no_dev_server: "dev server 未設定時のみ",
 };
 
 export function TaskTemplatePage() {
@@ -309,7 +309,7 @@ function TaskTemplateForm({
 					className="px-3 py-2 rounded-md border border-border bg-primary text-sm text-primary-foreground outline-none focus:ring-1 focus:ring-accent"
 				>
 					<option value="">常に適用</option>
-					<option value="no_dev_server">devServerScript 未設定時のみ</option>
+					<option value="no_dev_server">dev server 未設定時のみ</option>
 				</select>
 				<p className="text-xs text-muted">
 					テンプレートが適用される条件を選択します

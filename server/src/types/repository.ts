@@ -18,8 +18,8 @@ export type { ITaskTemplateRepository } from "../repositories/task-template/repo
 export type { IToolRepository } from "../repositories/tool/repository";
 export type { IVariantRepository } from "../repositories/variant/repository";
 export type { IWorkspaceRepository } from "../repositories/workspace/repository";
-export type { IWorkspaceRepoRepository } from "../repositories/workspace-repo/repository";
 export type { IWorkspaceConfigRepository } from "../repositories/workspace-config/repository";
+export type { IWorkspaceRepoRepository } from "../repositories/workspace-repo/repository";
 
 // ============================================
 // External System Repositories

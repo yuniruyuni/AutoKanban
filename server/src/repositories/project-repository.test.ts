@@ -74,9 +74,6 @@ describe("ProjectRepository upsert + get", () => {
 			description: "Full description",
 			repoPath: "/tmp/roundtrip-repo",
 			branch: "develop",
-			setupScript: "npm install",
-			cleanupScript: "npm run clean",
-			devServerScript: "npm run dev",
 		});
 		await projectRepo.upsert(project);
 
@@ -98,9 +95,6 @@ describe("ProjectRepository upsert + get", () => {
 			description: "Updated description",
 			repoPath: "/tmp/updated-repo",
 			branch: "feature-branch",
-			setupScript: "bun install",
-			cleanupScript: "bun run clean",
-			devServerScript: "bun run dev",
 			updatedAt: new Date(),
 		};
 		await projectRepo.upsert(updated);
@@ -116,9 +110,6 @@ describe("ProjectRepository upsert + get", () => {
 	test("P1: round-trip with null optional fields", async () => {
 		const project = createTestProject({
 			description: null,
-			setupScript: null,
-			cleanupScript: null,
-			devServerScript: null,
 		});
 		await projectRepo.upsert(project);
 

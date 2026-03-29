@@ -19,9 +19,6 @@ export const projectRouter = router({
 				description: z.string().optional().nullable(),
 				repoPath: z.string().min(1),
 				branch: z.string().optional(),
-				setupScript: z.string().optional().nullable(),
-				cleanupScript: z.string().optional().nullable(),
-				devServerScript: z.string().optional().nullable(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
@@ -44,9 +41,6 @@ export const projectRouter = router({
 				projectId: z.string().uuid(),
 				name: z.string().min(1).optional(),
 				description: z.string().optional().nullable(),
-				setupScript: z.string().optional().nullable(),
-				cleanupScript: z.string().optional().nullable(),
-				devServerScript: z.string().optional().nullable(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>

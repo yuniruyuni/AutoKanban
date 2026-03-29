@@ -8,9 +8,6 @@ export interface ProjectRow {
 	description: string | null;
 	repo_path: string;
 	branch: string;
-	setup_script: string | null;
-	cleanup_script: string | null;
-	dev_server_script: string | null;
 	created_at: Date;
 	updated_at: Date;
 }
@@ -49,9 +46,6 @@ export function rowToProject(row: ProjectRow): Project {
 		description: row.description,
 		repoPath: row.repo_path,
 		branch: row.branch,
-		setupScript: row.setup_script,
-		cleanupScript: row.cleanup_script,
-		devServerScript: row.dev_server_script,
 		createdAt: dateFromSQL(row.created_at),
 		updatedAt: dateFromSQL(row.updated_at),
 	};

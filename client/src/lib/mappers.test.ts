@@ -8,9 +8,6 @@ describe("mapProject", () => {
 		description: "A test project",
 		repoPath: "/path/to/repo",
 		branch: "main",
-		setupScript: "bun install",
-		cleanupScript: "bun clean",
-		devServerScript: "bun dev",
 		createdAt: "2024-01-01T00:00:00Z",
 		updatedAt: "2024-01-02T00:00:00Z",
 	};
@@ -24,18 +21,6 @@ describe("mapProject", () => {
 		const result = mapProject({ ...baseProject, description: null });
 		expect(result.description).toBeNull();
 	});
-
-	test("preserves null scripts", () => {
-		const result = mapProject({
-			...baseProject,
-			setupScript: null,
-			cleanupScript: null,
-			devServerScript: null,
-		});
-		expect(result.setupScript).toBeNull();
-		expect(result.cleanupScript).toBeNull();
-		expect(result.devServerScript).toBeNull();
-	});
 });
 
 describe("mapProjectWithStats", () => {
@@ -45,9 +30,6 @@ describe("mapProjectWithStats", () => {
 		description: null,
 		repoPath: "/path/to/repo",
 		branch: "main",
-		setupScript: null,
-		cleanupScript: null,
-		devServerScript: null,
 		createdAt: "2024-01-01T00:00:00Z",
 		updatedAt: "2024-01-02T00:00:00Z",
 		taskStats: {

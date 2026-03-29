@@ -120,14 +120,10 @@ export function TaskDetailFullscreen({
 	const task = taskData ?? null;
 
 	// Dev server preview
-	const { data: projectData } = trpc.project.get.useQuery(
-		{ projectId: task?.projectId ?? "" },
-		{ enabled: !!task?.projectId },
-	);
 	const devServerPreview = useDevServerPreview({
 		taskId,
 		sessionId,
-		projectHasDevServer: !!projectData?.devServerScript,
+		projectHasDevServer: true, // TODO(Task 8): check workspace config instead
 	});
 
 	// Get branch status for BranchInfo

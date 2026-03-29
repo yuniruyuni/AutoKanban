@@ -161,69 +161,6 @@ function buildTools(client: TrpcHttpClient): ToolDef[] {
 				return client.mutation("execution.start", input);
 			},
 		},
-		{
-			name: "update_setup_script",
-			description:
-				"Update a project's setup script. The setup script runs when initializing a workspace.",
-			inputSchema: {
-				type: "object",
-				properties: {
-					project_id: { type: "string", description: "Project ID (UUID)" },
-					setup_script: { type: "string", description: "Setup script content" },
-				},
-				required: ["project_id", "setup_script"],
-			},
-			handler: async (args) => {
-				return client.mutation("project.update", {
-					projectId: args.project_id,
-					setupScript: args.setup_script,
-				});
-			},
-		},
-		{
-			name: "update_cleanup_script",
-			description:
-				"Update a project's cleanup script. The cleanup script runs when tearing down a workspace.",
-			inputSchema: {
-				type: "object",
-				properties: {
-					project_id: { type: "string", description: "Project ID (UUID)" },
-					cleanup_script: {
-						type: "string",
-						description: "Cleanup script content",
-					},
-				},
-				required: ["project_id", "cleanup_script"],
-			},
-			handler: async (args) => {
-				return client.mutation("project.update", {
-					projectId: args.project_id,
-					cleanupScript: args.cleanup_script,
-				});
-			},
-		},
-		{
-			name: "update_dev_server_script",
-			description:
-				"Update a project's dev server script. The dev server script starts the development server.",
-			inputSchema: {
-				type: "object",
-				properties: {
-					project_id: { type: "string", description: "Project ID (UUID)" },
-					dev_server_script: {
-						type: "string",
-						description: "Dev server script content",
-					},
-				},
-				required: ["project_id", "dev_server_script"],
-			},
-			handler: async (args) => {
-				return client.mutation("project.update", {
-					projectId: args.project_id,
-					devServerScript: args.dev_server_script,
-				});
-			},
-		},
 	];
 }
 

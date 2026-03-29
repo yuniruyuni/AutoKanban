@@ -28,9 +28,6 @@ export interface Project {
 	description: string | null;
 	repoPath: string;
 	branch: string;
-	setupScript: string | null;
-	cleanupScript: string | null;
-	devServerScript: string | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -76,9 +73,6 @@ export namespace Project {
 		description?: string | null;
 		repoPath: string;
 		branch?: string;
-		setupScript?: string | null;
-		cleanupScript?: string | null;
-		devServerScript?: string | null;
 	}): Project {
 		const now = new Date();
 		return {
@@ -87,9 +81,6 @@ export namespace Project {
 			description: params.description ?? null,
 			repoPath: params.repoPath,
 			branch: params.branch ?? "main",
-			setupScript: params.setupScript ?? null,
-			cleanupScript: params.cleanupScript ?? null,
-			devServerScript: params.devServerScript ?? null,
 			createdAt: now,
 			updatedAt: now,
 		};

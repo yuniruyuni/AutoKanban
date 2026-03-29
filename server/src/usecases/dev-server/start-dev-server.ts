@@ -29,6 +29,8 @@ export const startDevServer = (input: StartDevServerInput) =>
 				});
 			}
 
+			// TODO(Task 8): Replace with WorkspaceConfig lookup
+			// @ts-expect-error devServerScript removed from Project model; Task 8 will rewrite this
 			if (!project.devServerScript) {
 				return fail("INVALID_STATE", "Project has no dev server script");
 			}
@@ -106,6 +108,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 			if (data.alreadyRunning) return data;
 			ctx.repos.devServer.start({
 				processId: data.executionProcess.id,
+				// @ts-expect-error devServerScript removed from Project model; Task 8 will rewrite this
 				command: data.project.devServerScript as string,
 				workingDir: data.worktreePath,
 			});

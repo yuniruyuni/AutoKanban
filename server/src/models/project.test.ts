@@ -49,29 +49,6 @@ describe("Project.create()", () => {
 		expect(project.description).toBeNull();
 	});
 
-	test("script fields default to null", () => {
-		const project = Project.create({
-			name: "My Project",
-			repoPath: "/tmp/repo",
-		});
-		expect(project.setupScript).toBeNull();
-		expect(project.cleanupScript).toBeNull();
-		expect(project.devServerScript).toBeNull();
-	});
-
-	test("script fields can be set", () => {
-		const project = Project.create({
-			name: "My Project",
-			repoPath: "/tmp/repo",
-			setupScript: "bun install",
-			cleanupScript: "rm -rf dist",
-			devServerScript: "bun run dev",
-		});
-		expect(project.setupScript).toBe("bun install");
-		expect(project.cleanupScript).toBe("rm -rf dist");
-		expect(project.devServerScript).toBe("bun run dev");
-	});
-
 	test("sets createdAt and updatedAt to the same time", () => {
 		const project = Project.create({
 			name: "My Project",
@@ -94,9 +71,6 @@ describe("Project.cursor()", () => {
 		description: null,
 		repoPath: "/tmp/repo",
 		branch: "main",
-		setupScript: null,
-		cleanupScript: null,
-		devServerScript: null,
 		createdAt: now,
 		updatedAt: now,
 	};

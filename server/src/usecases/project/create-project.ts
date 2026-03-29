@@ -8,9 +8,6 @@ export interface CreateProjectInput {
 	description?: string | null;
 	repoPath: string;
 	branch?: string;
-	setupScript?: string | null;
-	cleanupScript?: string | null;
-	devServerScript?: string | null;
 }
 
 export const createProject = (input: CreateProjectInput) =>
@@ -71,9 +68,6 @@ export const createProject = (input: CreateProjectInput) =>
 				description: input.description?.trim() || null,
 				repoPath: input.repoPath,
 				branch: input.branch || "main",
-				setupScript: input.setupScript || null,
-				cleanupScript: input.cleanupScript || null,
-				devServerScript: input.devServerScript || null,
 			});
 			return { project };
 		},
@@ -84,10 +78,7 @@ export const createProject = (input: CreateProjectInput) =>
 			// Generate default tasks from templates
 			const templates = await ctx.repos.taskTemplate.listAll();
 			for (const tmpl of templates) {
-				if (
-					tmpl.condition === "no_dev_server" &&
-					project.devServerScript !== null
-				) {
+				if (tmpl.condition === "no_dev_server") {
 					continue;
 				}
 

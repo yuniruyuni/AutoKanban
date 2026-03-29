@@ -39,18 +39,12 @@ export interface CreateProjectInput {
 	description?: string | null;
 	repoPath: string;
 	branch?: string;
-	setupScript?: string | null;
-	cleanupScript?: string | null;
-	devServerScript?: string | null;
 }
 
 export interface UpdateProjectInput {
 	projectId: string;
 	name?: string;
 	description?: string | null;
-	setupScript?: string | null;
-	cleanupScript?: string | null;
-	devServerScript?: string | null;
 }
 
 export function useProjectMutations() {
