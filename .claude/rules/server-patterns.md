@@ -17,7 +17,7 @@ Model → Repository → Usecase → Presentation
 
 ## コーディング規約
 
-- ID生成: `generateId()` (`crypto.randomUUID()`) — `server/src/models/common.ts`
+- ID生成: 各Modelの `Model.create()` ファクトリ経由（内部で `generateId()` を使用）。直接 `generateId()` や `crypto.randomUUID()` を呼ばない
 - 日時: Model内は `Date` 型、DB格納時は `dateToSQL()` / `dateFromSQL()` — `server/src/repositories/common.ts`
 - SQLカラム: snake_case / TypeScript: camelCase
 - Repository標準メソッド: `get(spec)`, `list(spec, cursor)`, `upsert(entity)`, `delete(spec)`
