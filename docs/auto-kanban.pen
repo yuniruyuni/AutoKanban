@@ -26261,8 +26261,124 @@
           "height": "fill_container",
           "y": 0,
           "descendants": {
+            "pcnMr": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 16,
+              "y": 24
+            },
+            "0ZhVg": {
+              "x": 8
+            },
+            "wNCvx": {
+              "x": 10,
+              "y": 6.5
+            },
+            "xwb6v": {
+              "x": 52,
+              "y": 5
+            },
+            "BaVDn": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 16,
+              "y": 80
+            },
+            "Tf8IL": {
+              "width": "fill_container",
+              "height": "fit_content"
+            },
+            "Tf8IL/WbOZ6": {
+              "y": 10
+            },
+            "Tf8IL/lnTLE": {
+              "y": 10.5
+            },
+            "HuBsU": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "y": 42
+            },
+            "6KUWO": {
+              "width": "fill_container",
+              "height": "fit_content"
+            },
+            "WuKkl": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 12,
+              "y": 10
+            },
+            "gyjub": {
+              "y": 0
+            },
+            "l56Rj": {
+              "x": 30
+            },
+            "YvZnH": {
+              "x": 200,
+              "y": 11
+            },
+            "eSDRI": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "y": 40
+            },
+            "gcws7": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 30
+            },
+            "OogAS": {
+              "x": 12,
+              "y": 8
+            },
+            "PnsvX": {
+              "x": 38,
+              "y": 8
+            },
+            "V9DwB": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 30,
+              "y": 34
+            },
+            "Z1j4k": {
+              "x": 12,
+              "y": 8
+            },
+            "zUGLH": {
+              "x": 38,
+              "y": 8
+            },
+            "5btZb": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 30,
+              "y": 68
+            },
+            "0L24s": {
+              "x": 12,
+              "y": 8
+            },
+            "enFVL": {
+              "x": 38,
+              "y": 8
+            },
             "V9PU1": {
-              "fill": "$bg-hover"
+              "fill": "$bg-hover",
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 30,
+              "y": 102
+            },
+            "TBNJk": {
+              "x": 12,
+              "y": 8
+            },
+            "PcBLm": {
+              "x": 38,
+              "y": 8
             }
           }
         },
@@ -26720,6 +26836,776 @@
                               ]
                             }
                           ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "v1pl4",
+      "x": -819,
+      "y": 10440,
+      "name": "Screen/Project/Task#Workspace[InProgress]",
+      "context": "InProgress状態のタスク詳細フルスクリーン表示（Workspaceタブ）。Prepare/Cleanupスクリプトの実行ボタンとログ表示を行う。auto-kanban.jsonで定義されたワークスペースライフサイクルスクリプトを管理する。",
+      "theme": {
+        "mode": "light"
+      },
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg-primary",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "ODUJB",
+          "type": "ref",
+          "ref": "1ljCA",
+          "name": "topBar",
+          "width": "fill_container",
+          "height": "fit_content",
+          "descendants": {
+            "ZuyG8": {
+              "width": "fill_container",
+              "height": "fit_content",
+              "x": 24,
+              "y": 22.5
+            },
+            "Y5EXX": {
+              "content": "Build Execution Panel"
+            },
+            "1SCm7": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 220,
+              "y": 0.5
+            },
+            "1SCm7/MzNg9": {
+              "content": "In Progress",
+              "x": 10,
+              "y": 4
+            },
+            "0SGuW": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 318,
+              "y": 0
+            },
+            "0SGuW/tnorn": {
+              "width": "fit_content",
+              "height": "fit_content"
+            },
+            "0SGuW/W4iJN": {
+              "x": 10,
+              "y": 6
+            },
+            "0SGuW/0S4Zj": {
+              "content": "feature/execution-panel",
+              "x": 28,
+              "y": 4
+            },
+            "0SGuW/0Akxq": {
+              "x": 212,
+              "y": 5
+            },
+            "0SGuW/4w1U6": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 234
+            },
+            "0SGuW/a21OX": {
+              "x": 10,
+              "y": 6
+            },
+            "0SGuW/iXCld": {
+              "content": "main",
+              "x": 28,
+              "y": 4
+            },
+            "o9tvO": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 916,
+              "y": 16
+            },
+            "yprkH": {
+              "width": "fit_content",
+              "height": "fit_content"
+            },
+            "yprkH/SHRFE": {
+              "x": 16,
+              "y": 10
+            },
+            "dC5qa": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 88
+            },
+            "dC5qa/F4zYS": {
+              "x": 16,
+              "y": 10
+            },
+            "hlttV": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 182
+            },
+            "hlttV/F4zYS": {
+              "x": 16,
+              "y": 10
+            },
+            "Fo1kg": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 260
+            },
+            "yemGQ/WcQne": {
+              "x": 8,
+              "y": 8
+            },
+            "wvt64": {
+              "x": 36
+            },
+            "wvt64/WcQne": {
+              "x": 8,
+              "y": 8
+            },
+            "NXHZV": {
+              "width": "fit_content",
+              "height": "fit_content",
+              "x": 340
+            },
+            "3tFQn": {
+              "x": 12,
+              "y": 8.5
+            },
+            "K7hBn": {
+              "x": 34,
+              "y": 8
+            },
+            "31KTp": {
+              "x": 424
+            },
+            "31KTp/WcQne": {
+              "x": 8,
+              "y": 8
+            },
+            "ZnBbI": {
+              "x": 468
+            },
+            "ZnBbI/WcQne": {
+              "x": 8,
+              "y": 8
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "okhkx",
+          "name": "mainArea",
+          "width": "fill_container",
+          "height": "fill_container",
+          "children": [
+            {
+              "type": "frame",
+              "id": "rdoHe",
+              "name": "leftPanel",
+              "width": 430,
+              "height": "fill_container",
+              "layout": "vertical",
+              "children": [
+                {
+                  "id": "fWj27",
+                  "type": "ref",
+                  "ref": "Pzwwt",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "name": "chatPanel1",
+                  "descendants": {
+                    "hbGEv": {
+                      "width": "fill_container",
+                      "height": "fit_content"
+                    },
+                    "hbGEv/GLwF4": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "x": 24,
+                      "y": 16.5
+                    },
+                    "hbGEv/qzaTc": {
+                      "x": 10.5,
+                      "y": 7.5
+                    },
+                    "hbGEv/JXhuc": {
+                      "x": 44,
+                      "y": 6.5
+                    },
+                    "hbGEv/qjVTh": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "x": 156,
+                      "y": 8
+                    },
+                    "hbGEv/Q4h62": {
+                      "y": 4
+                    },
+                    "hbGEv/jw89C": {
+                      "x": 16
+                    },
+                    "hbGEv/k0mJU": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "x": 321,
+                      "y": 16
+                    },
+                    "hbGEv/sFFAy": {
+                      "width": "fit_content",
+                      "height": "fit_content"
+                    },
+                    "hbGEv/o0rAt": {
+                      "x": 16,
+                      "y": 9.5
+                    },
+                    "hbGEv/ry9yq": {
+                      "x": 38,
+                      "y": 8
+                    },
+                    "FaBI5": {
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "y": 65
+                    },
+                    "hcUXA": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 24,
+                      "y": 24
+                    },
+                    "mEnZW": {
+                      "x": 12.5,
+                      "y": 9.5
+                    },
+                    "b5afr": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 52
+                    },
+                    "rnQqt": {
+                      "width": "fill_container",
+                      "x": 16,
+                      "y": 16
+                    },
+                    "cYO5J": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 116
+                    },
+                    "3XbVD": {
+                      "width": "fill_container",
+                      "x": 14,
+                      "y": 14
+                    },
+                    "ko8vx": {
+                      "width": "fill_container",
+                      "x": 14,
+                      "y": 52
+                    },
+                    "YWlSY": {
+                      "width": "fill_container",
+                      "x": 14,
+                      "y": 90
+                    },
+                    "nKOBN": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 24,
+                      "y": 296
+                    },
+                    "zN5cx": {
+                      "x": 12.5,
+                      "y": 9.5
+                    },
+                    "FrizA": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 52
+                    },
+                    "p5yr7": {
+                      "width": "fill_container",
+                      "x": 16,
+                      "y": 16
+                    },
+                    "wKoy6": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 226
+                    },
+                    "niR4h": {
+                      "width": "fill_container",
+                      "height": "fit_content"
+                    },
+                    "q8l9p": {
+                      "y": 9
+                    },
+                    "giHCC": {
+                      "width": "fill_container",
+                      "x": 22
+                    },
+                    "2td01": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "y": 38
+                    },
+                    "jzlFG": {
+                      "y": 1
+                    },
+                    "xxZng": {
+                      "width": "fill_container",
+                      "x": 22
+                    },
+                    "LMOZU": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "y": 60
+                    },
+                    "AcPM2": {
+                      "y": 9
+                    },
+                    "ppbFZ": {
+                      "width": "fill_container",
+                      "x": 22
+                    },
+                    "icauH": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "y": 561
+                    },
+                    "yA0A8": {
+                      "width": "fill_container",
+                      "height": "fit_content"
+                    },
+                    "yA0A8/6E5Kz": {
+                      "x": 24,
+                      "y": 20
+                    },
+                    "yA0A8/a3ke6": {
+                      "x": 56,
+                      "y": 20
+                    },
+                    "yA0A8/VRJ7u": {
+                      "width": "fill_container",
+                      "x": 126,
+                      "y": 12
+                    },
+                    "yA0A8/CrvES": {
+                      "x": 382,
+                      "y": 16
+                    },
+                    "yA0A8/xTYCJ": {
+                      "x": 5,
+                      "y": 5
+                    },
+                    "JcsZ5": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "y": 56
+                    },
+                    "Pohfc": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 16
+                    },
+                    "bOdup": {
+                      "x": 24,
+                      "y": 8
+                    },
+                    "kST8s": {
+                      "x": 4,
+                      "y": 4
+                    },
+                    "JZSYQ": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "x": 16,
+                      "y": 104
+                    },
+                    "zDkIF": {
+                      "width": "fill_container",
+                      "height": "fit_content"
+                    },
+                    "Kbm1w": {
+                      "x": 18,
+                      "y": 14
+                    },
+                    "3do1D": {
+                      "width": "fill_container",
+                      "y": 45
+                    },
+                    "SGio6": {
+                      "width": "fill_container",
+                      "height": "fit_content",
+                      "y": 46
+                    },
+                    "H6Mes": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "x": 12,
+                      "y": 10.5
+                    },
+                    "C0XDl": {
+                      "x": 8,
+                      "y": 6
+                    },
+                    "9g49P": {
+                      "x": 54,
+                      "y": 7.5
+                    },
+                    "1JYR8": {
+                      "width": "fit_content",
+                      "height": "fit_content",
+                      "x": 296,
+                      "y": 8
+                    },
+                    "0qoEb": {
+                      "y": 8.5
+                    },
+                    "Emj5X": {
+                      "x": 58
+                    },
+                    "ck7Ax": {
+                      "x": 9,
+                      "y": 9
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "7EkZx",
+              "name": "rightPanel",
+              "width": "fill_container",
+              "height": "fill_container",
+              "fill": "$bg-secondary",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$border"
+              },
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "iLmHV",
+                  "name": "tabBar",
+                  "width": "fill_container",
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FCmHT",
+                      "name": "tab1",
+                      "padding": [
+                        12,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "nK9TF",
+                          "name": "tab1Text",
+                          "fill": "$text-muted",
+                          "content": "Description",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U6i06",
+                      "name": "tab2",
+                      "padding": [
+                        12,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kp2Tb",
+                          "name": "tab2Text",
+                          "fill": "$text-muted",
+                          "content": "Changes",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Iq3tS",
+                      "name": "tab3",
+                      "padding": [
+                        12,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eSOca",
+                          "name": "tab3Text",
+                          "fill": "$text-muted",
+                          "content": "Preview",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HyssA",
+                      "name": "tab4",
+                      "stroke": {
+                        "thickness": 2,
+                        "fill": "$accent"
+                      },
+                      "padding": [
+                        12,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "NCagD",
+                          "name": "tab4Text",
+                          "fill": "$accent",
+                          "content": "Workspace",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "cLg5u",
+                  "name": "wsContent",
+                  "clip": true,
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "DAq9I",
+                      "name": "actionBar",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "yZM2E",
+                          "type": "ref",
+                          "ref": "9FMaw",
+                          "name": "prepareBtn",
+                          "descendants": {
+                            "SHRFE": {
+                              "content": "Prepare"
+                            }
+                          }
+                        },
+                        {
+                          "id": "h7nmT",
+                          "type": "ref",
+                          "ref": "WeFtN",
+                          "name": "cleanupBtn",
+                          "x": 97,
+                          "descendants": {
+                            "F4zYS": {
+                              "content": "Cleanup"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Aec5k",
+                          "name": "statusBadge",
+                          "fill": "$success",
+                          "cornerRadius": "$radius-sm",
+                          "padding": [
+                            4,
+                            8
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BllOu",
+                              "name": "statusText",
+                              "fill": "#FFFFFF",
+                              "content": "Completed",
+                              "fontFamily": "Inter",
+                              "fontSize": 11,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "8UD2u",
+                          "name": "spacer",
+                          "width": "fill_container",
+                          "height": "fit_content(0)"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "A2irA",
+                          "name": "configLink",
+                          "gap": 4,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "C7jmp",
+                              "name": "configIcon",
+                              "width": 14,
+                              "height": 14,
+                              "iconFontName": "file-text",
+                              "iconFontFamily": "lucide",
+                              "fill": "$text-muted"
+                            },
+                            {
+                              "type": "text",
+                              "id": "LTSJv",
+                              "name": "configLabel",
+                              "fill": "$text-muted",
+                              "content": "auto-kanban.json",
+                              "fontFamily": "IBM Plex Mono",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "4MMoP",
+                      "name": "logViewer",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#1A1A2E",
+                      "cornerRadius": "$radius-md",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ecjDR",
+                          "name": "l1",
+                          "fill": "$accent",
+                          "content": "$ prepare",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "m8MMp",
+                          "name": "l2",
+                          "fill": "#A1A1AA",
+                          "content": "[10:32:15] [stdout] $ bun install",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "W8FTM",
+                          "name": "l3",
+                          "fill": "#E4E4E7",
+                          "content": "[10:32:16] [stdout] bun install v1.2.4",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "OjFiA",
+                          "name": "l4",
+                          "fill": "#E4E4E7",
+                          "content": "[10:32:16] [stdout] Resolving dependencies...",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "h7n23",
+                          "name": "l5",
+                          "fill": "#E4E4E7",
+                          "content": "[10:32:18] [stdout] Resolved 342 packages",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "unsDd",
+                          "name": "l6",
+                          "fill": "#22C55E",
+                          "content": "[10:32:19] [stdout] Installed 342 packages",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "GPcVv",
+                          "name": "l7",
+                          "fill": "#22C55E",
+                          "content": "[10:32:19] [stdout] Done in 4.2s",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Bf0JD",
+                          "name": "l8",
+                          "fill": "#E4E4E7",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xokpo",
+                          "name": "l9",
+                          "fill": "#22C55E",
+                          "content": "Process exited with code 0",
+                          "fontFamily": "IBM Plex Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
