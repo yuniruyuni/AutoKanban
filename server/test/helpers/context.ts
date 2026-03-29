@@ -73,6 +73,7 @@ export function createIntegrationContext(db: PgDatabase): Context {
 			executor: {} as Repos["executor"],
 			messageQueue: {} as Repos["messageQueue"],
 			agentConfig: {} as Repos["agentConfig"],
+			workspaceConfig: {} as Repos["workspaceConfig"],
 			draft: {} as Repos["draft"],
 			permissionStore: {} as Repos["permissionStore"],
 			approvalStore: {} as Repos["approvalStore"],

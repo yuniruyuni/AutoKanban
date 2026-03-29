@@ -22,6 +22,7 @@ import type {
 	ITaskTemplateRepository,
 	IToolRepository,
 	IVariantRepository,
+	IWorkspaceConfigRepository,
 	IWorkspaceRepoRepository,
 	IWorkspaceRepository,
 	IWorktreeRepository,
@@ -46,6 +47,7 @@ export interface Repos {
 	executor: IExecutorRepository;
 	messageQueue: IMessageQueueRepository;
 	agentConfig: IAgentConfigRepository;
+	workspaceConfig: IWorkspaceConfigRepository;
 	// In-memory Store Repositories
 	draft: IDraftRepository;
 	permissionStore: IPermissionStoreRepository;

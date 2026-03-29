@@ -19,6 +19,7 @@ export type { IToolRepository } from "../repositories/tool/repository";
 export type { IVariantRepository } from "../repositories/variant/repository";
 export type { IWorkspaceRepository } from "../repositories/workspace/repository";
 export type { IWorkspaceRepoRepository } from "../repositories/workspace-repo/repository";
+export type { IWorkspaceConfigRepository } from "../repositories/workspace-config/repository";
 
 // ============================================
 // External System Repositories

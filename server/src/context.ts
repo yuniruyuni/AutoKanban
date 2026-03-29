@@ -22,6 +22,7 @@ import { TaskTemplateRepository } from "./repositories/task-template";
 import { ToolRepository } from "./repositories/tool";
 import { VariantRepository } from "./repositories/variant";
 import { WorkspaceRepository } from "./repositories/workspace";
+import { WorkspaceConfigRepository } from "./repositories/workspace-config";
 import { WorkspaceRepoRepository } from "./repositories/workspace-repo";
 import { WorktreeRepository } from "./repositories/worktree";
 import { setupQueueProcessor } from "./setup/queue-processor";
@@ -64,6 +65,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 
 	const logStreamer = new LogStreamer(executor, logStoreManager, logger);
 	const agentConfig = new AgentConfigRepository();
+	const workspaceConfigRepo = new WorkspaceConfigRepository();
 	const devServer = new DevServerRepository(executionProcessLogsRepo, logger);
 
 	// Set up queue processor to auto-consume queued messages on process completion
@@ -99,6 +101,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 			executor,
 			messageQueue: messageQueueRepository,
 			agentConfig,
+			workspaceConfig: workspaceConfigRepo,
 			draft: draftRepository,
 			permissionStore,
 			approval: approvalRepo,
