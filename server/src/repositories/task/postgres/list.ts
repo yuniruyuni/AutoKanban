@@ -3,7 +3,7 @@ import type { Cursor, Page } from "../../../models/common";
 import { Task } from "../../../models/task";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
-import { type TaskRow, columnName, rowToTask, taskSpecToSQL } from "./common";
+import { columnName, rowToTask, type TaskRow, taskSpecToSQL } from "./common";
 
 export async function list(
 	db: PgDatabase,

@@ -4,9 +4,9 @@ import { Variant } from "../../../models/variant";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type VariantRow,
 	columnName,
 	rowToVariant,
+	type VariantRow,
 	variantSpecToSQL,
 } from "./common";
 

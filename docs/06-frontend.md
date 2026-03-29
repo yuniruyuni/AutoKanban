@@ -750,17 +750,17 @@ export default defineConfig({
 
 ```bash
 # 開発サーバー起動
-bun run dev
+bun run start:dev
 
 # 本番ビルド
 bun run build
 
 # プレビュー
-bun run preview
+bun run start:prod
 
 # 型チェック
 bun run tsc --noEmit
 
 # リント
-bun run lint
+bun run check:lint
 ```

@@ -2,7 +2,10 @@ import type { PgDatabase } from "../../../db/pg-client";
 import type { Approval } from "../../../models/approval";
 import { dateToSQL } from "../../common";
 
-export async function upsert(db: PgDatabase, approval: Approval): Promise<void> {
+export async function upsert(
+	db: PgDatabase,
+	approval: Approval,
+): Promise<void> {
 	await db.queryRun({
 		query: `INSERT INTO approvals (id, execution_process_id, tool_name, tool_call_id, status, reason, created_at, responded_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)

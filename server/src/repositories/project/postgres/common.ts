@@ -16,11 +16,11 @@ export interface ProjectRow {
 }
 
 export interface ProjectWithStatsRow extends ProjectRow {
-	todo_count: number;
-	inprogress_count: number;
-	inreview_count: number;
-	done_count: number;
-	cancelled_count: number;
+	todo_count: string;
+	inprogress_count: string;
+	inreview_count: string;
+	done_count: string;
+	cancelled_count: string;
 }
 
 type ProjectSpecData =
@@ -63,11 +63,11 @@ export function rowToProjectWithStats(
 	return {
 		...rowToProject(row),
 		taskStats: {
-			todo: row.todo_count,
-			inProgress: row.inprogress_count,
-			inReview: row.inreview_count,
-			done: row.done_count,
-			cancelled: row.cancelled_count,
+			todo: Number(row.todo_count),
+			inProgress: Number(row.inprogress_count),
+			inReview: Number(row.inreview_count),
+			done: Number(row.done_count),
+			cancelled: Number(row.cancelled_count),
 		},
 	};
 }

@@ -9,7 +9,7 @@ export async function appendLogs(
 		query: `INSERT INTO execution_process_logs (execution_process_id, logs)
          VALUES (?, ?)
          ON CONFLICT(execution_process_id) DO UPDATE SET
-           logs = logs || excluded.logs`,
+           logs = execution_process_logs.logs || excluded.logs`,
 		params: [executionProcessId, newLogs],
 	});
 }

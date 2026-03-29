@@ -6,13 +6,15 @@
 		"client"
 	],
 	"scripts": {
-		"dev": "bun run --filter '*' --parallel dev",
+		"start:dev": "bun run --filter '*' --parallel start:dev",
+		"start:prod": "bun run --filter '*' --parallel start:prod",
 		"build": "bun run --filter '*' build",
-		"test": "bun run --filter '*' test",
-		"lint": "bun run --filter '*' lint",
-		"lint:fix": "bun run --filter '*' lint:fix",
-		"typecheck": "bun run --filter '*' typecheck",
-		"arch:check": "cd server && bun run arch:check"
+		"check:lint": "bun run --filter '*' check:lint",
+		"check:lint:fix": "bun run --filter '*' check:lint:fix",
+		"check:test": "bun run --filter '*' check:test",
+		"check:test:watch": "bun run --filter '*' --parallel check:test:watch",
+		"check:type": "bun run --filter '*' check:type",
+		"check:arch": "bun run --filter '*' check:arch"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.9",

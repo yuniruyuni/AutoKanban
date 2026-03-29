@@ -3,33 +3,37 @@ import { join } from "node:path";
 import { PgDatabase } from "../../src/db/pg-client";
 import { EmbeddedPostgresManager } from "../../src/db/postgres";
 
-let pgManager: EmbeddedPostgresManager | null = null;
-let pgStarted = false;
+let sharedDb: PgDatabase | null = null;
 
 const TEST_PORT = 5555;
+const TEST_USER = "autokanban";
+const TEST_PASSWORD = "autokanban";
+const TEST_DATABASE = "autokanban";
 
-async function ensurePgStarted(): Promise<EmbeddedPostgresManager> {
-	if (pgManager && pgStarted) return pgManager;
+async function ensureReady(): Promise<PgDatabase> {
+	if (sharedDb) return sharedDb;
 
-	pgManager = new EmbeddedPostgresManager({
+	const pgManager = new EmbeddedPostgresManager({
 		port: TEST_PORT,
 		dataDir: join(import.meta.dir, "../../.test-pg-data"),
 	});
-	await pgManager.start();
-	pgStarted = true;
-	return pgManager;
-}
 
-/**
- * Create a PgDatabase connected to a test PostgreSQL instance.
- * Schema is applied by truncating all tables for isolation.
- */
-export async function createTestDB(): Promise<PgDatabase> {
-	const manager = await ensurePgStarted();
-	const db = new PgDatabase(manager.poolConfig);
+	try {
+		await pgManager.start();
+	} catch {
+		// PG may already be running from a previous test run — try connecting directly
+	}
 
-	// Apply schema if tables don't exist yet
-	const result = await db.queryGet<{ exists: boolean }>({
+	sharedDb = new PgDatabase({
+		host: "localhost",
+		port: TEST_PORT,
+		user: TEST_USER,
+		password: TEST_PASSWORD,
+		database: TEST_DATABASE,
+	});
+
+	// Ensure schema exists
+	const result = await sharedDb.queryGet<{ exists: boolean }>({
 		query: `SELECT EXISTS (
 			SELECT FROM information_schema.tables
 			WHERE table_schema = 'public' AND table_name = 'projects'
@@ -40,17 +44,25 @@ export async function createTestDB(): Promise<PgDatabase> {
 	if (!result?.exists) {
 		const schemaPath = join(import.meta.dir, "../../schema.sql");
 		const schema = readFileSync(schemaPath, "utf-8");
-		// Execute each statement separately
 		const statements = schema
 			.split(";")
 			.map((s) => s.trim())
 			.filter((s) => s.length > 0);
 		for (const stmt of statements) {
-			await db.queryRun({ query: stmt, params: [] });
+			await sharedDb.queryRun({ query: stmt, params: [] });
 		}
 	}
 
-	// Truncate all tables for test isolation (respecting FK order)
+	return sharedDb;
+}
+
+/**
+ * Get a PgDatabase for tests. Starts embedded-postgres on first call.
+ * Truncates all tables for isolation between tests.
+ */
+export async function createTestDB(): Promise<PgDatabase> {
+	const db = await ensureReady();
+
 	await db.queryRun({
 		query: `
 		TRUNCATE TABLE
@@ -74,8 +86,9 @@ export async function createTestDB(): Promise<PgDatabase> {
 }
 
 /**
- * Close a test database connection.
+ * No-op for backwards compatibility.
+ * The shared connection is kept alive across tests.
  */
-export async function closeTestDB(db: PgDatabase): Promise<void> {
-	await db.close();
+export async function closeTestDB(_db: PgDatabase): Promise<void> {
+	// Intentionally no-op: shared pool stays alive
 }

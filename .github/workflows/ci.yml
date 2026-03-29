@@ -17,13 +17,13 @@ jobs:
       - run: bun install
 
       - name: Lint
-        run: bun run lint
+        run: bun run check:lint
 
       - name: Typecheck
-        run: bun run typecheck
+        run: bun run check:type
 
       - name: Test
-        run: bun run test
+        run: bun run check:test
 
       - name: Architecture check
-        run: bun run arch:check
+        run: bun run check:arch

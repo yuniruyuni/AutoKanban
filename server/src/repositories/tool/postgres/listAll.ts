@@ -1,6 +1,6 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { Tool } from "../../../models/tool";
-import { type ToolRow, rowToTool } from "./common";
+import { rowToTool, type ToolRow } from "./common";
 
 export async function listAll(db: PgDatabase): Promise<Tool[]> {
 	const rows = await db.queryAll<ToolRow>({

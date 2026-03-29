@@ -148,10 +148,11 @@ describe("TaskDetailPanel", () => {
 		expect(badge).not.toHaveClass("rounded-full");
 	});
 
-	test("renders Edit button", () => {
+	test("renders Delete button", () => {
 		render(<TaskDetailPanel taskId="task-1" />);
 
-		expect(screen.getByText("Edit")).toBeInTheDocument();
+		const deleteButton = screen.getByTitle("Delete task");
+		expect(deleteButton).toBeInTheDocument();
 	});
 
 	test("renders Close button when onClose provided", () => {
@@ -162,7 +163,7 @@ describe("TaskDetailPanel", () => {
 		const buttons = screen.getAllByRole("button");
 		const closeButton = buttons.find((b) => {
 			const svg = b.querySelector("svg");
-			return svg && !b.textContent?.includes("Edit");
+			return svg !== null;
 		});
 
 		expect(closeButton).toBeInTheDocument();

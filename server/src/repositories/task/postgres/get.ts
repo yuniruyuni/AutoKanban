@@ -2,7 +2,7 @@ import type { PgDatabase } from "../../../db/pg-client";
 import type { Task } from "../../../models/task";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
-import { type TaskRow, rowToTask, taskSpecToSQL } from "./common";
+import { rowToTask, type TaskRow, taskSpecToSQL } from "./common";
 
 export async function get(
 	db: PgDatabase,

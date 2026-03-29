@@ -2,7 +2,7 @@ import type { PgDatabase } from "../../../db/pg-client";
 import type { Variant } from "../../../models/variant";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
-import { type VariantRow, rowToVariant, variantSpecToSQL } from "./common";
+import { rowToVariant, type VariantRow, variantSpecToSQL } from "./common";
 
 export async function get(
 	db: PgDatabase,

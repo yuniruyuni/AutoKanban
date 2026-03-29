@@ -15,7 +15,7 @@ Auto Kanbanはローカル専用のデスクトップアプリケーションと
 bun install
 
 # 開発サーバー起動
-bun run dev
+bun run start:dev
 ```
 
 ### プロダクションビルド
@@ -395,13 +395,13 @@ cd auto-kanban
 bun install
 
 # 開発サーバー起動
-bun run dev
+bun run start:dev
 
 # テスト実行
-bun test
+bun run check:test
 
 # リント
-bun run lint
+bun run check:lint
 ```
 
 ### ディレクトリ構成
@@ -439,8 +439,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
-      - run: bun test
-      - run: bun run lint
+      - run: bun run check:test
+      - run: bun run check:lint
 
   build:
     runs-on: ubuntu-latest

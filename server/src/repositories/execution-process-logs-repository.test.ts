@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestExecutionProcessLogs } from "../../test/factories";
 import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { seedFullChain } from "../../test/helpers/seed";
+import type { PgDatabase } from "../db/pg-client";
 import { ExecutionProcessLogsRepository } from "./execution-process-logs";
 
 let db: PgDatabase;

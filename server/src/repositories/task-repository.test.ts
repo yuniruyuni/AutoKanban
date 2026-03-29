@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestProject, createTestTask } from "../../test/factories";
 import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
+import type { PgDatabase } from "../db/pg-client";
 import { and } from "../models/common";
 import { Task } from "../models/task";
 import { ProjectRepository } from "./project";

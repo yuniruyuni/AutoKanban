@@ -47,5 +47,5 @@ export function dateFromSQL(value: string | Date): Date {
 }
 
 export function dateToSQL(value: Date): string {
-	return value.toISOString().replace("T", " ").replace("Z", "");
+	return value.toISOString();
 }

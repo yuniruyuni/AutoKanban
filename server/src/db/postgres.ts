@@ -1,6 +1,7 @@
-import EmbeddedPostgres from "embedded-postgres";
+import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import EmbeddedPostgres from "embedded-postgres";
 import type pg from "pg";
 
 const DEFAULT_PORT = 5445;
@@ -15,6 +16,8 @@ export class EmbeddedPostgresManager {
 	private password: string;
 	private database: string;
 
+	private dataDir: string;
+
 	constructor(options?: {
 		port?: number;
 		dataDir?: string;
@@ -23,12 +26,11 @@ export class EmbeddedPostgresManager {
 		this.user = DEFAULT_USER;
 		this.password = DEFAULT_PASSWORD;
 		this.database = DEFAULT_DATABASE;
-
-		const dataDir =
+		this.dataDir =
 			options?.dataDir ?? join(homedir(), ".auto-kanban", "postgres");
 
 		this.pg = new EmbeddedPostgres({
-			databaseDir: dataDir,
+			databaseDir: this.dataDir,
 			port: this.port,
 			user: this.user,
 			password: this.password,
@@ -39,7 +41,10 @@ export class EmbeddedPostgresManager {
 	}
 
 	async start(): Promise<void> {
-		await this.pg.initialise();
+		const alreadyInitialised = existsSync(join(this.dataDir, "PG_VERSION"));
+		if (!alreadyInitialised) {
+			await this.pg.initialise();
+		}
 		await this.pg.start();
 		await this.pg.createDatabase(this.database).catch(() => {
 			// Database already exists — ignore

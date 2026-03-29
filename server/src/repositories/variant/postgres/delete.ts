@@ -4,10 +4,7 @@ import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import { variantSpecToSQL } from "./common";
 
-export async function del(
-	db: PgDatabase,
-	spec: Variant.Spec,
-): Promise<number> {
+export async function del(db: PgDatabase, spec: Variant.Spec): Promise<number> {
 	const where = compToSQL(
 		spec,
 		variantSpecToSQL as (s: unknown) => SQLFragment,

@@ -15,9 +15,7 @@ import { updateAgentSessionId } from "./updateAgentSessionId";
 import { updateSummary } from "./updateSummary";
 import { upsert } from "./upsert";
 
-export class CodingAgentTurnRepository
-	implements ICodingAgentTurnRepository
-{
+export class CodingAgentTurnRepository implements ICodingAgentTurnRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: CodingAgentTurn.Spec): Promise<CodingAgentTurn | null> {

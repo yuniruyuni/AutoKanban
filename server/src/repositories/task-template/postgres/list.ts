@@ -4,9 +4,9 @@ import { TaskTemplate } from "../../../models/task-template";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type TaskTemplateRow,
 	columnName,
 	rowToTaskTemplate,
+	type TaskTemplateRow,
 	taskTemplateSpecToSQL,
 } from "./common";
 

@@ -7,9 +7,7 @@ import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class ExecutionProcessRepository
-	implements IExecutionProcessRepository
-{
+export class ExecutionProcessRepository implements IExecutionProcessRepository {
 	constructor(private db: PgDatabase) {}
 
 	async get(spec: ExecutionProcess.Spec): Promise<ExecutionProcess | null> {

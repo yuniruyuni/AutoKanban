@@ -1178,19 +1178,19 @@ const exitCode = await proc.exited;
 
 ```bash
 # 開発サーバー起動（ホットリロード）
-bun run dev
+bun run start:dev
 
 # 本番ビルド
 bun run build
 
 # 本番サーバー起動
-bun run start
+bun run start:prod
 
 # 型チェック
 bun run tsc --noEmit
 
 # テスト
-bun test
+bun run check:test
 ```
 
 ---

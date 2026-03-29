@@ -340,7 +340,7 @@ bun build --compile --outfile dist/auto-kanban
 bun install
 
 # 開発サーバー起動（両方同時）
-bun run dev
+bun run start:dev
 ```
 
 ### ビルド・配布

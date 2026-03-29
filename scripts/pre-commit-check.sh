@@ -8,27 +8,22 @@ cd "$(git rev-parse --show-toplevel)"
 errors=""
 
 # 1. Lint
-if ! lint_output=$(bun run lint 2>&1); then
+if ! lint_output=$(bun run check:lint 2>&1); then
   errors="${errors}\n=== LINT FAILED ===\n${lint_output}\n"
 fi
 
 # 2. Typecheck
-if ! typecheck_output=$(bun run typecheck 2>&1); then
+if ! typecheck_output=$(bun run check:type 2>&1); then
   errors="${errors}\n=== TYPECHECK FAILED ===\n${typecheck_output}\n"
 fi
 
-# 3. Server tests
-if ! server_test_output=$(cd server && bun test 2>&1); then
-  errors="${errors}\n=== SERVER TESTS FAILED ===\n${server_test_output}\n"
+# 3. Tests
+if ! test_output=$(bun run check:test 2>&1); then
+  errors="${errors}\n=== TESTS FAILED ===\n${test_output}\n"
 fi
 
-# 4. Client tests
-if ! client_test_output=$(cd client && bun run test 2>&1); then
-  errors="${errors}\n=== CLIENT TESTS FAILED ===\n${client_test_output}\n"
-fi
-
-# 5. Architecture check
-if ! arch_output=$(bun run arch:check 2>&1); then
+# 4. Architecture check
+if ! arch_output=$(bun run check:arch 2>&1); then
   errors="${errors}\n=== ARCH CHECK FAILED ===\n${arch_output}\n"
 fi
 

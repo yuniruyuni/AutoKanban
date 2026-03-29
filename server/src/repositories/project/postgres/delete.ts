@@ -4,10 +4,7 @@ import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import { projectSpecToSQL } from "./common";
 
-export async function del(
-	db: PgDatabase,
-	spec: Project.Spec,
-): Promise<number> {
+export async function del(db: PgDatabase, spec: Project.Spec): Promise<number> {
 	const where = compToSQL(
 		spec,
 		projectSpecToSQL as (s: unknown) => SQLFragment,

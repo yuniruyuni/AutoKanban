@@ -7,7 +7,8 @@ export async function listByWorkspace(
 	workspaceId: string,
 ): Promise<WorkspaceRepo[]> {
 	const rows = await db.queryAll<WorkspaceRepoRow>({
-		query: "SELECT * FROM workspace_repos WHERE workspace_id = ? ORDER BY created_at ASC",
+		query:
+			"SELECT * FROM workspace_repos WHERE workspace_id = ? ORDER BY created_at ASC",
 		params: [workspaceId],
 	});
 

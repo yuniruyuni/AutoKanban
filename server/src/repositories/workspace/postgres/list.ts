@@ -4,9 +4,9 @@ import { Workspace } from "../../../models/workspace";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
 import {
-	type WorkspaceRow,
 	columnName,
 	rowToWorkspace,
+	type WorkspaceRow,
 	workspaceSpecToSQL,
 } from "./common";
 

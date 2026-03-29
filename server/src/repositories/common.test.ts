@@ -118,16 +118,16 @@ describe("compToSQL()", () => {
 // ============================================
 
 describe("dateToSQL()", () => {
-	test("converts Date to SQL format", () => {
+	test("converts Date to ISO string", () => {
 		const date = new Date("2025-01-15T10:30:45.123Z");
 		const result = dateToSQL(date);
-		expect(result).toBe("2025-01-15 10:30:45.123");
+		expect(result).toBe("2025-01-15T10:30:45.123Z");
 	});
 
-	test("removes T and Z from ISO string", () => {
+	test("returns ISO 8601 format with timezone", () => {
 		const result = dateToSQL(new Date("2024-12-31T23:59:59.999Z"));
-		expect(result).not.toContain("T");
-		expect(result).not.toContain("Z");
+		expect(result).toContain("T");
+		expect(result).toContain("Z");
 	});
 });
 

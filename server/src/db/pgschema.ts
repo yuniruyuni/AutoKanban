@@ -1,10 +1,5 @@
-import { execSync, spawnSync } from "node:child_process";
-import {
-	chmodSync,
-	existsSync,
-	mkdirSync,
-	writeFileSync,
-} from "node:fs";
+import { spawnSync } from "node:child_process";
+import { chmodSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -89,6 +84,8 @@ export async function ensurePgSchema(
 			"apply",
 			"--host",
 			connectionParams.host,
+			"--port",
+			connectionParams.port.toString(),
 			"--db",
 			connectionParams.database,
 			"--user",

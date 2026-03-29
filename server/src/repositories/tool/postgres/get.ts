@@ -2,7 +2,7 @@ import type { PgDatabase } from "../../../db/pg-client";
 import type { Tool } from "../../../models/tool";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../sql";
-import { type ToolRow, rowToTool, toolSpecToSQL } from "./common";
+import { rowToTool, type ToolRow, toolSpecToSQL } from "./common";
 
 export async function get(
 	db: PgDatabase,

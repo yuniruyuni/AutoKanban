@@ -4,14 +4,16 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "NODE_ENV=development bun run --watch src/index.ts",
+		"start:dev": "NODE_ENV=development bun run --watch src/index.ts",
+		"start:prod": "bun run src/index.ts",
 		"build": "bun build src/index.ts --compile --outfile dist/auto-kanban",
-		"start": "bun run src/index.ts",
-		"test": "bun test src/",
-		"lint": "biome check .",
-		"lint:fix": "biome check --write .",
-		"typecheck": "tsc --noEmit",
-		"arch:check": "depcruise src --config .dependency-cruiser.cjs --output-type err"
+		"check:lint": "biome check .",
+		"check:lint:fix": "biome check --write .",
+		"check:test": "bun test src/",
+		"check:test:watch": "bun test --watch src/",
+		"check:type": "tsc --noEmit",
+		"check:arch": "depcruise src --config .dependency-cruiser.cjs --output-type err",
+		"postinstall": "node scripts/hydrate-pg-symlinks.mjs"
 	},
 	"dependencies": {
 		"@hono/trpc-server": "^0.3.2",

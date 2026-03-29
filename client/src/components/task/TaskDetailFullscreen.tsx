@@ -165,13 +165,6 @@ export function TaskDetailFullscreen({
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.defaultPrevented) return;
 
-			const tag = (e.target as HTMLElement)?.tagName;
-			const _isInput =
-				tag === "INPUT" ||
-				tag === "TEXTAREA" ||
-				tag === "SELECT" ||
-				(e.target as HTMLElement)?.isContentEditable;
-
 			// Ctrl+h / Ctrl+l: switch tabs (even in input fields)
 			if (e.ctrlKey && (e.key === "h" || e.key === "l")) {
 				e.preventDefault();

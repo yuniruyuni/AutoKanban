@@ -4,13 +4,15 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
+		"start:dev": "vite",
+		"start:prod": "vite preview",
 		"build": "tsc && vite build",
-		"preview": "vite preview",
-		"test": "vitest --run",
-		"test:watch": "vitest",
-		"lint": "biome check .",
-		"lint:fix": "biome check --write ."
+		"check:lint": "biome check .",
+		"check:lint:fix": "biome check --write .",
+		"check:test": "vitest --run",
+		"check:test:watch": "vitest",
+		"check:type": "tsc --noEmit",
+		"check:arch": "depcruise src --config .dependency-cruiser.cjs --output-type err"
 	},
 	"dependencies": {
 		"@auto-kanban/server": "workspace:*",
@@ -42,6 +44,7 @@
 		"@types/react-dom": "^19.0.0",
 		"@vitejs/plugin-react": "^4.3.4",
 		"autoprefixer": "^10.4.20",
+		"dependency-cruiser": "^17.3.10",
 		"jsdom": "^28.1.0",
 		"postcss": "^8.4.49",
 		"tailwindcss": "^3.4.16",

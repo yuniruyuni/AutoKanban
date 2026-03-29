@@ -1,2 +1,2 @@
-export type { IExecutionProcessLogsRepository } from "./repository";
 export { ExecutionProcessLogsRepository } from "./postgres";
+export type { IExecutionProcessLogsRepository } from "./repository";

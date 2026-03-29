@@ -1,4 +1,3 @@
-import type { PgDatabase } from "../db/pg-client";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
 	createTestProject,
@@ -7,6 +6,7 @@ import {
 import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
+import type { PgDatabase } from "../db/pg-client";
 import { WorkspaceRepo } from "../models/workspace-repo";
 import { ProjectRepository } from "./project";
 import { WorkspaceRepoRepository } from "./workspace-repo";

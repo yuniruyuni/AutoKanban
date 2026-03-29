@@ -118,13 +118,13 @@ auto-kanban/
 bun install
 
 # 開発サーバー起動
-bun run dev
+bun run start:dev
 
 # サーバーのみ
-bun run dev:server
+cd server && bun run start:dev
 
 # フロントエンドのみ
-bun run dev:web
+cd client && bun run start:dev
 
 # データベースマイグレーション
 bun run db:migrate

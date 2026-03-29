@@ -1,6 +1,6 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { Workspace } from "../../../models/workspace";
-import { type WorkspaceRow, rowToWorkspace } from "./common";
+import { rowToWorkspace, type WorkspaceRow } from "./common";
 
 export async function findByWorktreePath(
 	db: PgDatabase,
