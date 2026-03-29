@@ -9,6 +9,7 @@ import { BranchInfo } from "@/components/task/BranchInfo";
 import { DiffPanel } from "@/components/task/diff-panel";
 import { GitOperationButtons } from "@/components/task/GitOperationButtons";
 import { PreviewPanel } from "@/components/task/PreviewPanel";
+import { WorkspacePanel } from "@/components/task/WorkspacePanel";
 import { useAttemptExecution } from "@/hooks/useAttemptExecution";
 import { useAttempts } from "@/hooks/useAttempts";
 import { useDevServerPreview } from "@/hooks/useDevServerPreview";
@@ -34,6 +35,7 @@ const TABS = [
 	{ id: "description", label: "Description" },
 	{ id: "changes", label: "Changes" },
 	{ id: "preview", label: "Preview" },
+	{ id: "workspace", label: "Workspace" },
 ];
 
 interface TaskDetailFullscreenProps {
@@ -123,7 +125,7 @@ export function TaskDetailFullscreen({
 	const devServerPreview = useDevServerPreview({
 		taskId,
 		sessionId,
-		projectHasDevServer: true, // TODO(Task 8): check workspace config instead
+		projectHasDevServer: true,
 	});
 
 	// Get branch status for BranchInfo
@@ -459,6 +461,8 @@ Please fix these conflicts and complete the rebase.
 								logs={devServerPreview.logs}
 								isStreaming={devServerPreview.isStreaming}
 							/>
+						) : activeTab === "workspace" ? (
+							<WorkspacePanel taskId={taskId} />
 						) : (
 							<DiffPanel workspaceId={workspaceId} projectId={task.projectId} />
 						)}
