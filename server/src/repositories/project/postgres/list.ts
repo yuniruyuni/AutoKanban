@@ -1,0 +1,46 @@
+import type { PgDatabase } from "../../../db/pg-client";
+import type { Cursor, Page } from "../../../models/common";
+import { Project } from "../../../models/project";
+import { compToSQL } from "../../common";
+import type { SQLFragment } from "../../sql";
+import {
+	columnName,
+	type ProjectRow,
+	projectSpecToSQL,
+	rowToProject,
+} from "./common";
+
+export async function list(
+	db: PgDatabase,
+	spec: Project.Spec,
+	cursor: Cursor<Project.SortKey>,
+): Promise<Page<Project>> {
+	const where = compToSQL(
+		spec,
+		projectSpecToSQL as (s: unknown) => SQLFragment,
+	);
+
+	const sort = cursor.sort ?? {
+		keys: ["createdAt", "id"] as const,
+		order: "desc" as const,
+	};
+	const orderBy = sort.keys
+		.map((k) => `${columnName(k)} ${sort.order.toUpperCase()}`)
+		.join(", ");
+
+	const limit = cursor.limit + 1;
+
+	const rows = await db.queryAll<ProjectRow>({
+		query: `SELECT * FROM projects WHERE ${where.query} ORDER BY ${orderBy} LIMIT ${limit}`,
+		params: where.params,
+	});
+
+	const hasMore = rows.length > cursor.limit;
+	const items = rows.slice(0, cursor.limit).map(rowToProject);
+
+	const lastItem = items[items.length - 1];
+	const nextCursor =
+		hasMore && lastItem ? Project.cursor(lastItem, sort.keys) : undefined;
+
+	return { items, hasMore, nextCursor };
+}

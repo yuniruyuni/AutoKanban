@@ -1,0 +1,21 @@
+import type { PgDatabase } from "../../../db/pg-client";
+import type { ExecutionProcess } from "../../../models/execution-process";
+import { compToSQL } from "../../common";
+import type { SQLFragment } from "../../sql";
+import { executionProcessSpecToSQL } from "./common";
+
+export async function del(
+	db: PgDatabase,
+	spec: ExecutionProcess.Spec,
+): Promise<number> {
+	const where = compToSQL(
+		spec,
+		executionProcessSpecToSQL as (s: unknown) => SQLFragment,
+	);
+	const result = await db.queryRun({
+		query: `DELETE FROM execution_processes WHERE ${where.query}`,
+		params: where.params,
+	});
+
+	return result.rowCount;
+}

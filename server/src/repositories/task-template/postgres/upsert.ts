@@ -1,0 +1,28 @@
+import type { PgDatabase } from "../../../db/pg-client";
+import type { TaskTemplate } from "../../../models/task-template";
+import { dateToSQL } from "../../common";
+
+export async function upsert(
+	db: PgDatabase,
+	template: TaskTemplate,
+): Promise<void> {
+	await db.queryRun({
+		query: `INSERT INTO project_task_templates (id, title, description, condition, sort_order, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         title = excluded.title,
+         description = excluded.description,
+         condition = excluded.condition,
+         sort_order = excluded.sort_order,
+         updated_at = excluded.updated_at`,
+		params: [
+			template.id,
+			template.title,
+			template.description,
+			template.condition,
+			template.sortOrder,
+			dateToSQL(template.createdAt),
+			dateToSQL(template.updatedAt),
+		],
+	});
+}

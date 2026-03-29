@@ -42,7 +42,7 @@ export function compToSQL<T>(
 // Row to Entity converters
 // ============================================
 
-export function dateFromSQL(value: string): Date {
+export function dateFromSQL(value: string | Date): Date {
 	return new Date(value);
 }
 
