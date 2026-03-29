@@ -29,12 +29,6 @@ export const startDevServer = (input: StartDevServerInput) =>
 				});
 			}
 
-			// TODO(Task 8): Replace with WorkspaceConfig lookup
-			// @ts-expect-error devServerScript removed from Project model; Task 8 will rewrite this
-			if (!project.devServerScript) {
-				return fail("INVALID_STATE", "Project has no dev server script");
-			}
-
 			// Find active workspace
 			const workspace = await ctx.repos.workspace.get(
 				Workspace.ByTaskIdActive(input.taskId),
@@ -54,6 +48,11 @@ export const startDevServer = (input: StartDevServerInput) =>
 				workspace.id,
 				project.name,
 			);
+
+			const config = await ctx.repos.workspaceConfig.load(worktreePath);
+			if (!config.server) {
+				return fail("INVALID_STATE", "No server script in auto-kanban.json");
+			}
 
 			// Find latest session
 			const sessionPage = await ctx.repos.session.list(
@@ -84,7 +83,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 				alreadyRunning: false as const,
 				session,
 				workspace,
-				project,
+				serverCommand: config.server,
 				worktreePath,
 			};
 		},
@@ -108,8 +107,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 			if (data.alreadyRunning) return data;
 			ctx.repos.devServer.start({
 				processId: data.executionProcess.id,
-				// @ts-expect-error devServerScript removed from Project model; Task 8 will rewrite this
-				command: data.project.devServerScript as string,
+				command: data.serverCommand,
 				workingDir: data.worktreePath,
 			});
 			return data;
