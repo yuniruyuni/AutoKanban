@@ -5,7 +5,7 @@ import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { and } from "../models/common";
 import { Task } from "../models/task";
-import { ProjectRepository } from "./project-repository";
+import { ProjectRepository } from "./project";
 import { TaskRepository } from "./task";
 
 let db: Database;

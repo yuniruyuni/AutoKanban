@@ -8,9 +8,9 @@ import {
 import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { Workspace } from "../models/workspace";
-import { ProjectRepository } from "./project-repository";
+import { ProjectRepository } from "./project";
 import { TaskRepository } from "./task";
-import { WorkspaceRepository } from "./workspace-repository";
+import { WorkspaceRepository } from "./workspace";
 
 let db: Database;
 let workspaceRepo: WorkspaceRepository;

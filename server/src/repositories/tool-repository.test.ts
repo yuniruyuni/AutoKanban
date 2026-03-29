@@ -4,7 +4,7 @@ import { createTestTool } from "../../test/factories";
 import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { Tool } from "../models/tool";
-import { ToolRepository } from "./tool-repository";
+import { ToolRepository } from "./tool";
 
 let db: Database;
 let toolRepo: ToolRepository;

@@ -8,8 +8,8 @@ import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
 import { WorkspaceRepo } from "../models/workspace-repo";
-import { ProjectRepository } from "./project-repository";
-import { WorkspaceRepoRepository } from "./workspace-repo-repository";
+import { ProjectRepository } from "./project";
+import { WorkspaceRepoRepository } from "./workspace-repo";
 
 let db: Database;
 let wsRepoRepo: WorkspaceRepoRepository;

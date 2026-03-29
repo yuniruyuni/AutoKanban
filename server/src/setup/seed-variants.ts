@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { Variant } from "../models/variant";
-import { VariantRepository } from "../repositories/variant-repository";
+import { VariantRepository } from "../repositories/variant";
 
 const DEFAULT_VARIANTS = [
 	{

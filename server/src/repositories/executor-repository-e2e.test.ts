@@ -25,7 +25,7 @@ import type {
 } from "../types/repository";
 import { ApprovalStore } from "./approval-store";
 import { ClaudeCodeDriver } from "./drivers/claude-code";
-import { ExecutorRepository } from "./executor-repository";
+import { ExecutorRepository } from "./executor";
 
 function createMockLogger(): ILogger {
 	const noop = () => {};

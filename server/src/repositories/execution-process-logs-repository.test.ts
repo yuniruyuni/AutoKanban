@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestExecutionProcessLogs } from "../../test/factories";
 import { createTestDB } from "../../test/helpers/db";
 import { seedFullChain } from "../../test/helpers/seed";
-import { ExecutionProcessLogsRepository } from "./execution-process-logs-repository";
+import { ExecutionProcessLogsRepository } from "./execution-process-logs";
 
 let db: Database;
 let logsRepo: ExecutionProcessLogsRepository;

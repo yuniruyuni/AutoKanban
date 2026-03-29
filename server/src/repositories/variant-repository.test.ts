@@ -4,7 +4,7 @@ import { createTestVariant } from "../../test/factories";
 import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { Variant } from "../models/variant";
-import { VariantRepository } from "./variant-repository";
+import { VariantRepository } from "./variant";
 
 let db: Database;
 let variantRepo: VariantRepository;

@@ -8,9 +8,9 @@ import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
 import { CodingAgentTurn } from "../models/coding-agent-turn";
-import { CodingAgentTurnRepository } from "./coding-agent-turn-repository";
-import { ExecutionProcessRepository } from "./execution-process-repository";
-import { SessionRepository } from "./session-repository";
+import { CodingAgentTurnRepository } from "./coding-agent-turn";
+import { ExecutionProcessRepository } from "./execution-process";
+import { SessionRepository } from "./session";
 
 let db: Database;
 let turnRepo: CodingAgentTurnRepository;

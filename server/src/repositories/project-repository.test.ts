@@ -4,7 +4,7 @@ import { createTestProject, createTestTask } from "../../test/factories";
 import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { Project } from "../models/project";
-import { ProjectRepository } from "./project-repository";
+import { ProjectRepository } from "./project";
 import { TaskRepository } from "./task";
 
 let db: Database;

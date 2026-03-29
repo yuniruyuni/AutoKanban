@@ -31,114 +31,21 @@ import type { WorktreeInfo } from "../models/worktree-info";
 
 export type { ITaskRepository } from "../repositories/task/repository";
 
-export interface ITaskTemplateRepository {
-	get(spec: TaskTemplate.Spec): TaskTemplate | null;
-	list(
-		spec: TaskTemplate.Spec,
-		cursor: Cursor<TaskTemplate.SortKey>,
-	): Page<TaskTemplate>;
-	listAll(): TaskTemplate[];
-	upsert(template: TaskTemplate): void;
-	delete(spec: TaskTemplate.Spec): number;
-}
+export type { ITaskTemplateRepository } from "../repositories/task-template/repository";
+export type { IProjectRepository } from "../repositories/project/repository";
+export type { IWorkspaceRepository } from "../repositories/workspace/repository";
 
-export interface IProjectRepository {
-	get(spec: Project.Spec): Project | null;
-	list(spec: Project.Spec, cursor: Cursor<Project.SortKey>): Page<Project>;
-	listAll(): Project[];
-	listAllWithStats(): ProjectWithStats[];
-	getWithStats(projectId: string): ProjectWithStats | null;
-	upsert(project: Project): void;
-	delete(spec: Project.Spec): number;
-}
+export type { IWorkspaceRepoRepository } from "../repositories/workspace-repo/repository";
 
-export interface IWorkspaceRepository {
-	get(spec: Workspace.Spec): Workspace | null;
-	list(
-		spec: Workspace.Spec,
-		cursor: Cursor<Workspace.SortKey>,
-	): Page<Workspace>;
-	findByWorktreePath(worktreePath: string): Workspace | null;
-	getMaxAttempt(taskId: string): number;
-	upsert(workspace: Workspace): void;
-	delete(spec: Workspace.Spec): number;
-}
+export type { ISessionRepository } from "../repositories/session/repository";
+export type { IExecutionProcessRepository } from "../repositories/execution-process/repository";
+export type { IExecutionProcessLogsRepository } from "../repositories/execution-process-logs/repository";
 
-export interface IWorkspaceRepoRepository {
-	get(spec: WorkspaceRepo.Spec): WorkspaceRepo | null;
-	list(
-		spec: WorkspaceRepo.Spec,
-		cursor: Cursor<WorkspaceRepo.SortKey>,
-	): Page<WorkspaceRepo>;
-	listByWorkspace(workspaceId: string): WorkspaceRepo[];
-	upsert(workspaceRepo: WorkspaceRepo): void;
-	delete(spec: WorkspaceRepo.Spec): number;
-}
+export type { IToolRepository } from "../repositories/tool/repository";
 
-export interface ISessionRepository {
-	get(spec: Session.Spec): Session | null;
-	list(spec: Session.Spec, cursor: Cursor<Session.SortKey>): Page<Session>;
-	upsert(session: Session): void;
-	delete(spec: Session.Spec): number;
-}
+export type { IVariantRepository } from "../repositories/variant/repository";
 
-export interface IExecutionProcessRepository {
-	get(spec: ExecutionProcess.Spec): ExecutionProcess | null;
-	list(
-		spec: ExecutionProcess.Spec,
-		cursor: Cursor<ExecutionProcess.SortKey>,
-	): Page<ExecutionProcess>;
-	upsert(process: ExecutionProcess): void;
-	delete(spec: ExecutionProcess.Spec): number;
-}
-
-export interface IExecutionProcessLogsRepository {
-	getLogs(executionProcessId: string): ExecutionProcessLogs | null;
-	upsertLogs(logs: ExecutionProcessLogs): void;
-	appendLogs(executionProcessId: string, newLogs: string): void;
-	deleteLogs(executionProcessId: string): void;
-}
-
-export interface IToolRepository {
-	get(spec: Tool.Spec): Tool | null;
-	list(spec: Tool.Spec, cursor: Cursor<Tool.SortKey>): Page<Tool>;
-	listAll(): Tool[];
-	upsert(tool: Tool): void;
-	delete(spec: Tool.Spec): number;
-	/** Execute a shell command. Uses `sh -c` to support PATH-based commands. */
-	executeCommand(command: string, cwd?: string): void;
-}
-
-export interface IVariantRepository {
-	get(spec: Variant.Spec): Variant | null;
-	list(spec: Variant.Spec, cursor: Cursor<Variant.SortKey>): Page<Variant>;
-	listByExecutor(executor: string): Variant[];
-	upsert(variant: Variant): void;
-	delete(spec: Variant.Spec): number;
-}
-
-export interface ICodingAgentTurnRepository {
-	get(spec: CodingAgentTurn.Spec): CodingAgentTurn | null;
-	list(
-		spec: CodingAgentTurn.Spec,
-		cursor: Cursor<CodingAgentTurn.SortKey>,
-	): Page<CodingAgentTurn>;
-	upsert(turn: CodingAgentTurn): void;
-	delete(spec: CodingAgentTurn.Spec): number;
-	updateAgentSessionId(
-		executionProcessId: string,
-		agentSessionId: string,
-	): void;
-	updateAgentMessageId(
-		executionProcessId: string,
-		agentMessageId: string,
-	): void;
-	updateSummary(executionProcessId: string, summary: string): void;
-	findLatestResumeInfo(sessionId: string): CodingAgentResumeInfo | null;
-	findLatestResumeInfoByWorkspaceId(
-		workspaceId: string,
-	): CodingAgentResumeInfo | null;
-}
+export type { ICodingAgentTurnRepository } from "../repositories/coding-agent-turn/repository";
 
 // ============================================
 // External System Repositories
@@ -333,53 +240,23 @@ export interface IExecutorRepository {
 	getStderr(processId: string): ReadableStream<Uint8Array> | null;
 }
 
-export interface QueuedMessage {
-	sessionId: string;
-	prompt: string;
-	executor?: string;
-	variant?: string;
-	queuedAt: Date;
-}
+export type {
+	IMessageQueueRepository,
+	QueuedMessage,
+	QueueStatus,
+} from "../repositories/message-queue/repository";
 
-export interface QueueStatus {
-	hasMessage: boolean;
-	message?: QueuedMessage;
-}
-
-export interface IMessageQueueRepository {
-	queue(
-		sessionId: string,
-		prompt: string,
-		executor?: string,
-		variant?: string,
-	): QueuedMessage;
-	get(sessionId: string): QueuedMessage | undefined;
-	getStatus(sessionId: string): QueueStatus;
-	consume(sessionId: string): QueuedMessage | undefined;
-	cancel(sessionId: string): boolean;
-	has(sessionId: string): boolean;
-	clear(): void;
-}
-
-export type { IAgentConfigRepository } from "../repositories/agent-config-repository";
+export type { IAgentConfigRepository } from "../repositories/agent-config";
 
 // ============================================
 // In-memory Store Repositories
 // ============================================
 
-export interface IDraftRepository {
-	save(sessionId: string, text: string): void;
-	get(sessionId: string): Draft | undefined;
-	delete(sessionId: string): boolean;
-	clear(): void;
-}
+export type { IDraftRepository } from "../repositories/draft/repository";
 
-export interface IApprovalRepository {
-	get(spec: Approval.Spec): Approval | null;
-	list(spec: Approval.Spec, cursor: Cursor<Approval.SortKey>): Page<Approval>;
-	upsert(approval: Approval): void;
-	delete(spec: Approval.Spec): number;
-}
+export type { IApprovalRepository } from "../repositories/approval/repository";
+
+import type { IApprovalRepository } from "../repositories/approval/repository";
 
 export interface IApprovalStore {
 	createAndWait(

@@ -5,7 +5,7 @@ import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
 import { Session } from "../models/session";
-import { SessionRepository } from "./session-repository";
+import { SessionRepository } from "./session";
 
 let db: Database;
 let sessionRepo: SessionRepository;

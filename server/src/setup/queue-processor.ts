@@ -7,7 +7,7 @@ import type {
 	ExecutorRepository,
 	ProcessCompletionInfo,
 	ProcessIdleInfo,
-} from "../repositories/executor-repository";
+} from "../repositories/executor";
 import type { ILogger } from "../types/logger";
 import type {
 	IMessageQueueRepository,

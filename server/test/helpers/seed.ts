@@ -4,11 +4,11 @@ import type { Project } from "../../src/models/project";
 import type { Session } from "../../src/models/session";
 import type { Task } from "../../src/models/task";
 import type { Workspace } from "../../src/models/workspace";
-import { ExecutionProcessRepository } from "../../src/repositories/execution-process-repository";
-import { ProjectRepository } from "../../src/repositories/project-repository";
-import { SessionRepository } from "../../src/repositories/session-repository";
+import { ExecutionProcessRepository } from "../../src/repositories/execution-process";
+import { ProjectRepository } from "../../src/repositories/project";
+import { SessionRepository } from "../../src/repositories/session";
 import { TaskRepository } from "../../src/repositories/task";
-import { WorkspaceRepository } from "../../src/repositories/workspace-repository";
+import { WorkspaceRepository } from "../../src/repositories/workspace";
 import {
 	createTestExecutionProcess,
 	createTestProject,
