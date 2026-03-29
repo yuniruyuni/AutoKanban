@@ -16,6 +16,7 @@ import {
 import { getDraft, saveDraft } from "../../usecases/execution/save-draft";
 import { startExecution } from "../../usecases/execution/start-execution";
 import { stopExecution } from "../../usecases/execution/stop-execution";
+import { runWorkspaceScript } from "../../usecases/workspace/run-workspace-script";
 import { handleResult } from "../handle-result";
 import { publicProcedure, router } from "../trpc";
 
@@ -160,6 +161,28 @@ export const executionRouter = router({
 		.input(z.object({ sessionId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getDraft(input).run(ctx)),
+		),
+
+	runPrepare: publicProcedure
+		.input(z.object({ taskId: z.string().uuid() }))
+		.mutation(async ({ ctx, input }) =>
+			handleResult(
+				await runWorkspaceScript({
+					taskId: input.taskId,
+					scriptType: "prepare",
+				}).run(ctx),
+			),
+		),
+
+	runCleanup: publicProcedure
+		.input(z.object({ taskId: z.string().uuid() }))
+		.mutation(async ({ ctx, input }) =>
+			handleResult(
+				await runWorkspaceScript({
+					taskId: input.taskId,
+					scriptType: "cleanup",
+				}).run(ctx),
+			),
 		),
 
 	// SSE log streaming endpoint will be handled separately in Hono
