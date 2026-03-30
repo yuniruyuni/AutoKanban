@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Workspace } from "../../../models/workspace";
 import { dateToSQL } from "../../common";
 
 export async function upsert(
-	db: PgDatabase,
+	db: Database,
 	workspace: Workspace,
 ): Promise<void> {
 	await db.queryRun({

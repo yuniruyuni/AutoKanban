@@ -19,4 +19,5 @@ export {
 } from "./capability";
 export { compToSQL, dateFromSQL, dateToSQL } from "./sql-helpers";
 export { type SQLFragment, sql } from "./sql";
+export type { Database } from "./database";
 export { PgDatabase, finalize } from "./pg-client";

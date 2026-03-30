@@ -3,13 +3,13 @@ import { createTestExecutionProcess } from "../../../../test/factories";
 import { createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
 import { seedFullChain } from "../../../../test/helpers/seed";
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import { ExecutionProcess } from "../../../models/execution-process";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";
 import { ExecutionProcessRepository } from ".";
 
-let db: PgDatabase;
+let db: Database;
 let epRepo: ExecutionProcessRepository;
 let rCtx: DbReadCtx;
 let wCtx: DbWriteCtx;

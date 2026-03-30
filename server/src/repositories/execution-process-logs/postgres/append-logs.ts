@@ -1,7 +1,7 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 
 export async function appendLogs(
-	db: PgDatabase,
+	db: Database,
 	executionProcessId: string,
 	newLogs: string,
 ): Promise<void> {

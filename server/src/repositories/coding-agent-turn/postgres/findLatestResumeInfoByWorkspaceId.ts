@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { CodingAgentResumeInfo } from "../../../models/coding-agent-turn";
 
 export async function findLatestResumeInfoByWorkspaceId(
-	db: PgDatabase,
+	db: Database,
 	workspaceId: string,
 ): Promise<CodingAgentResumeInfo | null> {
 	const row = await db.queryGet<{

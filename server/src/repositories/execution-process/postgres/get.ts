@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { ExecutionProcess } from "../../../models/execution-process";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";
@@ -9,7 +9,7 @@ import {
 } from "./common";
 
 export async function get(
-	db: PgDatabase,
+	db: Database,
 	spec: ExecutionProcess.Spec,
 ): Promise<ExecutionProcess | null> {
 	const where = compToSQL(

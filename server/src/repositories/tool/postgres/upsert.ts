@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Tool } from "../../../models/tool";
 import { dateToSQL } from "../../common";
 
-export async function upsert(db: PgDatabase, tool: Tool): Promise<void> {
+export async function upsert(db: Database, tool: Tool): Promise<void> {
 	await db.queryRun({
 		query: `INSERT INTO tools (id, name, icon, icon_color, command, sort_order, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)

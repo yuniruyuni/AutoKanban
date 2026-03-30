@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import { Approval } from "../../../models/approval";
 import type { Cursor, Page } from "../../../models/common";
 import { compToSQL } from "../../common";
@@ -11,7 +11,7 @@ import {
 } from "./common";
 
 export async function list(
-	db: PgDatabase,
+	db: Database,
 	spec: Approval.Spec,
 	cursor: Cursor<Approval.SortKey>,
 ): Promise<Page<Approval>> {

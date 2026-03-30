@@ -2,12 +2,12 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestExecutionProcessLogs } from "../../../../test/factories";
 import { closeTestDB, createTestDB } from "../../../../test/helpers/db";
 import { seedFullChain } from "../../../../test/helpers/seed";
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";
 import { ExecutionProcessLogsRepository } from ".";
 
-let db: PgDatabase;
+let db: Database;
 let logsRepo: ExecutionProcessLogsRepository;
 let rCtx: DbReadCtx;
 let wCtx: DbWriteCtx;

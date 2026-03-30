@@ -1,4 +1,4 @@
-import type { PgDatabase } from "./pg-client";
+import type { Database } from "./database";
 
 // ============================================
 // Capability Marker Types
@@ -10,7 +10,7 @@ declare const _service: unique symbol;
 
 export interface DbReadCtx {
 	readonly [_dbRead]: true;
-	readonly db: PgDatabase;
+	readonly db: Database;
 }
 
 export interface DbWriteCtx extends DbReadCtx {
@@ -25,11 +25,11 @@ export interface ServiceCtx {
 // Context Factories
 // ============================================
 
-export function createDbReadCtx(db: PgDatabase): DbReadCtx {
+export function createDbReadCtx(db: Database): DbReadCtx {
 	return { db } as DbReadCtx;
 }
 
-export function createDbWriteCtx(db: PgDatabase): DbWriteCtx {
+export function createDbWriteCtx(db: Database): DbWriteCtx {
 	return { db } as DbWriteCtx;
 }
 
@@ -37,7 +37,7 @@ export function createServiceCtx(): ServiceCtx {
 	return {} as ServiceCtx;
 }
 
-export function createFullCtx(db: PgDatabase): DbWriteCtx & ServiceCtx {
+export function createFullCtx(db: Database): DbWriteCtx & ServiceCtx {
 	return { db } as DbWriteCtx & ServiceCtx;
 }
 

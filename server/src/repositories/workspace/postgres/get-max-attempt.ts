@@ -1,7 +1,7 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 
 export async function getMaxAttempt(
-	db: PgDatabase,
+	db: Database,
 	taskId: string,
 ): Promise<number> {
 	const row = await db.queryGet<{ max_attempt: number | null }>({

@@ -1,11 +1,11 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { TaskTemplate } from "../../../models/task-template";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";
 import { taskTemplateSpecToSQL } from "./common";
 
 export async function del(
-	db: PgDatabase,
+	db: Database,
 	spec: TaskTemplate.Spec,
 ): Promise<number> {
 	const where = compToSQL(

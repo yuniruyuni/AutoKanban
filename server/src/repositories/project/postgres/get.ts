@@ -1,11 +1,11 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Project } from "../../../models/project";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";
 import { type ProjectRow, projectSpecToSQL, rowToProject } from "./common";
 
 export async function get(
-	db: PgDatabase,
+	db: Database,
 	spec: Project.Spec,
 ): Promise<Project | null> {
 	const where = compToSQL(

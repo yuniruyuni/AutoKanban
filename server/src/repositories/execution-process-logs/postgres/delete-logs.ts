@@ -1,7 +1,7 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 
 export async function deleteLogs(
-	db: PgDatabase,
+	db: Database,
 	executionProcessId: string,
 ): Promise<void> {
 	await db.queryRun({

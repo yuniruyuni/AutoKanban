@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { ProjectWithStats } from "../../../models/project";
 import { type ProjectWithStatsRow, rowToProjectWithStats } from "./common";
 
 export async function getWithStats(
-	db: PgDatabase,
+	db: Database,
 	projectId: string,
 ): Promise<ProjectWithStats | null> {
 	const row = await db.queryGet<ProjectWithStatsRow>({

@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { WorkspaceRepo } from "../../../models/workspace-repo";
 import { rowToWorkspaceRepo, type WorkspaceRepoRow } from "./common";
 
 export async function listByWorkspace(
-	db: PgDatabase,
+	db: Database,
 	workspaceId: string,
 ): Promise<WorkspaceRepo[]> {
 	const rows = await db.queryAll<WorkspaceRepoRow>({

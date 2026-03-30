@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import { dateToSQL } from "../../common";
 
 export async function updateSummary(
-	db: PgDatabase,
+	db: Database,
 	executionProcessId: string,
 	summary: string,
 ): Promise<void> {

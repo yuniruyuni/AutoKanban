@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Tool } from "../../../models/tool";
 import { rowToTool, type ToolRow } from "./common";
 
-export async function listAll(db: PgDatabase): Promise<Tool[]> {
+export async function listAll(db: Database): Promise<Tool[]> {
 	const rows = await db.queryAll<ToolRow>({
 		query: "SELECT * FROM tools ORDER BY sort_order ASC, id ASC",
 		params: [],

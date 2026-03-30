@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import { dateToSQL } from "../../common";
 
 export async function updateAgentMessageId(
-	db: PgDatabase,
+	db: Database,
 	executionProcessId: string,
 	agentMessageId: string,
 ): Promise<void> {

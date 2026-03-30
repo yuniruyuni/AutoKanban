@@ -1,9 +1,10 @@
 import pg, { type PoolClient, type QueryResultRow } from "pg";
+import type { Database } from "./database";
 import type { SQLFragment } from "./sql";
 
 type Queryable = pg.Pool | PoolClient;
 
-export class PgDatabase {
+export class PgDatabase implements Database {
 	private queryable: Queryable;
 	private isPool: boolean;
 

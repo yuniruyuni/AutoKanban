@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Task } from "../../../models/task";
 import { dateToSQL } from "../../common";
 
-export async function upsert(db: PgDatabase, task: Task): Promise<void> {
+export async function upsert(db: Database, task: Task): Promise<void> {
 	await db.queryRun({
 		query: `INSERT INTO tasks (id, project_id, title, description, status, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?)

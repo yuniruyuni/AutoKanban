@@ -1,11 +1,11 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Approval } from "../../../models/approval";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";
 import { type ApprovalRow, approvalSpecToSQL, rowToApproval } from "./common";
 
 export async function get(
-	db: PgDatabase,
+	db: Database,
 	spec: Approval.Spec,
 ): Promise<Approval | null> {
 	const where = compToSQL(

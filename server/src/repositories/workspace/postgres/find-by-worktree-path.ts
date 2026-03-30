@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Workspace } from "../../../models/workspace";
 import { rowToWorkspace, type WorkspaceRow } from "./common";
 
 export async function findByWorktreePath(
-	db: PgDatabase,
+	db: Database,
 	worktreePath: string,
 ): Promise<Workspace | null> {
 	const row = await db.queryGet<WorkspaceRow>({

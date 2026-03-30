@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../src/repositories/common";
+import type { Database } from "../../src/repositories/common";
 import type { ILogStreamer } from "../../src/presentation/log-streamer";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn/postgres";
@@ -110,11 +110,11 @@ export function createMockContext(
 	repoOverrides: Partial<FullRepos<Repos>> = {},
 ): Context {
 	const mockDb = {
-		transaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
-			fn({} as PgDatabase),
-		readTransaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
-			fn({} as PgDatabase),
-	} as PgDatabase;
+		transaction: async <T>(fn: (tx: Database) => Promise<T>) =>
+			fn({} as Database),
+		readTransaction: async <T>(fn: (tx: Database) => Promise<T>) =>
+			fn({} as Database),
+	} as Database;
 
 	const rawRepos = createMockRawRepos(repoOverrides);
 
@@ -153,7 +153,7 @@ export function createMockContext(
  * Create an integration context with real DB repositories.
  * External system repos (git, worktree, executor, etc.) are mocked.
  */
-export function createIntegrationContext(db: PgDatabase): Context {
+export function createIntegrationContext(db: Database): Context {
 	const rawRepos: Repos = {
 		task: new TaskRepository(),
 		taskTemplate: {} as Repos["taskTemplate"],

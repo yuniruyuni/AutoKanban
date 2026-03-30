@@ -1,11 +1,11 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Session } from "../../../models/session";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";
 import { rowToSession, type SessionRow, sessionSpecToSQL } from "./common";
 
 export async function get(
-	db: PgDatabase,
+	db: Database,
 	spec: Session.Spec,
 ): Promise<Session | null> {
 	const where = compToSQL(

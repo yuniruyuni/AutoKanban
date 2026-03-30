@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, test } from "bun:test";
 import { createTestProject, createTestTask } from "../../../../test/factories";
 import { createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import { Project } from "../../../models/project";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";
 import { ProjectRepository } from ".";
 import { TaskRepository } from "../../task/postgres";
 
-let db: PgDatabase;
+let db: Database;
 let projectRepo: ProjectRepository;
 let taskRepo: TaskRepository;
 let rCtx: DbReadCtx;

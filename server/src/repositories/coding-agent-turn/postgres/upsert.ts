@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { CodingAgentTurn } from "../../../models/coding-agent-turn";
 import { dateToSQL } from "../../common";
 
 export async function upsert(
-	db: PgDatabase,
+	db: Database,
 	turn: CodingAgentTurn,
 ): Promise<void> {
 	await db.queryRun({

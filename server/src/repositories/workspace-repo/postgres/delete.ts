@@ -1,11 +1,11 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { WorkspaceRepo } from "../../../models/workspace-repo";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";
 import { workspaceRepoSpecToSQL } from "./common";
 
 export async function del(
-	db: PgDatabase,
+	db: Database,
 	spec: WorkspaceRepo.Spec,
 ): Promise<number> {
 	const where = compToSQL(

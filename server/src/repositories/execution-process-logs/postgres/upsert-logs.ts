@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { ExecutionProcessLogs } from "../../../models/execution-process";
 
 export async function upsertLogs(
-	db: PgDatabase,
+	db: Database,
 	logs: ExecutionProcessLogs,
 ): Promise<void> {
 	await db.queryRun({

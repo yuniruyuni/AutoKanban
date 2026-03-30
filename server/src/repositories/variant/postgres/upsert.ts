@@ -1,8 +1,8 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Variant } from "../../../models/variant";
 import { dateToSQL } from "../../common";
 
-export async function upsert(db: PgDatabase, variant: Variant): Promise<void> {
+export async function upsert(db: Database, variant: Variant): Promise<void> {
 	await db.queryRun({
 		query: `INSERT INTO variants (id, executor, name, permission_mode, model, append_prompt, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)

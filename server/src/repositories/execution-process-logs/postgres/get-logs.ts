@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { ExecutionProcessLogs } from "../../../models/execution-process";
 import type { ExecutionProcessLogsRow } from "./common";
 
 export async function getLogs(
-	db: PgDatabase,
+	db: Database,
 	executionProcessId: string,
 ): Promise<ExecutionProcessLogs | null> {
 	const row = await db.queryGet<ExecutionProcessLogsRow>({

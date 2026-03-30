@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Cursor, Page } from "../../../models/common";
 import { Session } from "../../../models/session";
 import { compToSQL } from "../../common";
@@ -11,7 +11,7 @@ import {
 } from "./common";
 
 export async function list(
-	db: PgDatabase,
+	db: Database,
 	spec: Session.Spec,
 	cursor: Cursor<Session.SortKey>,
 ): Promise<Page<Session>> {

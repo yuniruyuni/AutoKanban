@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { TaskTemplate } from "../../../models/task-template";
 import { dateToSQL } from "../../common";
 
 export async function upsert(
-	db: PgDatabase,
+	db: Database,
 	template: TaskTemplate,
 ): Promise<void> {
 	await db.queryRun({

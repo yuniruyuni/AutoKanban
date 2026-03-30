@@ -1,11 +1,11 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Variant } from "../../../models/variant";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";
 import { rowToVariant, type VariantRow, variantSpecToSQL } from "./common";
 
 export async function get(
-	db: PgDatabase,
+	db: Database,
 	spec: Variant.Spec,
 ): Promise<Variant | null> {
 	const where = compToSQL(

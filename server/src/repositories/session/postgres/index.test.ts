@@ -3,13 +3,13 @@ import { createTestSession } from "../../../../test/factories";
 import { createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
 import { seedFullChain } from "../../../../test/helpers/seed";
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import { Session } from "../../../models/session";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";
 import { SessionRepository } from ".";
 
-let db: PgDatabase;
+let db: Database;
 let sessionRepo: SessionRepository;
 let rCtx: DbReadCtx;
 let wCtx: DbWriteCtx;

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { PgDatabase } from "../../src/repositories/common";
+import { type Database, PgDatabase } from "../../src/repositories/common";
 import { EmbeddedPostgresManager } from "../../src/db/postgres";
 
 let pgManager: EmbeddedPostgresManager | null = null;
@@ -102,6 +102,6 @@ export async function createTestDB(): Promise<PgDatabase> {
  * No-op for backwards compatibility.
  * The shared connection is kept alive across tests.
  */
-export async function closeTestDB(_db: PgDatabase): Promise<void> {
+export async function closeTestDB(_db: Database): Promise<void> {
 	// Intentionally no-op: shared pool stays alive until process exit
 }

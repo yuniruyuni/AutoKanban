@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { CodingAgentTurn } from "../../../models/coding-agent-turn";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";
@@ -9,7 +9,7 @@ import {
 } from "./common";
 
 export async function get(
-	db: PgDatabase,
+	db: Database,
 	spec: CodingAgentTurn.Spec,
 ): Promise<CodingAgentTurn | null> {
 	const where = compToSQL(

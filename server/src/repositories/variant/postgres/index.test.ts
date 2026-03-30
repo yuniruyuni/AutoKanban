@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestVariant } from "../../../../test/factories";
 import { closeTestDB, createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import { Variant } from "../../../models/variant";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";
 import { VariantRepository } from ".";
 
-let db: PgDatabase;
+let db: Database;
 let variantRepo: VariantRepository;
 let rCtx: DbReadCtx;
 let wCtx: DbWriteCtx;

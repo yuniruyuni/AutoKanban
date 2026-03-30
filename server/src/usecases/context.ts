@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../repositories/common";
+import type { Database } from "../repositories/common";
 import type { ILogStreamer } from "../presentation/log-streamer";
 import type {
 	DbReadRepos,
@@ -37,7 +37,7 @@ export type PostContext = {
 export interface Context {
 	now: Date;
 	logger: ILogger;
-	db: PgDatabase;
+	db: Database;
 	rawRepos: Repos;
 	repos: FullRepos<Repos>;
 	logStreamer: ILogStreamer;

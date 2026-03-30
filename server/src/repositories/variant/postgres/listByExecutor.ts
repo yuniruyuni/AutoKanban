@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { Variant } from "../../../models/variant";
 import { rowToVariant, type VariantRow } from "./common";
 
 export async function listByExecutor(
-	db: PgDatabase,
+	db: Database,
 	executor: string,
 ): Promise<Variant[]> {
 	const rows = await db.queryAll<VariantRow>({

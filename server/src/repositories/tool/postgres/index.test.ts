@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestTool } from "../../../../test/factories";
 import { closeTestDB, createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import { Tool } from "../../../models/tool";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";
 import { ToolRepository } from ".";
 
-let db: PgDatabase;
+let db: Database;
 let toolRepo: ToolRepository;
 let rCtx: DbReadCtx;
 let wCtx: DbWriteCtx;

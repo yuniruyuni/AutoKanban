@@ -1,9 +1,9 @@
-import type { PgDatabase } from "../../common";
+import type { Database } from "../../common";
 import type { ExecutionProcess } from "../../../models/execution-process";
 import { dateToSQL } from "../../common";
 
 export async function upsert(
-	db: PgDatabase,
+	db: Database,
 	process: ExecutionProcess,
 ): Promise<void> {
 	await db.queryRun({
