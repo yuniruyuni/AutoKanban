@@ -13,12 +13,19 @@ import { appRouter } from "./trpc/routers";
 
 export type { AppRouter } from "./trpc/routers";
 
-export async function startServer(ctx: Context) {
-	// --mcp flag: run as stdio MCP server instead of HTTP server
-	if (process.argv.includes("--mcp")) {
+export type ServerMode = "main" | "mcp";
+
+type StartServerParams =
+	| { mode: "main"; ctx: Context }
+	| { mode: "mcp" };
+
+export async function startServer(params: StartServerParams) {
+	if (params.mode === "mcp") {
 		await runMcpServer();
 		return;
 	}
+
+	const { ctx } = params;
 
 	// System startup (recovery, seeds)
 	await startup(ctx);

@@ -6,7 +6,7 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const PORT_DIR = join(homedir(), ".auto-kanban");
 const PORT_FILE = join(PORT_DIR, "auto-kanban.port");
@@ -20,11 +20,14 @@ const PORT_FILE = join(PORT_DIR, "auto-kanban.port");
 export function getAutoKanbanCommand(): { command: string; args: string[] } {
 	const scriptArg = process.argv[1];
 
-	// Dev mode: argv[1] is a .ts/.js file → need "bun <script> --mcp"
+	// Dev mode: argv[1] is a .ts/.js file → need "bun --cwd <server/> <script> --mcp"
+	// --cwd ensures Bun finds bunfig.toml (preload plugin) regardless of caller's CWD.
 	if (scriptArg && /\.[tj]sx?$/.test(scriptArg)) {
+		const absScript = resolve(scriptArg);
+		const serverDir = dirname(dirname(absScript));
 		return {
 			command: process.execPath,
-			args: [resolve(scriptArg), "--mcp"],
+			args: ["--cwd", serverDir, absScript, "--mcp"],
 		};
 	}
 
