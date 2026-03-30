@@ -5,7 +5,7 @@
  * from message text and tool completion state.
  */
 
-import type { PlanStatus, ToolStatus } from "../types/conversation";
+import type { PlanStatus, ToolStatus } from "../../types/conversation";
 
 export const PLAN_APPROVAL_PATTERN = "Please proceed with the plan.";
 export const PLAN_REJECTION_PATTERN = "I'm rejecting this plan because:";

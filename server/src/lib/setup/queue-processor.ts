@@ -1,23 +1,23 @@
-import { Project } from "../models/project";
-import { Session } from "../models/session";
-import { Task } from "../models/task";
-import { Workspace } from "../models/workspace";
-import { WorkspaceRepo } from "../models/workspace-repo";
+import { Project } from "../../models/project";
+import { Session } from "../../models/session";
+import { Task } from "../../models/task";
+import { Workspace } from "../../models/workspace";
+import { WorkspaceRepo } from "../../models/workspace-repo";
 import type {
 	ExecutorRepository,
 	ProcessCompletionInfo,
 	ProcessIdleInfo,
-} from "../repositories/executor";
-import type { MessageQueueRepository } from "../repositories/message-queue/memory";
-import { createServiceCtx, type Full } from "../repositories/common";
-import type { ILogger } from "../types/logger";
+} from "../../repositories/executor";
+import type { MessageQueueRepository } from "../../repositories/message-queue/memory";
+import { createServiceCtx, type Full } from "../../repositories/common";
+import type { ILogger } from "../../types/logger";
 import type {
 	ProjectRepository,
 	SessionRepository,
 	TaskRepository,
 	WorkspaceRepoRepository,
 	WorkspaceRepository,
-} from "../repositories";
+} from "../../repositories";
 
 export interface QueueProcessorDependencies {
 	executor: ExecutorRepository;

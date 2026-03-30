@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import {
 	buildContextFromLogs,
 	buildContextRestoredPrompt,
-} from "../../../lib/context-builder";
+} from "../../../lib/conversation/context-builder";
 import { Approval } from "../../../models/approval";
 import { CodingAgentTurn } from "../../../models/coding-agent-turn";
 import { ExecutionProcess } from "../../../models/execution-process";

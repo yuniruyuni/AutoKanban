@@ -1,4 +1,4 @@
-import { getAutoKanbanCommand } from "../lib/port-file";
+import { getAutoKanbanCommand } from "../port-file";
 
 export interface PreconfiguredServer {
 	name: string;

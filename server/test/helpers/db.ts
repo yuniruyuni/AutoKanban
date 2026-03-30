@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { type Database, PgDatabase } from "../../src/repositories/common";
-import { EmbeddedPostgresManager } from "../../src/db/postgres";
+import { EmbeddedPostgresManager } from "../../src/lib/db/postgres";
 
 let pgManager: EmbeddedPostgresManager | null = null;
 let sharedDb: PgDatabase | null = null;

@@ -12,7 +12,7 @@ import type {
 	ClaudeJsonMessage,
 	ClaudeResultMessage,
 	ClaudeUserMessage,
-} from "../models/claude-protocol";
+} from "../../models/claude-protocol";
 
 // Re-export types for consumers
 export type {
@@ -28,7 +28,7 @@ export type {
 	ClaudeToolResultMessage,
 	ClaudeToolUseMessage,
 	ClaudeUserMessage,
-} from "../models/claude-protocol";
+} from "../../models/claude-protocol";
 
 // ============================================
 // Parsed Result Types

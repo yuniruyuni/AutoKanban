@@ -1,4 +1,4 @@
-import type { PostContext } from "../usecases/context";
+import type { PostContext } from "../../usecases/context";
 
 const PR_DESCRIPTION_PROMPT = `Analyze the changes in this branch compared to the base branch and generate a Pull Request title and description.
 

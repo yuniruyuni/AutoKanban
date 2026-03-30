@@ -3,7 +3,7 @@ import {
 	ClaudeJsonParser,
 	extractSummaryFromContent,
 	type ParsedResult,
-} from "../../../../lib/claude-json-parser";
+} from "../../../../lib/conversation/claude-json-parser";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
 import { createServiceCtx, type Full } from "../../../common";
 import type { ILogger } from "../../../../types/logger";

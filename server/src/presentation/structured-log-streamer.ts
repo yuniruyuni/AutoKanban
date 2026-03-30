@@ -8,7 +8,7 @@
 import {
 	type ParseResult,
 	parseLogsToConversation,
-} from "../lib/conversation-parser";
+} from "../lib/conversation/conversation-parser";
 import type { Full } from "../repositories/common";
 import type { ExecutionProcessLogsRepository } from "../repositories";
 

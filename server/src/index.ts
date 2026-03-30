@@ -3,16 +3,16 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
 import { createContext } from "./context";
-import { closeDatabase, initDatabase } from "./db";
-import { recoverOrphanedProcesses } from "./db/recovery";
+import { closeDatabase, initDatabase } from "./lib/db";
+import { recoverOrphanedProcesses } from "./lib/db/recovery";
 import { createLogger } from "./lib/logger";
 import { removePortFile, writePortFile } from "./lib/port-file";
 import { appRouter } from "./presentation";
-import { seedDefaultVariants } from "./setup/seed-variants";
+import { seedDefaultVariants } from "./lib/setup/seed-variants";
 
 // --mcp flag: run as stdio MCP server instead of HTTP server
 if (process.argv.includes("--mcp")) {
-	const { runMcpServer } = await import("./mcp/index");
+	const { runMcpServer } = await import("./lib/mcp/index");
 	await runMcpServer();
 	// runMcpServer blocks until the parent disconnects — unreachable below
 }

@@ -1,4 +1,4 @@
-import { parseLogsToConversation } from "../../lib/conversation-parser";
+import { parseLogsToConversation } from "../../lib/conversation/conversation-parser";
 import { fail } from "../../models/common";
 import { ExecutionProcess } from "../../models/execution-process";
 import type { ConversationEntry } from "../../types/conversation";

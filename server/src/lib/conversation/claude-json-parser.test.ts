@@ -3,7 +3,7 @@ import type {
 	ClaudeAssistantMessage,
 	ClaudeContentItem,
 	ClaudeResultMessage,
-} from "../models/claude-protocol";
+} from "../../models/claude-protocol";
 import {
 	ClaudeJsonParser,
 	extractSummaryFromContent,

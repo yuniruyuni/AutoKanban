@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../repositories/common";
+import type { PgDatabase } from "../../repositories/common";
 
 /**
  * Recovers orphaned processes after server restart.

@@ -1,4 +1,4 @@
-import { generatePrDescription } from "../../lib/generate-pr-description";
+import { generatePrDescription } from "../../lib/git/generate-pr-description";
 import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";

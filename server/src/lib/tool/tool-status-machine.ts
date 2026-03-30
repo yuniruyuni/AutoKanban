@@ -6,7 +6,7 @@
  * and running → success/failed on tool_result.
  */
 
-import type { PlanStatus, ToolStatus } from "../types/conversation";
+import type { PlanStatus, ToolStatus } from "../../types/conversation";
 
 /** Input shape for control_response normalization */
 export interface ControlResponseInput {

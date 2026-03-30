@@ -20,27 +20,27 @@ import type {
 	ClaudeControlResponseMessage,
 	ClaudeJsonMessage,
 	ClaudeUserMessage,
-} from "../models/claude-protocol";
+} from "../../models/claude-protocol";
 import type {
 	ConversationEntry,
 	PlanAction,
 	ToolEntry as ToolEntryType,
 	ToolStatus,
-} from "../types/conversation";
+} from "../../types/conversation";
 import { computeIdleState } from "./idle-state";
 import {
 	computeDefaultPlanStatus,
 	determinePlanStatusFromText,
-} from "./plan-status";
-import { mapToolNameToAction } from "./tool-action-mapper";
-import { extractExitCode, formatToolOutput } from "./tool-result-formatter";
+} from "../tool/plan-status";
+import { mapToolNameToAction } from "../tool/tool-action-mapper";
+import { extractExitCode, formatToolOutput } from "../tool/tool-result-formatter";
 import {
 	applyControlRequest,
 	applyControlResponse,
 	applyToolResult,
 	type ControlResponseInput,
 	normalizeControlResponse,
-} from "./tool-status-machine";
+} from "../tool/tool-status-machine";
 
 /**
  * Parse result containing entries and idle state
@@ -227,7 +227,7 @@ function processClaudeJson(
 		case "result": {
 			// Extract token usage from result messages
 			const resultMsg =
-				json as import("../models/claude-protocol").ClaudeResultMessage;
+				json as import("../../models/claude-protocol").ClaudeResultMessage;
 			const usage = (resultMsg as unknown as Record<string, unknown>).usage as
 				| {
 						input_tokens?: number;
