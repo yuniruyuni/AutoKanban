@@ -23,16 +23,14 @@ module.exports = {
 			},
 		},
 		// Rule 3: Usecase must not directly import repository
-		//   - runner.ts and context.ts are usecase framework infrastructure
+		//   src/usecases/*.ts is framework infrastructure (runner.ts, context.ts)
+		//   src/usecases/**/* is business logic — these must use context, not direct imports
 		{
 			name: "usecase-no-direct-repository-import",
 			comment:
 				"Usecases must access repositories through context, not direct imports",
 			severity: "error",
-			from: {
-				path: "^src/usecases/",
-				pathNot: "(^src/usecases/(runner|context)\\.ts$|\\.test\\.ts$)",
-			},
+			from: { path: "^src/usecases/.+/", pathNot: "\\.test\\.ts$" },
 			to: {
 				path: "^src/repositories/",
 			},
@@ -42,26 +40,25 @@ module.exports = {
 			name: "usecase-no-presentation-deps",
 			comment: "Usecases must not depend on presentation layer",
 			severity: "error",
-			from: { path: "^src/usecases/", pathNot: "\\.test\\.ts$" },
+			from: { path: "^src/usecases/.+/", pathNot: "\\.test\\.ts$" },
 			to: {
 				path: "^src/presentation/",
 			},
 		},
 		// Rule 5: Usecase files must not import other usecase files
-		//   - index.ts (barrel re-exports), runner.ts, and context.ts are framework infrastructure
+		//   src/usecases/*.ts (framework) and barrel index.ts are excluded
 		{
 			name: "usecase-no-cross-usecase-deps",
 			comment:
-				"Individual usecase files must not import other usecases (except via runner.ts, context.ts, or barrel index.ts)",
+				"Individual usecase files must not import other usecases (except via framework or barrel index.ts)",
 			severity: "error",
 			from: {
-				path: "^src/usecases/",
-				pathNot:
-					"(^src/usecases/(index|runner|context)\\.ts$|/index\\.ts$|\\.test\\.ts$)",
+				path: "^src/usecases/.+/",
+				pathNot: "(/index\\.ts$|\\.test\\.ts$)",
 			},
 			to: {
 				path: "^src/usecases/",
-				pathNot: "(^src/usecases/(index|runner|context)\\.ts$|/index\\.ts$)",
+				pathNot: "(^src/usecases/[^/]+\\.ts$|/index\\.ts$)",
 			},
 		},
 		// Rule 6: Presentation must not directly import repository
