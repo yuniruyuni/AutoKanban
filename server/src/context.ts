@@ -24,15 +24,17 @@ import { WorkspaceRepository } from "./repositories/workspace/postgres";
 import { WorkspaceConfigRepository } from "./repositories/workspace-config";
 import { WorkspaceRepoRepository } from "./repositories/workspace-repo/postgres";
 import { WorktreeRepository } from "./repositories/worktree";
-import { setupExecutionLifecycle } from "./usecases/execution/lifecycle";
-import { setupQueueProcessor } from "./usecases/execution/queue-processor";
+import { CallbackClientImpl } from "./presentation/callback/impl";
 import type { Context } from "./usecases/context";
 import { type Repos, bindRepos } from "./repositories";
 import { createFullCtx } from "./repositories/common";
 import type { ILogger } from "./lib/logger/types";
 
 export function createContext(db: PgDatabase, logger: ILogger): Context {
-	// Create drivers for executor
+	// Create callback client (initialized after repos are bound)
+	const callbackClient = new CallbackClientImpl();
+
+	// Create drivers
 	const drivers = new Map();
 	drivers.set("claude-code", new ClaudeCodeDriver(logger));
 	drivers.set("gemini-cli", new GeminiCliDriver(logger));
@@ -53,7 +55,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		approval: new ApprovalRepository(),
 		git: new GitRepository(),
 		worktree: new WorktreeRepository(logger),
-		executor: new ExecutorRepository(drivers, logger),
+		executor: new ExecutorRepository(drivers, logger, callbackClient),
 		messageQueue: messageQueueRepository,
 		agentConfig: new AgentConfigRepository(),
 		workspaceConfig: new WorkspaceConfigRepository(),
@@ -68,10 +70,8 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	const fullCtx = createFullCtx(db);
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	// 3. Set up event handlers
-	const executor = rawRepos.executor as ExecutorRepository;
-	setupExecutionLifecycle(executor, repos, logger);
-	setupQueueProcessor(executor, repos, logger);
+	// 3. Initialize callback client with bound repos
+	callbackClient.initialize(repos, logger);
 
 	return {
 		now: new Date(),

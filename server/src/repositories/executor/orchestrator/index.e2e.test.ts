@@ -58,16 +58,20 @@ describe.skip("ExecutorRepository E2E (actual claude-code)", () => {
 				const drivers = new Map();
 				drivers.set("claude-code", new ClaudeCodeDriver(logger));
 
-				const executor = new ExecutorRepository(drivers, logger);
-
-				// Track approval requests
 				const approvalRequests: Array<{
 					processId: string;
 					request: unknown;
 				}> = [];
-				executor.onApprovalRequest((processId, request) => {
-					approvalRequests.push({ processId, request });
-				});
+
+				const mockCallback = {
+					onProcessComplete: async () => {},
+					onProcessIdle: async () => {},
+					onApprovalRequest: async (processId: string, request: unknown) => {
+						approvalRequests.push({ processId, request });
+					},
+				};
+
+				const executor = new ExecutorRepository(drivers, logger, mockCallback);
 
 				const logsRepo = createMockLogsRepo();
 

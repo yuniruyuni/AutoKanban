@@ -2,8 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { ICodingAgentDriver } from "./coding-agent-driver";
 import type { DriverApprovalRequest } from "./driver-approval-request";
 import type { DriverProcess } from "./driver-process";
-import type { Full } from "../../common";
-import type { ServiceCtx } from "../../common";
+import type { Full, ServiceCtx } from "../../common";
 import type { ILogger } from "../../../lib/logger/types";
 import type {
 	CodingAgentTurnRepository,
@@ -14,72 +13,30 @@ import type {
 	ExecutorStartProtocolOptions,
 } from "../..";
 import type { ExecutionProcess } from "../../../models/execution-process";
+import type { CallbackClient } from "../../../presentation/callback/client";
 
 export interface RunningProcess extends ExecutorProcessInfo {
 	process: DriverProcess;
 	driver: ICodingAgentDriver;
-	/** Options used to start this process, for retry without resume on failure */
 	startOptions?: ExecutorStartProtocolOptions;
+	callback: CallbackClient;
 }
-
-export interface ProcessCompletionInfo {
-	processId: string;
-	sessionId: string;
-	status: ExecutionProcess.Status;
-	exitCode: number | null;
-}
-
-export type ProcessCompletionCallback = (
-	info: ProcessCompletionInfo,
-) => void | Promise<void>;
-
-export interface ProcessIdleInfo {
-	processId: string;
-	sessionId: string;
-}
-
-export type ProcessIdleCallback = (
-	info: ProcessIdleInfo,
-) => void | Promise<void>;
-
-export type ApprovalRequestCallback = (
-	processId: string,
-	request: DriverApprovalRequest,
-) => void | Promise<void>;
 
 /**
  * Generic orchestrator for coding agent process lifecycle.
- * Delegates protocol-specific logic to ICodingAgentDriver implementations.
- * Handles process spawning, stopping, and completion detection.
- *
- * This repository is pure process I/O — no database operations.
- * DB operations triggered by process events are handled by lifecycle handlers
- * in the usecases layer.
+ * Pure process I/O — no database operations.
+ * Calls callbackClient for process events (completion, idle, approval).
  */
 export class ExecutorRepository implements ExecutorRepositoryDef {
 	private runningProcesses = new Map<string, RunningProcess>();
-	private completionCallbacks: ProcessCompletionCallback[] = [];
-	private idleCallbacks: ProcessIdleCallback[] = [];
-	private approvalRequestCallbacks: ApprovalRequestCallback[] = [];
 	private logger: ILogger;
 
 	constructor(
 		private drivers: Map<string, ICodingAgentDriver>,
 		logger: ILogger,
+		private callbackClient: CallbackClient,
 	) {
 		this.logger = logger.child("ExecutorRepository");
-	}
-
-	onProcessComplete(callback: ProcessCompletionCallback): void {
-		this.completionCallbacks.push(callback);
-	}
-
-	onIdle(callback: ProcessIdleCallback): void {
-		this.idleCallbacks.push(callback);
-	}
-
-	onApprovalRequest(callback: ApprovalRequestCallback): void {
-		this.approvalRequestCallbacks.push(callback);
 	}
 
 	async start(
@@ -102,6 +59,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			process,
 			driver,
 			startedAt: now,
+			callback: this.callbackClient,
 		};
 
 		this.runningProcesses.set(id, runningProcess);
@@ -135,6 +93,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			driver,
 			startedAt: now,
 			startOptions: options.resumeSessionId ? options : undefined,
+			callback: this.callbackClient,
 		};
 
 		this.runningProcesses.set(id, runningProcess);
@@ -144,9 +103,8 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			process,
 			id,
 			{
-				onIdle: (pid) => this.notifyIdleCallbacks(pid),
-				onApprovalRequest: (pid, req) =>
-					this.notifyApprovalRequestCallbacks(pid, req),
+				onIdle: (pid) => this.handleIdle(pid),
+				onApprovalRequest: (pid, req) => this.handleApprovalRequest(pid, req),
 				onSessionInfo: () => {},
 				onSummary: () => {},
 			},
@@ -229,7 +187,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			return false;
 		}
 
-		const request: DriverApprovalRequest = {
+		const request = {
 			toolName: "unknown",
 			toolCallId: requestId,
 			toolInput: toolInput ?? {},
@@ -262,10 +220,6 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		return rp.driver.wait(rp.process);
 	}
 
-	/**
-	 * Runs a one-shot prompt with structured output via the specified driver.
-	 * Uses --json-schema for guaranteed JSON format.
-	 */
 	async runStructured(
 		_ctx: ServiceCtx,
 		executorName: string | undefined,
@@ -309,74 +263,55 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 	}
 
 	// ============================================
-	// Idle, Approval & Completion Handling
+	// Internal event handlers → callback client
 	// ============================================
 
-	private notifyIdleCallbacks(processId: string): void {
-		const runningProcess = this.runningProcesses.get(processId);
-		if (!runningProcess) return;
+	private handleIdle(processId: string): void {
+		const rp = this.runningProcesses.get(processId);
+		if (!rp) return;
 
-		const idleInfo: ProcessIdleInfo = {
-			processId,
-			sessionId: runningProcess.sessionId,
-		};
-
-		for (const callback of this.idleCallbacks) {
-			try {
-				callback(idleInfo);
-			} catch (err) {
-				this.logger.error("Error in idle callback:", err);
-			}
-		}
+		rp.callback
+			.onProcessIdle({ processId, sessionId: rp.sessionId })
+			.catch((err) => this.logger.error("Error in idle callback:", err));
 	}
 
-	private notifyApprovalRequestCallbacks(
+	private handleApprovalRequest(
 		processId: string,
 		request: DriverApprovalRequest,
 	): void {
-		for (const callback of this.approvalRequestCallbacks) {
-			try {
-				callback(processId, request);
-			} catch (err) {
-				this.logger.error("Error in approval request callback:", err);
-			}
-		}
+		const rp = this.runningProcesses.get(processId);
+		if (!rp) return;
+
+		rp.callback
+			.onApprovalRequest(processId, request)
+			.catch((err) =>
+				this.logger.error("Error in approval request callback:", err),
+			);
 	}
 
 	private setupCompletionHandler(runningProcess: RunningProcess): void {
-		runningProcess.driver.wait(runningProcess.process).then(async (result) => {
-			const status: ExecutionProcess.Status = result.killed
-				? "killed"
-				: result.exitCode === 0
-					? "completed"
-					: "failed";
+		runningProcess.driver
+			.wait(runningProcess.process)
+			.then(async (result) => {
+				const status: ExecutionProcess.Status = result.killed
+					? "killed"
+					: result.exitCode === 0
+						? "completed"
+						: "failed";
 
-			this.runningProcesses.delete(runningProcess.id);
+				this.runningProcesses.delete(runningProcess.id);
 
-			const completionInfo: ProcessCompletionInfo = {
-				processId: runningProcess.id,
-				sessionId: runningProcess.sessionId,
-				status,
-				exitCode: result.exitCode,
-			};
-
-			const results = await Promise.allSettled(
-				this.completionCallbacks.map((callback) => callback(completionInfo)),
+				await runningProcess.callback.onProcessComplete({
+					processId: runningProcess.id,
+					sessionId: runningProcess.sessionId,
+					status,
+					exitCode: result.exitCode,
+				});
+			})
+			.catch((err) =>
+				this.logger.error("Error in completion handler:", err),
 			);
-			for (const result of results) {
-				if (result.status === "rejected") {
-					this.logger.error(
-						"Error in process completion callback:",
-						result.reason,
-					);
-				}
-			}
-		});
 	}
-
-	// ============================================
-	// Driver Lookup
-	// ============================================
 
 	private getDriver(executorName?: string): ICodingAgentDriver {
 		const name = executorName ?? "claude-code";
