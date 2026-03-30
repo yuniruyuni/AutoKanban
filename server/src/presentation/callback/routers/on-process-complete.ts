@@ -12,15 +12,13 @@ export async function handleProcessComplete(
 ): Promise<void> {
 	await completeExecutionProcess(info).run(ctx);
 
-	if (info.status === "completed") {
-		const queuedMessage = ctx.repos.messageQueue.consume(info.sessionId);
-		if (queuedMessage) {
-			await processQueuedFollowUp({
-				sessionId: info.sessionId,
-				prompt: queuedMessage.prompt,
-			}).run(ctx);
-			return;
-		}
+	const queuedMessage = ctx.repos.messageQueue.consume(info.sessionId);
+	if (queuedMessage) {
+		await processQueuedFollowUp({
+			sessionId: info.sessionId,
+			prompt: queuedMessage.prompt,
+		}).run(ctx);
+		return;
 	}
 
 	await moveTaskToInReview({ sessionId: info.sessionId }).run(ctx);

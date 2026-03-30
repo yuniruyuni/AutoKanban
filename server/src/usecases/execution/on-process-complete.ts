@@ -1,3 +1,8 @@
+import { CodingAgentTurn } from "../../models/coding-agent-turn";
+import {
+	findPendingToolUses,
+	type PendingToolUse,
+} from "../../models/conversation/conversation-parser";
 import { ExecutionProcess } from "../../models/execution-process";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
@@ -51,6 +56,7 @@ export const completeExecutionProcess = (input: ProcessCompletionInput) =>
 
 /**
  * Process queued follow-up message after process completion.
+ * Uses protocol mode with session resume to continue the Claude Code conversation.
  */
 export const processQueuedFollowUp = (input: {
 	sessionId: string;
@@ -61,12 +67,22 @@ export const processQueuedFollowUp = (input: {
 			const session = await ctx.repos.session.get(
 				Session.ById(input.sessionId),
 			);
-			if (!session) return { workingDir: null as string | null };
+			if (!session)
+				return {
+					workingDir: null as string | null,
+					resumeInfo: null,
+					interruptedTools: [] as PendingToolUse[],
+				};
 
 			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(session.workspaceId),
 			);
-			if (!workspace) return { workingDir: null as string | null };
+			if (!workspace)
+				return {
+					workingDir: null as string | null,
+					resumeInfo: null,
+					interruptedTools: [] as PendingToolUse[],
+				};
 
 			const workspaceReposPage = await ctx.repos.workspaceRepo.list(
 				WorkspaceRepo.ByWorkspaceId(workspace.id),
@@ -79,34 +95,89 @@ export const processQueuedFollowUp = (input: {
 
 			const workingDir = Workspace.resolveWorkingDir(workspace, project);
 
-			return { workingDir };
+			// Get resume info for continuing the Claude Code session
+			const resumeInfo = await ctx.repos.codingAgentTurn.findLatestResumeInfo(
+				input.sessionId,
+			);
+
+			// Detect interrupted tools from the latest execution process logs
+			let interruptedTools: PendingToolUse[] = [];
+			if (resumeInfo) {
+				const latestProcessPage = await ctx.repos.executionProcess.list(
+					ExecutionProcess.BySessionId(input.sessionId),
+					{ limit: 1, sort: ExecutionProcess.defaultSort },
+				);
+				const latestProcess = latestProcessPage.items[0];
+				if (latestProcess && latestProcess.status !== "running") {
+					const logs = await ctx.repos.executionProcessLogs.getLogs(
+						latestProcess.id,
+					);
+					if (logs?.logs) {
+						interruptedTools = findPendingToolUses(logs.logs);
+					}
+				}
+			}
+
+			return { workingDir, resumeInfo, interruptedTools };
 		},
 
-		process: (_ctx, { workingDir }) => {
-			if (!workingDir) return { workingDir, executionProcess: null };
+		process: (_ctx, { workingDir, resumeInfo, interruptedTools }) => {
+			if (!workingDir)
+				return {
+					workingDir,
+					executionProcess: null,
+					turn: null,
+					resumeInfo,
+					interruptedTools,
+				};
 			const executionProcess = ExecutionProcess.create({
 				sessionId: input.sessionId,
 				runReason: "codingagent",
 			});
-			return { workingDir, executionProcess };
+			const turn = CodingAgentTurn.create({
+				executionProcessId: executionProcess.id,
+				prompt: input.prompt,
+			});
+			return {
+				workingDir,
+				executionProcess,
+				turn,
+				resumeInfo,
+				interruptedTools,
+			};
 		},
 
-		write: async (ctx, { executionProcess, ...rest }) => {
+		write: async (ctx, { executionProcess, turn, ...rest }) => {
 			if (executionProcess) {
 				await ctx.repos.executionProcess.upsert(executionProcess);
+			}
+			if (turn) {
+				await ctx.repos.codingAgentTurn.upsert(turn);
 			}
 			return { ...rest, executionProcess };
 		},
 
-		post: async (ctx, { workingDir, executionProcess }) => {
+		post: async (
+			ctx,
+			{ workingDir, executionProcess, resumeInfo, interruptedTools },
+		) => {
 			if (!workingDir || !executionProcess) return {};
 
-			await ctx.repos.executor.start({
+			await ctx.repos.executor.startProtocol({
 				id: executionProcess.id,
 				sessionId: input.sessionId,
 				runReason: "codingagent",
 				workingDir,
 				prompt: input.prompt,
+				resumeSessionId: resumeInfo?.agentSessionId,
+				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
+				interruptedTools:
+					interruptedTools.length > 0
+						? interruptedTools.map((t) => ({
+								toolId: t.toolId,
+								toolName: t.toolName,
+							}))
+						: undefined,
 			});
 
 			return {};
