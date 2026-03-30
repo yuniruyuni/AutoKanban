@@ -1,15 +1,8 @@
 import { spawnSync } from "node:child_process";
-import {
-	chmodSync,
-	existsSync,
-	mkdirSync,
-	mkdtempSync,
-	rmSync,
-	writeFileSync,
-} from "node:fs";
-import { homedir, tmpdir } from "node:os";
+import { chmodSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
-import schemaSql from "../../../schema.sql";
+import { extractSchema } from "./schema-vfs";
 
 const PGSCHEMA_VERSION = "1.8.0";
 const BIN_DIR = join(homedir(), ".auto-kanban", "bin");
@@ -80,13 +73,9 @@ export async function ensurePgSchema(connectionParams: {
 	database: string;
 }): Promise<void> {
 	const binaryPath = await downloadBinary();
+	const schemaDir = extractSchema();
 
-	// Write embedded schema.sql to a secure temp directory
-	const tempDir = mkdtempSync(join(tmpdir(), "autokanban-schema-"));
-	const schemaPath = join(tempDir, "schema.sql");
 	try {
-		writeFileSync(schemaPath, schemaSql);
-
 		const result = spawnSync(
 			binaryPath,
 			[
@@ -102,7 +91,7 @@ export async function ensurePgSchema(connectionParams: {
 				"--schema",
 				"public",
 				"--file",
-				schemaPath,
+				join(schemaDir.path, "schema.sql"),
 				"--auto-approve",
 			],
 			{
@@ -122,6 +111,6 @@ export async function ensurePgSchema(connectionParams: {
 			);
 		}
 	} finally {
-		rmSync(tempDir, { recursive: true, force: true });
+		schemaDir.cleanup();
 	}
 }

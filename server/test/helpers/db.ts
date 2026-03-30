@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { type Database, PgDatabase } from "../../src/repositories/common";
 import { EmbeddedPostgresManager } from "../../src/lib/db/postgres";
+import { schemaFiles } from "../../schema";
 
 let pgManager: EmbeddedPostgresManager | null = null;
 let sharedDb: PgDatabase | null = null;
@@ -43,8 +43,7 @@ async function ensureReady(): Promise<PgDatabase> {
 	});
 
 	if (!result?.exists) {
-		const schemaPath = join(import.meta.dir, "../../schema.sql");
-		const schema = readFileSync(schemaPath, "utf-8");
+		const schema = schemaFiles["schema.sql"];
 		const statements = schema
 			.split(";")
 			.map((s) => s.trim())
