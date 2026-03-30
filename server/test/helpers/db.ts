@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { type Database, PgDatabase } from "../../src/repositories/common";
 import { EmbeddedPostgresManager } from "../../src/lib/db/postgres";
-import { schemaFiles } from "../../schema/manifest";
+import { schemaFiles } from "../../src/lib/db/schema-vfs";
 
 let pgManager: EmbeddedPostgresManager | null = null;
 let sharedDb: PgDatabase | null = null;

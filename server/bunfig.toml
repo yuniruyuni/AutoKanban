@@ -1,2 +1,8 @@
+preload = ["./build/schema-vfs.ts"]
+
 [run.watch]
 ignore = ["./.test-pg-data"]
+include = ["./schema/**/*.sql"]
+
+[test]
+preload = ["./build/schema-vfs.ts"]
