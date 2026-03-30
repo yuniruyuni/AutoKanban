@@ -6,32 +6,16 @@ import { schemaFiles } from "../../src/lib/db/schema-vfs";
 let pgManager: EmbeddedPostgresManager | null = null;
 let sharedDb: PgDatabase | null = null;
 
-const TEST_PORT = 5555;
-const TEST_USER = "autokanban";
-const TEST_PASSWORD = "autokanban";
-const TEST_DATABASE = "autokanban";
-
 async function ensureReady(): Promise<PgDatabase> {
 	if (sharedDb) return sharedDb;
 
 	pgManager = new EmbeddedPostgresManager({
-		port: TEST_PORT,
 		dataDir: join(import.meta.dir, "../../.test-pg-data"),
 	});
 
-	try {
-		await pgManager.start();
-	} catch {
-		// PG may already be running from a previous test run — try connecting directly
-	}
+	await pgManager.start();
 
-	sharedDb = new PgDatabase({
-		host: "localhost",
-		port: TEST_PORT,
-		user: TEST_USER,
-		password: TEST_PASSWORD,
-		database: TEST_DATABASE,
-	});
+	sharedDb = new PgDatabase(pgManager.poolConfig);
 
 	// Ensure schema exists
 	const result = await sharedDb.queryGet<{ exists: boolean }>({
