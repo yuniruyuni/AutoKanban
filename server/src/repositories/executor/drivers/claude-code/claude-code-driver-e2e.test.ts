@@ -36,7 +36,7 @@ function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
 	} as unknown as Full<ExecutionProcessLogsRepository>;
 }
 
-describe("ClaudeCodeDriver E2E (actual claude-code)", () => {
+describe.skip("ClaudeCodeDriver E2E (actual claude-code)", () => {
 	test(
 		"plan mode: ExitPlanMode triggers onApprovalRequest callback",
 		async () => {

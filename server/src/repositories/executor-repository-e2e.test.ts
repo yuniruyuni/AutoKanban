@@ -77,7 +77,7 @@ function createMockApprovalRepo(): Full<ApprovalRepository> {
 	} as unknown as Full<ApprovalRepository>;
 }
 
-describe("ExecutorRepository E2E (actual claude-code)", () => {
+describe.skip("ExecutorRepository E2E (actual claude-code)", () => {
 	test(
 		"plan mode: ExitPlanMode creates approval via ExecutorRepository",
 		async () => {
