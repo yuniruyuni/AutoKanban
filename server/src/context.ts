@@ -27,55 +27,33 @@ import { WorktreeRepository } from "./repositories/worktree";
 import { setupExecutionLifecycle } from "./usecases/execution/lifecycle";
 import { setupQueueProcessor } from "./usecases/execution/queue-processor";
 import type { Context } from "./usecases/context";
-import { bindRepos } from "./repositories";
+import { type Repos, bindRepos } from "./repositories";
 import { createFullCtx } from "./repositories/common";
 import type { ILogger } from "./lib/logger/types";
 
 export function createContext(db: PgDatabase, logger: ILogger): Context {
-	// Create DB repositories (stateless)
-	const taskRepo = new TaskRepository();
-	const taskTemplateRepo = new TaskTemplateRepository();
-	const projectRepo = new ProjectRepository();
-	const workspaceRepo = new WorkspaceRepository();
-	const workspaceRepoRepo = new WorkspaceRepoRepository();
-	const sessionRepo = new SessionRepository();
-	const executionProcessRepo = new ExecutionProcessRepository();
-	const executionProcessLogsRepo = new ExecutionProcessLogsRepository();
-	const codingAgentTurnRepo = new CodingAgentTurnRepository();
-	const toolRepo = new ToolRepository();
-	const variantRepo = new VariantRepository();
-	const approvalRepo = new ApprovalRepository();
-
-	// Create executor (pure process I/O, no DB dependencies)
+	// Create drivers for executor
 	const drivers = new Map();
 	drivers.set("claude-code", new ClaudeCodeDriver(logger));
 	drivers.set("gemini-cli", new GeminiCliDriver(logger));
-	const executor = new ExecutorRepository(drivers, logger);
 
-	// Bind with pool-level ctx for DevServerRepository dependency
-	const fullCtx = createFullCtx(db);
-	const boundEpLogsRepo = bindRepos(
-		{ executionProcessLogs: executionProcessLogsRepo } as any,
-		fullCtx,
-	).executionProcessLogs;
-
-	// Assemble all raw repos (all defined, no undefined)
-	const rawRepos = {
-		task: taskRepo,
-		taskTemplate: taskTemplateRepo,
-		project: projectRepo,
-		workspace: workspaceRepo,
-		workspaceRepo: workspaceRepoRepo,
-		session: sessionRepo,
-		executionProcess: executionProcessRepo,
-		executionProcessLogs: executionProcessLogsRepo,
-		codingAgentTurn: codingAgentTurnRepo,
-		tool: toolRepo,
-		variant: variantRepo,
-		approval: approvalRepo,
+	// 1. Construct all raw repos
+	const rawRepos: Repos = {
+		task: new TaskRepository(),
+		taskTemplate: new TaskTemplateRepository(),
+		project: new ProjectRepository(),
+		workspace: new WorkspaceRepository(),
+		workspaceRepo: new WorkspaceRepoRepository(),
+		session: new SessionRepository(),
+		executionProcess: new ExecutionProcessRepository(),
+		executionProcessLogs: new ExecutionProcessLogsRepository(),
+		codingAgentTurn: new CodingAgentTurnRepository(),
+		tool: new ToolRepository(),
+		variant: new VariantRepository(),
+		approval: new ApprovalRepository(),
 		git: new GitRepository(),
 		worktree: new WorktreeRepository(logger),
-		executor,
+		executor: new ExecutorRepository(drivers, logger),
 		messageQueue: messageQueueRepository,
 		agentConfig: new AgentConfigRepository(),
 		workspaceConfig: new WorkspaceConfigRepository(),
@@ -83,16 +61,16 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		permissionStore,
 		approvalStore,
 		logStoreManager,
-		devServer: new DevServerRepository(boundEpLogsRepo, logger),
+		devServer: new DevServerRepository(logger),
 	};
 
-	// Bind all repos with full ctx
+	// 2. Bind all repos once
+	const fullCtx = createFullCtx(db);
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	// Set up lifecycle handlers (bridges executor events to DB operations)
+	// 3. Set up event handlers
+	const executor = rawRepos.executor as ExecutorRepository;
 	setupExecutionLifecycle(executor, repos, logger);
-
-	// Set up queue processor (bridges completion/idle events to queue consumption)
 	setupQueueProcessor(executor, repos, logger);
 
 	return {

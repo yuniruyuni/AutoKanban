@@ -1,8 +1,6 @@
 import type { Subprocess } from "bun";
-import type { Full, ServiceCtx } from "../../common";
+import type { ServiceCtx } from "../../common";
 import type { ILogger } from "../../../lib/logger/types";
-import type { ExecutionProcessLogsRepository } from "../..";
-import { LogCollector } from "../../log-collector";
 import type { DevServerRepository as DevServerRepositoryDef } from "../repository";
 
 interface RunningDevServer {
@@ -13,22 +11,13 @@ interface RunningDevServer {
 
 /**
  * Repository for spawning and managing dev server processes.
- * Uses Bun.spawn directly (not ClaudeCodeExecutor) and
- * LogCollector for log streaming via existing SSE infrastructure.
+ * Pure process I/O only — no DB/repo dependencies.
  */
 export class DevServerRepository implements DevServerRepositoryDef {
 	private runningProcesses = new Map<string, RunningDevServer>();
-	private logCollector: LogCollector;
 	private logger: ILogger;
 
-	constructor(
-		executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
-		logger: ILogger,
-	) {
-		this.logCollector = new LogCollector(
-			executionProcessLogsRepo,
-			logger.child("DevServerLogCollector"),
-		);
+	constructor(logger: ILogger) {
 		this.logger = logger.child("DevServerRepository");
 	}
 
@@ -63,10 +52,6 @@ export class DevServerRepository implements DevServerRepositoryDef {
 		};
 		this.runningProcesses.set(processId, running);
 
-		// Collect stdout/stderr into LogStoreManager for SSE streaming
-		this.logCollector.collect(processId, process.stdout, process.stderr);
-
-		// Handle process completion
 		process.exited.then((exitCode) => {
 			this.logger.info(`Dev server ${processId} exited with code ${exitCode}`);
 			this.runningProcesses.delete(processId);
