@@ -1,5 +1,5 @@
-import { type SQLFragment, sql } from "../../../lib/db/sql";
-import { dateFromSQL } from "../../../lib/db/sql-helpers";
+import { type SQLFragment, sql } from "../../../infra/db/sql";
+import { dateFromSQL } from "../../../infra/db/sql-helpers";
 import type { ExecutionProcess } from "../../../models/execution-process";
 
 export interface ExecutionProcessRow {

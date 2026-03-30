@@ -1,5 +1,5 @@
-import type { PgDatabase } from "./lib/db/pg-client";
-import type { ILogger } from "./lib/logger/types";
+import type { PgDatabase } from "./infra/db/pg-client";
+import type { ILogger } from "./infra/logger/types";
 import { CallbackClientImpl } from "./presentation/callback/impl";
 import { bindRepos, type Repos } from "./repositories";
 import { AgentConfigRepository } from "./repositories/agent-config";

@@ -1,4 +1,4 @@
-import type { Database } from "../../src/lib/db/database";
+import type { Database } from "../../src/infra/db/database";
 import type { Repos } from "../../src/repositories";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn/postgres";

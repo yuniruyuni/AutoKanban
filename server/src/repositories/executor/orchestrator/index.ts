@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import type { ILogger } from "../../../lib/logger/types";
+import type { CallbackClient } from "../../../infra/callback/client";
+import type { ILogger } from "../../../infra/logger/types";
 import type { ExecutionProcess } from "../../../models/execution-process";
-import type { CallbackClient } from "../../../presentation/callback/client";
 import type {
 	ExecutorProcessInfo,
 	ExecutorRepository as ExecutorRepositoryDef,

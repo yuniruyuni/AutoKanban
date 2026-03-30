@@ -1,5 +1,5 @@
 import type { Subprocess } from "bun";
-import type { ILogger } from "../../../lib/logger/types";
+import type { ILogger } from "../../../infra/logger/types";
 import type { ServiceCtx } from "../../common";
 import type { DevServerRepository as DevServerRepositoryDef } from "../repository";
 

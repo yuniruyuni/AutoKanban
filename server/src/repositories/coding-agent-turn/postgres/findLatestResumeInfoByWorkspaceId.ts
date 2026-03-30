@@ -1,4 +1,4 @@
-import type { Database } from "../../../lib/db/database";
+import type { Database } from "../../../infra/db/database";
 import type { CodingAgentResumeInfo } from "../../../models/coding-agent-turn";
 
 export async function findLatestResumeInfoByWorkspaceId(

@@ -1,4 +1,4 @@
-import type { ILogger } from "../../src/lib/logger/types";
+import type { ILogger } from "../../src/infra/logger/types";
 
 export interface LogEntry {
 	level: "debug" | "info" | "warn" | "error";

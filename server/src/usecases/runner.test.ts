@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createMockLogger } from "../../test/helpers/logger";
-import type { PgDatabase } from "../lib/db/pg-client";
+import type { PgDatabase } from "../infra/db/pg-client";
 import { fail } from "../models/common";
 import type { Context } from "./context";
 import { usecase } from "./runner";

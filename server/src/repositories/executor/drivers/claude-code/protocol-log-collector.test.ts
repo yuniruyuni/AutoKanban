@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { ILogger } from "../../../../lib/logger/types";
+import type { ILogger } from "../../../../infra/logger/types";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
 import type { ExecutionProcessLogsRepository } from "../../..";
 import type { Full } from "../../../common";

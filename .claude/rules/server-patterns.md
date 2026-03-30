@@ -13,7 +13,7 @@ Model → Repository → Usecase → Presentation
 - **Usecase間の相互呼び出し禁止**
 - Repository定義: `server/src/repositories/index.ts`（Repos型 + 全repository re-export）
 - Context定義: `server/src/usecases/context.ts`
-- 補助ディレクトリ: `lib/`（意味単位のモジュール: db/, mcp/, setup/, logger/, conversation/, tool/, git/, port-file/）
+- インフラ層: `infra/`（意味単位のモジュール: db/, logger/, trpc/, port-file/）
 
 ## コーディング規約
 

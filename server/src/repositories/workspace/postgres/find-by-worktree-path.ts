@@ -1,4 +1,4 @@
-import type { Database } from "../../../lib/db/database";
+import type { Database } from "../../../infra/db/database";
 import type { Workspace } from "../../../models/workspace";
 import { rowToWorkspace, type WorkspaceRow } from "./common";
 

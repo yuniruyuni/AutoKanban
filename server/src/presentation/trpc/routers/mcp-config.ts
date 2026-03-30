@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getAutoKanbanCommand, readPortFile } from "../../../lib/port-file";
+import { getAutoKanbanCommand, readPortFile } from "../../../infra/port-file";
 import { getPreconfiguredServers } from "../../../models/agent-config-defaults";
 import { publicProcedure, router } from "../init";
 

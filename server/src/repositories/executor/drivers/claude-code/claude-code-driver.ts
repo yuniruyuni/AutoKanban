@@ -1,4 +1,4 @@
-import type { ILogger } from "../../../../lib/logger/types";
+import type { ILogger } from "../../../../infra/logger/types";
 import type {
 	CodingAgentTurnRepository,
 	ExecutionProcessLogsRepository,

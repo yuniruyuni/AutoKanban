@@ -2,8 +2,8 @@ import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
+import type { PostContext } from "../context";
 import { usecase } from "../runner";
-import { generatePrDescription } from "./generate-pr-description";
 
 export interface CreatePullRequestInput {
 	workspaceId: string;
@@ -122,3 +122,53 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 			return { success: true, branch, prUrl: url };
 		},
 	});
+
+// ============================================
+// PR description generation helper
+// ============================================
+
+const PR_DESCRIPTION_PROMPT = `Analyze the changes in this branch compared to the base branch and generate a Pull Request title and description.
+
+The title should be concise and summarize the changes.
+The body should be detailed markdown explaining what changed and why.`;
+
+const PR_DESCRIPTION_SCHEMA = {
+	type: "object",
+	properties: {
+		title: {
+			type: "string",
+			description: "Concise PR title summarizing the changes",
+		},
+		body: {
+			type: "string",
+			description:
+				"Detailed PR body in markdown explaining what changed and why",
+		},
+	},
+	required: ["title", "body"],
+};
+
+async function generatePrDescription(
+	ctx: PostContext,
+	params: {
+		workspaceId: string;
+		worktreePath: string;
+	},
+): Promise<{ title: string; body: string } | null> {
+	const resumeInfo =
+		await ctx.repos.codingAgentTurn.findLatestResumeInfoByWorkspaceId(
+			params.workspaceId,
+		);
+
+	try {
+		return (await ctx.repos.executor.runStructured(undefined, {
+			workingDir: params.worktreePath,
+			prompt: PR_DESCRIPTION_PROMPT,
+			schema: PR_DESCRIPTION_SCHEMA,
+			resumeSessionId: resumeInfo?.agentSessionId ?? undefined,
+		})) as { title: string; body: string } | null;
+	} catch (error) {
+		ctx.logger.warn("Failed to generate PR description", error);
+		return null;
+	}
+}

@@ -23,12 +23,16 @@ module.exports = {
 			},
 		},
 		// Rule 3: Usecase must not directly import repository
+		//   - runner.ts and context.ts are usecase framework infrastructure
 		{
 			name: "usecase-no-direct-repository-import",
 			comment:
 				"Usecases must access repositories through context, not direct imports",
 			severity: "error",
-			from: { path: "^src/usecases/", pathNot: "\\.test\\.ts$" },
+			from: {
+				path: "^src/usecases/",
+				pathNot: "(^src/usecases/(runner|context)\\.ts$|\\.test\\.ts$)",
+			},
 			to: {
 				path: "^src/repositories/",
 			},
@@ -44,20 +48,20 @@ module.exports = {
 			},
 		},
 		// Rule 5: Usecase files must not import other usecase files
-		//   - index.ts (barrel re-exports) and runner.ts are excluded from both sides
+		//   - index.ts (barrel re-exports), runner.ts, and context.ts are framework infrastructure
 		{
 			name: "usecase-no-cross-usecase-deps",
 			comment:
-				"Individual usecase files must not import other usecases (except via runner.ts or barrel index.ts)",
+				"Individual usecase files must not import other usecases (except via runner.ts, context.ts, or barrel index.ts)",
 			severity: "error",
 			from: {
 				path: "^src/usecases/",
 				pathNot:
-					"(^src/usecases/(index|runner)\\.ts$|/index\\.ts$|\\.test\\.ts$)",
+					"(^src/usecases/(index|runner|context)\\.ts$|/index\\.ts$|\\.test\\.ts$)",
 			},
 			to: {
 				path: "^src/usecases/",
-				pathNot: "(^src/usecases/(index|runner)\\.ts$|/index\\.ts$)",
+				pathNot: "(^src/usecases/(index|runner|context)\\.ts$|/index\\.ts$)",
 			},
 		},
 		// Rule 6: Presentation must not directly import repository

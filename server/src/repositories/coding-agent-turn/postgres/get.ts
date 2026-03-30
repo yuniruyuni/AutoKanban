@@ -1,6 +1,6 @@
-import type { Database } from "../../../lib/db/database";
-import type { SQLFragment } from "../../../lib/db/sql";
-import { compToSQL } from "../../../lib/db/sql-helpers";
+import type { Database } from "../../../infra/db/database";
+import type { SQLFragment } from "../../../infra/db/sql";
+import { compToSQL } from "../../../infra/db/sql-helpers";
 import type { CodingAgentTurn } from "../../../models/coding-agent-turn";
 import {
 	type CodingAgentTurnRow,

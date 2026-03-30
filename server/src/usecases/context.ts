@@ -1,5 +1,5 @@
-import type { Database } from "../lib/db/database";
-import type { ILogger } from "../lib/logger/types";
+import type { Database } from "../infra/db/database";
+import type { ILogger } from "../infra/logger/types";
 import type { Repos } from "../repositories";
 import type {
 	DbReadRepos,

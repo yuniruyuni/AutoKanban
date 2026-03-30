@@ -1,4 +1,4 @@
-import type { Database } from "../../../lib/db/database";
+import type { Database } from "../../../infra/db/database";
 import type { ExecutionProcessLogs } from "../../../models/execution-process";
 import type { ExecutionProcessLogsRow } from "./common";
 

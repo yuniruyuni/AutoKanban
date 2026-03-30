@@ -14,7 +14,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import type { ILogger } from "../../../../lib/logger/types";
+import type { ILogger } from "../../../../infra/logger/types";
 import { Approval } from "../../../../models/approval";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
 import type {

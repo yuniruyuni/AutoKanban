@@ -1,9 +1,9 @@
 import { Approval } from "../../models/approval";
+import type { DriverApprovalRequest } from "../../models/driver-approval-request";
 import { ExecutionProcess } from "../../models/execution-process";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
-import type { DriverApprovalRequest } from "../../repositories/executor/orchestrator/driver-approval-request";
 import { usecase } from "../runner";
 
 export interface ApprovalRequestInput {

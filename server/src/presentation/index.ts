@@ -1,8 +1,8 @@
 import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { closeDatabase } from "../lib/db";
-import { removePortFile, writePortFile } from "../lib/port-file";
+import { closeDatabase } from "../infra/db";
+import { removePortFile, writePortFile } from "../infra/port-file";
 import type { Context } from "../usecases/context";
 import { runMcpServer } from "./mcp/stdio";
 import { sseRoutes } from "./sse/routers";

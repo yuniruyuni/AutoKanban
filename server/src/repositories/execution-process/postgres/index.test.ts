@@ -3,7 +3,7 @@ import { createTestExecutionProcess } from "../../../../test/factories";
 import { createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
 import { seedFullChain } from "../../../../test/helpers/seed";
-import type { Database } from "../../../lib/db/database";
+import type { Database } from "../../../infra/db/database";
 import { ExecutionProcess } from "../../../models/execution-process";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";

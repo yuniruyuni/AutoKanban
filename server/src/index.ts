@@ -1,6 +1,6 @@
 import { createContext } from "./context";
-import { initDatabase } from "./lib/db";
-import { createLogger } from "./lib/logger";
+import { initDatabase } from "./infra/db";
+import { createLogger } from "./infra/logger";
 import { startServer } from "./presentation";
 
 const logger = createLogger();

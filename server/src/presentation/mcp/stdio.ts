@@ -4,8 +4,8 @@ import {
 	ListResourcesRequestSchema,
 	ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { getBaseUrl } from "../../lib/port-file";
-import { TrpcHttpClient } from "../../lib/trpc/client";
+import { getBaseUrl } from "../../infra/port-file";
+import { TrpcHttpClient } from "../../infra/trpc/client";
 import autoKanbanSchema from "./auto-kanban.schema.json";
 import { registerMcpTools } from "./routers/tools";
 

@@ -1,4 +1,4 @@
-import type { Database } from "../../src/lib/db/database";
+import type { Database } from "../../src/infra/db/database";
 import type { ExecutionProcess } from "../../src/models/execution-process";
 import type { Project } from "../../src/models/project";
 import type { Session } from "../../src/models/session";

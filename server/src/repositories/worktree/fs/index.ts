@@ -1,7 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { ILogger } from "../../../lib/logger/types";
+import type { ILogger } from "../../../infra/logger/types";
 import type { Project } from "../../../models/project";
 import type { Workspace } from "../../../models/workspace";
 import type { WorktreeInfo } from "../../../models/worktree-info";

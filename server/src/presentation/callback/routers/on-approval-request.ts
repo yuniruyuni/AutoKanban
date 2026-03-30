@@ -1,4 +1,4 @@
-import type { DriverApprovalRequest } from "../../../repositories/executor/orchestrator/driver-approval-request";
+import type { DriverApprovalRequest } from "../../../models/driver-approval-request";
 import type { Context } from "../../../usecases/context";
 import { handleApprovalRequest as handleApprovalRequestUsecase } from "../../../usecases/execution/on-approval-request";
 
