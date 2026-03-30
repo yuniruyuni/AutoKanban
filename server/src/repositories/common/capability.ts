@@ -53,7 +53,7 @@ export function createFullCtx(db: PgDatabase): DbWriteCtx & ServiceCtx {
  * - ExtractMethods<T, ServiceCtx> → service methods only
  * - ExtractMethods<T, DbWriteCtx & ServiceCtx> → all methods
  */
-type ExtractMethods<T, Marker> = {
+export type ExtractMethods<T, Marker> = {
 	[K in keyof T as T[K] extends (m: Marker, ...args: infer _A) => infer _R
 		? K
 		: never]: T[K] extends (m: Marker, ...args: infer A) => infer R

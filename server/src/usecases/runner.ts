@@ -1,4 +1,11 @@
 import { type Fail, fail, isFail, type Unfail } from "../models/common";
+import {
+	type DbReadCtx,
+	type DbWriteCtx,
+	createDbReadCtx,
+	createDbWriteCtx,
+} from "../repositories/common";
+import { bindRepos } from "../repositories";
 import type {
 	Context,
 	PostContext,
@@ -6,17 +13,7 @@ import type {
 	ProcessContext,
 	ReadContext,
 	WriteContext,
-} from "../types/context";
-import {
-	bindCtx,
-	createDbReadCtx,
-	createDbWriteCtx,
-	type DbReadCtx,
-	type DbReadRepos,
-	type DbWriteCtx,
-	type DbWriteRepos,
-} from "../repositories/common";
-import type { Repos } from "../repositories";
+} from "./context";
 
 // Re-export context types for convenience
 export type {
@@ -26,7 +23,7 @@ export type {
 	ProcessContext,
 	ReadContext,
 	WriteContext,
-} from "../types/context";
+} from "./context";
 
 // ============================================
 // Result type
@@ -64,70 +61,6 @@ interface UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult> {
 		state: Unfail<TWrite>,
 	) => MaybePromise<TPost | Fail>;
 	result?: (state: Unfail<TPost>) => MaybePromise<TResult>;
-}
-
-// ============================================
-// Repo binding helpers
-// ============================================
-
-function bindReadRepos(raw: Repos, dbCtx: DbReadCtx): DbReadRepos<Repos> {
-	return {
-		// DB repos: bind with DbReadCtx to extract read-only methods
-		task: bindCtx(raw.task, dbCtx),
-		taskTemplate: bindCtx(raw.taskTemplate, dbCtx),
-		project: bindCtx(raw.project, dbCtx),
-		workspace: bindCtx(raw.workspace, dbCtx),
-		workspaceRepo: bindCtx(raw.workspaceRepo, dbCtx),
-		session: bindCtx(raw.session, dbCtx),
-		executionProcess: bindCtx(raw.executionProcess, dbCtx),
-		executionProcessLogs: bindCtx(raw.executionProcessLogs, dbCtx),
-		codingAgentTurn: bindCtx(raw.codingAgentTurn, dbCtx),
-		tool: bindCtx(raw.tool, dbCtx),
-		variant: bindCtx(raw.variant, dbCtx),
-		approval: bindCtx(raw.approval, dbCtx),
-		// External repos: DbRead extracts nothing (ServiceCtx methods excluded)
-		git: bindCtx(raw.git, dbCtx),
-		worktree: bindCtx(raw.worktree, dbCtx),
-		executor: bindCtx(raw.executor, dbCtx),
-		messageQueue: bindCtx(raw.messageQueue, dbCtx),
-		agentConfig: bindCtx(raw.agentConfig, dbCtx),
-		workspaceConfig: bindCtx(raw.workspaceConfig, dbCtx),
-		draft: bindCtx(raw.draft, dbCtx),
-		permissionStore: bindCtx(raw.permissionStore, dbCtx),
-		approvalStore: bindCtx(raw.approvalStore, dbCtx),
-		logStoreManager: bindCtx(raw.logStoreManager, dbCtx),
-		devServer: bindCtx(raw.devServer, dbCtx),
-	};
-}
-
-function bindWriteRepos(raw: Repos, dbCtx: DbWriteCtx): DbWriteRepos<Repos> {
-	return {
-		// DB repos: bind with DbWriteCtx to extract read + write methods
-		task: bindCtx(raw.task, dbCtx),
-		taskTemplate: bindCtx(raw.taskTemplate, dbCtx),
-		project: bindCtx(raw.project, dbCtx),
-		workspace: bindCtx(raw.workspace, dbCtx),
-		workspaceRepo: bindCtx(raw.workspaceRepo, dbCtx),
-		session: bindCtx(raw.session, dbCtx),
-		executionProcess: bindCtx(raw.executionProcess, dbCtx),
-		executionProcessLogs: bindCtx(raw.executionProcessLogs, dbCtx),
-		codingAgentTurn: bindCtx(raw.codingAgentTurn, dbCtx),
-		tool: bindCtx(raw.tool, dbCtx),
-		variant: bindCtx(raw.variant, dbCtx),
-		approval: bindCtx(raw.approval, dbCtx),
-		// External repos: DbWrite extracts nothing (ServiceCtx methods excluded)
-		git: bindCtx(raw.git, dbCtx),
-		worktree: bindCtx(raw.worktree, dbCtx),
-		executor: bindCtx(raw.executor, dbCtx),
-		messageQueue: bindCtx(raw.messageQueue, dbCtx),
-		agentConfig: bindCtx(raw.agentConfig, dbCtx),
-		workspaceConfig: bindCtx(raw.workspaceConfig, dbCtx),
-		draft: bindCtx(raw.draft, dbCtx),
-		permissionStore: bindCtx(raw.permissionStore, dbCtx),
-		approvalStore: bindCtx(raw.approvalStore, dbCtx),
-		logStoreManager: bindCtx(raw.logStoreManager, dbCtx),
-		devServer: bindCtx(raw.devServer, dbCtx),
-	};
 }
 
 // ============================================
@@ -213,11 +146,10 @@ function executeDbSteps<TPre, TRead, TProcess, TWrite, TPost, TResult>(
 	dbCtx: DbReadCtx | DbWriteCtx,
 	state: unknown,
 ): Promise<unknown> {
-	const readRepos = bindReadRepos(ctx.rawRepos, dbCtx);
 	const readCtx: ReadContext = {
 		now: ctx.now,
 		logger: ctx.logger,
-		repos: readRepos,
+		repos: bindRepos(ctx.rawRepos, dbCtx),
 	};
 
 	return (async () => {
@@ -229,11 +161,10 @@ function executeDbSteps<TPre, TRead, TProcess, TWrite, TPost, TResult>(
 		if (isFail(s)) return s;
 
 		if (def.write) {
-			const writeRepos = bindWriteRepos(ctx.rawRepos, dbCtx as DbWriteCtx);
 			const writeCtx: WriteContext = {
 				now: ctx.now,
 				logger: ctx.logger,
-				repos: writeRepos,
+				repos: bindRepos(ctx.rawRepos, dbCtx as DbWriteCtx),
 			};
 			s = await def.write(writeCtx, s as Unfail<TProcess>);
 		}

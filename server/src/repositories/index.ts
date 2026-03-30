@@ -77,6 +77,30 @@ import type { WorkspaceConfigRepository } from "./workspace-config/repository";
 import type { WorkspaceRepoRepository } from "./workspace-repo/repository";
 import type { WorktreeRepository } from "./worktree/repository";
 
+// ============================================
+// Repos binding
+// ============================================
+
+import { type ExtractMethods, bindCtx } from "./common";
+
+type ExtractRepos<Ctx> = { [K in keyof Repos]: ExtractMethods<Repos[K], Ctx> };
+
+/**
+ * Bind all repos with a context, producing a view where each repo's methods
+ * matching the Ctx marker have that first argument pre-filled.
+ */
+export function bindRepos<Ctx>(raw: Repos, ctx: Ctx): ExtractRepos<Ctx> {
+	const result = {} as Record<string, unknown>;
+	for (const key of Object.keys(raw)) {
+		result[key] = bindCtx((raw as unknown as Record<string, object>)[key], ctx);
+	}
+	return result as ExtractRepos<Ctx>;
+}
+
+// ============================================
+// Repos aggregate type
+// ============================================
+
 export interface Repos {
 	// DB repositories
 	task: TaskRepository;

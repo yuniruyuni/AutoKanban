@@ -26,7 +26,7 @@ import { WorkspaceConfigRepository } from "./repositories/workspace-config";
 import { WorkspaceRepoRepository } from "./repositories/workspace-repo/postgres";
 import { WorktreeRepository } from "./repositories/worktree";
 import { setupQueueProcessor } from "./setup/queue-processor";
-import type { Context } from "./types/context";
+import type { Context } from "./usecases/context";
 import {
 	bindCtx,
 	createFullCtx,

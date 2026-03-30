@@ -3,7 +3,7 @@ import { createMockLogger } from "../../test/helpers/logger";
 import type { PgDatabase } from "../db/pg-client";
 import { fail } from "../models/common";
 import type { ILogStreamer } from "../presentation/log-streamer";
-import type { Context } from "../types/context";
+import type { Context } from "./context";
 import { usecase } from "./runner";
 
 const mockDb = {

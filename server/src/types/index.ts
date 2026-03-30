@@ -1,5 +1,5 @@
 export type { ILogStreamer } from "../presentation/log-streamer";
-export type { Context } from "./context";
+export type { Context } from "../usecases/context";
 export type {
 	AssistantMessageEntry,
 	ConversationEntry,

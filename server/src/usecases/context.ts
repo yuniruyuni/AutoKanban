@@ -5,7 +5,7 @@ import type {
 	DbWriteRepos,
 	FullRepos,
 } from "../repositories/common";
-import type { ILogger } from "./logger";
+import type { ILogger } from "../types/logger";
 import type { Repos } from "../repositories";
 
 // ============================================
