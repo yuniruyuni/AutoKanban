@@ -7,7 +7,7 @@ import {
 import { sseRoute } from "../stream";
 
 export const logStreamRoute = sseRoute<LogStreamParams, LogStreamState>(
-	"/sse/logs/:executionProcessId",
+	"/logs/:executionProcessId",
 	(c) => ({ executionProcessId: c.req.param("executionProcessId") }),
 	{
 		snapshot: (params) => getLogStreamSnapshot(params),

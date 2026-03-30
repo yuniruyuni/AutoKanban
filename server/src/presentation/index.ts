@@ -39,7 +39,7 @@ export async function startServer(ctx: Context) {
 	app.get("/health", (c) => c.json({ status: "ok" }));
 
 	// SSE protocol
-	app.route("/", sseRoutes(ctx));
+	app.route("/sse", sseRoutes(ctx));
 
 	// Port file + shutdown
 	writePortFile(PORT);
