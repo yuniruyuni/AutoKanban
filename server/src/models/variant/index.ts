@@ -31,13 +31,9 @@ export namespace Variant {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		ByExecutor: (executor: string) => ({
-			type: "ByExecutor" as const,
-			executor,
-		}),
+		ById: (id: string) => ({ id }),
+		ByExecutor: (executor: string) => ({ executor }),
 		ByExecutorAndName: (executor: string, name: string) => ({
-			type: "ByExecutorAndName" as const,
 			executor,
 			name,
 		}),

@@ -33,12 +33,9 @@ export namespace Workspace {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		ByTaskId: (taskId: string) => ({ type: "ByTaskId" as const, taskId }),
-		ByTaskIdActive: (taskId: string) => ({
-			type: "ByTaskIdActive" as const,
-			taskId,
-		}),
+		ById: (id: string) => ({ id }),
+		ByTaskId: (taskId: string) => ({ taskId }),
+		ByTaskIdActive: (taskId: string) => ({ taskId }),
 	});
 	export const ById = _specs.ById;
 	export const ByTaskId = _specs.ByTaskId;

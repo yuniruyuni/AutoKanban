@@ -38,13 +38,10 @@ export namespace Project {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		ByName: (name: string) => ({ type: "ByName" as const, name }),
-		ByRepoPath: (repoPath: string) => ({
-			type: "ByRepoPath" as const,
-			repoPath,
-		}),
-		All: () => ({ type: "All" as const }),
+		ById: (id: string) => ({ id }),
+		ByName: (name: string) => ({ name }),
+		ByRepoPath: (repoPath: string) => ({ repoPath }),
+		All: () => ({}),
 	});
 	export const ById = _specs.ById;
 	export const ByName = _specs.ByName;

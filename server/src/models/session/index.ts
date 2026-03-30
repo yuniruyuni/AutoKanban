@@ -29,11 +29,8 @@ export namespace Session {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		ByWorkspaceId: (workspaceId: string) => ({
-			type: "ByWorkspaceId" as const,
-			workspaceId,
-		}),
+		ById: (id: string) => ({ id }),
+		ByWorkspaceId: (workspaceId: string) => ({ workspaceId }),
 	});
 	export const ById = _specs.ById;
 	export const ByWorkspaceId = _specs.ByWorkspaceId;

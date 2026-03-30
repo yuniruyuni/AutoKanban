@@ -38,16 +38,12 @@ export namespace CodingAgentTurn {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
+		ById: (id: string) => ({ id }),
 		ByExecutionProcessId: (executionProcessId: string) => ({
-			type: "ByExecutionProcessId" as const,
 			executionProcessId,
 		}),
-		ByAgentSessionId: (agentSessionId: string) => ({
-			type: "ByAgentSessionId" as const,
-			agentSessionId,
-		}),
-		HasAgentSessionId: () => ({ type: "HasAgentSessionId" as const }),
+		ByAgentSessionId: (agentSessionId: string) => ({ agentSessionId }),
+		HasAgentSessionId: () => ({}),
 	});
 	export const ById = _specs.ById;
 	export const ByExecutionProcessId = _specs.ByExecutionProcessId;

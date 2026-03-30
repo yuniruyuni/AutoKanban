@@ -81,8 +81,8 @@ describe("generateId()", () => {
 
 describe("defineSpecs()", () => {
 	const specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		ByName: (name: string) => ({ type: "ByName" as const, name }),
+		ById: (id: string) => ({ id }),
+		ByName: (name: string) => ({ name }),
 	});
 
 	test("creates spec factory functions", () => {
@@ -105,8 +105,8 @@ describe("defineSpecs()", () => {
 
 describe("Comp composition", () => {
 	const specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		ByName: (name: string) => ({ type: "ByName" as const, name }),
+		ById: (id: string) => ({ id }),
+		ByName: (name: string) => ({ name }),
 	});
 
 	test(".and() creates AND composition", () => {
@@ -143,7 +143,7 @@ describe("Comp composition", () => {
 
 describe("isCompLogical()", () => {
 	const specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
+		ById: (id: string) => ({ id }),
 	});
 
 	test("returns true for AND", () => {
@@ -173,7 +173,7 @@ describe("isCompLogical()", () => {
 
 describe("and()", () => {
 	const specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
+		ById: (id: string) => ({ id }),
 	});
 
 	test("creates AND with multiple children", () => {
@@ -192,7 +192,7 @@ describe("and()", () => {
 
 describe("or()", () => {
 	const specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
+		ById: (id: string) => ({ id }),
 	});
 
 	test("creates OR with multiple children", () => {
@@ -204,7 +204,7 @@ describe("or()", () => {
 
 describe("not()", () => {
 	const specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
+		ById: (id: string) => ({ id }),
 	});
 
 	test("creates NOT wrapper", () => {

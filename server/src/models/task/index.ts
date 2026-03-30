@@ -36,16 +36,10 @@ export namespace Task {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		ByProject: (projectId: string) => ({
-			type: "ByProject" as const,
-			projectId,
-		}),
-		ByStatus: (status: Status) => ({ type: "ByStatus" as const, status }),
-		ByStatuses: (...statuses: Status[]) => ({
-			type: "ByStatuses" as const,
-			statuses,
-		}),
+		ById: (id: string) => ({ id }),
+		ByProject: (projectId: string) => ({ projectId }),
+		ByStatus: (status: Status) => ({ status }),
+		ByStatuses: (...statuses: Status[]) => ({ statuses }),
 	});
 	export const ById = _specs.ById;
 	export const ByProject = _specs.ByProject;

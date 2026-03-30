@@ -33,12 +33,11 @@ export namespace Approval {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
+		ById: (id: string) => ({ id }),
 		ByExecutionProcessId: (executionProcessId: string) => ({
-			type: "ByExecutionProcessId" as const,
 			executionProcessId,
 		}),
-		ByStatus: (status: Status) => ({ type: "ByStatus" as const, status }),
+		ByStatus: (status: Status) => ({ status }),
 	});
 	export const ById = _specs.ById;
 	export const ByExecutionProcessId = _specs.ByExecutionProcessId;

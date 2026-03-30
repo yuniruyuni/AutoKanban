@@ -30,17 +30,10 @@ export namespace WorkspaceRepo {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		ByWorkspaceId: (workspaceId: string) => ({
-			type: "ByWorkspaceId" as const,
-			workspaceId,
-		}),
-		ByProjectId: (projectId: string) => ({
-			type: "ByProjectId" as const,
-			projectId,
-		}),
+		ById: (id: string) => ({ id }),
+		ByWorkspaceId: (workspaceId: string) => ({ workspaceId }),
+		ByProjectId: (projectId: string) => ({ projectId }),
 		ByWorkspaceAndProject: (workspaceId: string, projectId: string) => ({
-			type: "ByWorkspaceAndProject" as const,
 			workspaceId,
 			projectId,
 		}),

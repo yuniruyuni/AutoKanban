@@ -49,16 +49,10 @@ export namespace ExecutionProcess {
 
 	// Specs
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		BySessionId: (sessionId: string) => ({
-			type: "BySessionId" as const,
-			sessionId,
-		}),
-		ByStatus: (status: Status) => ({ type: "ByStatus" as const, status }),
-		ByRunReason: (runReason: RunReason) => ({
-			type: "ByRunReason" as const,
-			runReason,
-		}),
+		ById: (id: string) => ({ id }),
+		BySessionId: (sessionId: string) => ({ sessionId }),
+		ByStatus: (status: Status) => ({ status }),
+		ByRunReason: (runReason: RunReason) => ({ runReason }),
 	});
 	export const ById = _specs.ById;
 	export const BySessionId = _specs.BySessionId;

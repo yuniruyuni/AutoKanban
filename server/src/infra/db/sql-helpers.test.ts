@@ -10,8 +10,8 @@ import { compToSQL, dateFromSQL, dateToSQL } from "./sql-helpers";
 type TestSpec = { type: "ById"; id: string } | { type: "ByName"; name: string };
 
 const specs = defineSpecs({
-	ById: (id: string) => ({ type: "ById" as const, id }),
-	ByName: (name: string) => ({ type: "ByName" as const, name }),
+	ById: (id: string) => ({ id }),
+	ByName: (name: string) => ({ name }),
 });
 
 function testConverter(s: TestSpec) {

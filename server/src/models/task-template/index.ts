@@ -29,8 +29,8 @@ export namespace TaskTemplate {
 	export type SortKey = "sortOrder" | "createdAt" | "id";
 
 	const _specs = defineSpecs({
-		ById: (id: string) => ({ type: "ById" as const, id }),
-		All: () => ({ type: "All" as const }),
+		ById: (id: string) => ({ id }),
+		All: () => ({}),
 	});
 	export const ById = _specs.ById;
 	export const All = _specs.All;
