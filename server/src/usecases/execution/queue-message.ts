@@ -10,7 +10,7 @@ import { Session } from "../../models/session";
 import { Variant } from "../../models/variant";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
-import type { QueuedMessage, QueueStatus } from "../../types/repository";
+import type { QueuedMessage, QueueStatus } from "../../repositories";
 import { usecase } from "../runner";
 
 // ============================================

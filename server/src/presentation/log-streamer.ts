@@ -5,7 +5,7 @@ import type {
 	ExecutorRepository,
 	LogStore,
 	LogStoreManager,
-} from "../types/repository";
+} from "../repositories";
 
 export type { LogEntry } from "../models/common";
 

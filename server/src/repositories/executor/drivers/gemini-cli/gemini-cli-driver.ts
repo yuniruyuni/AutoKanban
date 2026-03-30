@@ -10,7 +10,7 @@ import type { ILogger } from "../../../../types/logger";
 import type {
 	CodingAgentTurnRepository,
 	ExecutionProcessLogsRepository,
-} from "../../../../types/repository";
+} from "../../..";
 
 const GEMINI_CLI_PACKAGE = "@google/gemini-cli@latest";
 

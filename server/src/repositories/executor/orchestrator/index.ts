@@ -34,7 +34,7 @@ import type {
 	SessionRepository,
 	TaskRepository,
 	WorkspaceRepository,
-} from "../../../types/repository";
+} from "../..";
 import { LogCollector } from "../../log-collector";
 import { logStoreManager } from "../../log-store";
 

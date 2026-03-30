@@ -12,7 +12,7 @@ import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo/p
 import type { Context } from "../../src/types/context";
 import type { FullRepos } from "../../src/repositories/common";
 import { bindCtx, createDbWriteCtx } from "../../src/repositories/common";
-import type { Repos } from "../../src/types/repository";
+import type { Repos } from "../../src/repositories";
 import { createMockLogger } from "./logger";
 
 const DB_REPO_KEYS = [

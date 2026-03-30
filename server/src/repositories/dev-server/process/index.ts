@@ -1,7 +1,7 @@
 import type { Subprocess } from "bun";
 import type { Full, ServiceCtx } from "../../common";
 import type { ILogger } from "../../../types/logger";
-import type { ExecutionProcessLogsRepository } from "../../../types/repository";
+import type { ExecutionProcessLogsRepository } from "../..";
 import { LogCollector } from "../../log-collector";
 import type { DevServerRepository as DevServerRepositoryDef } from "../repository";
 

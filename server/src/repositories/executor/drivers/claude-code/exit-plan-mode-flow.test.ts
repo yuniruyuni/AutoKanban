@@ -21,7 +21,7 @@ import type { ILogger } from "../../../../types/logger";
 import type {
 	ApprovalRepository,
 	ExecutionProcessLogsRepository,
-} from "../../../../types/repository";
+} from "../../..";
 import { ApprovalStore } from "../../../approval-store";
 import type { ClaudeCodeProcess } from "./claude-code-executor";
 import {

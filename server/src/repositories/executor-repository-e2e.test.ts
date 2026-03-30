@@ -25,7 +25,7 @@ import type {
 	SessionRepository,
 	TaskRepository,
 	WorkspaceRepository,
-} from "../types/repository";
+} from "../repositories";
 import { ApprovalStore } from "./approval-store";
 import { ExecutorRepository } from "./executor";
 import { ClaudeCodeDriver } from "./executor/drivers/claude-code";

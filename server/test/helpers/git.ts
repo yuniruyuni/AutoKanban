@@ -5,7 +5,7 @@ import type { Full } from "../../src/repositories/common";
 import type {
 	GitRepository,
 	WorktreeRepository,
-} from "../../src/types/repository";
+} from "../../src/repositories";
 import { createTestBranchStatus, createTestGitDiffs } from "../factories/git";
 
 /**

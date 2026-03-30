@@ -10,7 +10,7 @@ import type { ILogger } from "../../../../types/logger";
 import type {
 	CodingAgentTurnRepository,
 	ExecutionProcessLogsRepository,
-} from "../../../../types/repository";
+} from "../../..";
 import { type LogStore, logStoreManager } from "../../../log-store";
 
 export type IdleCallback = (processId: string) => void;

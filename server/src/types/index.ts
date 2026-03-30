@@ -34,4 +34,4 @@ export type {
 	WorkspaceRepoRepository,
 	WorkspaceRepository,
 	WorktreeRepository,
-} from "./repository";
+} from "../repositories";

@@ -10,7 +10,7 @@ import {
 	parseLogsToConversation,
 } from "../lib/conversation-parser";
 import type { Full } from "../repositories/common";
-import type { ExecutionProcessLogsRepository } from "../types/repository";
+import type { ExecutionProcessLogsRepository } from "../repositories";
 
 export interface StructuredLogEvent {
 	type: "entry_add" | "entry_update" | "idle_changed" | "snapshot";

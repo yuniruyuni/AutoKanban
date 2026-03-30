@@ -1,8 +1,12 @@
 import type { PgDatabase } from "../db/pg-client";
 import type { ILogStreamer } from "../presentation/log-streamer";
-import type { DbReadRepos, DbWriteRepos, FullRepos } from "../repositories/common";
+import type {
+	DbReadRepos,
+	DbWriteRepos,
+	FullRepos,
+} from "../repositories/common";
 import type { ILogger } from "./logger";
-import type { Repos } from "./repository";
+import type { Repos } from "../repositories";
 
 // ============================================
 // Step-specific context types

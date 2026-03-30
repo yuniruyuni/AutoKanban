@@ -35,7 +35,7 @@ import {
 	type ServiceCtx,
 } from "./repositories/common";
 import type { ILogger } from "./types/logger";
-import type { Repos } from "./types/repository";
+import type { Repos } from "./repositories";
 
 function createRawRepos(logger: ILogger): Repos {
 	return {

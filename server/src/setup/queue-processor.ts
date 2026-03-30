@@ -17,7 +17,7 @@ import type {
 	TaskRepository,
 	WorkspaceRepoRepository,
 	WorkspaceRepository,
-} from "../types/repository";
+} from "../repositories";
 
 export interface QueueProcessorDependencies {
 	executor: ExecutorRepository;

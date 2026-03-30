@@ -13,7 +13,7 @@ import { join } from "node:path";
 import type { DriverApprovalRequest } from "../../../../types/coding-agent-driver";
 import type { Full } from "../../../common";
 import type { ILogger } from "../../../../types/logger";
-import type { ExecutionProcessLogsRepository } from "../../../../types/repository";
+import type { ExecutionProcessLogsRepository } from "../../..";
 import { ClaudeCodeDriver } from "./claude-code-driver";
 
 function createMockLogger(): ILogger {
