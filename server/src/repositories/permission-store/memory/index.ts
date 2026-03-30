@@ -1,4 +1,4 @@
-import type { PendingPermission } from "../../../models/common";
+import type { PendingPermission } from "../../../models/permission";
 import type { ServiceCtx } from "../../common";
 import type { PermissionStoreRepository } from "../repository";
 
