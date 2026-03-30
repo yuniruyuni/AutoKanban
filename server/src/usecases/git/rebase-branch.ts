@@ -45,8 +45,12 @@ export const rebaseBranch = (input: RebaseBranchInput) =>
 				return fail("NOT_FOUND", "Worktree does not exist");
 			}
 
-			// Fetch latest from remote first
-			await ctx.repos.git.fetch(worktreePath);
+			// Fetch latest from remote if available (ignore errors for local-only repos)
+			try {
+				await ctx.repos.git.fetch(worktreePath);
+			} catch {
+				// No remote or fetch failed — proceed with local state
+			}
 
 			// Perform rebase
 			try {

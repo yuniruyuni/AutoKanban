@@ -194,7 +194,8 @@ export class GitRepository implements GitRepositoryDef {
 		newBase: string,
 		oldBase?: string,
 	): Promise<string> {
-		const args = ["rebase"];
+		// Auto-stash uncommitted changes to allow rebase on dirty worktree
+		const args = ["rebase", "--autostash"];
 		if (oldBase) {
 			args.push("--onto", newBase, oldBase);
 		} else {

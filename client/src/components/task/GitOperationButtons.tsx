@@ -5,11 +5,13 @@ import {
 	ExternalLink,
 	RefreshCw,
 } from "lucide-react";
+import { skipToken } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { BranchCombobox } from "@/components/atoms/BranchCombobox";
 import { Button } from "@/components/atoms/Button";
 import { Dialog, DialogContent, DialogHeader } from "@/components/atoms/Dialog";
-import { Input } from "@/components/atoms/Input";
 import { CreatePRDialog } from "@/components/task/CreatePRDialog";
+import { trpc } from "@/trpc";
 import { useBranchStatus, useDiffs, useGitMutations } from "@/hooks/useGit";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +32,9 @@ export function GitOperationButtons({
 }: GitOperationButtonsProps) {
 	const { status, refetch } = useBranchStatus(workspaceId, projectId);
 	const { diffs } = useDiffs(workspaceId, projectId);
+	const { data: branchData } = trpc.git.listBranches.useQuery(
+		projectId ? { projectId } : skipToken,
+	);
 	const {
 		rebase,
 		isRebasing,
@@ -339,11 +344,12 @@ export function GitOperationButtons({
 				</DialogHeader>
 				<DialogContent>
 					<div className="space-y-4">
-						<Input
+						<BranchCombobox
 							label="Target Branch"
+							branches={branchData?.branches ?? []}
 							value={targetBranch}
-							onChange={(e) => setTargetBranch(e.target.value)}
-							placeholder="main"
+							onChange={setTargetBranch}
+							placeholder="Search branches..."
 						/>
 						<div className="flex justify-end gap-2">
 							<Button
@@ -367,11 +373,12 @@ export function GitOperationButtons({
 				</DialogHeader>
 				<DialogContent>
 					<div className="space-y-4">
-						<Input
+						<BranchCombobox
 							label="Target Branch"
+							branches={branchData?.branches ?? []}
 							value={targetBranch}
-							onChange={(e) => setTargetBranch(e.target.value)}
-							placeholder="main"
+							onChange={setTargetBranch}
+							placeholder="Search branches..."
 						/>
 						<p className="text-sm text-muted">
 							This will fast-forward merge your changes into {targetBranch}.
