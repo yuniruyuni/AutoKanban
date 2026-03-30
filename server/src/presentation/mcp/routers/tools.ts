@@ -3,7 +3,7 @@ import {
 	CallToolRequestSchema,
 	ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import type { TrpcHttpClient } from "../trpc-client";
+import type { TrpcHttpClient } from "../../../lib/trpc/client";
 
 interface ToolDef {
 	name: string;
