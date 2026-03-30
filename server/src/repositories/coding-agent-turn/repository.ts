@@ -3,13 +3,9 @@ import type {
 	CodingAgentTurn,
 } from "../../models/coding-agent-turn";
 import type { Cursor, Page } from "../../models/common";
-import type {
-	DbReadCtx,
-	DbWriteCtx,
-	StripMarkers,
-} from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
 
-export interface ICodingAgentTurnRepositoryDef {
+export interface CodingAgentTurnRepository {
 	get(
 		ctx: DbReadCtx,
 		spec: CodingAgentTurn.Spec,
@@ -45,6 +41,3 @@ export interface ICodingAgentTurnRepositoryDef {
 		summary: string,
 	): Promise<void>;
 }
-
-export type ICodingAgentTurnRepository =
-	StripMarkers<ICodingAgentTurnRepositoryDef>;

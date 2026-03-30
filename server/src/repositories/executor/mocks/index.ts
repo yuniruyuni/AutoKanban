@@ -1,8 +1,8 @@
-import type { IExecutorRepository } from "../repository";
+import type { ExecutorRepository } from "../repository";
 
 export function createMockExecutorRepository(
-	overrides: Partial<IExecutorRepository> = {},
-): IExecutorRepository {
+	overrides: Partial<ExecutorRepository> = {},
+): ExecutorRepository {
 	return {
 		start: async () => ({
 			id: "mock-id",
@@ -25,5 +25,5 @@ export function createMockExecutorRepository(
 		getStdout: () => null,
 		getStderr: () => null,
 		...overrides,
-	} as IExecutorRepository;
+	} as ExecutorRepository;
 }

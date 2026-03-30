@@ -11,14 +11,20 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Approval } from "../models/approval";
+import {
+	bindCtx,
+	createServiceCtx,
+	type Full,
+	type Service,
+} from "../types/db-capability";
 import type { ILogger } from "../types/logger";
 import type {
-	IApprovalRepository,
-	IExecutionProcessLogsRepository,
-	IExecutionProcessRepository,
-	ISessionRepository,
-	ITaskRepository,
-	IWorkspaceRepository,
+	ApprovalRepository,
+	ExecutionProcessLogsRepository,
+	ExecutionProcessRepository,
+	SessionRepository,
+	TaskRepository,
+	WorkspaceRepository,
 } from "../types/repository";
 import { ApprovalStore } from "./approval-store";
 import { ExecutorRepository } from "./executor";
@@ -40,25 +46,25 @@ function createMockLogger(): ILogger {
 	} as unknown as ILogger;
 }
 
-function createMockExecutionProcessRepo(): IExecutionProcessRepository {
+function createMockExecutionProcessRepo(): Full<ExecutionProcessRepository> {
 	const store = new Map();
 	return {
 		get: (spec: { id?: string }) => store.get(spec.id) ?? null,
 		upsert: (ep: { id: string }) => store.set(ep.id, ep),
 		list: () => ({ items: [], hasMore: false }),
-	} as unknown as IExecutionProcessRepository;
+	} as unknown as Full<ExecutionProcessRepository>;
 }
 
-function createMockLogsRepo(): IExecutionProcessLogsRepository {
+function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
 	return {
 		appendLogs: () => {},
 		getLogs: () => null,
 		upsertLogs: () => {},
 		deleteLogs: () => {},
-	} as unknown as IExecutionProcessLogsRepository;
+	} as unknown as Full<ExecutionProcessLogsRepository>;
 }
 
-function createMockApprovalRepo(): IApprovalRepository {
+function createMockApprovalRepo(): Full<ApprovalRepository> {
 	const store = new Map<string, Approval>();
 	return {
 		get: (spec: { type?: string; id?: string }) => {
@@ -68,7 +74,7 @@ function createMockApprovalRepo(): IApprovalRepository {
 		upsert: (a: Approval) => store.set(a.id, a),
 		list: () => ({ items: [], hasMore: false }),
 		delete: () => 0,
-	} as unknown as IApprovalRepository;
+	} as unknown as Full<ApprovalRepository>;
 }
 
 describe("ExecutorRepository E2E (actual claude-code)", () => {
@@ -97,18 +103,20 @@ describe("ExecutorRepository E2E (actual claude-code)", () => {
 				// Wire approval deps
 				executor.setApprovalDeps({
 					approvalRepo,
-					approvalStore,
-					taskRepo: { get: () => null } as unknown as ITaskRepository,
+					approvalStore: bindCtx(approvalStore, createServiceCtx()),
+					taskRepo: {
+						get: () => null,
+					} as unknown as Full<TaskRepository>,
 					sessionRepo: {
 						get: () => null,
-					} as unknown as ISessionRepository,
+					} as unknown as Full<SessionRepository>,
 					workspaceRepo: {
 						get: () => null,
-					} as unknown as IWorkspaceRepository,
+					} as unknown as Full<WorkspaceRepository>,
 				});
 
 				// Start protocol in plan mode
-				const rp = await executor.startProtocol({
+				const rp = await executor.startProtocol(createServiceCtx(), {
 					sessionId: "test-session-1",
 					runReason: "codingagent",
 					workingDir: tmpDir,
@@ -125,7 +133,7 @@ describe("ExecutorRepository E2E (actual claude-code)", () => {
 				let pending: Approval[] = [];
 
 				while (Date.now() - startTime < timeout) {
-					pending = approvalStore.listPending(rp.id);
+					pending = approvalStore.listPending(createServiceCtx(), rp.id);
 					if (pending.length > 0) break;
 					await new Promise((r) => setTimeout(r, 500));
 				}
@@ -141,7 +149,13 @@ describe("ExecutorRepository E2E (actual claude-code)", () => {
 				console.log("[E2E] Approval verified! Responding...");
 
 				// Approve it
-				approvalStore.respond(pending[0].id, "approved", null, approvalRepo);
+				approvalStore.respond(
+					createServiceCtx(),
+					pending[0].id,
+					"approved",
+					null,
+					approvalRepo,
+				);
 
 				// Wait briefly for response to be sent
 				await new Promise((r) => setTimeout(r, 3000));

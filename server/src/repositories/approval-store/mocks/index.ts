@@ -1,8 +1,8 @@
-import type { IApprovalStore } from "../repository";
+import type { ApprovalStoreRepository } from "../repository";
 
 export function createMockApprovalStore(
-	overrides: Partial<IApprovalStore> = {},
-): IApprovalStore {
+	overrides: Partial<ApprovalStoreRepository> = {},
+): ApprovalStoreRepository {
 	return {
 		createAndWait: async () => ({ status: "approved" as const, reason: null }),
 		respond: () => true,
@@ -11,5 +11,5 @@ export function createMockApprovalStore(
 		listPending: () => [],
 		clear: () => {},
 		...overrides,
-	} as IApprovalStore;
+	} as ApprovalStoreRepository;
 }

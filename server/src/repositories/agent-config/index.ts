@@ -1,2 +1,5 @@
 export { AgentConfigRepository } from "./file";
-export type { AgentAdapter, IAgentConfigRepository } from "./repository";
+export type {
+	AgentAdapter,
+	AgentConfigRepository as AgentConfigRepositoryDef,
+} from "./repository";

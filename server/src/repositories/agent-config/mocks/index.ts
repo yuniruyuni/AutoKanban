@@ -1,8 +1,8 @@
-import type { IAgentConfigRepository } from "../repository";
+import type { AgentConfigRepository } from "../repository";
 
 export function createMockAgentConfigRepository(
-	overrides: Partial<IAgentConfigRepository> = {},
-): IAgentConfigRepository {
+	overrides: Partial<AgentConfigRepository> = {},
+): AgentConfigRepository {
 	return {
 		listSupportedAgents: () => [],
 		getAdapter: () => null,
@@ -11,5 +11,5 @@ export function createMockAgentConfigRepository(
 		injectServer: () => {},
 		removeServer: () => {},
 		...overrides,
-	} as IAgentConfigRepository;
+	} as AgentConfigRepository;
 }

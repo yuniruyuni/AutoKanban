@@ -1,14 +1,14 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { Task } from "../../../models/task";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { ITaskRepositoryDef } from "../repository";
+import type { TaskRepository as ITaskRepository } from "../repository";
 import { count } from "./count";
 import { del } from "./delete";
 import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class TaskRepository implements ITaskRepositoryDef {
+export class TaskRepository implements ITaskRepository {
 	async get(ctx: DbReadCtx, spec: Task.Spec): Promise<Task | null> {
 		return get(ctx.db, spec);
 	}

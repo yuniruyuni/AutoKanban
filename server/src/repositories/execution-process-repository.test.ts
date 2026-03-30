@@ -7,7 +7,7 @@ import type { PgDatabase } from "../db/pg-client";
 import { ExecutionProcess } from "../models/execution-process";
 import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
 import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
-import { ExecutionProcessRepository } from "./execution-process";
+import { ExecutionProcessRepository } from "./execution-process/postgres";
 
 let db: PgDatabase;
 let epRepo: ExecutionProcessRepository;

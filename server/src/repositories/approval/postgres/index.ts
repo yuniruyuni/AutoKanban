@@ -1,13 +1,13 @@
 import type { Approval } from "../../../models/approval";
 import type { Cursor, Page } from "../../../models/common";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IApprovalRepositoryDef } from "../repository";
+import type { ApprovalRepository as IApprovalRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class ApprovalRepository implements IApprovalRepositoryDef {
+export class ApprovalRepository implements IApprovalRepository {
 	async get(ctx: DbReadCtx, spec: Approval.Spec): Promise<Approval | null> {
 		return get(ctx.db, spec);
 	}

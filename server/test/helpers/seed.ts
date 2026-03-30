@@ -4,11 +4,11 @@ import type { Project } from "../../src/models/project";
 import type { Session } from "../../src/models/session";
 import type { Task } from "../../src/models/task";
 import type { Workspace } from "../../src/models/workspace";
-import { ExecutionProcessRepository } from "../../src/repositories/execution-process";
-import { ProjectRepository } from "../../src/repositories/project";
-import { SessionRepository } from "../../src/repositories/session";
-import { TaskRepository } from "../../src/repositories/task";
-import { WorkspaceRepository } from "../../src/repositories/workspace";
+import { ExecutionProcessRepository } from "../../src/repositories/execution-process/postgres";
+import { ProjectRepository } from "../../src/repositories/project/postgres";
+import { SessionRepository } from "../../src/repositories/session/postgres";
+import { TaskRepository } from "../../src/repositories/task/postgres";
+import { WorkspaceRepository } from "../../src/repositories/workspace/postgres";
 import { createDbWriteCtx } from "../../src/types/db-capability";
 import {
 	createTestExecutionProcess,

@@ -1,7 +1,7 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { Workspace } from "../../../models/workspace";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IWorkspaceRepositoryDef } from "../repository";
+import type { WorkspaceRepository as IWorkspaceRepository } from "../repository";
 import { del } from "./delete";
 import { findByWorktreePath } from "./find-by-worktree-path";
 import { get } from "./get";
@@ -9,7 +9,7 @@ import { getMaxAttempt } from "./get-max-attempt";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class WorkspaceRepository implements IWorkspaceRepositoryDef {
+export class WorkspaceRepository implements IWorkspaceRepository {
 	async get(ctx: DbReadCtx, spec: Workspace.Spec): Promise<Workspace | null> {
 		return get(ctx.db, spec);
 	}

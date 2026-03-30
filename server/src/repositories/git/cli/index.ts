@@ -4,7 +4,8 @@ import { spawn } from "bun";
 import type { BranchStatus, ConflictOp } from "../../../models/branch-status";
 import { createBranchStatus } from "../../../models/branch-status";
 import type { GitDiff } from "../../../models/git-diff";
-import type { IGitRepository } from "../repository";
+import type { ServiceCtx } from "../../../types/db-capability";
+import type { GitRepository as GitRepositoryDef } from "../repository";
 
 interface GitCommandResult {
 	stdout: string;
@@ -16,7 +17,7 @@ interface GitCommandResult {
 /**
  * Repository for executing git commands via CLI.
  */
-export class GitRepository implements IGitRepository {
+export class GitRepository implements GitRepositoryDef {
 	/**
 	 * Executes a git command in the specified working directory.
 	 */
@@ -47,6 +48,7 @@ export class GitRepository implements IGitRepository {
 	// ============================================
 
 	async addWorktree(
+		_ctx: ServiceCtx,
 		repoPath: string,
 		worktreePath: string,
 		branch: string,
@@ -67,6 +69,7 @@ export class GitRepository implements IGitRepository {
 	}
 
 	async removeWorktree(
+		_ctx: ServiceCtx,
 		repoPath: string,
 		worktreePath: string,
 		force: boolean = false,
@@ -83,7 +86,7 @@ export class GitRepository implements IGitRepository {
 		}
 	}
 
-	async pruneWorktrees(repoPath: string): Promise<void> {
+	async pruneWorktrees(_ctx: ServiceCtx, repoPath: string): Promise<void> {
 		await this.exec(repoPath, "worktree", "prune");
 	}
 
@@ -91,7 +94,10 @@ export class GitRepository implements IGitRepository {
 	// Branch Operations
 	// ============================================
 
-	async getCurrentBranch(worktreePath: string): Promise<string> {
+	async getCurrentBranch(
+		_ctx: ServiceCtx,
+		worktreePath: string,
+	): Promise<string> {
 		const result = await this.exec(
 			worktreePath,
 			"rev-parse",
@@ -116,7 +122,11 @@ export class GitRepository implements IGitRepository {
 		}
 	}
 
-	async branchExists(repoPath: string, branch: string): Promise<boolean> {
+	async branchExists(
+		_ctx: ServiceCtx,
+		repoPath: string,
+		branch: string,
+	): Promise<boolean> {
 		const result = await this.exec(
 			repoPath,
 			"show-ref",
@@ -127,6 +137,7 @@ export class GitRepository implements IGitRepository {
 	}
 
 	async getAheadBehind(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 		branch: string,
 		targetBranch: string,
@@ -148,9 +159,12 @@ export class GitRepository implements IGitRepository {
 	}
 
 	async listBranches(
+		_ctx: ServiceCtx,
 		repoPath: string,
 	): Promise<{ name: string; isCurrent: boolean }[]> {
-		const currentBranch = await this.getCurrentBranch(repoPath).catch(() => "");
+		const currentBranch = await this.getCurrentBranch(_ctx, repoPath).catch(
+			() => "",
+		);
 
 		const result = await this.exec(
 			repoPath,
@@ -175,6 +189,7 @@ export class GitRepository implements IGitRepository {
 	// ============================================
 
 	async rebaseBranch(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 		newBase: string,
 		oldBase?: string,
@@ -188,7 +203,7 @@ export class GitRepository implements IGitRepository {
 
 		const result = await this.exec(worktreePath, ...args);
 		if (!result.success) {
-			if (await this.isRebaseInProgress(worktreePath)) {
+			if (await this.isRebaseInProgress(_ctx, worktreePath)) {
 				throw new Error("REBASE_CONFLICT");
 			}
 			throw new Error(`Rebase failed: ${result.stderr}`);
@@ -197,6 +212,7 @@ export class GitRepository implements IGitRepository {
 	}
 
 	async fastForwardMerge(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 		targetBranch: string,
 	): Promise<void> {
@@ -222,21 +238,21 @@ export class GitRepository implements IGitRepository {
 		}
 	}
 
-	async abortRebase(worktreePath: string): Promise<void> {
+	async abortRebase(_ctx: ServiceCtx, worktreePath: string): Promise<void> {
 		const result = await this.exec(worktreePath, "rebase", "--abort");
 		if (!result.success) {
 			throw new Error(`Failed to abort rebase: ${result.stderr}`);
 		}
 	}
 
-	async continueRebase(worktreePath: string): Promise<void> {
+	async continueRebase(_ctx: ServiceCtx, worktreePath: string): Promise<void> {
 		const result = await this.exec(worktreePath, "rebase", "--continue");
 		if (!result.success) {
 			throw new Error(`Failed to continue rebase: ${result.stderr}`);
 		}
 	}
 
-	async abortMerge(worktreePath: string): Promise<void> {
+	async abortMerge(_ctx: ServiceCtx, worktreePath: string): Promise<void> {
 		const result = await this.exec(worktreePath, "merge", "--abort");
 		if (!result.success) {
 			throw new Error(`Failed to abort merge: ${result.stderr}`);
@@ -247,7 +263,10 @@ export class GitRepository implements IGitRepository {
 	// Conflict Detection
 	// ============================================
 
-	async isRebaseInProgress(worktreePath: string): Promise<boolean> {
+	async isRebaseInProgress(
+		_ctx: ServiceCtx,
+		worktreePath: string,
+	): Promise<boolean> {
 		const gitDir = await this.getGitDir(worktreePath);
 		try {
 			await fs.access(path.join(gitDir, "rebase-merge"));
@@ -262,7 +281,10 @@ export class GitRepository implements IGitRepository {
 		}
 	}
 
-	async isMergeInProgress(worktreePath: string): Promise<boolean> {
+	async isMergeInProgress(
+		_ctx: ServiceCtx,
+		worktreePath: string,
+	): Promise<boolean> {
 		const gitDir = await this.getGitDir(worktreePath);
 		try {
 			await fs.access(path.join(gitDir, "MERGE_HEAD"));
@@ -272,7 +294,10 @@ export class GitRepository implements IGitRepository {
 		}
 	}
 
-	async getConflictedFiles(worktreePath: string): Promise<string[]> {
+	async getConflictedFiles(
+		_ctx: ServiceCtx,
+		worktreePath: string,
+	): Promise<string[]> {
 		const result = await this.exec(
 			worktreePath,
 			"diff",
@@ -287,11 +312,14 @@ export class GitRepository implements IGitRepository {
 		return result.stdout.split("\n").filter(Boolean);
 	}
 
-	async detectConflictOp(worktreePath: string): Promise<ConflictOp | null> {
-		if (await this.isRebaseInProgress(worktreePath)) {
+	async detectConflictOp(
+		_ctx: ServiceCtx,
+		worktreePath: string,
+	): Promise<ConflictOp | null> {
+		if (await this.isRebaseInProgress(_ctx, worktreePath)) {
 			return "rebase";
 		}
-		if (await this.isMergeInProgress(worktreePath)) {
+		if (await this.isMergeInProgress(_ctx, worktreePath)) {
 			return "merge";
 		}
 
@@ -313,7 +341,11 @@ export class GitRepository implements IGitRepository {
 	// Diff Operations
 	// ============================================
 
-	async getDiffs(worktreePath: string, baseCommit: string): Promise<GitDiff[]> {
+	async getDiffs(
+		_ctx: ServiceCtx,
+		worktreePath: string,
+		baseCommit: string,
+	): Promise<GitDiff[]> {
 		const result = await this.exec(
 			worktreePath,
 			"diff",
@@ -393,6 +425,7 @@ export class GitRepository implements IGitRepository {
 	}
 
 	async getUnifiedDiff(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 		baseCommit: string,
 	): Promise<string> {
@@ -401,6 +434,7 @@ export class GitRepository implements IGitRepository {
 	}
 
 	async getFileDiff(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 		baseCommit: string,
 		filePath: string,
@@ -420,6 +454,7 @@ export class GitRepository implements IGitRepository {
 	// ============================================
 
 	async getLastCommit(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 	): Promise<{ hash: string; message: string } | null> {
 		const result = await this.exec(
@@ -437,11 +472,15 @@ export class GitRepository implements IGitRepository {
 		return { hash, message };
 	}
 
-	async stageAll(worktreePath: string): Promise<void> {
+	async stageAll(_ctx: ServiceCtx, worktreePath: string): Promise<void> {
 		await this.exec(worktreePath, "add", "-A");
 	}
 
-	async commit(worktreePath: string, message: string): Promise<void> {
+	async commit(
+		_ctx: ServiceCtx,
+		worktreePath: string,
+		message: string,
+	): Promise<void> {
 		const result = await this.exec(worktreePath, "commit", "-m", message);
 		if (!result.success) {
 			throw new Error(`Commit failed: ${result.stderr}`);
@@ -453,6 +492,7 @@ export class GitRepository implements IGitRepository {
 	// ============================================
 
 	async push(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 		remote: string = "origin",
 		branch?: string,
@@ -499,6 +539,7 @@ export class GitRepository implements IGitRepository {
 	}
 
 	async createPullRequest(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 		title: string,
 		body: string,
@@ -532,6 +573,7 @@ export class GitRepository implements IGitRepository {
 	// ============================================
 
 	async getPrStatus(
+		_ctx: ServiceCtx,
 		repoPath: string,
 		prUrl: string,
 	): Promise<{
@@ -562,6 +604,7 @@ export class GitRepository implements IGitRepository {
 	}
 
 	async pullBranch(
+		_ctx: ServiceCtx,
 		repoPath: string,
 		branch: string,
 		remote: string = "origin",
@@ -587,20 +630,25 @@ export class GitRepository implements IGitRepository {
 	// ============================================
 
 	async getBranchStatus(
+		_ctx: ServiceCtx,
 		worktreePath: string,
 		targetBranch: string,
 	): Promise<BranchStatus> {
-		const branch = await this.getCurrentBranch(worktreePath);
+		const branch = await this.getCurrentBranch(_ctx, worktreePath);
 		const { ahead, behind } = await this.getAheadBehind(
+			_ctx,
 			worktreePath,
 			branch,
 			targetBranch,
 		);
-		const isRebaseInProgress = await this.isRebaseInProgress(worktreePath);
-		const isMergeInProgress = await this.isMergeInProgress(worktreePath);
-		const conflictOp = await this.detectConflictOp(worktreePath);
-		const conflictedFiles = await this.getConflictedFiles(worktreePath);
-		const lastCommit = await this.getLastCommit(worktreePath);
+		const isRebaseInProgress = await this.isRebaseInProgress(
+			_ctx,
+			worktreePath,
+		);
+		const isMergeInProgress = await this.isMergeInProgress(_ctx, worktreePath);
+		const conflictOp = await this.detectConflictOp(_ctx, worktreePath);
+		const conflictedFiles = await this.getConflictedFiles(_ctx, worktreePath);
+		const lastCommit = await this.getLastCommit(_ctx, worktreePath);
 
 		return createBranchStatus({
 			branch,
@@ -633,11 +681,15 @@ export class GitRepository implements IGitRepository {
 		return path.join(worktreePath, gitDir);
 	}
 
-	async fetch(worktreePath: string, remote: string = "origin"): Promise<void> {
+	async fetch(
+		_ctx: ServiceCtx,
+		worktreePath: string,
+		remote: string = "origin",
+	): Promise<void> {
 		await this.exec(worktreePath, "fetch", remote);
 	}
 
-	async isGitRepo(dirPath: string): Promise<boolean> {
+	async isGitRepo(_ctx: ServiceCtx, dirPath: string): Promise<boolean> {
 		const result = await this.exec(dirPath, "rev-parse", "--git-dir");
 		return result.success;
 	}

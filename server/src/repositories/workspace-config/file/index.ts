@@ -2,12 +2,13 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "jsonc-parser";
 import { WorkspaceConfig } from "../../../models/workspace-config";
-import type { IWorkspaceConfigRepository } from "../repository";
+import type { ServiceCtx } from "../../../types/db-capability";
+import type { WorkspaceConfigRepository as WorkspaceConfigRepositoryDef } from "../repository";
 
 const CONFIG_FILENAME = "auto-kanban.json";
 
-export class WorkspaceConfigRepository implements IWorkspaceConfigRepository {
-	async load(workingDir: string): Promise<WorkspaceConfig> {
+export class WorkspaceConfigRepository implements WorkspaceConfigRepositoryDef {
+	async load(_ctx: ServiceCtx, workingDir: string): Promise<WorkspaceConfig> {
 		const filePath = join(workingDir, CONFIG_FILENAME);
 		let content: string;
 		try {

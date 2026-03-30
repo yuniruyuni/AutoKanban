@@ -1,8 +1,9 @@
 import type { Draft } from "../../models/common";
+import type { ServiceCtx } from "../../types/db-capability";
 
-export interface IDraftRepository {
-	save(sessionId: string, text: string): void;
-	get(sessionId: string): Draft | undefined;
-	delete(sessionId: string): boolean;
-	clear(): void;
+export interface DraftRepository {
+	save(ctx: ServiceCtx, sessionId: string, text: string): void;
+	get(ctx: ServiceCtx, sessionId: string): Draft | undefined;
+	delete(ctx: ServiceCtx, sessionId: string): boolean;
+	clear(ctx: ServiceCtx): void;
 }

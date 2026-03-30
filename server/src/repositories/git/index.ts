@@ -1,2 +1,2 @@
 export { GitRepository } from "./cli";
-export type { IGitRepository } from "./repository";
+export type { GitRepository as GitRepositoryDef } from "./repository";

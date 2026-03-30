@@ -1,9 +1,9 @@
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IProjectRepositoryDef } from "../repository";
+import type { ProjectRepository } from "../repository";
 
 export function createMockProjectRepository(
-	overrides: Partial<IProjectRepositoryDef> = {},
-): IProjectRepositoryDef {
+	overrides: Partial<ProjectRepository> = {},
+): ProjectRepository {
 	return {
 		get: async (_ctx: DbReadCtx) => null,
 		list: async (_ctx: DbReadCtx) => ({ items: [], hasMore: false }),
@@ -13,5 +13,5 @@ export function createMockProjectRepository(
 		upsert: async (_ctx: DbWriteCtx) => {},
 		delete: async (_ctx: DbWriteCtx) => 0,
 		...overrides,
-	} as IProjectRepositoryDef;
+	} as ProjectRepository;
 }

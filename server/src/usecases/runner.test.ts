@@ -14,7 +14,7 @@ const mockDb = {
 } as PgDatabase;
 
 const emptyRepo = {} as Record<string, never>;
-const mockRawDbRepos = {
+const mockRawRepos = {
 	task: emptyRepo,
 	taskTemplate: emptyRepo,
 	project: emptyRepo,
@@ -27,14 +27,24 @@ const mockRawDbRepos = {
 	tool: emptyRepo,
 	variant: emptyRepo,
 	approval: emptyRepo,
-} as unknown as Context["rawDbRepos"];
+	git: emptyRepo,
+	worktree: emptyRepo,
+	executor: emptyRepo,
+	messageQueue: emptyRepo,
+	agentConfig: emptyRepo,
+	workspaceConfig: emptyRepo,
+	draft: emptyRepo,
+	permissionStore: emptyRepo,
+	approvalStore: emptyRepo,
+	logStoreManager: emptyRepo,
+	devServer: emptyRepo,
+} as unknown as Context["rawRepos"];
 
 const mockCtx: Context = {
 	now: new Date("2025-01-15T10:00:00.000Z"),
 	logger: createMockLogger(),
 	db: mockDb,
-	rawDbRepos: mockRawDbRepos,
-	externalRepos: {} as Context["externalRepos"],
+	rawRepos: mockRawRepos,
 	repos: {} as Context["repos"],
 	logStreamer: {} as ILogStreamer,
 };

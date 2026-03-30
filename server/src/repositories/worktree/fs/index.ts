@@ -4,9 +4,10 @@ import * as path from "node:path";
 import type { Project } from "../../../models/project";
 import type { Workspace } from "../../../models/workspace";
 import type { WorktreeInfo } from "../../../models/worktree-info";
+import type { ServiceCtx } from "../../../types/db-capability";
 import type { ILogger } from "../../../types/logger";
 import { GitRepository } from "../../git/cli";
-import type { IWorktreeRepository } from "../repository";
+import type { WorktreeRepository as WorktreeRepositoryDef } from "../repository";
 
 const WORKTREE_BASE_DIR = ".auto-kanban/worktrees";
 
@@ -16,7 +17,7 @@ const WORKTREE_BASE_DIR = ".auto-kanban/worktrees";
  * Worktree path structure:
  * ~/.auto-kanban/worktrees/{workspaceId}/{projectName}/
  */
-export class WorktreeRepository implements IWorktreeRepository {
+export class WorktreeRepository implements WorktreeRepositoryDef {
 	private gitRepository: GitRepository;
 	private baseDir: string;
 	private logger: ILogger;
@@ -27,29 +28,35 @@ export class WorktreeRepository implements IWorktreeRepository {
 		this.baseDir = baseDir ?? path.join(os.homedir(), WORKTREE_BASE_DIR);
 	}
 
-	getBaseDir(): string {
+	getBaseDir(_ctx: ServiceCtx): string {
 		return this.baseDir;
 	}
 
-	getWorkspaceDir(workspaceId: string): string {
+	getWorkspaceDir(_ctx: ServiceCtx, workspaceId: string): string {
 		return path.join(this.baseDir, workspaceId);
 	}
 
-	getWorktreePath(workspaceId: string, projectName: string): string {
-		return path.join(this.getWorkspaceDir(workspaceId), projectName);
+	getWorktreePath(
+		_ctx: ServiceCtx,
+		workspaceId: string,
+		projectName: string,
+	): string {
+		return path.join(this.getWorkspaceDir(_ctx, workspaceId), projectName);
 	}
 
 	async createWorktree(
+		_ctx: ServiceCtx,
 		workspace: Workspace,
 		project: Project,
 		targetBranch?: string,
 	): Promise<string> {
-		const worktreePath = this.getWorktreePath(workspace.id, project.name);
+		const worktreePath = this.getWorktreePath(_ctx, workspace.id, project.name);
 		const branch = workspace.branch;
 
 		await fs.mkdir(path.dirname(worktreePath), { recursive: true });
 
 		const branchExists = await this.gitRepository.branchExists(
+			_ctx,
 			project.repoPath,
 			branch,
 		);
@@ -57,6 +64,7 @@ export class WorktreeRepository implements IWorktreeRepository {
 		const startPoint = targetBranch ?? project.branch ?? "HEAD";
 
 		await this.gitRepository.addWorktree(
+			_ctx,
 			project.repoPath,
 			worktreePath,
 			branch,
@@ -68,12 +76,13 @@ export class WorktreeRepository implements IWorktreeRepository {
 	}
 
 	async removeWorktree(
+		_ctx: ServiceCtx,
 		workspaceId: string,
 		project: Project,
 		force: boolean = false,
 		deleteBranch: boolean = true,
 	): Promise<void> {
-		const worktreePath = this.getWorktreePath(workspaceId, project.name);
+		const worktreePath = this.getWorktreePath(_ctx, workspaceId, project.name);
 
 		try {
 			await fs.access(worktreePath);
@@ -83,12 +92,13 @@ export class WorktreeRepository implements IWorktreeRepository {
 
 		let branch: string | null = null;
 		try {
-			branch = await this.gitRepository.getCurrentBranch(worktreePath);
+			branch = await this.gitRepository.getCurrentBranch(_ctx, worktreePath);
 		} catch {
 			// Ignore - branch info unavailable
 		}
 
 		await this.gitRepository.removeWorktree(
+			_ctx,
 			project.repoPath,
 			worktreePath,
 			force,
@@ -107,10 +117,11 @@ export class WorktreeRepository implements IWorktreeRepository {
 			}
 		}
 
-		await this.cleanupEmptyDirs(workspaceId);
+		await this.cleanupEmptyDirs(_ctx, workspaceId);
 	}
 
 	async removeAllWorktrees(
+		_ctx: ServiceCtx,
 		workspaceId: string,
 		projects: Project[],
 		force: boolean = false,
@@ -118,7 +129,13 @@ export class WorktreeRepository implements IWorktreeRepository {
 	): Promise<void> {
 		for (const project of projects) {
 			try {
-				await this.removeWorktree(workspaceId, project, force, deleteBranch);
+				await this.removeWorktree(
+					_ctx,
+					workspaceId,
+					project,
+					force,
+					deleteBranch,
+				);
 			} catch (error) {
 				this.logger.error(
 					`Failed to remove worktree for ${project.name}:`,
@@ -127,7 +144,7 @@ export class WorktreeRepository implements IWorktreeRepository {
 			}
 		}
 
-		const workspaceDir = this.getWorkspaceDir(workspaceId);
+		const workspaceDir = this.getWorkspaceDir(_ctx, workspaceId);
 		try {
 			await fs.rm(workspaceDir, { recursive: true, force: true });
 		} catch {
@@ -136,46 +153,56 @@ export class WorktreeRepository implements IWorktreeRepository {
 	}
 
 	async worktreeExists(
+		_ctx: ServiceCtx,
 		workspaceId: string,
 		projectName: string,
 	): Promise<boolean> {
-		const worktreePath = this.getWorktreePath(workspaceId, projectName);
+		const worktreePath = this.getWorktreePath(_ctx, workspaceId, projectName);
 		try {
 			await fs.access(worktreePath);
-			return await this.gitRepository.isGitRepo(worktreePath);
+			return await this.gitRepository.isGitRepo(_ctx, worktreePath);
 		} catch {
 			return false;
 		}
 	}
 
 	async ensureWorktreeExists(
+		_ctx: ServiceCtx,
 		workspace: Workspace,
 		project: Project,
 		targetBranch?: string,
 	): Promise<string> {
-		const worktreePath = this.getWorktreePath(workspace.id, project.name);
+		const worktreePath = this.getWorktreePath(_ctx, workspace.id, project.name);
 
-		if (await this.worktreeExists(workspace.id, project.name)) {
+		if (await this.worktreeExists(_ctx, workspace.id, project.name)) {
 			return worktreePath;
 		}
 
-		return await this.createWorktree(workspace, project, targetBranch);
+		return await this.createWorktree(_ctx, workspace, project, targetBranch);
 	}
 
 	async getWorktreeInfo(
+		_ctx: ServiceCtx,
 		workspaceId: string,
 		projects: Project[],
 	): Promise<WorktreeInfo[]> {
 		const result: WorktreeInfo[] = [];
 
 		for (const project of projects) {
-			const worktreePath = this.getWorktreePath(workspaceId, project.name);
-			const exists = await this.worktreeExists(workspaceId, project.name);
+			const worktreePath = this.getWorktreePath(
+				_ctx,
+				workspaceId,
+				project.name,
+			);
+			const exists = await this.worktreeExists(_ctx, workspaceId, project.name);
 
 			let branch = "";
 			if (exists) {
 				try {
-					branch = await this.gitRepository.getCurrentBranch(worktreePath);
+					branch = await this.gitRepository.getCurrentBranch(
+						_ctx,
+						worktreePath,
+					);
 				} catch {
 					// Ignore errors
 				}
@@ -193,8 +220,11 @@ export class WorktreeRepository implements IWorktreeRepository {
 		return result;
 	}
 
-	private async cleanupEmptyDirs(workspaceId: string): Promise<void> {
-		const workspaceDir = this.getWorkspaceDir(workspaceId);
+	private async cleanupEmptyDirs(
+		_ctx: ServiceCtx,
+		workspaceId: string,
+	): Promise<void> {
+		const workspaceDir = this.getWorkspaceDir(_ctx, workspaceId);
 
 		try {
 			const entries = await fs.readdir(workspaceDir);
@@ -206,7 +236,7 @@ export class WorktreeRepository implements IWorktreeRepository {
 		}
 	}
 
-	async pruneWorktrees(project: Project): Promise<void> {
-		await this.gitRepository.pruneWorktrees(project.repoPath);
+	async pruneWorktrees(_ctx: ServiceCtx, project: Project): Promise<void> {
+		await this.gitRepository.pruneWorktrees(_ctx, project.repoPath);
 	}
 }

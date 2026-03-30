@@ -1,7 +1,6 @@
 import { type Fail, fail, isFail, type Unfail } from "../models/common";
 import type {
 	Context,
-	DbRepoDefs,
 	PostContext,
 	PreContext,
 	ProcessContext,
@@ -9,12 +8,15 @@ import type {
 	WriteContext,
 } from "../types/context";
 import {
-	bindDbCtx,
+	bindCtx,
 	createDbReadCtx,
 	createDbWriteCtx,
 	type DbReadCtx,
+	type DbReadRepos,
 	type DbWriteCtx,
+	type DbWriteRepos,
 } from "../types/db-capability";
+import type { Repos } from "../types/repository";
 
 // Re-export context types for convenience
 export type {
@@ -68,37 +70,63 @@ interface UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult> {
 // Repo binding helpers
 // ============================================
 
-function bindReadRepos(raw: DbRepoDefs, dbCtx: DbReadCtx) {
+function bindReadRepos(raw: Repos, dbCtx: DbReadCtx): DbReadRepos<Repos> {
 	return {
-		task: bindDbCtx(raw.task, dbCtx),
-		taskTemplate: bindDbCtx(raw.taskTemplate, dbCtx),
-		project: bindDbCtx(raw.project, dbCtx),
-		workspace: bindDbCtx(raw.workspace, dbCtx),
-		workspaceRepo: bindDbCtx(raw.workspaceRepo, dbCtx),
-		session: bindDbCtx(raw.session, dbCtx),
-		executionProcess: bindDbCtx(raw.executionProcess, dbCtx),
-		executionProcessLogs: bindDbCtx(raw.executionProcessLogs, dbCtx),
-		codingAgentTurn: bindDbCtx(raw.codingAgentTurn, dbCtx),
-		tool: bindDbCtx(raw.tool, dbCtx),
-		variant: bindDbCtx(raw.variant, dbCtx),
-		approval: bindDbCtx(raw.approval, dbCtx),
+		// DB repos: bind with DbReadCtx to extract read-only methods
+		task: bindCtx(raw.task, dbCtx),
+		taskTemplate: bindCtx(raw.taskTemplate, dbCtx),
+		project: bindCtx(raw.project, dbCtx),
+		workspace: bindCtx(raw.workspace, dbCtx),
+		workspaceRepo: bindCtx(raw.workspaceRepo, dbCtx),
+		session: bindCtx(raw.session, dbCtx),
+		executionProcess: bindCtx(raw.executionProcess, dbCtx),
+		executionProcessLogs: bindCtx(raw.executionProcessLogs, dbCtx),
+		codingAgentTurn: bindCtx(raw.codingAgentTurn, dbCtx),
+		tool: bindCtx(raw.tool, dbCtx),
+		variant: bindCtx(raw.variant, dbCtx),
+		approval: bindCtx(raw.approval, dbCtx),
+		// External repos: DbRead extracts nothing (ServiceCtx methods excluded)
+		git: bindCtx(raw.git, dbCtx),
+		worktree: bindCtx(raw.worktree, dbCtx),
+		executor: bindCtx(raw.executor, dbCtx),
+		messageQueue: bindCtx(raw.messageQueue, dbCtx),
+		agentConfig: bindCtx(raw.agentConfig, dbCtx),
+		workspaceConfig: bindCtx(raw.workspaceConfig, dbCtx),
+		draft: bindCtx(raw.draft, dbCtx),
+		permissionStore: bindCtx(raw.permissionStore, dbCtx),
+		approvalStore: bindCtx(raw.approvalStore, dbCtx),
+		logStoreManager: bindCtx(raw.logStoreManager, dbCtx),
+		devServer: bindCtx(raw.devServer, dbCtx),
 	};
 }
 
-function bindWriteRepos(raw: DbRepoDefs, dbCtx: DbWriteCtx) {
+function bindWriteRepos(raw: Repos, dbCtx: DbWriteCtx): DbWriteRepos<Repos> {
 	return {
-		task: bindDbCtx(raw.task, dbCtx),
-		taskTemplate: bindDbCtx(raw.taskTemplate, dbCtx),
-		project: bindDbCtx(raw.project, dbCtx),
-		workspace: bindDbCtx(raw.workspace, dbCtx),
-		workspaceRepo: bindDbCtx(raw.workspaceRepo, dbCtx),
-		session: bindDbCtx(raw.session, dbCtx),
-		executionProcess: bindDbCtx(raw.executionProcess, dbCtx),
-		executionProcessLogs: bindDbCtx(raw.executionProcessLogs, dbCtx),
-		codingAgentTurn: bindDbCtx(raw.codingAgentTurn, dbCtx),
-		tool: bindDbCtx(raw.tool, dbCtx),
-		variant: bindDbCtx(raw.variant, dbCtx),
-		approval: bindDbCtx(raw.approval, dbCtx),
+		// DB repos: bind with DbWriteCtx to extract read + write methods
+		task: bindCtx(raw.task, dbCtx),
+		taskTemplate: bindCtx(raw.taskTemplate, dbCtx),
+		project: bindCtx(raw.project, dbCtx),
+		workspace: bindCtx(raw.workspace, dbCtx),
+		workspaceRepo: bindCtx(raw.workspaceRepo, dbCtx),
+		session: bindCtx(raw.session, dbCtx),
+		executionProcess: bindCtx(raw.executionProcess, dbCtx),
+		executionProcessLogs: bindCtx(raw.executionProcessLogs, dbCtx),
+		codingAgentTurn: bindCtx(raw.codingAgentTurn, dbCtx),
+		tool: bindCtx(raw.tool, dbCtx),
+		variant: bindCtx(raw.variant, dbCtx),
+		approval: bindCtx(raw.approval, dbCtx),
+		// External repos: DbWrite extracts nothing (ServiceCtx methods excluded)
+		git: bindCtx(raw.git, dbCtx),
+		worktree: bindCtx(raw.worktree, dbCtx),
+		executor: bindCtx(raw.executor, dbCtx),
+		messageQueue: bindCtx(raw.messageQueue, dbCtx),
+		agentConfig: bindCtx(raw.agentConfig, dbCtx),
+		workspaceConfig: bindCtx(raw.workspaceConfig, dbCtx),
+		draft: bindCtx(raw.draft, dbCtx),
+		permissionStore: bindCtx(raw.permissionStore, dbCtx),
+		approvalStore: bindCtx(raw.approvalStore, dbCtx),
+		logStoreManager: bindCtx(raw.logStoreManager, dbCtx),
+		devServer: bindCtx(raw.devServer, dbCtx),
 	};
 }
 
@@ -185,7 +213,7 @@ function executeDbSteps<TPre, TRead, TProcess, TWrite, TPost, TResult>(
 	dbCtx: DbReadCtx | DbWriteCtx,
 	state: unknown,
 ): Promise<unknown> {
-	const readRepos = bindReadRepos(ctx.rawDbRepos, dbCtx);
+	const readRepos = bindReadRepos(ctx.rawRepos, dbCtx);
 	const readCtx: ReadContext = {
 		now: ctx.now,
 		logger: ctx.logger,
@@ -201,7 +229,7 @@ function executeDbSteps<TPre, TRead, TProcess, TWrite, TPost, TResult>(
 		if (isFail(s)) return s;
 
 		if (def.write) {
-			const writeRepos = bindWriteRepos(ctx.rawDbRepos, dbCtx as DbWriteCtx);
+			const writeRepos = bindWriteRepos(ctx.rawRepos, dbCtx as DbWriteCtx);
 			const writeCtx: WriteContext = {
 				now: ctx.now,
 				logger: ctx.logger,

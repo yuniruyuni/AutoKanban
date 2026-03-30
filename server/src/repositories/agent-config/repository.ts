@@ -1,3 +1,5 @@
+import type { ServiceCtx } from "../../types/db-capability";
+
 export interface AgentAdapter {
 	agentId: string;
 	displayName: string;
@@ -5,15 +7,20 @@ export interface AgentAdapter {
 	serversKey: string;
 }
 
-export interface IAgentConfigRepository {
-	listSupportedAgents(): AgentAdapter[];
-	getAdapter(agentId: string): AgentAdapter | null;
-	readMcpServers(agentId: string): Record<string, unknown>;
-	writeMcpServers(agentId: string, servers: Record<string, unknown>): void;
+export interface AgentConfigRepository {
+	listSupportedAgents(ctx: ServiceCtx): AgentAdapter[];
+	getAdapter(ctx: ServiceCtx, agentId: string): AgentAdapter | null;
+	readMcpServers(ctx: ServiceCtx, agentId: string): Record<string, unknown>;
+	writeMcpServers(
+		ctx: ServiceCtx,
+		agentId: string,
+		servers: Record<string, unknown>,
+	): void;
 	injectServer(
+		ctx: ServiceCtx,
 		agentId: string,
 		name: string,
 		config: Record<string, unknown>,
 	): void;
-	removeServer(agentId: string, name: string): void;
+	removeServer(ctx: ServiceCtx, agentId: string, name: string): void;
 }

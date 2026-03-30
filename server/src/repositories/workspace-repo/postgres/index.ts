@@ -1,14 +1,14 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { WorkspaceRepo } from "../../../models/workspace-repo";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IWorkspaceRepoRepositoryDef } from "../repository";
+import type { WorkspaceRepoRepository as IWorkspaceRepoRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { list } from "./list";
 import { listByWorkspace } from "./listByWorkspace";
 import { upsert } from "./upsert";
 
-export class WorkspaceRepoRepository implements IWorkspaceRepoRepositoryDef {
+export class WorkspaceRepoRepository implements IWorkspaceRepoRepository {
 	async get(
 		ctx: DbReadCtx,
 		spec: WorkspaceRepo.Spec,

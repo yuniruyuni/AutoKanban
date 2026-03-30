@@ -1,2 +1,5 @@
 export { LogStore, LogStoreManager, logStoreManager } from "./memory";
-export type { ILogStore, ILogStoreManager } from "./repository";
+export type {
+	LogStore as LogStoreDef,
+	LogStoreManager as LogStoreManagerDef,
+} from "./repository";

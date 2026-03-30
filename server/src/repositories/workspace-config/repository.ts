@@ -1,5 +1,6 @@
 import type { WorkspaceConfig } from "../../models/workspace-config";
+import type { ServiceCtx } from "../../types/db-capability";
 
-export interface IWorkspaceConfigRepository {
-	load(workingDir: string): Promise<WorkspaceConfig>;
+export interface WorkspaceConfigRepository {
+	load(ctx: ServiceCtx, workingDir: string): Promise<WorkspaceConfig>;
 }

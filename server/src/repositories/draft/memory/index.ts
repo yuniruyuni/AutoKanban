@@ -1,22 +1,23 @@
 import type { Draft } from "../../../models/common";
-import type { IDraftRepository } from "../repository";
+import type { ServiceCtx } from "../../../types/db-capability";
+import type { DraftRepository as DraftRepositoryDef } from "../repository";
 
-export class DraftRepository implements IDraftRepository {
+export class DraftRepository implements DraftRepositoryDef {
 	private drafts = new Map<string, Draft>();
 
-	save(sessionId: string, text: string): void {
+	save(_ctx: ServiceCtx, sessionId: string, text: string): void {
 		this.drafts.set(sessionId, { sessionId, text, savedAt: new Date() });
 	}
 
-	get(sessionId: string): Draft | undefined {
+	get(_ctx: ServiceCtx, sessionId: string): Draft | undefined {
 		return this.drafts.get(sessionId);
 	}
 
-	delete(sessionId: string): boolean {
+	delete(_ctx: ServiceCtx, sessionId: string): boolean {
 		return this.drafts.delete(sessionId);
 	}
 
-	clear(): void {
+	clear(_ctx: ServiceCtx): void {
 		this.drafts.clear();
 	}
 }

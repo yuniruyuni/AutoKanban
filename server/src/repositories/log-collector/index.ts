@@ -1,5 +1,6 @@
+import { createServiceCtx, type Full } from "../../types/db-capability";
 import type { ILogger } from "../../types/logger";
-import type { IExecutionProcessLogsRepository } from "../../types/repository";
+import type { ExecutionProcessLogsRepository } from "../../types/repository";
 import { type LogStore, logStoreManager } from "../log-store";
 
 /**
@@ -8,7 +9,7 @@ import { type LogStore, logStoreManager } from "../log-store";
  */
 export class LogCollector {
 	constructor(
-		private executionProcessLogsRepo: IExecutionProcessLogsRepository,
+		private executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
 		private logger: ILogger,
 	) {}
 
@@ -21,7 +22,8 @@ export class LogCollector {
 		stdout: ReadableStream<Uint8Array>,
 		stderr: ReadableStream<Uint8Array>,
 	): void {
-		const store = logStoreManager.create(processId);
+		const svcCtx = createServiceCtx();
+		const store = logStoreManager.create(svcCtx, processId);
 		this.collectStream(processId, stdout, "stdout", store);
 		this.collectStream(processId, stderr, "stderr", store);
 	}
@@ -37,6 +39,7 @@ export class LogCollector {
 	): Promise<void> {
 		const reader = stream.getReader();
 		const decoder = new TextDecoder();
+		const svcCtx = createServiceCtx();
 
 		try {
 			while (true) {
@@ -51,7 +54,7 @@ export class LogCollector {
 					data,
 				};
 
-				store.append(entry);
+				store.append(svcCtx, entry);
 
 				// Also persist to database (with newline for proper parsing)
 				this.executionProcessLogsRepo.appendLogs(

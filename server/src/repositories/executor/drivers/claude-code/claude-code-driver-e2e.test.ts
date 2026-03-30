@@ -11,8 +11,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { DriverApprovalRequest } from "../../../../types/coding-agent-driver";
+import type { Full } from "../../../../types/db-capability";
 import type { ILogger } from "../../../../types/logger";
-import type { IExecutionProcessLogsRepository } from "../../../../types/repository";
+import type { ExecutionProcessLogsRepository } from "../../../../types/repository";
 import { ClaudeCodeDriver } from "./claude-code-driver";
 
 function createMockLogger(): ILogger {
@@ -26,13 +27,13 @@ function createMockLogger(): ILogger {
 	} as unknown as ILogger;
 }
 
-function createMockLogsRepo(): IExecutionProcessLogsRepository {
+function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
 	return {
 		appendLogs: () => {},
 		getLogs: () => null,
 		upsertLogs: () => {},
 		deleteLogs: () => {},
-	} as unknown as IExecutionProcessLogsRepository;
+	} as unknown as Full<ExecutionProcessLogsRepository>;
 }
 
 describe("ClaudeCodeDriver E2E (actual claude-code)", () => {

@@ -4,7 +4,7 @@ import type {
 } from "../../../models/coding-agent-turn";
 import type { Cursor, Page } from "../../../models/common";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { ICodingAgentTurnRepositoryDef } from "../repository";
+import type { CodingAgentTurnRepository as ICodingAgentTurnRepository } from "../repository";
 import { del } from "./delete";
 import { findLatestResumeInfo } from "./findLatestResumeInfo";
 import { findLatestResumeInfoByWorkspaceId } from "./findLatestResumeInfoByWorkspaceId";
@@ -15,9 +15,7 @@ import { updateAgentSessionId } from "./updateAgentSessionId";
 import { updateSummary } from "./updateSummary";
 import { upsert } from "./upsert";
 
-export class CodingAgentTurnRepository
-	implements ICodingAgentTurnRepositoryDef
-{
+export class CodingAgentTurnRepository implements ICodingAgentTurnRepository {
 	async get(
 		ctx: DbReadCtx,
 		spec: CodingAgentTurn.Spec,

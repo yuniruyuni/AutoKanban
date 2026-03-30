@@ -1,9 +1,10 @@
 import type { LogStoreSubscription } from "../models/common";
+import { createServiceCtx } from "../types/db-capability";
 import type { ILogger } from "../types/logger";
 import type {
-	IExecutorRepository,
-	ILogStore,
-	ILogStoreManager,
+	ExecutorRepository,
+	LogStore,
+	LogStoreManager,
 } from "../types/repository";
 
 export type { LogEntry } from "../models/common";
@@ -25,8 +26,8 @@ export class LogStreamer implements ILogStreamer {
 	private logger: ILogger;
 
 	constructor(
-		private executor: IExecutorRepository,
-		private logStoreManager: ILogStoreManager,
+		private executor: ExecutorRepository,
+		private logStoreManager: LogStoreManager,
 		logger: ILogger,
 	) {
 		this.logger = logger.child("LogStreamer");
@@ -50,9 +51,10 @@ export class LogStreamer implements ILogStreamer {
 	 * Uses LogStoreManager to provide history + live updates.
 	 */
 	createSSEStream(executionProcessId: string): ReadableStream<string> {
+		const svcCtx = createServiceCtx();
 		// Get or check for log store
-		const store = this.logStoreManager.get(executionProcessId);
-		const runningProcess = this.executor.get(executionProcessId);
+		const store = this.logStoreManager.get(svcCtx, executionProcessId);
+		const runningProcess = this.executor.get(svcCtx, executionProcessId);
 
 		// If no store and no process, return empty stream with error
 		if (!store && !runningProcess) {
@@ -87,11 +89,11 @@ export class LogStreamer implements ILogStreamer {
 
 				// Poll for store creation
 				const checkInterval = setInterval(() => {
-					const newStore = this.logStoreManager.get(executionProcessId);
+					const newStore = this.logStoreManager.get(svcCtx, executionProcessId);
 					if (newStore) {
 						clearInterval(checkInterval);
 						// Subscribe and forward entries
-						const subscription = newStore.subscribe();
+						const subscription = newStore.subscribe(svcCtx);
 						this.activeSubscriptions.set(executionProcessId, subscription);
 						this.forwardEntries(executionProcessId, subscription, controller);
 					}
@@ -100,7 +102,7 @@ export class LogStreamer implements ILogStreamer {
 				// Timeout after 30 seconds
 				setTimeout(() => {
 					clearInterval(checkInterval);
-					if (!this.logStoreManager.get(executionProcessId)) {
+					if (!this.logStoreManager.get(svcCtx, executionProcessId)) {
 						controller.enqueue(
 							'data: {"type":"error","message":"Timeout waiting for process"}\n\n',
 						);
@@ -119,11 +121,12 @@ export class LogStreamer implements ILogStreamer {
 	 */
 	private createStoreBasedStream(
 		executionProcessId: string,
-		store: ILogStore,
+		store: LogStore,
 	): ReadableStream<string> {
+		const svcCtx = createServiceCtx();
 		return new ReadableStream<string>({
 			start: (controller) => {
-				const subscription = store.subscribe();
+				const subscription = store.subscribe(svcCtx);
 				this.activeSubscriptions.set(executionProcessId, subscription);
 				this.forwardEntries(executionProcessId, subscription, controller);
 			},

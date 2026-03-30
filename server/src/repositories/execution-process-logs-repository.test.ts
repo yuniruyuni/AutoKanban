@@ -5,7 +5,7 @@ import { seedFullChain } from "../../test/helpers/seed";
 import type { PgDatabase } from "../db/pg-client";
 import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
 import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
-import { ExecutionProcessLogsRepository } from "./execution-process-logs";
+import { ExecutionProcessLogsRepository } from "./execution-process-logs/postgres";
 
 let db: PgDatabase;
 let logsRepo: ExecutionProcessLogsRepository;

@@ -1,21 +1,18 @@
 import type { PgDatabase } from "../../src/db/pg-client";
 import type { ILogStreamer } from "../../src/presentation/log-streamer";
-import { ApprovalRepository } from "../../src/repositories/approval";
-import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn";
-import { ExecutionProcessRepository } from "../../src/repositories/execution-process";
-import { ExecutionProcessLogsRepository } from "../../src/repositories/execution-process-logs";
-import { ProjectRepository } from "../../src/repositories/project";
-import { SessionRepository } from "../../src/repositories/session";
-import { TaskRepository } from "../../src/repositories/task";
-import { WorkspaceRepository } from "../../src/repositories/workspace";
-import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo";
-import type {
-	Context,
-	DbRepoDefs,
-	ExternalRepos,
-	Repos,
-} from "../../src/types/context";
-import { bindDbCtx, createDbWriteCtx } from "../../src/types/db-capability";
+import { ApprovalRepository } from "../../src/repositories/approval/postgres";
+import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn/postgres";
+import { ExecutionProcessRepository } from "../../src/repositories/execution-process/postgres";
+import { ExecutionProcessLogsRepository } from "../../src/repositories/execution-process-logs/postgres";
+import { ProjectRepository } from "../../src/repositories/project/postgres";
+import { SessionRepository } from "../../src/repositories/session/postgres";
+import { TaskRepository } from "../../src/repositories/task/postgres";
+import { WorkspaceRepository } from "../../src/repositories/workspace/postgres";
+import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo/postgres";
+import type { Context } from "../../src/types/context";
+import type { FullRepos } from "../../src/types/db-capability";
+import { bindCtx, createDbWriteCtx } from "../../src/types/db-capability";
+import type { Repos } from "../../src/types/repository";
 import { createMockLogger } from "./logger";
 
 const DB_REPO_KEYS = [
@@ -33,27 +30,13 @@ const DB_REPO_KEYS = [
 	"approval",
 ] as const;
 
-const EXTERNAL_REPO_KEYS = [
-	"git",
-	"worktree",
-	"executor",
-	"messageQueue",
-	"agentConfig",
-	"workspaceConfig",
-	"draft",
-	"permissionStore",
-	"approvalStore",
-	"logStoreManager",
-	"devServer",
-] as const;
-
 /**
- * Build rawDbRepos from stripped repo overrides.
- * Each override method is wrapped to accept (and ignore) the DbCtx first arg.
- * When runner.ts calls bindDbCtx(rawRepo, ctx), the ctx is added then stripped,
+ * Build rawRepos from stripped repo overrides.
+ * Each override method is wrapped to accept (and ignore) the ctx first arg.
+ * When runner.ts calls bindCtx(rawRepo, ctx), the ctx is added then stripped,
  * delegating to the original mock method.
  */
-function createMockRawDbRepos(repoOverrides: Partial<Repos>): DbRepoDefs {
+function createMockRawRepos(repoOverrides: Partial<FullRepos<Repos>>): Repos {
 	const raw: Record<string, unknown> = {};
 	for (const key of DB_REPO_KEYS) {
 		const override = (repoOverrides as Record<string, unknown>)[key];
@@ -81,17 +64,28 @@ function createMockRawDbRepos(repoOverrides: Partial<Repos>): DbRepoDefs {
 			);
 		}
 	}
-	return raw as unknown as DbRepoDefs;
-}
 
-function createMockExternalRepos(repoOverrides: Partial<Repos>): ExternalRepos {
-	const ext: Record<string, unknown> = {};
-	for (const key of EXTERNAL_REPO_KEYS) {
+	// External repos
+	const externalKeys = [
+		"git",
+		"worktree",
+		"executor",
+		"messageQueue",
+		"agentConfig",
+		"workspaceConfig",
+		"draft",
+		"permissionStore",
+		"approvalStore",
+		"logStoreManager",
+		"devServer",
+	] as const;
+
+	for (const key of externalKeys) {
 		const override = (repoOverrides as Record<string, unknown>)[key];
 		if (override) {
-			ext[key] = override;
+			raw[key] = override;
 		} else {
-			ext[key] = new Proxy(
+			raw[key] = new Proxy(
 				{},
 				{
 					get(_, method: string) {
@@ -103,15 +97,18 @@ function createMockExternalRepos(repoOverrides: Partial<Repos>): ExternalRepos {
 			);
 		}
 	}
-	return ext as unknown as ExternalRepos;
+
+	return raw as unknown as Repos;
 }
 
 /**
  * Create a mock context for usecase unit tests.
- * Repo overrides use the stripped interface (no DbCtx first arg).
- * Internally, rawDbRepos wraps them to accept DbCtx.
+ * Repo overrides use the stripped interface (no ctx first arg).
+ * Internally, rawRepos wraps them to accept ctx.
  */
-export function createMockContext(repoOverrides: Partial<Repos> = {}): Context {
+export function createMockContext(
+	repoOverrides: Partial<FullRepos<Repos>> = {},
+): Context {
 	const mockDb = {
 		transaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
 			fn({} as PgDatabase),
@@ -119,11 +116,10 @@ export function createMockContext(repoOverrides: Partial<Repos> = {}): Context {
 			fn({} as PgDatabase),
 	} as PgDatabase;
 
-	const rawDbRepos = createMockRawDbRepos(repoOverrides);
-	const externalRepos = createMockExternalRepos(repoOverrides);
+	const rawRepos = createMockRawRepos(repoOverrides);
 
 	// repos (Proxy) for PostContext which accesses ctx.repos directly
-	const handler: ProxyHandler<Repos> = {
+	const handler: ProxyHandler<FullRepos<Repos>> = {
 		get(_, prop: string | symbol) {
 			if (typeof prop === "string" && prop in repoOverrides) {
 				return (repoOverrides as Record<string, unknown>)[prop];
@@ -147,9 +143,8 @@ export function createMockContext(repoOverrides: Partial<Repos> = {}): Context {
 		now: new Date("2025-01-15T10:00:00.000Z"),
 		logger: createMockLogger(),
 		db: mockDb,
-		rawDbRepos,
-		externalRepos,
-		repos: new Proxy({} as Repos, handler),
+		rawRepos,
+		repos: new Proxy({} as FullRepos<Repos>, handler),
 		logStreamer: {} as ILogStreamer,
 	};
 }
@@ -159,9 +154,9 @@ export function createMockContext(repoOverrides: Partial<Repos> = {}): Context {
  * External system repos (git, worktree, executor, etc.) are mocked.
  */
 export function createIntegrationContext(db: PgDatabase): Context {
-	const rawDbRepos: DbRepoDefs = {
+	const rawRepos: Repos = {
 		task: new TaskRepository(),
-		taskTemplate: {} as DbRepoDefs["taskTemplate"],
+		taskTemplate: {} as Repos["taskTemplate"],
 		project: new ProjectRepository(),
 		workspace: new WorkspaceRepository(),
 		session: new SessionRepository(),
@@ -170,47 +165,53 @@ export function createIntegrationContext(db: PgDatabase): Context {
 		workspaceRepo: new WorkspaceRepoRepository(),
 		codingAgentTurn: new CodingAgentTurnRepository(),
 		approval: new ApprovalRepository(),
-		tool: {} as DbRepoDefs["tool"],
-		variant: {} as DbRepoDefs["variant"],
-	};
-
-	const externalRepos: ExternalRepos = {
-		git: {} as ExternalRepos["git"],
-		worktree: {} as ExternalRepos["worktree"],
-		executor: {} as ExternalRepos["executor"],
-		messageQueue: {} as ExternalRepos["messageQueue"],
-		agentConfig: {} as ExternalRepos["agentConfig"],
-		workspaceConfig: {} as ExternalRepos["workspaceConfig"],
-		draft: {} as ExternalRepos["draft"],
-		permissionStore: {} as ExternalRepos["permissionStore"],
-		approvalStore: {} as ExternalRepos["approvalStore"],
-		logStoreManager: {} as ExternalRepos["logStoreManager"],
-		devServer: {} as ExternalRepos["devServer"],
+		tool: {} as Repos["tool"],
+		variant: {} as Repos["variant"],
+		git: {} as Repos["git"],
+		worktree: {} as Repos["worktree"],
+		executor: {} as Repos["executor"],
+		messageQueue: {} as Repos["messageQueue"],
+		agentConfig: {} as Repos["agentConfig"],
+		workspaceConfig: {} as Repos["workspaceConfig"],
+		draft: {} as Repos["draft"],
+		permissionStore: {} as Repos["permissionStore"],
+		approvalStore: {} as Repos["approvalStore"],
+		logStoreManager: {} as Repos["logStoreManager"],
+		devServer: {} as Repos["devServer"],
 	};
 
 	const dbCtx = createDbWriteCtx(db);
-	const repos: Repos = {
-		task: bindDbCtx(rawDbRepos.task, dbCtx),
-		taskTemplate: {} as Repos["taskTemplate"],
-		project: bindDbCtx(rawDbRepos.project, dbCtx),
-		workspace: bindDbCtx(rawDbRepos.workspace, dbCtx),
-		session: bindDbCtx(rawDbRepos.session, dbCtx),
-		executionProcess: bindDbCtx(rawDbRepos.executionProcess, dbCtx),
-		executionProcessLogs: bindDbCtx(rawDbRepos.executionProcessLogs, dbCtx),
-		workspaceRepo: bindDbCtx(rawDbRepos.workspaceRepo, dbCtx),
-		codingAgentTurn: bindDbCtx(rawDbRepos.codingAgentTurn, dbCtx),
-		approval: bindDbCtx(rawDbRepos.approval, dbCtx),
-		tool: {} as Repos["tool"],
-		variant: {} as Repos["variant"],
-		...externalRepos,
-	};
+	const repos = {
+		task: bindCtx(rawRepos.task, dbCtx),
+		taskTemplate: {} as FullRepos<Repos>["taskTemplate"],
+		project: bindCtx(rawRepos.project, dbCtx),
+		workspace: bindCtx(rawRepos.workspace, dbCtx),
+		session: bindCtx(rawRepos.session, dbCtx),
+		executionProcess: bindCtx(rawRepos.executionProcess, dbCtx),
+		executionProcessLogs: bindCtx(rawRepos.executionProcessLogs, dbCtx),
+		workspaceRepo: bindCtx(rawRepos.workspaceRepo, dbCtx),
+		codingAgentTurn: bindCtx(rawRepos.codingAgentTurn, dbCtx),
+		approval: bindCtx(rawRepos.approval, dbCtx),
+		tool: {} as FullRepos<Repos>["tool"],
+		variant: {} as FullRepos<Repos>["variant"],
+		git: {} as FullRepos<Repos>["git"],
+		worktree: {} as FullRepos<Repos>["worktree"],
+		executor: {} as FullRepos<Repos>["executor"],
+		messageQueue: {} as FullRepos<Repos>["messageQueue"],
+		agentConfig: {} as FullRepos<Repos>["agentConfig"],
+		workspaceConfig: {} as FullRepos<Repos>["workspaceConfig"],
+		draft: {} as FullRepos<Repos>["draft"],
+		permissionStore: {} as FullRepos<Repos>["permissionStore"],
+		approvalStore: {} as FullRepos<Repos>["approvalStore"],
+		logStoreManager: {} as FullRepos<Repos>["logStoreManager"],
+		devServer: {} as FullRepos<Repos>["devServer"],
+	} as FullRepos<Repos>;
 
 	return {
 		now: new Date("2025-01-15T10:00:00.000Z"),
 		logger: createMockLogger(),
 		db,
-		rawDbRepos,
-		externalRepos,
+		rawRepos,
 		repos,
 		logStreamer: {} as ILogStreamer,
 	};

@@ -1,7 +1,7 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { Project, ProjectWithStats } from "../../../models/project";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IProjectRepositoryDef } from "../repository";
+import type { ProjectRepository as IProjectRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { getWithStats } from "./get-with-stats";
@@ -10,7 +10,7 @@ import { listAll } from "./list-all";
 import { listAllWithStats } from "./list-all-with-stats";
 import { upsert } from "./upsert";
 
-export class ProjectRepository implements IProjectRepositoryDef {
+export class ProjectRepository implements IProjectRepository {
 	async get(ctx: DbReadCtx, spec: Project.Spec): Promise<Project | null> {
 		return get(ctx.db, spec);
 	}

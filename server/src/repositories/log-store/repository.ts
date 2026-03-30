@@ -1,15 +1,16 @@
 import type { LogEntry, LogStoreSubscription } from "../../models/common";
+import type { ServiceCtx } from "../../types/db-capability";
 
-export interface ILogStore {
-	append(entry: LogEntry): void;
-	close(): void;
-	isClosed(): boolean;
-	getHistory(): LogEntry[];
-	subscribe(): LogStoreSubscription;
+export interface LogStore {
+	append(ctx: ServiceCtx, entry: LogEntry): void;
+	close(ctx: ServiceCtx): void;
+	isClosed(ctx: ServiceCtx): boolean;
+	getHistory(ctx: ServiceCtx): LogEntry[];
+	subscribe(ctx: ServiceCtx): LogStoreSubscription;
 }
 
-export interface ILogStoreManager {
-	create(processId: string): ILogStore;
-	get(processId: string): ILogStore | undefined;
-	close(processId: string): void;
+export interface LogStoreManager {
+	create(ctx: ServiceCtx, processId: string): LogStore;
+	get(ctx: ServiceCtx, processId: string): LogStore | undefined;
+	close(ctx: ServiceCtx, processId: string): void;
 }

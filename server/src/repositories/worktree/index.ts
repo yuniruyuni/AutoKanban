@@ -1,2 +1,2 @@
 export { WorktreeRepository } from "./fs";
-export type { IWorktreeRepository } from "./repository";
+export type { WorktreeRepository as WorktreeRepositoryDef } from "./repository";

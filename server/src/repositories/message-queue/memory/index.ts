@@ -1,13 +1,15 @@
+import type { ServiceCtx } from "../../../types/db-capability";
 import type {
-	IMessageQueueRepository,
+	MessageQueueRepository as MessageQueueRepositoryDef,
 	QueuedMessage,
 	QueueStatus,
 } from "../repository";
 
-export class MessageQueueRepository implements IMessageQueueRepository {
+export class MessageQueueRepository implements MessageQueueRepositoryDef {
 	private queues: Map<string, QueuedMessage> = new Map();
 
 	queue(
+		_ctx: ServiceCtx,
 		sessionId: string,
 		prompt: string,
 		executor?: string,
@@ -24,30 +26,30 @@ export class MessageQueueRepository implements IMessageQueueRepository {
 		return message;
 	}
 
-	get(sessionId: string): QueuedMessage | undefined {
+	get(_ctx: ServiceCtx, sessionId: string): QueuedMessage | undefined {
 		return this.queues.get(sessionId);
 	}
 
-	getStatus(sessionId: string): QueueStatus {
+	getStatus(_ctx: ServiceCtx, sessionId: string): QueueStatus {
 		const message = this.queues.get(sessionId);
 		return { hasMessage: !!message, message };
 	}
 
-	consume(sessionId: string): QueuedMessage | undefined {
+	consume(_ctx: ServiceCtx, sessionId: string): QueuedMessage | undefined {
 		const message = this.queues.get(sessionId);
 		if (message) this.queues.delete(sessionId);
 		return message;
 	}
 
-	cancel(sessionId: string): boolean {
+	cancel(_ctx: ServiceCtx, sessionId: string): boolean {
 		return this.queues.delete(sessionId);
 	}
 
-	has(sessionId: string): boolean {
+	has(_ctx: ServiceCtx, sessionId: string): boolean {
 		return this.queues.has(sessionId);
 	}
 
-	clear(): void {
+	clear(_ctx: ServiceCtx): void {
 		this.queues.clear();
 	}
 }

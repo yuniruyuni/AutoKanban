@@ -3,9 +3,13 @@
  * Stores logs from process start and allows late subscribers to get history + live updates.
  */
 import type { LogEntry, LogStoreSubscription } from "../../../models/common";
-import type { ILogStore, ILogStoreManager } from "../repository";
+import type { ServiceCtx } from "../../../types/db-capability";
+import type {
+	LogStore as LogStoreDef,
+	LogStoreManager as LogStoreManagerDef,
+} from "../repository";
 
-export class LogStore implements ILogStore {
+export class LogStore implements LogStoreDef {
 	private logs: LogEntry[] = [];
 	private subscribers: Set<(entry: LogEntry) => void> = new Set();
 	private closed = false;
@@ -13,7 +17,7 @@ export class LogStore implements ILogStore {
 	/**
 	 * Append a log entry. Called by the log collector when data arrives.
 	 */
-	append(entry: LogEntry): void {
+	append(_ctx: ServiceCtx, entry: LogEntry): void {
 		if (this.closed) return;
 		this.logs.push(entry);
 		// Notify all subscribers
@@ -29,7 +33,7 @@ export class LogStore implements ILogStore {
 	/**
 	 * Mark the store as closed (process ended).
 	 */
-	close(): void {
+	close(_ctx: ServiceCtx): void {
 		this.closed = true;
 		this.subscribers.clear();
 	}
@@ -37,14 +41,14 @@ export class LogStore implements ILogStore {
 	/**
 	 * Check if the store is closed.
 	 */
-	isClosed(): boolean {
+	isClosed(_ctx: ServiceCtx): boolean {
 		return this.closed;
 	}
 
 	/**
 	 * Get all historical logs.
 	 */
-	getHistory(): LogEntry[] {
+	getHistory(_ctx: ServiceCtx): LogEntry[] {
 		return [...this.logs];
 	}
 
@@ -52,7 +56,7 @@ export class LogStore implements ILogStore {
 	 * Subscribe to the log stream.
 	 * Returns history first, then live updates.
 	 */
-	subscribe(): LogStoreSubscription {
+	subscribe(_ctx: ServiceCtx): LogStoreSubscription {
 		const self = this;
 		let unsubscribed = false;
 		let resolveNext: ((value: IteratorResult<LogEntry, void>) => void) | null =
@@ -136,13 +140,13 @@ export class LogStore implements ILogStore {
 /**
  * Manages log stores for all processes.
  */
-export class LogStoreManager implements ILogStoreManager {
+export class LogStoreManager implements LogStoreManagerDef {
 	private stores = new Map<string, LogStore>();
 
 	/**
 	 * Create a new log store for a process.
 	 */
-	create(processId: string): LogStore {
+	create(_ctx: ServiceCtx, processId: string): LogStore {
 		const store = new LogStore();
 		this.stores.set(processId, store);
 		return store;
@@ -151,17 +155,17 @@ export class LogStoreManager implements ILogStoreManager {
 	/**
 	 * Get an existing log store.
 	 */
-	get(processId: string): LogStore | undefined {
+	get(_ctx: ServiceCtx, processId: string): LogStore | undefined {
 		return this.stores.get(processId);
 	}
 
 	/**
 	 * Close and remove a log store.
 	 */
-	close(processId: string): void {
+	close(_ctx: ServiceCtx, processId: string): void {
 		const store = this.stores.get(processId);
 		if (store) {
-			store.close();
+			store.close(_ctx);
 			// Keep the store for a while so late subscribers can get history
 			// Remove after 5 minutes
 			setTimeout(

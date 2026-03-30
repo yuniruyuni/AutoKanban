@@ -1,15 +1,13 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { ExecutionProcess } from "../../../models/execution-process";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IExecutionProcessRepositoryDef } from "../repository";
+import type { ExecutionProcessRepository as IExecutionProcessRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class ExecutionProcessRepository
-	implements IExecutionProcessRepositoryDef
-{
+export class ExecutionProcessRepository implements IExecutionProcessRepository {
 	async get(
 		ctx: DbReadCtx,
 		spec: ExecutionProcess.Spec,

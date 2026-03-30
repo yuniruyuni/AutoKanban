@@ -1,13 +1,13 @@
 import type { ExecutionProcessLogs } from "../../../models/execution-process";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IExecutionProcessLogsRepositoryDef } from "../repository";
+import type { ExecutionProcessLogsRepository as IExecutionProcessLogsRepository } from "../repository";
 import { appendLogs } from "./append-logs";
 import { deleteLogs } from "./delete-logs";
 import { getLogs } from "./get-logs";
 import { upsertLogs } from "./upsert-logs";
 
 export class ExecutionProcessLogsRepository
-	implements IExecutionProcessLogsRepositoryDef
+	implements IExecutionProcessLogsRepository
 {
 	async getLogs(
 		ctx: DbReadCtx,

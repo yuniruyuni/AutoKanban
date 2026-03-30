@@ -1,2 +1,2 @@
 export { DevServerRepository } from "./process";
-export type { IDevServerRepository } from "./repository";
+export type { DevServerRepository as DevServerRepositoryDef } from "./repository";

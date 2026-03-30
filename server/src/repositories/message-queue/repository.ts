@@ -1,3 +1,5 @@
+import type { ServiceCtx } from "../../types/db-capability";
+
 export interface QueuedMessage {
 	sessionId: string;
 	prompt: string;
@@ -11,17 +13,18 @@ export interface QueueStatus {
 	message?: QueuedMessage;
 }
 
-export interface IMessageQueueRepository {
+export interface MessageQueueRepository {
 	queue(
+		ctx: ServiceCtx,
 		sessionId: string,
 		prompt: string,
 		executor?: string,
 		variant?: string,
 	): QueuedMessage;
-	get(sessionId: string): QueuedMessage | undefined;
-	getStatus(sessionId: string): QueueStatus;
-	consume(sessionId: string): QueuedMessage | undefined;
-	cancel(sessionId: string): boolean;
-	has(sessionId: string): boolean;
-	clear(): void;
+	get(ctx: ServiceCtx, sessionId: string): QueuedMessage | undefined;
+	getStatus(ctx: ServiceCtx, sessionId: string): QueueStatus;
+	consume(ctx: ServiceCtx, sessionId: string): QueuedMessage | undefined;
+	cancel(ctx: ServiceCtx, sessionId: string): boolean;
+	has(ctx: ServiceCtx, sessionId: string): boolean;
+	clear(ctx: ServiceCtx): void;
 }

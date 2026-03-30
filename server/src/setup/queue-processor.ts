@@ -8,24 +8,25 @@ import type {
 	ProcessCompletionInfo,
 	ProcessIdleInfo,
 } from "../repositories/executor";
+import type { MessageQueueRepository } from "../repositories/message-queue/memory";
+import { createServiceCtx, type Full } from "../types/db-capability";
 import type { ILogger } from "../types/logger";
 import type {
-	IMessageQueueRepository,
-	IProjectRepository,
-	ISessionRepository,
-	ITaskRepository,
-	IWorkspaceRepoRepository,
-	IWorkspaceRepository,
+	ProjectRepository,
+	SessionRepository,
+	TaskRepository,
+	WorkspaceRepoRepository,
+	WorkspaceRepository,
 } from "../types/repository";
 
 export interface QueueProcessorDependencies {
 	executor: ExecutorRepository;
-	messageQueue: IMessageQueueRepository;
-	sessionRepo: ISessionRepository;
-	workspaceRepo: IWorkspaceRepository;
-	workspaceRepoRepo: IWorkspaceRepoRepository;
-	projectRepo: IProjectRepository;
-	taskRepo: ITaskRepository;
+	messageQueue: MessageQueueRepository;
+	sessionRepo: Full<SessionRepository>;
+	workspaceRepo: Full<WorkspaceRepository>;
+	workspaceRepoRepo: Full<WorkspaceRepoRepository>;
+	projectRepo: Full<ProjectRepository>;
+	taskRepo: Full<TaskRepository>;
 	logger: ILogger;
 }
 
@@ -47,6 +48,7 @@ export function setupQueueProcessor(deps: QueueProcessorDependencies): void {
 		logger: parentLogger,
 	} = deps;
 	const logger = parentLogger.child("QueueProcessor");
+	const svcCtx = createServiceCtx();
 
 	// Helper to move a task associated with a session to In Review
 	const moveTaskToInReview = async (sessionId: string) => {
@@ -79,17 +81,19 @@ export function setupQueueProcessor(deps: QueueProcessorDependencies): void {
 	// Handle idle events - send queued message or move task to In Review
 	executor.onIdle(async (info: ProcessIdleInfo) => {
 		// Check if there's a queued message for this session
-		const queuedMessage = messageQueue.consume(info.sessionId);
+		const queuedMessage = messageQueue.consume(svcCtx, info.sessionId);
 		if (queuedMessage) {
 			try {
 				// Send the queued message to the idle process
 				const success = await executor.sendMessage(
+					svcCtx,
 					info.processId,
 					queuedMessage.prompt,
 				);
 				if (!success) {
 					// Put the message back in the queue if sending failed
 					messageQueue.queue(
+						svcCtx,
 						info.sessionId,
 						queuedMessage.prompt,
 						queuedMessage.executor,
@@ -100,6 +104,7 @@ export function setupQueueProcessor(deps: QueueProcessorDependencies): void {
 				logger.error("Error sending queued message:", error);
 				// Put the message back in the queue on error
 				messageQueue.queue(
+					svcCtx,
 					info.sessionId,
 					queuedMessage.prompt,
 					queuedMessage.executor,
@@ -121,7 +126,7 @@ export function setupQueueProcessor(deps: QueueProcessorDependencies): void {
 		}
 
 		// Check if there's a queued message for this session
-		const queuedMessage = messageQueue.consume(info.sessionId);
+		const queuedMessage = messageQueue.consume(svcCtx, info.sessionId);
 		if (!queuedMessage) {
 			await moveTaskToInReview(info.sessionId);
 			return;
@@ -159,7 +164,7 @@ export function setupQueueProcessor(deps: QueueProcessorDependencies): void {
 			}
 
 			// Start the follow-up execution
-			await executor.start({
+			await executor.start(svcCtx, {
 				sessionId: info.sessionId,
 				runReason: "codingagent",
 				workingDir,

@@ -1,9 +1,9 @@
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IWorkspaceRepositoryDef } from "../repository";
+import type { WorkspaceRepository } from "../repository";
 
 export function createMockWorkspaceRepository(
-	overrides: Partial<IWorkspaceRepositoryDef> = {},
-): IWorkspaceRepositoryDef {
+	overrides: Partial<WorkspaceRepository> = {},
+): WorkspaceRepository {
 	return {
 		get: async (_ctx: DbReadCtx) => null,
 		list: async (_ctx: DbReadCtx) => ({ items: [], hasMore: false }),
@@ -12,5 +12,5 @@ export function createMockWorkspaceRepository(
 		upsert: async (_ctx: DbWriteCtx) => {},
 		delete: async (_ctx: DbWriteCtx) => 0,
 		...overrides,
-	} as IWorkspaceRepositoryDef;
+	} as WorkspaceRepository;
 }

@@ -1,13 +1,13 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { Session } from "../../../models/session";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { ISessionRepositoryDef } from "../repository";
+import type { SessionRepository as ISessionRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class SessionRepository implements ISessionRepositoryDef {
+export class SessionRepository implements ISessionRepository {
 	async get(ctx: DbReadCtx, spec: Session.Spec): Promise<Session | null> {
 		return get(ctx.db, spec);
 	}

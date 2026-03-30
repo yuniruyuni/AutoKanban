@@ -14,20 +14,26 @@ import type {
 	DriverProcess,
 	ICodingAgentDriver,
 } from "../../../types/coding-agent-driver";
+import {
+	createServiceCtx,
+	type Full,
+	type Service,
+	type ServiceCtx,
+} from "../../../types/db-capability";
 import type { ILogger } from "../../../types/logger";
 import type {
+	ApprovalRepository,
+	ApprovalStoreRepository,
+	CodingAgentTurnRepository,
+	ExecutionProcessLogsRepository,
+	ExecutionProcessRepository,
 	ExecutorProcessInfo,
+	ExecutorRepository as ExecutorRepositoryDef,
 	ExecutorStartOptions,
 	ExecutorStartProtocolOptions,
-	IApprovalRepository,
-	IApprovalStore,
-	ICodingAgentTurnRepository,
-	IExecutionProcessLogsRepository,
-	IExecutionProcessRepository,
-	IExecutorRepository,
-	ISessionRepository,
-	ITaskRepository,
-	IWorkspaceRepository,
+	SessionRepository,
+	TaskRepository,
+	WorkspaceRepository,
 } from "../../../types/repository";
 import { LogCollector } from "../../log-collector";
 import { logStoreManager } from "../../log-store";
@@ -60,24 +66,24 @@ export type ProcessIdleCallback = (info: ProcessIdleInfo) => void;
  * Delegates protocol-specific logic to ICodingAgentDriver implementations.
  * Handles process spawning, stopping, approval flow, and completion.
  */
-export class ExecutorRepository implements IExecutorRepository {
+export class ExecutorRepository implements ExecutorRepositoryDef {
 	private runningProcesses = new Map<string, RunningProcess>();
 	private completionCallbacks: ProcessCompletionCallback[] = [];
 	private idleCallbacks: ProcessIdleCallback[] = [];
 	private logCollector: LogCollector;
 	private logger: ILogger;
 
-	private approvalRepo?: IApprovalRepository;
-	private approvalStoreRef?: IApprovalStore;
-	private taskRepo?: ITaskRepository;
-	private sessionRepo?: ISessionRepository;
-	private workspaceRepo?: IWorkspaceRepository;
+	private approvalRepo?: Full<ApprovalRepository>;
+	private approvalStoreRef?: Service<ApprovalStoreRepository>;
+	private taskRepo?: Full<TaskRepository>;
+	private sessionRepo?: Full<SessionRepository>;
+	private workspaceRepo?: Full<WorkspaceRepository>;
 
 	constructor(
-		private executionProcessRepo: IExecutionProcessRepository,
-		private codingAgentTurnRepo: ICodingAgentTurnRepository | undefined,
+		private executionProcessRepo: Full<ExecutionProcessRepository>,
+		private codingAgentTurnRepo: Full<CodingAgentTurnRepository> | undefined,
 		private drivers: Map<string, ICodingAgentDriver>,
-		private executionProcessLogsRepo: IExecutionProcessLogsRepository,
+		private executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
 		logger: ILogger,
 	) {
 		this.logger = logger.child("ExecutorRepository");
@@ -92,11 +98,11 @@ export class ExecutorRepository implements IExecutorRepository {
 	 * Called after construction to avoid circular dependencies.
 	 */
 	setApprovalDeps(deps: {
-		approvalRepo: IApprovalRepository;
-		approvalStore: IApprovalStore;
-		taskRepo: ITaskRepository;
-		sessionRepo: ISessionRepository;
-		workspaceRepo: IWorkspaceRepository;
+		approvalRepo: Full<ApprovalRepository>;
+		approvalStore: Service<ApprovalStoreRepository>;
+		taskRepo: Full<TaskRepository>;
+		sessionRepo: Full<SessionRepository>;
+		workspaceRepo: Full<WorkspaceRepository>;
 	}): void {
 		this.approvalRepo = deps.approvalRepo;
 		this.approvalStoreRef = deps.approvalStore;
@@ -113,7 +119,10 @@ export class ExecutorRepository implements IExecutorRepository {
 		this.idleCallbacks.push(callback);
 	}
 
-	async start(options: ExecutorStartOptions): Promise<RunningProcess> {
+	async start(
+		_ctx: ServiceCtx,
+		options: ExecutorStartOptions,
+	): Promise<RunningProcess> {
 		const id = randomUUID();
 		const now = new Date();
 
@@ -153,6 +162,7 @@ export class ExecutorRepository implements IExecutorRepository {
 	}
 
 	async startProtocol(
+		_ctx: ServiceCtx,
 		options: ExecutorStartProtocolOptions,
 	): Promise<RunningProcess> {
 		const id = randomUUID();
@@ -231,7 +241,7 @@ export class ExecutorRepository implements IExecutorRepository {
 		return runningProcess;
 	}
 
-	async stop(processId: string): Promise<boolean> {
+	async stop(_ctx: ServiceCtx, processId: string): Promise<boolean> {
 		const runningProcess = this.runningProcesses.get(processId);
 		if (!runningProcess) {
 			return false;
@@ -267,7 +277,11 @@ export class ExecutorRepository implements IExecutorRepository {
 		return true;
 	}
 
-	async sendMessage(processId: string, prompt: string): Promise<boolean> {
+	async sendMessage(
+		_ctx: ServiceCtx,
+		processId: string,
+		prompt: string,
+	): Promise<boolean> {
 		const runningProcess = this.runningProcesses.get(processId);
 		if (!runningProcess) {
 			return false;
@@ -295,6 +309,7 @@ export class ExecutorRepository implements IExecutorRepository {
 	}
 
 	async sendPermissionResponse(
+		_ctx: ServiceCtx,
 		processId: string,
 		requestId: string,
 		approved: boolean,
@@ -338,9 +353,10 @@ export class ExecutorRepository implements IExecutorRepository {
 	}
 
 	async startProtocolAndWait(
+		_ctx: ServiceCtx,
 		options: ExecutorStartProtocolOptions,
 	): Promise<{ exitCode: number }> {
-		const rp = await this.startProtocol(options);
+		const rp = await this.startProtocol(_ctx, options);
 		return rp.driver.wait(rp.process);
 	}
 
@@ -348,7 +364,8 @@ export class ExecutorRepository implements IExecutorRepository {
 	 * Runs a one-shot prompt with structured output via the specified driver.
 	 * Uses --json-schema for guaranteed JSON format.
 	 */
-	async runStructured<T>(
+	async runStructured(
+		_ctx: ServiceCtx,
 		executorName: string | undefined,
 		options: {
 			workingDir: string;
@@ -357,28 +374,34 @@ export class ExecutorRepository implements IExecutorRepository {
 			resumeSessionId?: string;
 			model?: string;
 		},
-	): Promise<T | null> {
+	): Promise<unknown> {
 		const driver = this.getDriver(executorName);
 		if (!driver.runStructured) return null;
-		return driver.runStructured<T>(options);
+		return driver.runStructured(options);
 	}
 
-	get(processId: string): RunningProcess | undefined {
+	get(_ctx: ServiceCtx, processId: string): RunningProcess | undefined {
 		return this.runningProcesses.get(processId);
 	}
 
-	getBySession(sessionId: string): RunningProcess[] {
+	getBySession(_ctx: ServiceCtx, sessionId: string): RunningProcess[] {
 		return Array.from(this.runningProcesses.values()).filter(
 			(p) => p.sessionId === sessionId,
 		);
 	}
 
-	getStdout(processId: string): ReadableStream<Uint8Array> | null {
+	getStdout(
+		_ctx: ServiceCtx,
+		processId: string,
+	): ReadableStream<Uint8Array> | null {
 		const process = this.runningProcesses.get(processId);
 		return process?.process.stdout ?? null;
 	}
 
-	getStderr(processId: string): ReadableStream<Uint8Array> | null {
+	getStderr(
+		_ctx: ServiceCtx,
+		processId: string,
+	): ReadableStream<Uint8Array> | null {
 		const process = this.runningProcesses.get(processId);
 		return process?.process.stderr ?? null;
 	}
@@ -568,7 +591,7 @@ export class ExecutorRepository implements IExecutorRepository {
 			}
 
 			this.runningProcesses.delete(runningProcess.id);
-			logStoreManager.close(runningProcess.id);
+			logStoreManager.close(createServiceCtx(), runningProcess.id);
 
 			const elapsed = now.getTime() - runningProcess.startedAt.getTime();
 			if (
@@ -595,7 +618,7 @@ export class ExecutorRepository implements IExecutorRepository {
 						contextSummary,
 					);
 
-					await this.startProtocol({
+					await this.startProtocol(createServiceCtx(), {
 						...runningProcess.startOptions,
 						prompt: contextPrompt,
 						resumeSessionId: undefined,

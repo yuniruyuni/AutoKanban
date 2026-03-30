@@ -1,9 +1,9 @@
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { ICodingAgentTurnRepositoryDef } from "../repository";
+import type { CodingAgentTurnRepository } from "../repository";
 
 export function createMockCodingAgentTurnRepository(
-	overrides: Partial<ICodingAgentTurnRepositoryDef> = {},
-): ICodingAgentTurnRepositoryDef {
+	overrides: Partial<CodingAgentTurnRepository> = {},
+): CodingAgentTurnRepository {
 	return {
 		get: async (_ctx: DbReadCtx) => null,
 		list: async (_ctx: DbReadCtx) => ({ items: [], hasMore: false }),
@@ -15,5 +15,5 @@ export function createMockCodingAgentTurnRepository(
 		findLatestResumeInfo: async (_ctx: DbReadCtx) => null,
 		findLatestResumeInfoByWorkspaceId: async (_ctx: DbReadCtx) => null,
 		...overrides,
-	} as ICodingAgentTurnRepositoryDef;
+	} as CodingAgentTurnRepository;
 }

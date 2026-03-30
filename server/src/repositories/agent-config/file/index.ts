@@ -1,7 +1,11 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { AgentAdapter, IAgentConfigRepository } from "../repository";
+import type { ServiceCtx } from "../../../types/db-capability";
+import type {
+	AgentAdapter,
+	AgentConfigRepository as AgentConfigRepositoryDef,
+} from "../repository";
 
 const ADAPTERS: AgentAdapter[] = [
 	{
@@ -12,17 +16,17 @@ const ADAPTERS: AgentAdapter[] = [
 	},
 ];
 
-export class AgentConfigRepository implements IAgentConfigRepository {
-	listSupportedAgents(): AgentAdapter[] {
+export class AgentConfigRepository implements AgentConfigRepositoryDef {
+	listSupportedAgents(_ctx: ServiceCtx): AgentAdapter[] {
 		return ADAPTERS;
 	}
 
-	getAdapter(agentId: string): AgentAdapter | null {
+	getAdapter(_ctx: ServiceCtx, agentId: string): AgentAdapter | null {
 		return ADAPTERS.find((a) => a.agentId === agentId) ?? null;
 	}
 
-	readMcpServers(agentId: string): Record<string, unknown> {
-		const adapter = this.getAdapter(agentId);
+	readMcpServers(_ctx: ServiceCtx, agentId: string): Record<string, unknown> {
+		const adapter = this.getAdapter(_ctx, agentId);
 		if (!adapter) return {};
 
 		try {
@@ -35,8 +39,12 @@ export class AgentConfigRepository implements IAgentConfigRepository {
 		}
 	}
 
-	writeMcpServers(agentId: string, servers: Record<string, unknown>): void {
-		const adapter = this.getAdapter(agentId);
+	writeMcpServers(
+		_ctx: ServiceCtx,
+		agentId: string,
+		servers: Record<string, unknown>,
+	): void {
+		const adapter = this.getAdapter(_ctx, agentId);
 		if (!adapter) return;
 
 		let config: Record<string, unknown> = {};
@@ -54,18 +62,19 @@ export class AgentConfigRepository implements IAgentConfigRepository {
 	}
 
 	injectServer(
+		_ctx: ServiceCtx,
 		agentId: string,
 		name: string,
 		config: Record<string, unknown>,
 	): void {
-		const servers = this.readMcpServers(agentId);
+		const servers = this.readMcpServers(_ctx, agentId);
 		servers[name] = config;
-		this.writeMcpServers(agentId, servers);
+		this.writeMcpServers(_ctx, agentId, servers);
 	}
 
-	removeServer(agentId: string, name: string): void {
-		const servers = this.readMcpServers(agentId);
+	removeServer(_ctx: ServiceCtx, agentId: string, name: string): void {
+		const servers = this.readMcpServers(_ctx, agentId);
 		delete servers[name];
-		this.writeMcpServers(agentId, servers);
+		this.writeMcpServers(_ctx, agentId, servers);
 	}
 }

@@ -1,34 +1,35 @@
 import type { PendingPermission } from "../../../models/common";
-import type { IPermissionStoreRepository } from "../repository";
+import type { ServiceCtx } from "../../../types/db-capability";
+import type { PermissionStoreRepository } from "../repository";
 
-export class PermissionStore implements IPermissionStoreRepository {
+export class PermissionStore implements PermissionStoreRepository {
 	private pending = new Map<string, PendingPermission>();
 
-	add(permission: PendingPermission): void {
+	add(_ctx: ServiceCtx, permission: PendingPermission): void {
 		this.pending.set(permission.requestId, permission);
 	}
 
-	get(requestId: string): PendingPermission | undefined {
+	get(_ctx: ServiceCtx, requestId: string): PendingPermission | undefined {
 		return this.pending.get(requestId);
 	}
 
-	listByProcess(processId: string): PendingPermission[] {
+	listByProcess(_ctx: ServiceCtx, processId: string): PendingPermission[] {
 		return Array.from(this.pending.values()).filter(
 			(p) => p.processId === processId,
 		);
 	}
 
-	listBySession(sessionId: string): PendingPermission[] {
+	listBySession(_ctx: ServiceCtx, sessionId: string): PendingPermission[] {
 		return Array.from(this.pending.values()).filter(
 			(p) => p.sessionId === sessionId,
 		);
 	}
 
-	remove(requestId: string): boolean {
+	remove(_ctx: ServiceCtx, requestId: string): boolean {
 		return this.pending.delete(requestId);
 	}
 
-	clear(): void {
+	clear(_ctx: ServiceCtx): void {
 		this.pending.clear();
 	}
 }

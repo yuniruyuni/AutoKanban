@@ -16,10 +16,11 @@
 import { describe, expect, test } from "bun:test";
 import { Approval } from "../../../../models/approval";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
+import { createServiceCtx, type Full } from "../../../../types/db-capability";
 import type { ILogger } from "../../../../types/logger";
 import type {
-	IApprovalRepository,
-	IExecutionProcessLogsRepository,
+	ApprovalRepository,
+	ExecutionProcessLogsRepository,
 } from "../../../../types/repository";
 import { ApprovalStore } from "../../../approval-store";
 import type { ClaudeCodeProcess } from "./claude-code-executor";
@@ -44,14 +45,14 @@ function createMockLogger(): ILogger {
 	} as unknown as ILogger;
 }
 
-function createMockLogsRepo(): IExecutionProcessLogsRepository {
+function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
 	return {
 		appendLogs: () => {},
 		getLogs: () => "",
-	} as unknown as IExecutionProcessLogsRepository;
+	} as unknown as Full<ExecutionProcessLogsRepository>;
 }
 
-function createMockApprovalRepo(): IApprovalRepository {
+function createMockApprovalRepo(): Full<ApprovalRepository> {
 	const store = new Map<string, Approval>();
 	return {
 		get: (spec: Approval.Spec) => {
@@ -65,7 +66,7 @@ function createMockApprovalRepo(): IApprovalRepository {
 		},
 		list: () => ({ items: [], hasMore: false }),
 		delete: () => 0,
-	} as unknown as IApprovalRepository;
+	} as unknown as Full<ApprovalRepository>;
 }
 
 function makeStream(lines: object[]): ReadableStream<Uint8Array> {
@@ -150,7 +151,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 			});
 
 			// This is what handleApprovalRequest does: blocks until user responds
-			approvalStore.createAndWait(approval, approvalRepo);
+			approvalStore.createAndWait(createServiceCtx(), approval, approvalRepo);
 			// Note: we don't await - in production it blocks, but we just need it
 			// to store in pending Map (which happens synchronously in the Promise constructor)
 		});
@@ -202,7 +203,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		// 3. CRITICAL: Approval is visible via listPending
 		//    This is what the client's getPendingApprovals query returns.
 		//    If this fails, the UI will show FollowUpInput instead of PlanResponseInput.
-		const pending = approvalStore.listPending(processId);
+		const pending = approvalStore.listPending(createServiceCtx(), processId);
 		expect(pending).toHaveLength(1);
 		expect(pending[0].toolName).toBe("ExitPlanMode");
 		expect(pending[0].status).toBe("pending");
@@ -252,7 +253,9 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		await new Promise((r) => setTimeout(r, 100));
 
 		expect(hookDecisions).toEqual(["allow"]);
-		expect(approvalStore.listPending(processId)).toHaveLength(0);
+		expect(
+			approvalStore.listPending(createServiceCtx(), processId),
+		).toHaveLength(0);
 	});
 
 	/**
@@ -293,7 +296,9 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		await new Promise((r) => setTimeout(r, 100));
 
 		expect(autoApproved).toEqual(["Bash"]);
-		expect(approvalStore.listPending(processId)).toHaveLength(0);
+		expect(
+			approvalStore.listPending(createServiceCtx(), processId),
+		).toHaveLength(0);
 	});
 
 	/**
@@ -330,6 +335,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 
 			// This blocks until user responds
 			const response = await approvalStore.createAndWait(
+				createServiceCtx(),
 				approval,
 				approvalRepo,
 			);
@@ -360,12 +366,13 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		await new Promise((r) => setTimeout(r, 100));
 
 		// Approval should be pending
-		const pending = approvalStore.listPending(processId);
+		const pending = approvalStore.listPending(createServiceCtx(), processId);
 		expect(pending).toHaveLength(1);
 
 		// Simulate user approving
 		const approvalId = pending[0].id;
 		const success = await approvalStore.respond(
+			createServiceCtx(),
 			approvalId,
 			"approved",
 			null,
@@ -377,7 +384,9 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		await new Promise((r) => setTimeout(r, 50));
 
 		// Approval should no longer be pending
-		expect(approvalStore.listPending(processId)).toHaveLength(0);
+		expect(
+			approvalStore.listPending(createServiceCtx(), processId),
+		).toHaveLength(0);
 
 		// Response should have resolved
 		// biome-ignore lint/style/noNonNullAssertion: test assertion after null check
@@ -422,7 +431,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 				toolName,
 				toolCallId,
 			});
-			approvalStore.createAndWait(approval, approvalRepo);
+			approvalStore.createAndWait(createServiceCtx(), approval, approvalRepo);
 		});
 
 		// Use the REAL format from Claude Code stdout (captured from actual execution)
@@ -459,7 +468,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		expect(hookResponsesSent[0].decision).toBe("ask");
 
 		// Approval should be visible via listPending (client query)
-		const pending = approvalStore.listPending(processId);
+		const pending = approvalStore.listPending(createServiceCtx(), processId);
 		expect(pending).toHaveLength(1);
 		expect(pending[0].toolName).toBe("ExitPlanMode");
 	});
@@ -488,7 +497,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 				toolName,
 				toolCallId,
 			});
-			approvalStore.createAndWait(approval, approvalRepo);
+			approvalStore.createAndWait(createServiceCtx(), approval, approvalRepo);
 		});
 
 		const autoApproved: string[] = [];
@@ -523,7 +532,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 		await new Promise((r) => setTimeout(r, 100));
 
 		// ExitPlanMode should create approval
-		const pending = approvalStore.listPending(processId);
+		const pending = approvalStore.listPending(createServiceCtx(), processId);
 		expect(pending).toHaveLength(1);
 		expect(pending[0].toolName).toBe("ExitPlanMode");
 

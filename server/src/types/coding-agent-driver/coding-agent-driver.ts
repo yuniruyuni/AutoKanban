@@ -1,6 +1,7 @@
+import type { Full } from "../db-capability";
 import type {
-	ICodingAgentTurnRepository,
-	IExecutionProcessLogsRepository,
+	CodingAgentTurnRepository,
+	ExecutionProcessLogsRepository,
 } from "../repository";
 import type { DriverApprovalRequest } from "./driver-approval-request";
 import type { DriverCallbacks } from "./driver-callbacks";
@@ -35,8 +36,8 @@ export interface ICodingAgentDriver {
 		process: DriverProcess,
 		processId: string,
 		callbacks: DriverCallbacks,
-		logsRepo: IExecutionProcessLogsRepository,
-		codingAgentTurnRepo?: ICodingAgentTurnRepository,
+		logsRepo: Full<ExecutionProcessLogsRepository>,
+		codingAgentTurnRepo?: Full<CodingAgentTurnRepository>,
 	): Promise<void>;
 
 	/** Send a user message to the running process. */

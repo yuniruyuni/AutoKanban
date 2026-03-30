@@ -1,2 +1,1 @@
-export { TaskTemplateRepository } from "./postgres";
-export type { ITaskTemplateRepository } from "./repository";
+export type { TaskTemplateRepository } from "./repository";

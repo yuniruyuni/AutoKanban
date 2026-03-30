@@ -1,2 +1,2 @@
 export { WorkspaceConfigRepository } from "./file";
-export type { IWorkspaceConfigRepository } from "./repository";
+export type { WorkspaceConfigRepository as WorkspaceConfigRepositoryDef } from "./repository";

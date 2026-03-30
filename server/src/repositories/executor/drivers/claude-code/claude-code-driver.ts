@@ -5,10 +5,11 @@ import type {
 	DriverSpawnOptions,
 	ICodingAgentDriver,
 } from "../../../../types/coding-agent-driver";
+import type { Full } from "../../../../types/db-capability";
 import type { ILogger } from "../../../../types/logger";
 import type {
-	ICodingAgentTurnRepository,
-	IExecutionProcessLogsRepository,
+	CodingAgentTurnRepository,
+	ExecutionProcessLogsRepository,
 } from "../../../../types/repository";
 import {
 	ClaudeCodeExecutor,
@@ -79,8 +80,8 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		process: DriverProcess,
 		processId: string,
 		callbacks: DriverCallbacks,
-		logsRepo: IExecutionProcessLogsRepository,
-		codingAgentTurnRepo?: ICodingAgentTurnRepository,
+		logsRepo: Full<ExecutionProcessLogsRepository>,
+		codingAgentTurnRepo?: Full<CodingAgentTurnRepository>,
 	): Promise<void> {
 		const nativeProcess = process as unknown as ClaudeCodeProcess;
 		this.processes.set(processId, nativeProcess);

@@ -9,7 +9,8 @@ import {
 	type ParseResult,
 	parseLogsToConversation,
 } from "../lib/conversation-parser";
-import type { IExecutionProcessLogsRepository } from "../types/repository";
+import type { Full } from "../types/db-capability";
+import type { ExecutionProcessLogsRepository } from "../types/repository";
 
 export interface StructuredLogEvent {
 	type: "entry_add" | "entry_update" | "idle_changed" | "snapshot";
@@ -18,7 +19,7 @@ export interface StructuredLogEvent {
 
 export class StructuredLogStreamer {
 	constructor(
-		private executionProcessLogsRepo: IExecutionProcessLogsRepository,
+		private executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
 	) {}
 
 	/**

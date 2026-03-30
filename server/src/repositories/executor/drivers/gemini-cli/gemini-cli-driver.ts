@@ -5,10 +5,11 @@ import type {
 	DriverSpawnOptions,
 	ICodingAgentDriver,
 } from "../../../../types/coding-agent-driver";
+import type { Full } from "../../../../types/db-capability";
 import type { ILogger } from "../../../../types/logger";
 import type {
-	ICodingAgentTurnRepository,
-	IExecutionProcessLogsRepository,
+	CodingAgentTurnRepository,
+	ExecutionProcessLogsRepository,
 } from "../../../../types/repository";
 
 const GEMINI_CLI_PACKAGE = "@google/gemini-cli@latest";
@@ -79,8 +80,8 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 		driverProcess: DriverProcess,
 		processId: string,
 		_callbacks: DriverCallbacks,
-		logsRepo: IExecutionProcessLogsRepository,
-		_codingAgentTurnRepo?: ICodingAgentTurnRepository,
+		logsRepo: Full<ExecutionProcessLogsRepository>,
+		_codingAgentTurnRepo?: Full<CodingAgentTurnRepository>,
 	): Promise<void> {
 		// Collect stdout logs
 		this.collectStream(processId, "stdout", driverProcess.stdout, logsRepo);
@@ -141,7 +142,7 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 		processId: string,
 		source: "stdout" | "stderr",
 		stream: ReadableStream<Uint8Array>,
-		logsRepo: IExecutionProcessLogsRepository,
+		logsRepo: Full<ExecutionProcessLogsRepository>,
 	): Promise<void> {
 		const reader = stream.getReader();
 		const decoder = new TextDecoder();

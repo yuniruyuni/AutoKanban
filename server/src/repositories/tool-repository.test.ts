@@ -6,7 +6,7 @@ import type { PgDatabase } from "../db/pg-client";
 import { Tool } from "../models/tool";
 import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
 import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
-import { ToolRepository } from "./tool";
+import { ToolRepository } from "./tool/postgres";
 
 let db: PgDatabase;
 let toolRepo: ToolRepository;

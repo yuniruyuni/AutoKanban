@@ -1,19 +1,20 @@
 import type { ConflictOp } from "../../src/models/branch-status";
 import type { Project } from "../../src/models/project";
 import type { Workspace } from "../../src/models/workspace";
+import type { Full } from "../../src/types/db-capability";
 import type {
-	IGitRepository,
-	IWorktreeRepository,
+	GitRepository,
+	WorktreeRepository,
 } from "../../src/types/repository";
 import { createTestBranchStatus, createTestGitDiffs } from "../factories/git";
 
 /**
- * Create a mock IGitRepository for testing.
+ * Create a mock GitRepository for testing.
  * All methods return sensible defaults that can be overridden.
  */
 export function createMockGitRepository(
-	overrides: Partial<IGitRepository> = {},
-): IGitRepository {
+	overrides: Partial<Full<GitRepository>> = {},
+): Full<GitRepository> {
 	return {
 		// Worktree operations
 		addWorktree: async () => {},
@@ -81,12 +82,12 @@ export function createMockGitRepository(
 }
 
 /**
- * Create a mock IGitRepository configured to simulate rebase conflicts.
+ * Create a mock GitRepository configured to simulate rebase conflicts.
  */
 export function createMockGitRepositoryWithRebaseConflict(
 	conflictedFiles: string[] = ["src/index.ts"],
-	overrides: Partial<IGitRepository> = {},
-): IGitRepository {
+	overrides: Partial<Full<GitRepository>> = {},
+): Full<GitRepository> {
 	return createMockGitRepository({
 		isRebaseInProgress: async () => true,
 		getConflictedFiles: async () => conflictedFiles,
@@ -105,12 +106,12 @@ export function createMockGitRepositoryWithRebaseConflict(
 }
 
 /**
- * Create a mock IWorktreeRepository for testing.
+ * Create a mock WorktreeRepository for testing.
  * All methods return sensible defaults that can be overridden.
  */
 export function createMockWorktreeRepository(
-	overrides: Partial<IWorktreeRepository> = {},
-): IWorktreeRepository {
+	overrides: Partial<Full<WorktreeRepository>> = {},
+): Full<WorktreeRepository> {
 	const baseDir = "/tmp/worktrees";
 
 	return {
@@ -133,11 +134,11 @@ export function createMockWorktreeRepository(
 }
 
 /**
- * Create a mock IWorktreeRepository that simulates non-existent worktrees.
+ * Create a mock WorktreeRepository that simulates non-existent worktrees.
  */
 export function createMockWorktreeRepositoryNotExists(
-	overrides: Partial<IWorktreeRepository> = {},
-): IWorktreeRepository {
+	overrides: Partial<Full<WorktreeRepository>> = {},
+): Full<WorktreeRepository> {
 	return createMockWorktreeRepository({
 		worktreeExists: async () => false,
 		...overrides,
@@ -145,12 +146,12 @@ export function createMockWorktreeRepositoryNotExists(
 }
 
 /**
- * Create a mock IWorktreeRepository that throws on worktree creation.
+ * Create a mock WorktreeRepository that throws on worktree creation.
  */
 export function createMockWorktreeRepositoryCreationFails(
 	errorMessage: string = "Permission denied",
-	overrides: Partial<IWorktreeRepository> = {},
-): IWorktreeRepository {
+	overrides: Partial<Full<WorktreeRepository>> = {},
+): Full<WorktreeRepository> {
 	return createMockWorktreeRepository({
 		createWorktree: async () => {
 			throw new Error(errorMessage);

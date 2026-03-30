@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
+import type { Full } from "../../../../types/db-capability";
 import type { ILogger } from "../../../../types/logger";
-import type { IExecutionProcessLogsRepository } from "../../../../types/repository";
+import type { ExecutionProcessLogsRepository } from "../../../../types/repository";
 import { ProtocolLogCollector } from "./protocol-log-collector";
 
 // ============================================
@@ -19,11 +20,11 @@ function createMockLogger(): ILogger {
 	} as unknown as ILogger;
 }
 
-function createMockLogsRepo(): IExecutionProcessLogsRepository {
+function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
 	return {
 		appendLogs: () => {},
 		getLogs: () => "",
-	} as unknown as IExecutionProcessLogsRepository;
+	} as unknown as Full<ExecutionProcessLogsRepository>;
 }
 
 /**

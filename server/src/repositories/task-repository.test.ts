@@ -7,8 +7,8 @@ import { and } from "../models/common";
 import { Task } from "../models/task";
 import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
 import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
-import { ProjectRepository } from "./project";
-import { TaskRepository } from "./task";
+import { ProjectRepository } from "./project/postgres";
+import { TaskRepository } from "./task/postgres";
 
 let db: PgDatabase;
 let taskRepo: TaskRepository;

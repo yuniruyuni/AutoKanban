@@ -34,15 +34,12 @@ export async function generatePrDescription(
 		);
 
 	try {
-		return await ctx.repos.executor.runStructured<{
-			title: string;
-			body: string;
-		}>(undefined, {
+		return (await ctx.repos.executor.runStructured(undefined, {
 			workingDir: params.worktreePath,
 			prompt: PR_DESCRIPTION_PROMPT,
 			schema: PR_DESCRIPTION_SCHEMA,
 			resumeSessionId: resumeInfo?.agentSessionId ?? undefined,
-		});
+		})) as { title: string; body: string } | null;
 	} catch (error) {
 		ctx.logger.warn("Failed to generate PR description", error);
 		return null;

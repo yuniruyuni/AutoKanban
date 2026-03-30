@@ -10,9 +10,9 @@ import type { PgDatabase } from "../db/pg-client";
 import { CodingAgentTurn } from "../models/coding-agent-turn";
 import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
 import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
-import { CodingAgentTurnRepository } from "./coding-agent-turn";
-import { ExecutionProcessRepository } from "./execution-process";
-import { SessionRepository } from "./session";
+import { CodingAgentTurnRepository } from "./coding-agent-turn/postgres";
+import { ExecutionProcessRepository } from "./execution-process/postgres";
+import { SessionRepository } from "./session/postgres";
 
 let db: PgDatabase;
 let turnRepo: CodingAgentTurnRepository;

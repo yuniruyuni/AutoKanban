@@ -1,12 +1,8 @@
 import type { Cursor, Page } from "../../models/common";
 import type { ExecutionProcess } from "../../models/execution-process";
-import type {
-	DbReadCtx,
-	DbWriteCtx,
-	StripMarkers,
-} from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
 
-export interface IExecutionProcessRepositoryDef {
+export interface ExecutionProcessRepository {
 	get(
 		ctx: DbReadCtx,
 		spec: ExecutionProcess.Spec,
@@ -19,6 +15,3 @@ export interface IExecutionProcessRepositoryDef {
 	upsert(ctx: DbWriteCtx, process: ExecutionProcess): Promise<void>;
 	delete(ctx: DbWriteCtx, spec: ExecutionProcess.Spec): Promise<number>;
 }
-
-export type IExecutionProcessRepository =
-	StripMarkers<IExecutionProcessRepositoryDef>;

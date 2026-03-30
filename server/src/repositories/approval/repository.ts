@@ -1,12 +1,8 @@
 import type { Approval } from "../../models/approval";
 import type { Cursor, Page } from "../../models/common";
-import type {
-	DbReadCtx,
-	DbWriteCtx,
-	StripMarkers,
-} from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
 
-export interface IApprovalRepositoryDef {
+export interface ApprovalRepository {
 	get(ctx: DbReadCtx, spec: Approval.Spec): Promise<Approval | null>;
 	list(
 		ctx: DbReadCtx,
@@ -16,5 +12,3 @@ export interface IApprovalRepositoryDef {
 	upsert(ctx: DbWriteCtx, approval: Approval): Promise<void>;
 	delete(ctx: DbWriteCtx, spec: Approval.Spec): Promise<number>;
 }
-
-export type IApprovalRepository = StripMarkers<IApprovalRepositoryDef>;

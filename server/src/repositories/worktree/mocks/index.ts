@@ -1,8 +1,8 @@
-import type { IWorktreeRepository } from "../repository";
+import type { WorktreeRepository } from "../repository";
 
 export function createMockWorktreeRepository(
-	overrides: Partial<IWorktreeRepository> = {},
-): IWorktreeRepository {
+	overrides: Partial<WorktreeRepository> = {},
+): WorktreeRepository {
 	return {
 		getBaseDir: () => "/tmp/worktrees",
 		getWorkspaceDir: () => "/tmp/worktrees/workspace",
@@ -15,5 +15,5 @@ export function createMockWorktreeRepository(
 		getWorktreeInfo: async () => [],
 		pruneWorktrees: async () => {},
 		...overrides,
-	} as IWorktreeRepository;
+	} as WorktreeRepository;
 }

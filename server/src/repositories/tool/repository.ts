@@ -1,12 +1,8 @@
 import type { Cursor, Page } from "../../models/common";
 import type { Tool } from "../../models/tool";
-import type {
-	DbReadCtx,
-	DbWriteCtx,
-	StripMarkers,
-} from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
 
-export interface IToolRepositoryDef {
+export interface ToolRepository {
 	get(ctx: DbReadCtx, spec: Tool.Spec): Promise<Tool | null>;
 	list(
 		ctx: DbReadCtx,
@@ -19,5 +15,3 @@ export interface IToolRepositoryDef {
 	/** Execute a shell command. Uses `sh -c` to support PATH-based commands. */
 	executeCommand(ctx: DbWriteCtx, command: string, cwd?: string): Promise<void>;
 }
-
-export type IToolRepository = StripMarkers<IToolRepositoryDef>;

@@ -1,4 +1,5 @@
 import type { ExecutionProcess } from "../../models/execution-process";
+import type { ServiceCtx } from "../../types/db-capability";
 
 export interface ExecutorStartOptions {
 	sessionId: string;
@@ -32,14 +33,23 @@ export interface ExecutorProcessInfo {
 	startedAt: Date;
 }
 
-export interface IExecutorRepository {
-	start(options: ExecutorStartOptions): Promise<ExecutorProcessInfo>;
+export interface ExecutorRepository {
+	start(
+		ctx: ServiceCtx,
+		options: ExecutorStartOptions,
+	): Promise<ExecutorProcessInfo>;
 	startProtocol(
+		ctx: ServiceCtx,
 		options: ExecutorStartProtocolOptions,
 	): Promise<ExecutorProcessInfo>;
-	stop(processId: string): Promise<boolean>;
-	sendMessage(processId: string, prompt: string): Promise<boolean>;
+	stop(ctx: ServiceCtx, processId: string): Promise<boolean>;
+	sendMessage(
+		ctx: ServiceCtx,
+		processId: string,
+		prompt: string,
+	): Promise<boolean>;
 	sendPermissionResponse(
+		ctx: ServiceCtx,
 		processId: string,
 		requestId: string,
 		approved: boolean,
@@ -47,9 +57,11 @@ export interface IExecutorRepository {
 		reason?: string,
 	): Promise<boolean>;
 	startProtocolAndWait(
+		ctx: ServiceCtx,
 		options: ExecutorStartProtocolOptions,
 	): Promise<{ exitCode: number }>;
-	runStructured<T>(
+	runStructured(
+		ctx: ServiceCtx,
 		executorName: string | undefined,
 		options: {
 			workingDir: string;
@@ -58,9 +70,15 @@ export interface IExecutorRepository {
 			resumeSessionId?: string;
 			model?: string;
 		},
-	): Promise<T | null>;
-	get(processId: string): ExecutorProcessInfo | undefined;
-	getBySession(sessionId: string): ExecutorProcessInfo[];
-	getStdout(processId: string): ReadableStream<Uint8Array> | null;
-	getStderr(processId: string): ReadableStream<Uint8Array> | null;
+	): Promise<unknown>;
+	get(ctx: ServiceCtx, processId: string): ExecutorProcessInfo | undefined;
+	getBySession(ctx: ServiceCtx, sessionId: string): ExecutorProcessInfo[];
+	getStdout(
+		ctx: ServiceCtx,
+		processId: string,
+	): ReadableStream<Uint8Array> | null;
+	getStderr(
+		ctx: ServiceCtx,
+		processId: string,
+	): ReadableStream<Uint8Array> | null;
 }

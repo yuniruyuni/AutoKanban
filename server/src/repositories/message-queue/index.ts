@@ -1,6 +1,6 @@
 export { MessageQueueRepository, messageQueueRepository } from "./memory";
 export type {
-	IMessageQueueRepository,
+	MessageQueueRepository as MessageQueueRepositoryDef,
 	QueuedMessage,
 	QueueStatus,
 } from "./repository";

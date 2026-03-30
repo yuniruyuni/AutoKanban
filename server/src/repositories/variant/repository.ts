@@ -1,12 +1,8 @@
 import type { Cursor, Page } from "../../models/common";
 import type { Variant } from "../../models/variant";
-import type {
-	DbReadCtx,
-	DbWriteCtx,
-	StripMarkers,
-} from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
 
-export interface IVariantRepositoryDef {
+export interface VariantRepository {
 	get(ctx: DbReadCtx, spec: Variant.Spec): Promise<Variant | null>;
 	list(
 		ctx: DbReadCtx,
@@ -17,5 +13,3 @@ export interface IVariantRepositoryDef {
 	upsert(ctx: DbWriteCtx, variant: Variant): Promise<void>;
 	delete(ctx: DbWriteCtx, spec: Variant.Spec): Promise<number>;
 }
-
-export type IVariantRepository = StripMarkers<IVariantRepositoryDef>;

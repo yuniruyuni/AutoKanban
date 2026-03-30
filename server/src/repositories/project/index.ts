@@ -1,2 +1,1 @@
-export { ProjectRepository } from "./postgres";
-export type { IProjectRepository } from "./repository";
+export type { ProjectRepository } from "./repository";

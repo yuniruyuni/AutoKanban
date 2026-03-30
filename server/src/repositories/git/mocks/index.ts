@@ -1,8 +1,8 @@
-import type { IGitRepository } from "../repository";
+import type { GitRepository } from "../repository";
 
 export function createMockGitRepository(
-	overrides: Partial<IGitRepository> = {},
-): IGitRepository {
+	overrides: Partial<GitRepository> = {},
+): GitRepository {
 	return {
 		addWorktree: async () => {},
 		removeWorktree: async () => {},
@@ -49,5 +49,5 @@ export function createMockGitRepository(
 		fetch: async () => {},
 		isGitRepo: async () => true,
 		...overrides,
-	} as IGitRepository;
+	} as GitRepository;
 }

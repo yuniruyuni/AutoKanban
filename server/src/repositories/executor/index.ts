@@ -8,7 +8,7 @@ export {
 } from "./orchestrator";
 export type {
 	ExecutorProcessInfo,
+	ExecutorRepository as ExecutorRepositoryDef,
 	ExecutorStartOptions,
 	ExecutorStartProtocolOptions,
-	IExecutorRepository,
 } from "./repository";

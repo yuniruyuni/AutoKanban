@@ -1,14 +1,14 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { TaskTemplate } from "../../../models/task-template";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { ITaskTemplateRepositoryDef } from "../repository";
+import type { TaskTemplateRepository as ITaskTemplateRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { list } from "./list";
 import { listAll } from "./list-all";
 import { upsert } from "./upsert";
 
-export class TaskTemplateRepository implements ITaskTemplateRepositoryDef {
+export class TaskTemplateRepository implements ITaskTemplateRepository {
 	async get(
 		ctx: DbReadCtx,
 		spec: TaskTemplate.Spec,

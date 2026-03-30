@@ -1,8 +1,9 @@
 import type { Subprocess } from "bun";
+import type { Full, ServiceCtx } from "../../../types/db-capability";
 import type { ILogger } from "../../../types/logger";
-import type { IExecutionProcessLogsRepository } from "../../../types/repository";
+import type { ExecutionProcessLogsRepository } from "../../../types/repository";
 import { LogCollector } from "../../log-collector";
-import type { IDevServerRepository } from "../repository";
+import type { DevServerRepository as DevServerRepositoryDef } from "../repository";
 
 interface RunningDevServer {
 	process: Subprocess;
@@ -15,13 +16,13 @@ interface RunningDevServer {
  * Uses Bun.spawn directly (not ClaudeCodeExecutor) and
  * LogCollector for log streaming via existing SSE infrastructure.
  */
-export class DevServerRepository implements IDevServerRepository {
+export class DevServerRepository implements DevServerRepositoryDef {
 	private runningProcesses = new Map<string, RunningDevServer>();
 	private logCollector: LogCollector;
 	private logger: ILogger;
 
 	constructor(
-		executionProcessLogsRepo: IExecutionProcessLogsRepository,
+		executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
 		logger: ILogger,
 	) {
 		this.logCollector = new LogCollector(
@@ -31,11 +32,14 @@ export class DevServerRepository implements IDevServerRepository {
 		this.logger = logger.child("DevServerRepository");
 	}
 
-	start(options: {
-		processId: string;
-		command: string;
-		workingDir: string;
-	}): void {
+	start(
+		_ctx: ServiceCtx,
+		options: {
+			processId: string;
+			command: string;
+			workingDir: string;
+		},
+	): void {
 		const { processId, command, workingDir } = options;
 
 		this.logger.info(`Starting dev server: ${command} in ${workingDir}`);
@@ -69,7 +73,7 @@ export class DevServerRepository implements IDevServerRepository {
 		});
 	}
 
-	stop(processId: string): boolean {
+	stop(_ctx: ServiceCtx, processId: string): boolean {
 		const running = this.runningProcesses.get(processId);
 		if (!running) return false;
 
@@ -79,7 +83,7 @@ export class DevServerRepository implements IDevServerRepository {
 		return true;
 	}
 
-	get(processId: string): { pid: number } | undefined {
+	get(_ctx: ServiceCtx, processId: string): { pid: number } | undefined {
 		const running = this.runningProcesses.get(processId);
 		if (!running) return undefined;
 		return { pid: running.pid };

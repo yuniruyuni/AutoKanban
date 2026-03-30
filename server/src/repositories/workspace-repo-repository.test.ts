@@ -10,8 +10,8 @@ import type { PgDatabase } from "../db/pg-client";
 import { WorkspaceRepo } from "../models/workspace-repo";
 import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
 import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
-import { ProjectRepository } from "./project";
-import { WorkspaceRepoRepository } from "./workspace-repo";
+import { ProjectRepository } from "./project/postgres";
+import { WorkspaceRepoRepository } from "./workspace-repo/postgres";
 
 let db: PgDatabase;
 let wsRepoRepo: WorkspaceRepoRepository;

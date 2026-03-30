@@ -2,7 +2,7 @@ import { spawn } from "bun";
 import type { Cursor, Page } from "../../../models/common";
 import type { Tool } from "../../../models/tool";
 import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
-import type { IToolRepositoryDef } from "../repository";
+import type { ToolRepository as IToolRepository } from "../repository";
 import { del } from "./delete";
 import { executeCommand, type SpawnFn } from "./executeCommand";
 import { get } from "./get";
@@ -12,7 +12,7 @@ import { upsert } from "./upsert";
 
 export type { SpawnFn } from "./executeCommand";
 
-export class ToolRepository implements IToolRepositoryDef {
+export class ToolRepository implements IToolRepository {
 	private spawnFn: SpawnFn;
 
 	constructor(spawnFn?: SpawnFn) {

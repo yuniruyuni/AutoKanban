@@ -1,12 +1,12 @@
-import type { IDevServerRepository } from "../repository";
+import type { DevServerRepository } from "../repository";
 
 export function createMockDevServerRepository(
-	overrides: Partial<IDevServerRepository> = {},
-): IDevServerRepository {
+	overrides: Partial<DevServerRepository> = {},
+): DevServerRepository {
 	return {
 		start: () => {},
 		stop: () => false,
 		get: () => undefined,
 		...overrides,
-	} as IDevServerRepository;
+	} as DevServerRepository;
 }

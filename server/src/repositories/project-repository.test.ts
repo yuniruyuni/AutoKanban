@@ -6,8 +6,8 @@ import type { PgDatabase } from "../db/pg-client";
 import { Project } from "../models/project";
 import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
 import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
-import { ProjectRepository } from "./project";
-import { TaskRepository } from "./task";
+import { ProjectRepository } from "./project/postgres";
+import { TaskRepository } from "./task/postgres";
 
 let db: PgDatabase;
 let projectRepo: ProjectRepository;

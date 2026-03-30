@@ -1,11 +1,7 @@
 import type { ExecutionProcessLogs } from "../../models/execution-process";
-import type {
-	DbReadCtx,
-	DbWriteCtx,
-	StripMarkers,
-} from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
 
-export interface IExecutionProcessLogsRepositoryDef {
+export interface ExecutionProcessLogsRepository {
 	getLogs(
 		ctx: DbReadCtx,
 		executionProcessId: string,
@@ -18,6 +14,3 @@ export interface IExecutionProcessLogsRepositoryDef {
 	): Promise<void>;
 	deleteLogs(ctx: DbWriteCtx, executionProcessId: string): Promise<void>;
 }
-
-export type IExecutionProcessLogsRepository =
-	StripMarkers<IExecutionProcessLogsRepositoryDef>;

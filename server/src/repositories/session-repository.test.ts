@@ -7,7 +7,7 @@ import type { PgDatabase } from "../db/pg-client";
 import { Session } from "../models/session";
 import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
 import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
-import { SessionRepository } from "./session";
+import { SessionRepository } from "./session/postgres";
 
 let db: PgDatabase;
 let sessionRepo: SessionRepository;

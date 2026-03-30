@@ -5,10 +5,11 @@ import {
 	type ParsedResult,
 } from "../../../../lib/claude-json-parser";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
+import { createServiceCtx, type Full } from "../../../../types/db-capability";
 import type { ILogger } from "../../../../types/logger";
 import type {
-	ICodingAgentTurnRepository,
-	IExecutionProcessLogsRepository,
+	CodingAgentTurnRepository,
+	ExecutionProcessLogsRepository,
 } from "../../../../types/repository";
 import { type LogStore, logStoreManager } from "../../../log-store";
 
@@ -41,8 +42,8 @@ export class ProtocolLogCollector {
 	private logger: ILogger;
 
 	constructor(
-		private executionProcessLogsRepo: IExecutionProcessLogsRepository,
-		private codingAgentTurnRepo: ICodingAgentTurnRepository | undefined,
+		private executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
+		private codingAgentTurnRepo: Full<CodingAgentTurnRepository> | undefined,
 		logger: ILogger,
 	) {
 		this.logger = logger;
@@ -84,7 +85,8 @@ export class ProtocolLogCollector {
 		stdout: ReadableStream<Uint8Array>,
 		stderr: ReadableStream<Uint8Array>,
 	): void {
-		const store = logStoreManager.create(processId);
+		const svcCtx = createServiceCtx();
+		const store = logStoreManager.create(svcCtx, processId);
 		this.collectProtocolStream(processId, stdout, store);
 		this.collectStderrStream(processId, stderr, store);
 	}
@@ -99,6 +101,7 @@ export class ProtocolLogCollector {
 	): Promise<void> {
 		const reader = stream.getReader();
 		const decoder = new TextDecoder();
+		const svcCtx = createServiceCtx();
 
 		try {
 			while (true) {
@@ -113,7 +116,7 @@ export class ProtocolLogCollector {
 					data,
 				};
 
-				store.append(entry);
+				store.append(svcCtx, entry);
 				this.executionProcessLogsRepo.appendLogs(
 					processId,
 					`[${entry.timestamp.toISOString()}] [stderr] ${data}\n`,
@@ -138,6 +141,7 @@ export class ProtocolLogCollector {
 		const reader = stream.getReader();
 		const decoder = new TextDecoder();
 		const parser = new ClaudeJsonParser();
+		const svcCtx = createServiceCtx();
 		let buffer = "";
 		let lastAssistantContent: ClaudeAssistantMessage | null = null;
 
@@ -161,7 +165,7 @@ export class ProtocolLogCollector {
 						data: line,
 					};
 
-					store.append(entry);
+					store.append(svcCtx, entry);
 					this.executionProcessLogsRepo.appendLogs(
 						processId,
 						`[${entry.timestamp.toISOString()}] [stdout] ${line}\n`,

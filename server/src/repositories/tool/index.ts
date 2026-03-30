@@ -1,2 +1,1 @@
-export { ToolRepository } from "./postgres";
-export type { IToolRepository } from "./repository";
+export type { ToolRepository } from "./repository";
