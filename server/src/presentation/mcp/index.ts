@@ -6,7 +6,7 @@ import {
 	ListResourcesRequestSchema,
 	ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { getBaseUrl } from "../port-file";
+import { getBaseUrl } from "../../lib/port-file";
 import { registerMcpTools } from "./tools";
 import { TrpcHttpClient } from "./trpc-client";
 

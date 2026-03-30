@@ -20,7 +20,7 @@ import type {
 	ClaudeControlResponseMessage,
 	ClaudeJsonMessage,
 	ClaudeUserMessage,
-} from "../../models/claude-protocol";
+} from "../claude-protocol";
 import type {
 	ConversationEntry,
 	PlanAction,
@@ -31,16 +31,16 @@ import { computeIdleState } from "./idle-state";
 import {
 	computeDefaultPlanStatus,
 	determinePlanStatusFromText,
-} from "../tool/plan-status";
-import { mapToolNameToAction } from "../tool/tool-action-mapper";
-import { extractExitCode, formatToolOutput } from "../tool/tool-result-formatter";
+} from "./plan-status";
+import { mapToolNameToAction } from "./tool-action-mapper";
+import { extractExitCode, formatToolOutput } from "./tool-result-formatter";
 import {
 	applyControlRequest,
 	applyControlResponse,
 	applyToolResult,
 	type ControlResponseInput,
 	normalizeControlResponse,
-} from "../tool/tool-status-machine";
+} from "./tool-status-machine";
 
 /**
  * Parse result containing entries and idle state

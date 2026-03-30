@@ -1,7 +1,7 @@
 import { PgDatabase } from "../../repositories/common";
 import { ensurePgSchema } from "./pgschema";
 import { EmbeddedPostgresManager } from "./postgres";
-import { seedTaskTemplates } from "./seed-templates";
+import { seedTaskTemplates } from "../../usecases/setup/seed-templates";
 
 let db: PgDatabase | null = null;
 let pgManager: EmbeddedPostgresManager | null = null;
