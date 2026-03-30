@@ -9,11 +9,9 @@ import { ExecutionProcess } from "../../../models/execution-process";
 import { Session } from "../../../models/session";
 import { Task } from "../../../models/task";
 import { Workspace } from "../../../models/workspace";
-import type {
-	DriverApprovalRequest,
-	DriverProcess,
-	ICodingAgentDriver,
-} from "../types";
+import type { ICodingAgentDriver } from "./coding-agent-driver";
+import type { DriverApprovalRequest } from "./driver-approval-request";
+import type { DriverProcess } from "./driver-process";
 import {
 	createServiceCtx,
 	type Full,
