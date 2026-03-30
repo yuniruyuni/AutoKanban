@@ -23,7 +23,11 @@ describe("Variant.create()", () => {
 	});
 
 	test("permissionMode can be set", () => {
-		const v = Variant.create({ executor: "claude-code", name: "default", permissionMode: "ask" });
+		const v = Variant.create({
+			executor: "claude-code",
+			name: "default",
+			permissionMode: "ask",
+		});
 		expect(v.permissionMode).toBe("ask");
 	});
 
@@ -33,7 +37,11 @@ describe("Variant.create()", () => {
 	});
 
 	test("model can be set", () => {
-		const v = Variant.create({ executor: "claude-code", name: "default", model: "opus" });
+		const v = Variant.create({
+			executor: "claude-code",
+			name: "default",
+			model: "opus",
+		});
 		expect(v.model).toBe("opus");
 	});
 
@@ -43,7 +51,11 @@ describe("Variant.create()", () => {
 	});
 
 	test("appendPrompt can be set", () => {
-		const v = Variant.create({ executor: "claude-code", name: "default", appendPrompt: "Be concise" });
+		const v = Variant.create({
+			executor: "claude-code",
+			name: "default",
+			appendPrompt: "Be concise",
+		});
 		expect(v.appendPrompt).toBe("Be concise");
 	});
 

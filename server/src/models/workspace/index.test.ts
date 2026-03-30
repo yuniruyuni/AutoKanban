@@ -111,6 +111,90 @@ describe("Workspace.generateBranchName()", () => {
 });
 
 // ============================================
+// Workspace.resolveWorkingDir()
+// ============================================
+
+describe("Workspace.resolveWorkingDir()", () => {
+	test("returns worktreePath/projectName when both exist", () => {
+		const ws = Workspace.create({ taskId: "t1", worktreePath: "/tmp/wt" });
+		const result = Workspace.resolveWorkingDir(ws, {
+			name: "myproject",
+			repoPath: "/repo",
+		});
+		expect(result).toBe("/tmp/wt/myproject");
+	});
+
+	test("returns worktreePath when project is null", () => {
+		const ws = Workspace.create({ taskId: "t1", worktreePath: "/tmp/wt" });
+		expect(Workspace.resolveWorkingDir(ws, null)).toBe("/tmp/wt");
+	});
+
+	test("returns project.repoPath when worktreePath is null", () => {
+		const ws = Workspace.create({ taskId: "t1" }); // worktreePath: null
+		const result = Workspace.resolveWorkingDir(ws, {
+			name: "myproject",
+			repoPath: "/repo",
+		});
+		expect(result).toBe("/repo");
+	});
+
+	test("returns null when both worktreePath and project are null", () => {
+		const ws = Workspace.create({ taskId: "t1" });
+		expect(Workspace.resolveWorkingDir(ws, null)).toBeNull();
+	});
+});
+
+// ============================================
+// Workspace.determineAttemptStrategy()
+// ============================================
+
+describe("Workspace.determineAttemptStrategy()", () => {
+	test("reuses active workspace with no sessions", () => {
+		const active = Workspace.create({ taskId: "t1" });
+		const result = Workspace.determineAttemptStrategy({
+			activeWorkspace: active,
+			activeHasSessions: false,
+			maxAttempt: 1,
+			taskId: "t1",
+			containerRef: "/repo",
+		});
+		expect(result.action).toBe("reuse");
+		expect(result.workspace.id).toBe(active.id);
+	});
+
+	test("creates new workspace when active has sessions", () => {
+		const active = Workspace.create({ taskId: "t1" });
+		const result = Workspace.determineAttemptStrategy({
+			activeWorkspace: active,
+			activeHasSessions: true,
+			maxAttempt: 1,
+			taskId: "t1",
+			containerRef: "/repo",
+		});
+		expect(result.action).toBe("new");
+		if (result.action === "new") {
+			expect(result.workspace.attempt).toBe(2);
+			expect(result.workspaceToArchive?.id).toBe(active.id);
+		}
+	});
+
+	test("creates new workspace when no active workspace exists", () => {
+		const result = Workspace.determineAttemptStrategy({
+			activeWorkspace: null,
+			activeHasSessions: false,
+			maxAttempt: 0,
+			taskId: "t1",
+			containerRef: "/repo",
+		});
+		expect(result.action).toBe("new");
+		if (result.action === "new") {
+			expect(result.workspace.attempt).toBe(1);
+			expect(result.workspaceToArchive).toBeNull();
+		}
+	});
+});
+
+// ============================================
 // Workspace Specs
 // ============================================
 

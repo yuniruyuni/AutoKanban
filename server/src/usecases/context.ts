@@ -5,6 +5,7 @@ import type {
 	DbWriteRepos,
 	FullRepos,
 	Repos,
+	ServiceRepos,
 } from "../repositories";
 
 // ============================================
@@ -26,7 +27,12 @@ export type WriteContext = {
 export type PostContext = {
 	now: Date;
 	logger: ILogger;
-	repos: FullRepos<Repos>;
+	repos: ServiceRepos<Repos>;
+};
+export type FinishContext = {
+	now: Date;
+	logger: ILogger;
+	repos: DbWriteRepos<Repos>;
 };
 
 // ============================================

@@ -24,7 +24,12 @@ describe("Tool.create()", () => {
 	});
 
 	test("iconColor can be set", () => {
-		const t = Tool.create({ name: "t", icon: "i", command: "c", iconColor: "#FF0000" });
+		const t = Tool.create({
+			name: "t",
+			icon: "i",
+			command: "c",
+			iconColor: "#FF0000",
+		});
 		expect(t.iconColor).toBe("#FF0000");
 	});
 

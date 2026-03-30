@@ -3,11 +3,13 @@ import {
 	bindRepos,
 	createDbReadCtx,
 	createDbWriteCtx,
+	createServiceCtx,
 	type DbReadCtx,
 	type DbWriteCtx,
 } from "../repositories";
 import type {
 	Context,
+	FinishContext,
 	PostContext,
 	PreContext,
 	ProcessContext,
@@ -18,6 +20,7 @@ import type {
 // Re-export context types for convenience
 export type {
 	Context,
+	FinishContext,
 	PostContext,
 	PreContext,
 	ProcessContext,
@@ -45,7 +48,15 @@ export interface Usecase<T> {
 
 type MaybePromise<T> = T | Promise<T>;
 
-interface UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult> {
+interface UsecaseDefinition<
+	TPre,
+	TRead,
+	TProcess,
+	TWrite,
+	TPost,
+	TFinish,
+	TResult,
+> {
 	pre?: (ctx: PreContext) => MaybePromise<TPre | Fail>;
 	read?: (ctx: ReadContext, state: Unfail<TPre>) => MaybePromise<TRead | Fail>;
 	process?: (
@@ -60,7 +71,11 @@ interface UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult> {
 		ctx: PostContext,
 		state: Unfail<TWrite>,
 	) => MaybePromise<TPost | Fail>;
-	result?: (state: Unfail<TPost>) => MaybePromise<TResult>;
+	finish?: (
+		ctx: FinishContext,
+		state: Unfail<TPost>,
+	) => MaybePromise<TFinish | Fail>;
+	result?: (state: Unfail<TFinish>) => MaybePromise<TResult>;
 }
 
 // ============================================
@@ -73,9 +88,18 @@ export function usecase<
 	TProcess = TRead,
 	TWrite = TProcess,
 	TPost = TWrite,
-	TResult = TPost,
+	TFinish = TPost,
+	TResult = TFinish,
 >(
-	def: UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult>,
+	def: UsecaseDefinition<
+		TPre,
+		TRead,
+		TProcess,
+		TWrite,
+		TPost,
+		TFinish,
+		TResult
+	>,
 ): Usecase<TResult> {
 	return {
 		async run(ctx: Context): Promise<Result<TResult, Fail>> {
@@ -114,19 +138,33 @@ export function usecase<
 				}
 				if (isFail(state)) return { ok: false, error: state };
 
-				// post (outside transaction, full access)
+				// post (outside transaction, service repos only)
 				if (def.post) {
 					const postCtx: PostContext = {
 						now: ctx.now,
 						logger: ctx.logger,
-						repos: ctx.repos,
+						repos: bindRepos(ctx.rawRepos, createServiceCtx()),
 					};
 					state = await def.post(postCtx, state as Unfail<TWrite>);
 				}
 				if (isFail(state)) return { ok: false, error: state };
 
+				// finish (new transaction, DB write only)
+				const { finish } = def;
+				if (finish) {
+					state = await ctx.db.transaction(async (tx) => {
+						const finishCtx: FinishContext = {
+							now: ctx.now,
+							logger: ctx.logger,
+							repos: bindRepos(ctx.rawRepos, createDbWriteCtx(tx)),
+						};
+						return finish(finishCtx, state as Unfail<TPost>);
+					});
+				}
+				if (isFail(state)) return { ok: false, error: state };
+
 				// result
-				const result = await (def.result?.(state as Unfail<TPost>) ?? state);
+				const result = await (def.result?.(state as Unfail<TFinish>) ?? state);
 				return { ok: true, value: result as TResult };
 			} catch (error) {
 				ctx.logger.error("Unexpected error in usecase:", error);
@@ -139,9 +177,17 @@ export function usecase<
 	};
 }
 
-function executeDbSteps<TPre, TRead, TProcess, TWrite, TPost, TResult>(
+function executeDbSteps<TPre, TRead, TProcess, TWrite, TPost, TFinish, TResult>(
 	ctx: Context,
-	def: UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult>,
+	def: UsecaseDefinition<
+		TPre,
+		TRead,
+		TProcess,
+		TWrite,
+		TPost,
+		TFinish,
+		TResult
+	>,
 	processCtx: ProcessContext,
 	dbCtx: DbReadCtx | DbWriteCtx,
 	state: unknown,

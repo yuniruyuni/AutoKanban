@@ -41,7 +41,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		_ctx: ServiceCtx,
 		options: ExecutorStartOptions,
 	): Promise<RunningProcess> {
-		const id = randomUUID();
+		const id = options.id ?? randomUUID();
 		const now = new Date();
 
 		const driver = this.getDriver(options.executor);
@@ -70,7 +70,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		_ctx: ServiceCtx,
 		options: ExecutorStartProtocolOptions,
 	): Promise<RunningProcess> {
-		const id = randomUUID();
+		const id = options.id ?? randomUUID();
 		const now = new Date();
 
 		const driver = this.getDriver(options.executor);

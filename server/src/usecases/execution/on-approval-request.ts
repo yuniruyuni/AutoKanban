@@ -42,20 +42,18 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 		},
 
 		write: async (ctx, { execProcess, task }) => {
-			if (execProcess && execProcess.status === "running") {
-				await ctx.repos.executionProcess.upsert({
-					...execProcess,
-					status: "awaiting_approval",
-					updatedAt: new Date(),
-				});
+			if (execProcess) {
+				const updated = ExecutionProcess.toAwaitingApproval(execProcess);
+				if (updated) {
+					await ctx.repos.executionProcess.upsert(updated);
+				}
 			}
 
-			if (task && task.status === "inprogress") {
-				await ctx.repos.task.upsert({
-					...task,
-					status: "inreview",
-					updatedAt: new Date(),
-				});
+			if (task) {
+				const updated = Task.toInReview(task);
+				if (updated) {
+					await ctx.repos.task.upsert(updated);
+				}
 			}
 
 			const approval = Approval.create({
@@ -68,9 +66,13 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 		},
 
 		post: async (ctx, { approval, taskId }) => {
+			// TODO: ApprovalStoreRepository.createAndWait expects Full<ApprovalRepository> but post
+			// only has Service<>. The approval store uses the repo for DB writes internally.
+			// Narrow the interface types in the future.
 			const response = await ctx.repos.approvalStore.createAndWait(
 				approval,
-				ctx.repos.approval,
+				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
+				ctx.repos.approval as any,
 			);
 
 			const approved = response.status === "approved";
@@ -86,27 +88,29 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 				input.request.toolInput,
 			);
 
+			return { taskId };
+		},
+
+		finish: async (ctx, { taskId }) => {
 			// Restore execution process status
 			const currentProcess = await ctx.repos.executionProcess.get(
 				ExecutionProcess.ById(input.processId),
 			);
-			if (currentProcess && currentProcess.status === "awaiting_approval") {
-				await ctx.repos.executionProcess.upsert({
-					...currentProcess,
-					status: "running",
-					updatedAt: new Date(),
-				});
+			if (currentProcess) {
+				const restored = ExecutionProcess.restoreFromApproval(currentProcess);
+				if (restored) {
+					await ctx.repos.executionProcess.upsert(restored);
+				}
 			}
 
 			// Restore task status
 			if (taskId) {
 				const task = await ctx.repos.task.get(Task.ById(taskId));
-				if (task && task.status === "inreview") {
-					await ctx.repos.task.upsert({
-						...task,
-						status: "inprogress",
-						updatedAt: new Date(),
-					});
+				if (task) {
+					const restored = Task.restoreFromInReview(task);
+					if (restored) {
+						await ctx.repos.task.upsert(restored);
+					}
 				}
 			}
 

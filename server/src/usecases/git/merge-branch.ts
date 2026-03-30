@@ -32,7 +32,19 @@ export const mergeBranch = (input: MergeBranchInput) =>
 			return { workspace, project, task };
 		},
 
-		post: async (ctx, { workspace, project, task }) => {
+		process: (_ctx, { workspace, project, task }) => {
+			const updatedTask = task ? Task.toDone(task) : null;
+			return { workspace, project, updatedTask };
+		},
+
+		write: async (ctx, data) => {
+			if (data.updatedTask) {
+				await ctx.repos.task.upsert(data.updatedTask);
+			}
+			return data;
+		},
+
+		post: async (ctx, { workspace, project }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -61,15 +73,6 @@ export const mergeBranch = (input: MergeBranchInput) =>
 					);
 				}
 				throw error;
-			}
-
-			// Merge succeeded → transition task to done
-			if (task && task.status !== "done") {
-				await ctx.repos.task.upsert({
-					...task,
-					status: "done",
-					updatedAt: ctx.now,
-				});
 			}
 
 			// Clean up worktree

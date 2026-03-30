@@ -56,6 +56,23 @@ describe("ExecutionProcess.create()", () => {
 		expect(ep.createdAt).toBeInstanceOf(Date);
 		expect(ep.updatedAt).toBeInstanceOf(Date);
 	});
+
+	test("uses provided id when given", () => {
+		const ep = ExecutionProcess.create({
+			sessionId: "s1",
+			runReason: "codingagent",
+			id: "custom-id-123",
+		});
+		expect(ep.id).toBe("custom-id-123");
+	});
+
+	test("generates id when not provided", () => {
+		const ep = ExecutionProcess.create({
+			sessionId: "s1",
+			runReason: "codingagent",
+		});
+		expect(ep.id).toMatch(/^[0-9a-f]{8}-/);
+	});
 });
 
 // ============================================
@@ -142,6 +159,72 @@ describe("ExecutionProcess specs", () => {
 	test("ByRunReason creates a spec", () => {
 		const spec = ExecutionProcess.ByRunReason("codingagent");
 		expect((spec as { type: string }).type).toBe("ByRunReason");
+	});
+});
+
+// ============================================
+// ExecutionProcess.toAwaitingApproval()
+// ============================================
+
+describe("ExecutionProcess.toAwaitingApproval()", () => {
+	test("transitions running process to awaiting_approval", () => {
+		const ep = ExecutionProcess.create({
+			sessionId: "s1",
+			runReason: "codingagent",
+		});
+		const result = ExecutionProcess.toAwaitingApproval(ep);
+		expect(result).not.toBeNull();
+		expect(result?.status).toBe("awaiting_approval");
+		expect(result?.updatedAt).toBeInstanceOf(Date);
+	});
+
+	test("returns null for non-running process", () => {
+		const ep = ExecutionProcess.complete(
+			ExecutionProcess.create({ sessionId: "s1", runReason: "codingagent" }),
+			"completed",
+			0,
+		);
+		expect(ExecutionProcess.toAwaitingApproval(ep)).toBeNull();
+	});
+
+	test("preserves original fields", () => {
+		const ep = ExecutionProcess.create({
+			sessionId: "s1",
+			runReason: "codingagent",
+		});
+		const result = ExecutionProcess.toAwaitingApproval(ep);
+		expect(result).not.toBeNull();
+		expect(result?.id).toBe(ep.id);
+		expect(result?.sessionId).toBe("s1");
+		expect(result?.runReason).toBe("codingagent");
+	});
+});
+
+// ============================================
+// ExecutionProcess.restoreFromApproval()
+// ============================================
+
+describe("ExecutionProcess.restoreFromApproval()", () => {
+	test("transitions awaiting_approval process to running", () => {
+		const ep = ExecutionProcess.create({
+			sessionId: "s1",
+			runReason: "codingagent",
+		});
+		const awaiting = ExecutionProcess.toAwaitingApproval(ep);
+		expect(awaiting).not.toBeNull();
+		const result = ExecutionProcess.restoreFromApproval(
+			awaiting as ExecutionProcess,
+		);
+		expect(result).not.toBeNull();
+		expect(result?.status).toBe("running");
+	});
+
+	test("returns null for non-awaiting_approval process", () => {
+		const ep = ExecutionProcess.create({
+			sessionId: "s1",
+			runReason: "codingagent",
+		});
+		expect(ExecutionProcess.restoreFromApproval(ep)).toBeNull();
 	});
 });
 

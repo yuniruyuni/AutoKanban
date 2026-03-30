@@ -20,27 +20,27 @@ export const updateTask = (input: UpdateTaskInput) =>
 			}
 
 			// Chat Reset: collect related entity IDs when transitioning to "todo"
-			const needsChatReset = input.status === "todo" && task.status !== "todo";
+			const needsChatReset = input.status
+				? Task.needsChatReset(task.status, input.status)
+				: false;
 
-			const workspaceIds: string[] = [];
+			let workspaces: Workspace[] = [];
 			let project: Project | null = null;
 
 			if (needsChatReset) {
 				project = await ctx.repos.project.get(Project.ById(task.projectId));
 
-				const workspaces = await ctx.repos.workspace.list(
+				const workspacesPage = await ctx.repos.workspace.list(
 					Workspace.ByTaskId(task.id),
 					{ limit: 10000 },
 				);
-				for (const ws of workspaces.items) {
-					workspaceIds.push(ws.id);
-				}
+				workspaces = workspacesPage.items;
 			}
 
 			return {
 				task,
 				needsChatReset,
-				workspaceIds,
+				workspaces,
 				project,
 			};
 		},
@@ -75,16 +75,12 @@ export const updateTask = (input: UpdateTaskInput) =>
 			return { task: updated, ...rest };
 		},
 
-		write: async (ctx, { task, needsChatReset, workspaceIds, project }) => {
+		write: async (ctx, { task, needsChatReset, workspaces, project }) => {
 			await ctx.repos.task.upsert(task);
 
 			if (needsChatReset) {
 				// Archive active workspaces instead of deleting them (preserve history)
-				const workspaces = await ctx.repos.workspace.list(
-					Workspace.ByTaskId(task.id),
-					{ limit: 10000 },
-				);
-				for (const ws of workspaces.items) {
+				for (const ws of workspaces) {
 					if (!ws.archived) {
 						await ctx.repos.workspace.upsert({
 							...ws,
@@ -95,10 +91,11 @@ export const updateTask = (input: UpdateTaskInput) =>
 				}
 			}
 
-			return { task, workspaceIds, project };
+			return { task, workspaces, project };
 		},
 
-		post: async (ctx, { task, workspaceIds, project }) => {
+		post: async (ctx, { task, workspaces, project }) => {
+			const workspaceIds = workspaces.map((ws) => ws.id);
 			if (workspaceIds.length > 0 && project) {
 				// Remove worktree directories but preserve branches
 				for (const wsId of workspaceIds) {

@@ -25,16 +25,20 @@ export const completeExecutionProcess = (input: ProcessCompletionInput) =>
 			return { existing };
 		},
 
-		write: async (ctx, { existing }) => {
-			if (existing) {
-				const now = new Date();
-				await ctx.repos.executionProcess.upsert({
-					...existing,
-					status: input.status,
-					exitCode: input.exitCode,
-					completedAt: now,
-					updatedAt: now,
-				});
+		process: (_ctx, { existing }) => {
+			const completed = existing
+				? ExecutionProcess.complete(
+						existing,
+						input.status as "completed" | "failed" | "killed",
+						input.exitCode,
+					)
+				: null;
+			return { completed };
+		},
+
+		write: async (ctx, { completed }) => {
+			if (completed) {
+				await ctx.repos.executionProcess.upsert(completed);
 			}
 			return {};
 		},
@@ -73,40 +77,36 @@ export const processQueuedFollowUp = (input: {
 				? await ctx.repos.project.get(Project.ById(wsRepo.projectId))
 				: null;
 
-			let workingDir: string | null = null;
-			if (workspace.worktreePath) {
-				workingDir = project
-					? `${workspace.worktreePath}/${project.name}`
-					: workspace.worktreePath;
-			} else if (project) {
-				workingDir = project.repoPath;
-			}
+			const workingDir = Workspace.resolveWorkingDir(workspace, project);
 
 			return { workingDir };
 		},
 
-		post: async (ctx, { workingDir }) => {
-			if (!workingDir) return {};
+		process: (_ctx, { workingDir }) => {
+			if (!workingDir) return { workingDir, executionProcess: null };
+			const executionProcess = ExecutionProcess.create({
+				sessionId: input.sessionId,
+				runReason: "codingagent",
+			});
+			return { workingDir, executionProcess };
+		},
 
-			const rp = await ctx.repos.executor.start({
+		write: async (ctx, { executionProcess, ...rest }) => {
+			if (executionProcess) {
+				await ctx.repos.executionProcess.upsert(executionProcess);
+			}
+			return { ...rest, executionProcess };
+		},
+
+		post: async (ctx, { workingDir, executionProcess }) => {
+			if (!workingDir || !executionProcess) return {};
+
+			await ctx.repos.executor.start({
+				id: executionProcess.id,
 				sessionId: input.sessionId,
 				runReason: "codingagent",
 				workingDir,
 				prompt: input.prompt,
-			});
-
-			// Create ExecutionProcess DB record
-			const now = new Date();
-			await ctx.repos.executionProcess.upsert({
-				id: rp.id,
-				sessionId: input.sessionId,
-				runReason: "codingagent",
-				status: "running",
-				exitCode: null,
-				startedAt: now,
-				completedAt: null,
-				createdAt: now,
-				updatedAt: now,
 			});
 
 			return {};
@@ -134,12 +134,11 @@ export const moveTaskToInReview = (input: { sessionId: string }) =>
 		},
 
 		write: async (ctx, { task }) => {
-			if (task && task.status === "inprogress") {
-				await ctx.repos.task.upsert({
-					...task,
-					status: "inreview",
-					updatedAt: new Date(),
-				});
+			if (task) {
+				const updated = Task.toInReview(task);
+				if (updated) {
+					await ctx.repos.task.upsert(updated);
+				}
 			}
 			return {};
 		},

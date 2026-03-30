@@ -86,10 +86,11 @@ export namespace ExecutionProcess {
 	export function create(params: {
 		sessionId: string;
 		runReason: RunReason;
+		id?: string;
 	}): ExecutionProcess {
 		const now = new Date();
 		return {
-			id: generateId(),
+			id: params.id ?? generateId(),
 			sessionId: params.sessionId,
 			runReason: params.runReason,
 			status: "running",
@@ -113,6 +114,21 @@ export namespace ExecutionProcess {
 			completedAt: new Date(),
 			updatedAt: new Date(),
 		};
+	}
+
+	// Approval state transitions
+	export function toAwaitingApproval(
+		process: ExecutionProcess,
+	): ExecutionProcess | null {
+		if (process.status !== "running") return null;
+		return { ...process, status: "awaiting_approval", updatedAt: new Date() };
+	}
+
+	export function restoreFromApproval(
+		process: ExecutionProcess,
+	): ExecutionProcess | null {
+		if (process.status !== "awaiting_approval") return null;
+		return { ...process, status: "running", updatedAt: new Date() };
 	}
 
 	// Cursor

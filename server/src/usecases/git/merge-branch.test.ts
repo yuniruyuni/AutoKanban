@@ -58,7 +58,10 @@ describe("mergeBranch", () => {
 		const ctx = createMockContext({
 			workspace: { get: () => workspace } as never,
 			project: { get: () => project } as never,
-			task: { get: () => task } as never,
+			task: {
+				get: () => task,
+				upsert: () => {},
+			} as never,
 			worktree: createMockWorktreeRepository(),
 			git: createMockGitRepository({
 				fastForwardMerge: async () => {

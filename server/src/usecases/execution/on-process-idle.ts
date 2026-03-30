@@ -42,18 +42,20 @@ export const handleProcessIdle = (input: ProcessIdleInput) =>
 						queuedMessage.variant,
 					);
 				}
-				return {};
+				return { updatedTask: null };
 			}
 
-			// No queued message — move task to inreview
-			if (task && task.status === "inprogress") {
-				await ctx.repos.task.upsert({
-					...task,
-					status: "inreview",
-					updatedAt: new Date(),
-				});
-			}
+			// No queued message — prepare task status update for finish step
+			const updatedTask = task ? Task.toInReview(task) : null;
 
+			return { updatedTask: updatedTask ?? null };
+		},
+
+		finish: async (ctx, { updatedTask }) => {
+			// Persist task status change in a new DB transaction
+			if (updatedTask) {
+				await ctx.repos.task.upsert(updatedTask);
+			}
 			return {};
 		},
 	});

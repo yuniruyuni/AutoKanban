@@ -98,6 +98,28 @@ export namespace Task {
 		return transitions[from];
 	}
 
+	// Approval state transitions
+	export function toInReview(task: Task): Task | null {
+		if (task.status !== "inprogress") return null;
+		return { ...task, status: "inreview" as Status, updatedAt: new Date() };
+	}
+
+	export function restoreFromInReview(task: Task): Task | null {
+		if (task.status !== "inreview") return null;
+		return { ...task, status: "inprogress" as Status, updatedAt: new Date() };
+	}
+
+	// Done transition
+	export function toDone(task: Task): Task | null {
+		if (task.status === "done") return null;
+		return { ...task, status: "done" as Status, updatedAt: new Date() };
+	}
+
+	// Chat reset detection
+	export function needsChatReset(from: Status, to: Status): boolean {
+		return to === "todo" && from !== "todo";
+	}
+
 	// Cursor
 	export function cursor(
 		task: Task,

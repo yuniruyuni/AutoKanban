@@ -80,6 +80,61 @@ export namespace Workspace {
 		};
 	}
 
+	// Working directory resolution
+	export function resolveWorkingDir(
+		workspace: Workspace,
+		project: { name: string; repoPath: string } | null,
+	): string | null {
+		if (workspace.worktreePath) {
+			return project
+				? `${workspace.worktreePath}/${project.name}`
+				: workspace.worktreePath;
+		}
+		return project?.repoPath ?? null;
+	}
+
+	// Attempt strategy
+	export type AttemptStrategy =
+		| { action: "reuse"; workspace: Workspace }
+		| {
+				action: "new";
+				workspace: Workspace;
+				workspaceToArchive: Workspace | null;
+		  };
+
+	export function determineAttemptStrategy(params: {
+		activeWorkspace: Workspace | null;
+		activeHasSessions: boolean;
+		maxAttempt: number;
+		taskId: string;
+		containerRef: string;
+	}): AttemptStrategy {
+		const {
+			activeWorkspace,
+			activeHasSessions,
+			maxAttempt,
+			taskId,
+			containerRef,
+		} = params;
+
+		if (activeWorkspace && !activeHasSessions) {
+			return { action: "reuse", workspace: activeWorkspace };
+		}
+
+		const newAttempt = maxAttempt + 1;
+		const workspace = Workspace.create({
+			taskId,
+			containerRef,
+			attempt: newAttempt,
+		});
+
+		return {
+			action: "new",
+			workspace,
+			workspaceToArchive: activeWorkspace,
+		};
+	}
+
 	// Cursor
 	export function cursor(
 		workspace: Workspace,

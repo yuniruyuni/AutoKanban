@@ -69,64 +69,74 @@ export const forkConversation = (input: ForkConversationInput) =>
 				);
 			}
 
-			return { session, resumeInfo };
-		},
-
-		process: (_ctx, { session, resumeInfo }) => {
-			return {
-				session,
-				agentSessionId: resumeInfo.agentSessionId,
-				messageUuid: input.messageUuid,
-				prompt: input.newPrompt,
-			};
-		},
-
-		post: async (ctx, { session, agentSessionId, messageUuid, prompt }) => {
-			// Get workspace to find working directory
 			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(session.workspaceId),
 			);
-
 			if (!workspace) {
-				return { success: false };
+				return fail("NOT_FOUND", "Workspace not found");
 			}
 
+			return { session, workspace, resumeInfo };
+		},
+
+		process: (_ctx, { session, workspace, resumeInfo }) => {
+			const executionProcess = ExecutionProcess.create({
+				sessionId: session.id,
+				runReason: "codingagent",
+			});
+			const codingAgentTurn = CodingAgentTurn.create({
+				executionProcessId: executionProcess.id,
+				prompt: input.newPrompt,
+			});
+			return {
+				session,
+				workspace,
+				agentSessionId: resumeInfo.agentSessionId,
+				messageUuid: input.messageUuid,
+				prompt: input.newPrompt,
+				executionProcess,
+				codingAgentTurn,
+			};
+		},
+
+		write: async (ctx, data) => {
+			await ctx.repos.executionProcess.upsert(data.executionProcess);
+			await ctx.repos.codingAgentTurn.upsert(data.codingAgentTurn);
+			return data;
+		},
+
+		post: async (
+			ctx,
+			{
+				session,
+				workspace,
+				agentSessionId,
+				messageUuid,
+				prompt,
+				executionProcess,
+			},
+		) => {
 			// Start a new execution with --resume and --resume-session-at
-			const processInfo = await ctx.repos.executor.startProtocol({
+			await ctx.repos.executor.startProtocol({
+				id: executionProcess.id,
 				sessionId: session.id,
 				runReason: "codingagent",
 				workingDir: workspace.worktreePath ?? ".",
 				prompt,
 				resumeSessionId: agentSessionId,
 				resumeMessageId: messageUuid,
-				logsRepo: ctx.repos.executionProcessLogs,
-				codingAgentTurnRepo: ctx.repos.codingAgentTurn,
+				// TODO: ExecutorStartProtocolOptions expects Full<> repos but post only has Service<>.
+				// These repos are used asynchronously by the executor for log collection,
+				// so they work correctly at runtime. Narrow the interface types in the future.
+				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
+				logsRepo: ctx.repos.executionProcessLogs as any,
+				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
+				codingAgentTurnRepo: ctx.repos.codingAgentTurn as any,
 			});
-
-			// Create ExecutionProcess DB record
-			const now = new Date();
-			await ctx.repos.executionProcess.upsert({
-				id: processInfo.id,
-				sessionId: session.id,
-				runReason: "codingagent",
-				status: "running",
-				exitCode: null,
-				startedAt: now,
-				completedAt: null,
-				createdAt: now,
-				updatedAt: now,
-			});
-
-			// Create CodingAgentTurn DB record
-			const turn = CodingAgentTurn.create({
-				executionProcessId: processInfo.id,
-				prompt,
-			});
-			await ctx.repos.codingAgentTurn.upsert(turn);
 
 			return {
 				success: true,
-				executionProcessId: processInfo.id,
+				executionProcessId: executionProcess.id,
 			};
 		},
 

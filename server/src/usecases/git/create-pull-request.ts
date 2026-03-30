@@ -1,3 +1,4 @@
+import type { CodingAgentResumeInfo } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
@@ -40,15 +41,25 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 
 			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
 
+			// Pre-read resume info for PR description generation (DB read)
+			const resumeInfo =
+				await ctx.repos.codingAgentTurn.findLatestResumeInfoByWorkspaceId(
+					workspace.id,
+				);
+
 			return {
 				workspace,
 				project,
 				targetBranch,
 				workspaceRepo,
+				resumeInfo,
 			};
 		},
 
-		post: async (ctx, { workspace, project, targetBranch, workspaceRepo }) => {
+		post: async (
+			ctx,
+			{ workspace, project, targetBranch, workspaceRepo, resumeInfo },
+		) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -90,7 +101,7 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 
 			// Generate PR description via CodingAgent (session fork)
 			const description = await generatePrDescription(ctx, {
-				workspaceId: workspace.id,
+				resumeInfo,
 				worktreePath,
 			});
 			const prTitle = description?.title ?? input.taskTitle;
@@ -105,7 +116,7 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 				input.draft,
 			);
 
-			// Save PR URL to workspace repo
+			// Prepare workspace repo update for finish step
 			const workspaceRepoToUpdate =
 				workspaceRepo ??
 				WorkspaceRepo.create({
@@ -113,13 +124,23 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 					projectId: project.id,
 					targetBranch,
 				});
-			await ctx.repos.workspaceRepo.upsert({
-				...workspaceRepoToUpdate,
-				prUrl: url,
-				updatedAt: ctx.now,
-			});
 
-			return { success: true, branch, prUrl: url };
+			return {
+				success: true,
+				branch,
+				prUrl: url,
+				workspaceRepoToUpdate: {
+					...workspaceRepoToUpdate,
+					prUrl: url,
+					updatedAt: ctx.now,
+				},
+			};
+		},
+
+		finish: async (ctx, { workspaceRepoToUpdate, ...result }) => {
+			// Persist workspace repo PR URL in a new DB transaction
+			await ctx.repos.workspaceRepo.upsert(workspaceRepoToUpdate);
+			return result;
 		},
 	});
 
@@ -151,21 +172,16 @@ const PR_DESCRIPTION_SCHEMA = {
 async function generatePrDescription(
 	ctx: PostContext,
 	params: {
-		workspaceId: string;
+		resumeInfo: CodingAgentResumeInfo | null;
 		worktreePath: string;
 	},
 ): Promise<{ title: string; body: string } | null> {
-	const resumeInfo =
-		await ctx.repos.codingAgentTurn.findLatestResumeInfoByWorkspaceId(
-			params.workspaceId,
-		);
-
 	try {
 		return (await ctx.repos.executor.runStructured(undefined, {
 			workingDir: params.worktreePath,
 			prompt: PR_DESCRIPTION_PROMPT,
 			schema: PR_DESCRIPTION_SCHEMA,
-			resumeSessionId: resumeInfo?.agentSessionId ?? undefined,
+			resumeSessionId: params.resumeInfo?.agentSessionId ?? undefined,
 		})) as { title: string; body: string } | null;
 	} catch (error) {
 		ctx.logger.warn("Failed to generate PR description", error);

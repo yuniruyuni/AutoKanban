@@ -62,7 +62,7 @@ describe("startExecution", () => {
 		if (result.ok) {
 			expect(result.value.workspaceId).toBeDefined();
 			expect(result.value.sessionId).toBeDefined();
-			expect(result.value.executionProcessId).toBe("exec-1");
+			expect(result.value.executionProcessId).toBeDefined();
 			expect(result.value.worktreePath).toBeDefined();
 		}
 		expect(upsertedWorkspace).not.toBeNull();
@@ -632,7 +632,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepositoryCreationFails("Permission denied"),
 		});
 
@@ -661,7 +663,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 		});
 

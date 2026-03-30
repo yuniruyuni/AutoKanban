@@ -151,34 +151,18 @@ export const startExecution = (input: StartExecutionInput) =>
 				variantEntity,
 			},
 		) => {
-			let workspace: Workspace;
-			let isNewWorkspace: boolean;
-			let workspaceToArchive: Workspace | null = null;
+			const strategy = Workspace.determineAttemptStrategy({
+				activeWorkspace,
+				activeHasSessions,
+				maxAttempt,
+				taskId: task.id,
+				containerRef: project.repoPath,
+			});
 
-			if (activeWorkspace && !activeHasSessions) {
-				// Active workspace exists but has no sessions (never executed) — reuse it
-				workspace = activeWorkspace;
-				isNewWorkspace = false;
-			} else if (activeWorkspace && activeHasSessions) {
-				// Active workspace has been executed — archive it and create new attempt
-				workspaceToArchive = activeWorkspace;
-				const newAttempt = maxAttempt + 1;
-				workspace = Workspace.create({
-					taskId: task.id,
-					containerRef: project.repoPath,
-					attempt: newAttempt,
-				});
-				isNewWorkspace = true;
-			} else {
-				// No active workspace — create new one
-				const newAttempt = maxAttempt + 1;
-				workspace = Workspace.create({
-					taskId: task.id,
-					containerRef: project.repoPath,
-					attempt: newAttempt,
-				});
-				isNewWorkspace = true;
-			}
+			const workspace = strategy.workspace;
+			const isNewWorkspace = strategy.action === "new";
+			const workspaceToArchive =
+				strategy.action === "new" ? strategy.workspaceToArchive : null;
 
 			// Create workspace repo entry for new workspaces
 			const workspaceRepo = WorkspaceRepo.create({
@@ -198,6 +182,16 @@ export const startExecution = (input: StartExecutionInput) =>
 			// Ignore input.prompt - initial prompt should come from task
 			const prompt = taskToPrompt(task);
 
+			// Create ExecutionProcess and CodingAgentTurn in process step (pure)
+			const executionProcess = ExecutionProcess.create({
+				sessionId: session.id,
+				runReason: "codingagent",
+			});
+			const codingAgentTurn = CodingAgentTurn.create({
+				executionProcessId: executionProcess.id,
+				prompt,
+			});
+
 			return {
 				task,
 				workspace,
@@ -210,6 +204,8 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				executionProcess,
+				codingAgentTurn,
 			};
 		},
 
@@ -227,6 +223,8 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				executionProcess,
+				codingAgentTurn,
 			},
 		) => {
 			// Archive the previous workspace if needed
@@ -256,6 +254,10 @@ export const startExecution = (input: StartExecutionInput) =>
 				});
 			}
 
+			// Persist ExecutionProcess and CodingAgentTurn
+			await ctx.repos.executionProcess.upsert(executionProcess);
+			await ctx.repos.codingAgentTurn.upsert(codingAgentTurn);
+
 			return {
 				workspace,
 				workspaceRepo,
@@ -266,6 +268,8 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				executionProcess,
+				codingAgentTurn,
 			};
 		},
 
@@ -281,6 +285,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				executionProcess,
 			},
 		) => {
 			// Create worktree for the project, using targetBranch as the starting point
@@ -300,13 +305,14 @@ export const startExecution = (input: StartExecutionInput) =>
 				);
 			}
 
-			// Update workspace with worktree path
+			// Compute updated workspace with worktree path (DB write deferred to finish)
+			let updatedWorkspace: Workspace | null = null;
 			if (isNewWorkspace && worktreePath) {
-				workspace.worktreePath = ctx.repos.worktree.getWorkspaceDir(
-					workspace.id,
-				);
-				workspace.updatedAt = ctx.now;
-				await ctx.repos.workspace.upsert(workspace);
+				updatedWorkspace = {
+					...workspace,
+					worktreePath: ctx.repos.worktree.getWorkspaceDir(workspace.id),
+					updatedAt: ctx.now,
+				};
 			}
 
 			// Determine working directory
@@ -333,7 +339,8 @@ export const startExecution = (input: StartExecutionInput) =>
 				interruptedTaskCount: interruptedTools.length,
 			});
 
-			const runningProcess = await ctx.repos.executor.startProtocol({
+			await ctx.repos.executor.startProtocol({
+				id: executionProcess.id,
 				sessionId: session.id,
 				runReason: "codingagent",
 				workingDir,
@@ -349,40 +356,32 @@ export const startExecution = (input: StartExecutionInput) =>
 								toolName: t.toolName,
 							}))
 						: undefined,
-				logsRepo: ctx.repos.executionProcessLogs,
-				codingAgentTurnRepo: ctx.repos.codingAgentTurn,
+				// TODO: ExecutorStartProtocolOptions expects Full<> repos but post only has Service<>.
+				// These repos are used asynchronously by the executor for log collection,
+				// so they work correctly at runtime. Narrow the interface types in the future.
+				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
+				logsRepo: ctx.repos.executionProcessLogs as any,
+				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
+				codingAgentTurnRepo: ctx.repos.codingAgentTurn as any,
 			});
-
-			// Create ExecutionProcess DB record
-			const now = new Date();
-			await ctx.repos.executionProcess.upsert({
-				id: runningProcess.id,
-				sessionId: session.id,
-				runReason: "codingagent",
-				status: "running",
-				exitCode: null,
-				startedAt: now,
-				completedAt: null,
-				createdAt: now,
-				updatedAt: now,
-			});
-
-			// Create CodingAgentTurn DB record
-			const turn = CodingAgentTurn.create({
-				executionProcessId: runningProcess.id,
-				prompt,
-			});
-			await ctx.repos.codingAgentTurn.upsert(turn);
 
 			const result: StartExecutionResult = {
 				workspaceId: workspace.id,
 				sessionId: session.id,
-				executionProcessId: runningProcess.id,
+				executionProcessId: executionProcess.id,
 				worktreePath,
 			};
 
 			ctx.logger.info("Execution started successfully:", result);
 
+			return { ...result, updatedWorkspace };
+		},
+
+		finish: async (ctx, { updatedWorkspace, ...result }) => {
+			// Persist workspace worktree path update in a new DB transaction
+			if (updatedWorkspace) {
+				await ctx.repos.workspace.upsert(updatedWorkspace);
+			}
 			return result;
 		},
 	});

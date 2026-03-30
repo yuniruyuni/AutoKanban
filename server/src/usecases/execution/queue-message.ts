@@ -93,47 +93,11 @@ export const queueMessage = (input: QueueMessageInput) =>
 					)
 				: null;
 
-			return {
-				session,
-				workspace,
-				latestProcess,
-				project,
-				resumeInfo,
-				variantEntity,
-			};
-		},
-
-		process: (
-			_ctx,
-			{ session, workspace, latestProcess, project, resumeInfo, variantEntity },
-		) => {
-			// Determine working directory (needed for new process)
-			let workingDir: string | null = null;
-			if (workspace.worktreePath) {
-				workingDir = project
-					? `${workspace.worktreePath}/${project.name}`
-					: workspace.worktreePath;
-			} else if (project) {
-				workingDir = project.repoPath;
-			}
-
-			return {
-				session,
-				workspace,
-				latestProcess,
-				workingDir,
-				resumeInfo,
-				variantEntity,
-			};
-		},
-
-		post: async (
-			ctx,
-			{ session, latestProcess, workingDir, resumeInfo, variantEntity },
-		) => {
-			// Check if the latest process is idle (waiting for input)
+			// Pre-read logs for idle detection and interrupted tool detection (DB read)
 			let isIdle = false;
 			let isRunning = false;
+			let interruptedTools: PendingToolUse[] = [];
+
 			if (latestProcess?.status === "running") {
 				isRunning = true;
 				const logs = await ctx.repos.executionProcessLogs.getLogs(
@@ -145,8 +109,6 @@ export const queueMessage = (input: QueueMessageInput) =>
 				}
 			}
 
-			// Find interrupted tools if resuming from a killed/failed EP
-			let interruptedTools: PendingToolUse[] = [];
 			if (resumeInfo && latestProcess && latestProcess.status !== "running") {
 				const logs = await ctx.repos.executionProcessLogs.getLogs(
 					latestProcess.id,
@@ -156,6 +118,69 @@ export const queueMessage = (input: QueueMessageInput) =>
 				}
 			}
 
+			return {
+				session,
+				workspace,
+				latestProcess,
+				project,
+				resumeInfo,
+				variantEntity,
+				isIdle,
+				isRunning,
+				interruptedTools,
+			};
+		},
+
+		process: (
+			_ctx,
+			{
+				session,
+				workspace,
+				latestProcess,
+				project,
+				resumeInfo,
+				variantEntity,
+				isIdle,
+				isRunning,
+				interruptedTools,
+			},
+		) => {
+			const workingDir = Workspace.resolveWorkingDir(workspace, project);
+
+			// Pre-generate EP for potential new process start
+			const executionProcess = ExecutionProcess.create({
+				sessionId: session.id,
+				runReason: "codingagent",
+			});
+
+			return {
+				session,
+				workspace,
+				latestProcess,
+				workingDir,
+				resumeInfo,
+				variantEntity,
+				executionProcess,
+				isIdle,
+				isRunning,
+				interruptedTools,
+			};
+		},
+
+		post: async (
+			ctx,
+			{
+				session,
+				latestProcess,
+				workingDir,
+				resumeInfo,
+				variantEntity,
+				executionProcess,
+				isIdle,
+				isRunning,
+				interruptedTools,
+			},
+		) => {
 			const canSendImmediately = !isRunning || isIdle;
 
 			// Queue the message
@@ -170,7 +195,8 @@ export const queueMessage = (input: QueueMessageInput) =>
 				// Cannot send immediately - message stays in queue
 				return {
 					queuedMessage,
-					sentImmediately: false,
+					sentImmediately: false as const,
+					startedNewProcess: false as const,
 				};
 			}
 
@@ -187,8 +213,9 @@ export const queueMessage = (input: QueueMessageInput) =>
 				if (success) {
 					return {
 						queuedMessage,
-						sentImmediately: true,
+						sentImmediately: true as const,
 						executionProcessId: latestProcess.id,
+						startedNewProcess: false as const,
 					};
 				}
 				// Process no longer exists in memory - fall through to start new process
@@ -205,11 +232,13 @@ export const queueMessage = (input: QueueMessageInput) =>
 				);
 				return {
 					queuedMessage,
-					sentImmediately: false,
+					sentImmediately: false as const,
+					startedNewProcess: false as const,
 				};
 			}
 
-			const runningProcess = await ctx.repos.executor.startProtocol({
+			await ctx.repos.executor.startProtocol({
+				id: executionProcess.id,
 				sessionId: session.id,
 				runReason: "codingagent",
 				workingDir,
@@ -225,35 +254,45 @@ export const queueMessage = (input: QueueMessageInput) =>
 								toolName: t.toolName,
 							}))
 						: undefined,
-				logsRepo: ctx.repos.executionProcessLogs,
-				codingAgentTurnRepo: ctx.repos.codingAgentTurn,
+				// TODO: ExecutorStartProtocolOptions expects Full<> repos but post only has Service<>.
+				// These repos are used asynchronously by the executor for log collection,
+				// so they work correctly at runtime. Narrow the interface types in the future.
+				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
+				logsRepo: ctx.repos.executionProcessLogs as any,
+				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
+				codingAgentTurnRepo: ctx.repos.codingAgentTurn as any,
 			});
 
-			// Create ExecutionProcess DB record
-			const now = new Date();
-			await ctx.repos.executionProcess.upsert({
-				id: runningProcess.id,
-				sessionId: session.id,
-				runReason: "codingagent",
-				status: "running",
-				exitCode: null,
-				startedAt: now,
-				completedAt: null,
-				createdAt: now,
-				updatedAt: now,
-			});
-
-			// Create CodingAgentTurn DB record
+			// Pre-create CodingAgentTurn model for DB persistence in finish step
 			const turn = CodingAgentTurn.create({
-				executionProcessId: runningProcess.id,
+				executionProcessId: executionProcess.id,
 				prompt: queuedMessage.prompt,
 			});
-			await ctx.repos.codingAgentTurn.upsert(turn);
 
 			return {
 				queuedMessage,
-				sentImmediately: true,
-				executionProcessId: runningProcess.id,
+				sentImmediately: true as const,
+				executionProcessId: executionProcess.id,
+				startedNewProcess: true as const,
+				executionProcess,
+				turn,
+			};
+		},
+
+		finish: async (ctx, postResult) => {
+			// Persist ExecutionProcess and CodingAgentTurn DB records for newly started processes
+			if (postResult.startedNewProcess) {
+				await ctx.repos.executionProcess.upsert(postResult.executionProcess);
+				await ctx.repos.codingAgentTurn.upsert(postResult.turn);
+			}
+
+			return {
+				queuedMessage: postResult.queuedMessage,
+				sentImmediately: postResult.sentImmediately,
+				executionProcessId:
+					"executionProcessId" in postResult
+						? postResult.executionProcessId
+						: undefined,
 			};
 		},
 

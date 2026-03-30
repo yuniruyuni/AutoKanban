@@ -81,7 +81,20 @@ function createMockRawRepos(repoOverrides: Partial<FullRepos<Repos>>): Repos {
 
 	for (const key of externalKeys) {
 		const override = (repoOverrides as Record<string, unknown>)[key];
-		if (override) {
+		if (override && typeof override === "object") {
+			// Wrap external repo mocks the same way as DB repos:
+			// accept (and ignore) the ctx marker as the first argument.
+			raw[key] = new Proxy(override, {
+				get(target, prop, receiver) {
+					const method = Reflect.get(target, prop, receiver);
+					if (typeof method === "function") {
+						return (_ctx: unknown, ...args: unknown[]) =>
+							method.apply(target, args);
+					}
+					return method;
+				},
+			});
+		} else if (override) {
 			raw[key] = override;
 		} else {
 			raw[key] = new Proxy(

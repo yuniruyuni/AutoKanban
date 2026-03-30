@@ -1,20 +1,13 @@
+import { parseLogsToConversation } from "../../models/conversation/conversation-parser";
 import {
-	type ParseResult,
-	parseLogsToConversation,
-} from "../../models/conversation/conversation-parser";
-import type { ConversationEntry } from "../../models/conversation/types";
-import type { SSEDeltaResult, SSEEvent } from "../../models/sse";
+	computeDelta,
+	createSnapshot,
+	type StructuredLogState,
+} from "../../models/conversation/structured-log-delta";
+import type { SSEDeltaResult } from "../../models/sse";
 import { usecase } from "../runner";
 
-// ============================================
-// State tracked between delta calls
-// ============================================
-
-export interface StructuredLogState {
-	sentEntryIds: Set<string>;
-	entryCount: number;
-	isIdle: boolean;
-}
+export type { StructuredLogState };
 
 // ============================================
 // Params (extracted from route)
@@ -46,23 +39,7 @@ export const getStructuredLogSnapshot = (params: StructuredLogParams) =>
 			}
 
 			const parsed = parseLogsToConversation(logs.logs);
-			const sentEntryIds = new Set(
-				parsed.entries.map((e: ConversationEntry) => e.id),
-			);
-
-			return {
-				events: [
-					{
-						type: "snapshot",
-						data: { entries: parsed.entries, isIdle: parsed.isIdle },
-					},
-				],
-				state: {
-					sentEntryIds,
-					entryCount: parsed.entries.length,
-					isIdle: parsed.isIdle,
-				},
-			};
+			return createSnapshot(parsed);
 		},
 	});
 
@@ -91,49 +68,3 @@ export const getStructuredLogDelta = (
 			return computeDelta(state, parsed);
 		},
 	});
-
-// ============================================
-// Delta computation (pure)
-// ============================================
-
-function computeDelta(
-	prev: StructuredLogState,
-	parsed: ParseResult,
-): SSEDeltaResult<StructuredLogState> {
-	const events: SSEEvent[] = [];
-	const newSentEntryIds = new Set(prev.sentEntryIds);
-
-	// New entries
-	for (const entry of parsed.entries) {
-		if (!prev.sentEntryIds.has(entry.id)) {
-			newSentEntryIds.add(entry.id);
-			events.push({ type: "entry_add", data: entry });
-		}
-	}
-
-	// Updated entries (last few that may have changed, e.g., tool status)
-	if (parsed.entries.length !== prev.entryCount) {
-		const startIdx = Math.max(0, prev.entryCount - 3);
-		for (
-			let i = startIdx;
-			i < Math.min(parsed.entries.length, prev.entryCount);
-			i++
-		) {
-			events.push({ type: "entry_update", data: parsed.entries[i] });
-		}
-	}
-
-	// Idle state change
-	if (parsed.isIdle !== prev.isIdle) {
-		events.push({ type: "idle_changed", data: { isIdle: parsed.isIdle } });
-	}
-
-	return {
-		events,
-		state: {
-			sentEntryIds: newSentEntryIds,
-			entryCount: parsed.entries.length,
-			isIdle: parsed.isIdle,
-		},
-	};
-}

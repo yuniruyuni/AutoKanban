@@ -269,6 +269,96 @@ describe("Task specs", () => {
 });
 
 // ============================================
+// Task.toInReview()
+// ============================================
+
+describe("Task.toInReview()", () => {
+	test("transitions inprogress task to inreview", () => {
+		const task = {
+			...Task.create({ projectId: "p1", title: "T" }),
+			status: "inprogress" as Task.Status,
+		};
+		const result = Task.toInReview(task);
+		expect(result).not.toBeNull();
+		expect(result?.status).toBe("inreview");
+		expect(result?.updatedAt).toBeInstanceOf(Date);
+	});
+
+	test("returns null for non-inprogress task", () => {
+		const task = Task.create({ projectId: "p1", title: "T" }); // status: "todo"
+		expect(Task.toInReview(task)).toBeNull();
+	});
+});
+
+// ============================================
+// Task.restoreFromInReview()
+// ============================================
+
+describe("Task.restoreFromInReview()", () => {
+	test("transitions inreview task to inprogress", () => {
+		const task = {
+			...Task.create({ projectId: "p1", title: "T" }),
+			status: "inreview" as Task.Status,
+		};
+		const result = Task.restoreFromInReview(task);
+		expect(result).not.toBeNull();
+		expect(result?.status).toBe("inprogress");
+	});
+
+	test("returns null for non-inreview task", () => {
+		const task = Task.create({ projectId: "p1", title: "T" });
+		expect(Task.restoreFromInReview(task)).toBeNull();
+	});
+});
+
+// ============================================
+// Task.toDone()
+// ============================================
+
+describe("Task.toDone()", () => {
+	test("transitions non-done task to done", () => {
+		const task = {
+			...Task.create({ projectId: "p1", title: "T" }),
+			status: "inreview" as Task.Status,
+		};
+		const result = Task.toDone(task);
+		expect(result).not.toBeNull();
+		expect(result?.status).toBe("done");
+		expect(result?.updatedAt).toBeInstanceOf(Date);
+	});
+
+	test("returns null for already-done task", () => {
+		const task = {
+			...Task.create({ projectId: "p1", title: "T" }),
+			status: "done" as Task.Status,
+		};
+		expect(Task.toDone(task)).toBeNull();
+	});
+});
+
+// ============================================
+// Task.needsChatReset()
+// ============================================
+
+describe("Task.needsChatReset()", () => {
+	test("returns true when transitioning to todo from other status", () => {
+		expect(Task.needsChatReset("inprogress", "todo")).toBe(true);
+		expect(Task.needsChatReset("done", "todo")).toBe(true);
+		expect(Task.needsChatReset("inreview", "todo")).toBe(true);
+		expect(Task.needsChatReset("cancelled", "todo")).toBe(true);
+	});
+
+	test("returns false when already todo", () => {
+		expect(Task.needsChatReset("todo", "todo")).toBe(false);
+	});
+
+	test("returns false when transitioning to non-todo", () => {
+		expect(Task.needsChatReset("todo", "inprogress")).toBe(false);
+		expect(Task.needsChatReset("inprogress", "done")).toBe(false);
+	});
+});
+
+// ============================================
 // Task.statuses / Task.defaultSort
 // ============================================
 

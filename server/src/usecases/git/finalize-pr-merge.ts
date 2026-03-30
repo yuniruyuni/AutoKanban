@@ -62,7 +62,7 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 
 		post: async (ctx, data) => {
 			if (data.alreadyDone) {
-				return { success: true };
+				return { success: true, doneTask: null };
 			}
 
 			const { project, task, targetBranch, prUrl } = data;
@@ -76,16 +76,20 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 			// Pull default branch
 			await ctx.repos.git.pullBranch(project.repoPath, targetBranch);
 
-			// Mark task as done
-			await ctx.repos.task.upsert({
-				...task,
-				status: "done",
-				updatedAt: ctx.now,
-			});
+			// Prepare task status update for finish step
+			const doneTask = Task.toDone(task);
 
 			// Remove worktree
 			await ctx.repos.worktree.removeWorktree(data.workspace.id, project);
 
-			return { success: true };
+			return { success: true, doneTask: doneTask ?? null };
+		},
+
+		finish: async (ctx, { doneTask, ...result }) => {
+			// Persist task status change in a new DB transaction
+			if (doneTask) {
+				await ctx.repos.task.upsert(doneTask);
+			}
+			return result;
 		},
 	});

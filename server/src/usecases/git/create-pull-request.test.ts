@@ -149,6 +149,9 @@ describe("createPullRequest", () => {
 			workspace: { get: () => workspace } as never,
 			project: { get: () => project } as never,
 			workspaceRepo: { listByWorkspace: () => [] } as never,
+			codingAgentTurn: {
+				findLatestResumeInfoByWorkspaceId: () => null,
+			} as never,
 			worktree: createMockWorktreeRepository({
 				worktreeExists: async () => false,
 			}),
@@ -175,6 +178,9 @@ describe("createPullRequest", () => {
 			project: { get: () => project } as never,
 			worktree: createMockWorktreeRepository(),
 			workspaceRepo: { listByWorkspace: () => [], upsert: () => {} } as never,
+			codingAgentTurn: {
+				findLatestResumeInfoByWorkspaceId: () => null,
+			} as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "main",
 				push: async () => {
@@ -204,6 +210,9 @@ describe("createPullRequest", () => {
 			project: { get: () => project } as never,
 			worktree: createMockWorktreeRepository(),
 			workspaceRepo: { listByWorkspace: () => [], upsert: () => {} } as never,
+			codingAgentTurn: {
+				findLatestResumeInfoByWorkspaceId: () => null,
+			} as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "main",
 				createPullRequest: async () => {

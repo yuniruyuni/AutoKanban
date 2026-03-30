@@ -4,20 +4,26 @@ import { closeTestDB, createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
 import type { Database } from "../../../infra/db/database";
 import { Tool } from "../../../models/tool";
-import type { DbReadCtx, DbWriteCtx } from "../../common";
-import { createDbReadCtx, createDbWriteCtx } from "../../common";
+import type { DbReadCtx, DbWriteCtx, ServiceCtx } from "../../common";
+import {
+	createDbReadCtx,
+	createDbWriteCtx,
+	createServiceCtx,
+} from "../../common";
 import { ToolRepository } from ".";
 
 let db: Database;
 let toolRepo: ToolRepository;
 let rCtx: DbReadCtx;
 let wCtx: DbWriteCtx;
+let sCtx: ServiceCtx;
 
 beforeEach(async () => {
 	db = await createTestDB();
 	toolRepo = new ToolRepository();
 	rCtx = createDbReadCtx(db);
 	wCtx = createDbWriteCtx(db);
+	sCtx = createServiceCtx();
 });
 
 afterEach(async () => {
@@ -211,7 +217,7 @@ describe("ToolRepository executeCommand", () => {
 		}) as never;
 
 		const repo = new ToolRepository(spawnSpy);
-		repo.executeCommand(wCtx, "code /my/project", "/my/project");
+		repo.executeCommand(sCtx, "code /my/project", "/my/project");
 
 		// Must use sh -c to support PATH-based commands (code, cursor, etc.)
 		expect(capturedCmd).toEqual(["sh", "-c", "code /my/project"]);
@@ -226,7 +232,7 @@ describe("ToolRepository executeCommand", () => {
 		}) as never;
 
 		const repo = new ToolRepository(spawnSpy);
-		repo.executeCommand(wCtx, "echo test");
+		repo.executeCommand(sCtx, "echo test");
 
 		expect(capturedCwd).toBeUndefined();
 	});

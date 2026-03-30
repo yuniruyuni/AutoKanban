@@ -127,7 +127,7 @@ describe("queueMessage", () => {
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.value.sentImmediately).toBe(true);
-			expect(result.value.executionProcessId).toBe("new-process");
+			expect(result.value.executionProcessId).toBeDefined();
 		}
 		expect(startProtocolCalled).toBe(true);
 	});

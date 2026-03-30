@@ -4,6 +4,7 @@ import type { Full, ServiceCtx } from "../common";
 import type { ExecutionProcessLogsRepository } from "../execution-process-logs/repository";
 
 export interface ExecutorStartOptions {
+	id?: string;
 	sessionId: string;
 	runReason: ExecutionProcess.RunReason;
 	workingDir: string;
@@ -15,6 +16,7 @@ export interface ExecutorStartOptions {
 }
 
 export interface ExecutorStartProtocolOptions {
+	id?: string;
 	sessionId: string;
 	runReason: ExecutionProcess.RunReason;
 	workingDir: string;
