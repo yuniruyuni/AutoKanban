@@ -1,8 +1,8 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
+import type { SQLFragment } from "../../../lib/db/sql";
+import { compToSQL } from "../../../lib/db/sql-helpers";
 import type { Cursor, Page } from "../../../models/common";
 import { ExecutionProcess } from "../../../models/execution-process";
-import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../common";
 import {
 	columnName,
 	type ExecutionProcessRow,

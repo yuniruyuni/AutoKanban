@@ -1,11 +1,11 @@
+import { CodingAgentTurn } from "../../models/coding-agent-turn";
+import { fail } from "../../models/common";
 import {
 	findPendingToolUses,
 	type PendingToolUse,
 	parseLogsToConversation,
 } from "../../models/conversation/conversation-parser";
-import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { ExecutionProcess } from "../../models/execution-process";
-import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Variant } from "../../models/variant";

@@ -6,7 +6,7 @@ import {
 } from "../../../../test/factories";
 import { createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
 import { Workspace } from "../../../models/workspace";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";

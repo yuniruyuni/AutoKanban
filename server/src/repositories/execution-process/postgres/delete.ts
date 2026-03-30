@@ -1,7 +1,7 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
+import type { SQLFragment } from "../../../lib/db/sql";
+import { compToSQL } from "../../../lib/db/sql-helpers";
 import type { ExecutionProcess } from "../../../models/execution-process";
-import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../common";
 import { executionProcessSpecToSQL } from "./common";
 
 export async function del(

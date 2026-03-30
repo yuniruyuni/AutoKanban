@@ -1,11 +1,8 @@
 import type { ConflictOp } from "../../src/models/branch-status";
 import type { Project } from "../../src/models/project";
 import type { Workspace } from "../../src/models/workspace";
+import type { GitRepository, WorktreeRepository } from "../../src/repositories";
 import type { Full } from "../../src/repositories/common";
-import type {
-	GitRepository,
-	WorktreeRepository,
-} from "../../src/repositories";
 import { createTestBranchStatus, createTestGitDiffs } from "../factories/git";
 
 /**

@@ -1,7 +1,7 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
+import type { SQLFragment } from "../../../lib/db/sql";
+import { compToSQL } from "../../../lib/db/sql-helpers";
 import type { Session } from "../../../models/session";
-import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../common";
 import { sessionSpecToSQL } from "./common";
 
 export async function del(db: Database, spec: Session.Spec): Promise<number> {

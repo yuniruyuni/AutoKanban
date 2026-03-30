@@ -1,4 +1,4 @@
-import type { SSEDeltaResult, SSEEvent } from "../../presentation/sse/stream";
+import type { SSEDeltaResult } from "../../presentation/sse/stream";
 import { usecase } from "../runner";
 
 // ============================================

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { createTestVariant } from "../../../../test/factories";
 import { closeTestDB, createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
 import { Variant } from "../../../models/variant";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";

@@ -1,7 +1,7 @@
-import { parseLogsToConversation } from "../../models/conversation/conversation-parser";
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
+import { parseLogsToConversation } from "../../models/conversation/conversation-parser";
 import type { ConversationEntry } from "../../models/conversation/types";
+import { ExecutionProcess } from "../../models/execution-process";
 import { usecase } from "../runner";
 
 export interface GetStructuredLogsInput {

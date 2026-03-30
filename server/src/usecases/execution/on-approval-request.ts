@@ -36,9 +36,7 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 				}
 			}
 
-			const task = taskId
-				? await ctx.repos.task.get(Task.ById(taskId))
-				: null;
+			const task = taskId ? await ctx.repos.task.get(Task.ById(taskId)) : null;
 
 			return { execProcess, task };
 		},

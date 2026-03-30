@@ -1,11 +1,11 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
+import type { ILogger } from "../../../lib/logger/types";
 import type { Project } from "../../../models/project";
 import type { Workspace } from "../../../models/workspace";
 import type { WorktreeInfo } from "../../../models/worktree-info";
 import type { ServiceCtx } from "../../common";
-import type { ILogger } from "../../../lib/logger/types";
 import { GitRepository } from "../../git/cli";
 import type { WorktreeRepository as WorktreeRepositoryDef } from "../repository";
 

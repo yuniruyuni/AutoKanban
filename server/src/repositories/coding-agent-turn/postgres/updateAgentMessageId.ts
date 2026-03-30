@@ -1,5 +1,5 @@
-import type { Database } from "../../common";
-import { dateToSQL } from "../../common";
+import type { Database } from "../../../lib/db/database";
+import { dateToSQL } from "../../../lib/db/sql-helpers";
 
 export async function updateAgentMessageId(
 	db: Database,

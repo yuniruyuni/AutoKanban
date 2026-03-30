@@ -1,4 +1,4 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
 import type { TaskTemplate } from "../../../models/task-template";
 import { rowToTaskTemplate, type TaskTemplateRow } from "./common";
 

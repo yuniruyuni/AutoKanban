@@ -10,10 +10,10 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { DriverApprovalRequest } from "../../orchestrator/driver-approval-request";
-import type { Full } from "../../../common";
 import type { ILogger } from "../../../../lib/logger/types";
 import type { ExecutionProcessLogsRepository } from "../../..";
+import type { Full } from "../../../common";
+import type { DriverApprovalRequest } from "../../orchestrator/driver-approval-request";
 import { ClaudeCodeDriver } from "./claude-code-driver";
 
 function createMockLogger(): ILogger {

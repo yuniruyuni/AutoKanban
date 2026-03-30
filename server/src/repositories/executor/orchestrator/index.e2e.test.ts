@@ -10,15 +10,9 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Approval } from "../../../models/approval";
-import {
-	createServiceCtx,
-	type Full,
-} from "../../common";
 import type { ILogger } from "../../../lib/logger/types";
-import type {
-	ExecutionProcessLogsRepository,
-} from "../..";
+import type { ExecutionProcessLogsRepository } from "../..";
+import { createServiceCtx, type Full } from "../../common";
 import { ExecutorRepository } from "..";
 import { ClaudeCodeDriver } from "../drivers/claude-code";
 
@@ -97,10 +91,7 @@ describe.skip("ExecutorRepository E2E (actual claude-code)", () => {
 					await new Promise((r) => setTimeout(r, 500));
 				}
 
-				console.log(
-					"[E2E] Approval requests:",
-					approvalRequests.length,
-				);
+				console.log("[E2E] Approval requests:", approvalRequests.length);
 
 				// CRITICAL ASSERTION: Approval request must be emitted
 				expect(approvalRequests.length).toBeGreaterThan(0);

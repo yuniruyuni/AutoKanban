@@ -1,10 +1,10 @@
 import type { Context } from "../../../usecases/context";
-import type { ProcessCompletionInfo } from "../client";
 import {
 	completeExecutionProcess,
 	moveTaskToInReview,
 	processQueuedFollowUp,
 } from "../../../usecases/execution/on-process-complete";
+import type { ProcessCompletionInfo } from "../client";
 
 export async function handleProcessComplete(
 	ctx: Context,

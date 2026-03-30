@@ -1,5 +1,6 @@
 import { join } from "node:path";
-import { type Database, PgDatabase } from "../../src/repositories/common";
+import type { Database } from "../../src/lib/db/database";
+import { PgDatabase } from "../../src/lib/db/pg-client";
 import { EmbeddedPostgresManager } from "../../src/lib/db/postgres";
 import { schemaFiles } from "../../src/lib/db/schema-vfs";
 

@@ -1,4 +1,4 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
 import type { ProjectWithStats } from "../../../models/project";
 import { type ProjectWithStatsRow, rowToProjectWithStats } from "./common";
 

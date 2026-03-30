@@ -1,6 +1,6 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
+import { dateToSQL } from "../../../lib/db/sql-helpers";
 import type { Project } from "../../../models/project";
-import { dateToSQL } from "../../common";
 
 export async function upsert(db: Database, project: Project): Promise<void> {
 	await db.queryRun({

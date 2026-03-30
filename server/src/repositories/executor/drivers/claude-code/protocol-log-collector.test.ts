@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
-import type { Full } from "../../../common";
 import type { ILogger } from "../../../../lib/logger/types";
+import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
 import type { ExecutionProcessLogsRepository } from "../../..";
+import type { Full } from "../../../common";
 import { ProtocolLogCollector } from "./protocol-log-collector";
 
 // ============================================

@@ -5,9 +5,10 @@
  * Registered via bunfig.toml preload. The plugin scans schema/ recursively
  * at import time, so adding/removing .sql files takes effect on restart.
  */
-import { plugin } from "bun";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { plugin } from "bun";
 
 const SCHEMA_DIR = join(import.meta.dir, "../schema");
 

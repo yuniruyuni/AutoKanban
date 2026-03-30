@@ -1,6 +1,9 @@
-import type { Database } from "../../src/repositories/common";
+import type { Database } from "../../src/lib/db/database";
+import type { Repos } from "../../src/repositories";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn/postgres";
+import type { FullRepos } from "../../src/repositories/common";
+import { bindCtx, createDbWriteCtx } from "../../src/repositories/common";
 import { ExecutionProcessRepository } from "../../src/repositories/execution-process/postgres";
 import { ExecutionProcessLogsRepository } from "../../src/repositories/execution-process-logs/postgres";
 import { ProjectRepository } from "../../src/repositories/project/postgres";
@@ -9,9 +12,6 @@ import { TaskRepository } from "../../src/repositories/task/postgres";
 import { WorkspaceRepository } from "../../src/repositories/workspace/postgres";
 import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo/postgres";
 import type { Context } from "../../src/usecases/context";
-import type { FullRepos } from "../../src/repositories/common";
-import { bindCtx, createDbWriteCtx } from "../../src/repositories/common";
-import type { Repos } from "../../src/repositories";
 import { createMockLogger } from "./logger";
 
 const DB_REPO_KEYS = [

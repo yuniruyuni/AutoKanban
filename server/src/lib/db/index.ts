@@ -1,5 +1,5 @@
-import { PgDatabase } from "../../repositories/common";
 import type { ILogger } from "../logger/types";
+import { PgDatabase } from "./pg-client";
 import { ensurePgSchema } from "./pgschema";
 import { EmbeddedPostgresManager } from "./postgres";
 

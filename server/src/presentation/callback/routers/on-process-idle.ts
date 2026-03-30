@@ -1,6 +1,6 @@
 import type { Context } from "../../../usecases/context";
-import type { ProcessIdleInfo } from "../client";
 import { handleProcessIdle as handleProcessIdleUsecase } from "../../../usecases/execution/on-process-idle";
+import type { ProcessIdleInfo } from "../client";
 
 export async function handleProcessIdle(
 	ctx: Context,

@@ -1,4 +1,4 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
 import type { Variant } from "../../../models/variant";
 import { rowToVariant, type VariantRow } from "./common";
 

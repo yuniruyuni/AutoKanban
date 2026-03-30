@@ -21,12 +21,6 @@ import type {
 	ClaudeJsonMessage,
 	ClaudeUserMessage,
 } from "../claude-protocol";
-import type {
-	ConversationEntry,
-	PlanAction,
-	ToolEntry as ToolEntryType,
-	ToolStatus,
-} from "./types";
 import { computeIdleState } from "./idle-state";
 import {
 	computeDefaultPlanStatus,
@@ -41,6 +35,12 @@ import {
 	type ControlResponseInput,
 	normalizeControlResponse,
 } from "./tool-status-machine";
+import type {
+	ConversationEntry,
+	PlanAction,
+	ToolEntry as ToolEntryType,
+	ToolStatus,
+} from "./types";
 
 /**
  * Parse result containing entries and idle state

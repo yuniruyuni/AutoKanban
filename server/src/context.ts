@@ -1,8 +1,12 @@
-import type { PgDatabase } from "./repositories/common";
+import type { PgDatabase } from "./lib/db/pg-client";
+import type { ILogger } from "./lib/logger/types";
+import { CallbackClientImpl } from "./presentation/callback/impl";
+import { bindRepos, type Repos } from "./repositories";
 import { AgentConfigRepository } from "./repositories/agent-config";
 import { ApprovalRepository } from "./repositories/approval/postgres";
 import { approvalStore } from "./repositories/approval-store";
 import { CodingAgentTurnRepository } from "./repositories/coding-agent-turn/postgres";
+import { createFullCtx } from "./repositories/common";
 import { DevServerRepository } from "./repositories/dev-server";
 import { draftRepository } from "./repositories/draft";
 import { ExecutionProcessRepository } from "./repositories/execution-process/postgres";
@@ -24,11 +28,7 @@ import { WorkspaceRepository } from "./repositories/workspace/postgres";
 import { WorkspaceConfigRepository } from "./repositories/workspace-config";
 import { WorkspaceRepoRepository } from "./repositories/workspace-repo/postgres";
 import { WorktreeRepository } from "./repositories/worktree";
-import { CallbackClientImpl } from "./presentation/callback/impl";
 import type { Context } from "./usecases/context";
-import { type Repos, bindRepos } from "./repositories";
-import { createFullCtx } from "./repositories/common";
-import type { ILogger } from "./lib/logger/types";
 
 export function createContext(db: PgDatabase, logger: ILogger): Context {
 	// Create callback client (initialized after repos are bound)

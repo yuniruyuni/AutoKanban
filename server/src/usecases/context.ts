@@ -1,11 +1,11 @@
-import type { Database } from "../repositories/common";
+import type { Database } from "../lib/db/database";
+import type { ILogger } from "../lib/logger/types";
+import type { Repos } from "../repositories";
 import type {
 	DbReadRepos,
 	DbWriteRepos,
 	FullRepos,
 } from "../repositories/common";
-import type { ILogger } from "../lib/logger/types";
-import type { Repos } from "../repositories";
 
 // ============================================
 // Step-specific context types

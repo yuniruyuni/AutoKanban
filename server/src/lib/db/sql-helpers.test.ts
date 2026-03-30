@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { and, type Comp, defineSpecs, not, or } from "../../models/common";
-import { compToSQL, dateFromSQL, dateToSQL } from ".";
-import { sql } from ".";
+import { sql } from "./sql";
+import { compToSQL, dateFromSQL, dateToSQL } from "./sql-helpers";
 
 // ============================================
 // Test helpers

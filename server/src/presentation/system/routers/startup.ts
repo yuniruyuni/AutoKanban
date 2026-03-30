@@ -1,7 +1,7 @@
 import type { Context } from "../../../usecases/context";
 import { recoverOrphanedProcesses } from "../../../usecases/setup/recovery";
-import { seedDefaultVariants } from "../../../usecases/setup/seed-variants";
 import { seedTaskTemplates } from "../../../usecases/setup/seed-templates";
+import { seedDefaultVariants } from "../../../usecases/setup/seed-variants";
 
 export async function startup(ctx: Context): Promise<void> {
 	const log = ctx.logger.child("Startup");

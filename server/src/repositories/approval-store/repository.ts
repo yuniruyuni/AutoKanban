@@ -1,6 +1,6 @@
 import type { Approval } from "../../models/approval";
-import type { Full, ServiceCtx } from "../common";
 import type { ApprovalRepository } from "../approval/repository";
+import type { Full, ServiceCtx } from "../common";
 
 export interface ApprovalStoreRepository {
 	createAndWait(

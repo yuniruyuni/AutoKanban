@@ -1,9 +1,9 @@
-import { generatePrDescription } from "./generate-pr-description";
 import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
 import { usecase } from "../runner";
+import { generatePrDescription } from "./generate-pr-description";
 
 export interface CreatePullRequestInput {
 	workspaceId: string;

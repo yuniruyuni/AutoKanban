@@ -14,15 +14,15 @@
  */
 
 import { describe, expect, test } from "bun:test";
+import type { ILogger } from "../../../../lib/logger/types";
 import { Approval } from "../../../../models/approval";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
-import { createServiceCtx, type Full } from "../../../common";
-import type { ILogger } from "../../../../lib/logger/types";
 import type {
 	ApprovalRepository,
 	ExecutionProcessLogsRepository,
 } from "../../..";
 import { ApprovalStore } from "../../../approval-store";
+import { createServiceCtx, type Full } from "../../../common";
 import type { ClaudeCodeProcess } from "./claude-code-executor";
 import {
 	AUTO_APPROVE_CALLBACK_ID,

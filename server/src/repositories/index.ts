@@ -81,7 +81,7 @@ import type { WorktreeRepository } from "./worktree/repository";
 // Repos binding
 // ============================================
 
-import { type ExtractMethods, bindCtx } from "./common";
+import { bindCtx, type ExtractMethods } from "./common";
 
 type ExtractRepos<Ctx> = { [K in keyof Repos]: ExtractMethods<Repos[K], Ctx> };
 

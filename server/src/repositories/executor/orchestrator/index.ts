@@ -1,19 +1,17 @@
 import { randomUUID } from "node:crypto";
-import type { ICodingAgentDriver } from "./coding-agent-driver";
-import type { DriverApprovalRequest } from "./driver-approval-request";
-import type { DriverProcess } from "./driver-process";
-import type { Full, ServiceCtx } from "../../common";
 import type { ILogger } from "../../../lib/logger/types";
+import type { ExecutionProcess } from "../../../models/execution-process";
+import type { CallbackClient } from "../../../presentation/callback/client";
 import type {
-	CodingAgentTurnRepository,
-	ExecutionProcessLogsRepository,
 	ExecutorProcessInfo,
 	ExecutorRepository as ExecutorRepositoryDef,
 	ExecutorStartOptions,
 	ExecutorStartProtocolOptions,
 } from "../..";
-import type { ExecutionProcess } from "../../../models/execution-process";
-import type { CallbackClient } from "../../../presentation/callback/client";
+import type { ServiceCtx } from "../../common";
+import type { ICodingAgentDriver } from "./coding-agent-driver";
+import type { DriverApprovalRequest } from "./driver-approval-request";
+import type { DriverProcess } from "./driver-process";
 
 export interface RunningProcess extends ExecutorProcessInfo {
 	process: DriverProcess;
@@ -308,9 +306,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 					exitCode: result.exitCode,
 				});
 			})
-			.catch((err) =>
-				this.logger.error("Error in completion handler:", err),
-			);
+			.catch((err) => this.logger.error("Error in completion handler:", err));
 	}
 
 	private getDriver(executorName?: string): ICodingAgentDriver {

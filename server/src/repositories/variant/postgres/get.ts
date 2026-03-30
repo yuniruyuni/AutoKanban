@@ -1,7 +1,7 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
+import type { SQLFragment } from "../../../lib/db/sql";
+import { compToSQL } from "../../../lib/db/sql-helpers";
 import type { Variant } from "../../../models/variant";
-import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../common";
 import { rowToVariant, type VariantRow, variantSpecToSQL } from "./common";
 
 export async function get(

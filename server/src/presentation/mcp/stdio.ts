@@ -5,9 +5,9 @@ import {
 	ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { getBaseUrl } from "../../lib/port-file";
-import { registerMcpTools } from "./routers/tools";
 import { TrpcHttpClient } from "../../lib/trpc/client";
 import autoKanbanSchema from "./auto-kanban.schema.json";
+import { registerMcpTools } from "./routers/tools";
 
 export async function runMcpServer(): Promise<void> {
 	const baseUrl = getBaseUrl();

@@ -1,6 +1,6 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
+import { dateToSQL } from "../../../lib/db/sql-helpers";
 import type { CodingAgentTurn } from "../../../models/coding-agent-turn";
-import { dateToSQL } from "../../common";
 
 export async function upsert(
 	db: Database,

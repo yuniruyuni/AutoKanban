@@ -1,4 +1,4 @@
-import type { Database } from "./database";
+import type { Database } from "../../lib/db/database";
 
 // ============================================
 // Capability Marker Types

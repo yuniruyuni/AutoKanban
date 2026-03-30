@@ -1,4 +1,4 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
 
 export async function getMaxAttempt(
 	db: Database,

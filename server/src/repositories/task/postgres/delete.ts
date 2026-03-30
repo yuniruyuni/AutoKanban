@@ -1,7 +1,7 @@
-import type { Database } from "../../common";
+import type { Database } from "../../../lib/db/database";
+import type { SQLFragment } from "../../../lib/db/sql";
+import { compToSQL } from "../../../lib/db/sql-helpers";
 import type { Task } from "../../../models/task";
-import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../common";
 import { taskSpecToSQL } from "./common";
 
 export async function del(db: Database, spec: Task.Spec): Promise<number> {
