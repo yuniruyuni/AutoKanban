@@ -1,7 +1,5 @@
 import type { ExecutionProcess } from "../../models/execution-process";
-import type { CodingAgentTurnRepository } from "../coding-agent-turn/repository";
-import type { Full, ServiceCtx } from "../common";
-import type { ExecutionProcessLogsRepository } from "../execution-process-logs/repository";
+import type { ServiceCtx } from "../common";
 
 export interface ExecutorStartOptions {
 	id?: string;
@@ -28,10 +26,6 @@ export interface ExecutorStartProtocolOptions {
 	interruptedTools?: Array<{ toolId: string; toolName: string }>;
 	/** Which driver to use. Defaults to "claude-code". */
 	executor?: string;
-	/** Logs repository for the driver to collect logs. Passed in by the caller. */
-	logsRepo: Full<ExecutionProcessLogsRepository>;
-	/** Coding agent turn repository for the driver. Passed in by the caller. */
-	codingAgentTurnRepo?: Full<CodingAgentTurnRepository>;
 }
 
 export interface ExecutorProcessInfo {

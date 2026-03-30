@@ -11,8 +11,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ILogger } from "../../../infra/logger/types";
-import type { ExecutionProcessLogsRepository } from "../..";
-import { createServiceCtx, type Full } from "../../common";
+import { createServiceCtx } from "../../common";
 import { ExecutorRepository } from "..";
 import { ClaudeCodeDriver } from "../drivers/claude-code";
 
@@ -30,15 +29,6 @@ function createMockLogger(): ILogger {
 			return child;
 		},
 	} as unknown as ILogger;
-}
-
-function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
-	return {
-		appendLogs: () => {},
-		getLogs: () => null,
-		upsertLogs: () => {},
-		deleteLogs: () => {},
-	} as unknown as Full<ExecutionProcessLogsRepository>;
 }
 
 describe.skip("ExecutorRepository E2E (actual claude-code)", () => {
@@ -63,11 +53,12 @@ describe.skip("ExecutorRepository E2E (actual claude-code)", () => {
 					onApprovalRequest: async (processId: string, request: unknown) => {
 						approvalRequests.push({ processId, request });
 					},
+					onLogData: async () => {},
+					onSessionInfo: async () => {},
+					onSummary: async () => {},
 				};
 
 				const executor = new ExecutorRepository(drivers, logger, mockCallback);
-
-				const logsRepo = createMockLogsRepo();
 
 				// Start protocol in plan mode
 				const rp = await executor.startProtocol(createServiceCtx(), {
@@ -77,7 +68,6 @@ describe.skip("ExecutorRepository E2E (actual claude-code)", () => {
 					prompt:
 						'Create a file called hello.txt with "hello". Very simple task.',
 					permissionMode: "plan",
-					logsRepo,
 				});
 
 				console.log("[E2E] Process started:", rp.id);

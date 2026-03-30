@@ -6,11 +6,7 @@ import {
 	extractSummaryFromContent,
 	type ParsedResult,
 } from "../../../../models/conversation/claude-json-parser";
-import type {
-	CodingAgentTurnRepository,
-	ExecutionProcessLogsRepository,
-} from "../../..";
-import { createServiceCtx, type Full } from "../../../common";
+import { createServiceCtx } from "../../../common";
 import { type LogStore, logStoreManager } from "../../../log-store";
 
 export type IdleCallback = (processId: string) => void;
@@ -29,6 +25,19 @@ export type HookCallback = (
 	request: ClaudeControlRequestMessage,
 ) => void;
 
+export type LogDataCallback = (
+	processId: string,
+	source: "stdout" | "stderr",
+	data: string,
+) => void;
+
+export type SessionInfoCallback = (
+	processId: string,
+	info: { resumeToken: string | null; messageToken: string | null },
+) => void;
+
+export type SummaryCallback = (processId: string, summary: string) => void;
+
 /**
  * Collects logs from protocol mode process streams.
  * Parses JSON output to extract session IDs, message IDs, and detect idle state.
@@ -38,14 +47,13 @@ export class ProtocolLogCollector {
 	private approvalRequestCallbacks: ApprovalRequestCallback[] = [];
 	private autoApproveCallbacks: AutoApproveCallback[] = [];
 	private hookCallbacks: HookCallback[] = [];
+	private logDataCallbacks: LogDataCallback[] = [];
+	private sessionInfoCallbacks: SessionInfoCallback[] = [];
+	private summaryCallbacks: SummaryCallback[] = [];
 
 	private logger: ILogger;
 
-	constructor(
-		private executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
-		private codingAgentTurnRepo: Full<CodingAgentTurnRepository> | undefined,
-		logger: ILogger,
-	) {
+	constructor(logger: ILogger) {
 		this.logger = logger;
 	}
 
@@ -75,6 +83,27 @@ export class ProtocolLogCollector {
 	 */
 	onHookCallback(callback: HookCallback): void {
 		this.hookCallbacks.push(callback);
+	}
+
+	/**
+	 * Registers a callback for log data (stdout/stderr).
+	 */
+	onLogData(callback: LogDataCallback): void {
+		this.logDataCallbacks.push(callback);
+	}
+
+	/**
+	 * Registers a callback for session info updates (session_id, message_id).
+	 */
+	onSessionInfo(callback: SessionInfoCallback): void {
+		this.sessionInfoCallbacks.push(callback);
+	}
+
+	/**
+	 * Registers a callback for summary extraction.
+	 */
+	onSummary(callback: SummaryCallback): void {
+		this.summaryCallbacks.push(callback);
 	}
 
 	/**
@@ -117,10 +146,7 @@ export class ProtocolLogCollector {
 				};
 
 				store.append(svcCtx, entry);
-				this.executionProcessLogsRepo.appendLogs(
-					processId,
-					`[${entry.timestamp.toISOString()}] [stderr] ${data}\n`,
-				);
+				this.notifyLogDataCallbacks(processId, "stderr", data);
 			}
 		} catch (error) {
 			this.logger.error("Error collecting stderr:", error);
@@ -166,10 +192,7 @@ export class ProtocolLogCollector {
 					};
 
 					store.append(svcCtx, entry);
-					this.executionProcessLogsRepo.appendLogs(
-						processId,
-						`[${entry.timestamp.toISOString()}] [stdout] ${line}\n`,
-					);
+					this.notifyLogDataCallbacks(processId, "stdout", line);
 
 					// Parse the JSON line
 					const results = parser.parse(line);
@@ -185,12 +208,12 @@ export class ProtocolLogCollector {
 			}
 
 			// Extract summary from last assistant message
-			if (lastAssistantContent && this.codingAgentTurnRepo) {
+			if (lastAssistantContent) {
 				const summary = extractSummaryFromContent(
 					lastAssistantContent.message.content,
 				);
 				if (summary) {
-					this.codingAgentTurnRepo.updateSummary(processId, summary);
+					this.notifySummaryCallbacks(processId, summary);
 				}
 			}
 		} catch (error) {
@@ -208,20 +231,17 @@ export class ProtocolLogCollector {
 		processId: string,
 		results: ParsedResult[],
 	): void {
+		let resumeToken: string | null = null;
+		let messageToken: string | null = null;
+
 		for (const result of results) {
 			switch (result.kind) {
 				case "session_id":
-					this.codingAgentTurnRepo?.updateAgentSessionId(
-						processId,
-						result.value,
-					);
+					resumeToken = result.value;
 					break;
 
 				case "message_id":
-					this.codingAgentTurnRepo?.updateAgentMessageId(
-						processId,
-						result.value,
-					);
+					messageToken = result.value;
 					break;
 
 				case "result":
@@ -263,6 +283,13 @@ export class ProtocolLogCollector {
 					this.logger.error("Parse error:", result.error);
 					break;
 			}
+		}
+
+		if (resumeToken !== null || messageToken !== null) {
+			this.notifySessionInfoCallbacks(processId, {
+				resumeToken,
+				messageToken,
+			});
 		}
 	}
 
@@ -323,6 +350,43 @@ export class ProtocolLogCollector {
 				callback(processId, request);
 			} catch (err) {
 				this.logger.error("Error in approval request callback:", err);
+			}
+		}
+	}
+
+	private notifyLogDataCallbacks(
+		processId: string,
+		source: "stdout" | "stderr",
+		data: string,
+	): void {
+		for (const callback of this.logDataCallbacks) {
+			try {
+				callback(processId, source, data);
+			} catch (err) {
+				this.logger.error("Error in log data callback:", err);
+			}
+		}
+	}
+
+	private notifySessionInfoCallbacks(
+		processId: string,
+		info: { resumeToken: string | null; messageToken: string | null },
+	): void {
+		for (const callback of this.sessionInfoCallbacks) {
+			try {
+				callback(processId, info);
+			} catch (err) {
+				this.logger.error("Error in session info callback:", err);
+			}
+		}
+	}
+
+	private notifySummaryCallbacks(processId: string, summary: string): void {
+		for (const callback of this.summaryCallbacks) {
+			try {
+				callback(processId, summary);
+			} catch (err) {
+				this.logger.error("Error in summary callback:", err);
 			}
 		}
 	}

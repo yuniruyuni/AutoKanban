@@ -2,12 +2,18 @@ import type { DriverApprovalRequest } from "../../models/driver-approval-request
 import type { Context } from "../../usecases/context";
 import type {
 	CallbackClient,
+	LogDataInfo,
 	ProcessCompletionInfo,
 	ProcessIdleInfo,
+	SessionInfoUpdate,
+	SummaryInfo,
 } from "./client";
 import { handleApprovalRequest } from "./routers/on-approval-request";
+import { handleLogData } from "./routers/on-log-data";
 import { handleProcessComplete } from "./routers/on-process-complete";
 import { handleProcessIdle } from "./routers/on-process-idle";
+import { handleSessionInfo } from "./routers/on-session-info";
+import { handleSummary } from "./routers/on-summary";
 
 /**
  * CallbackClient implementation.
@@ -37,5 +43,20 @@ export class CallbackClientImpl implements CallbackClient {
 	): Promise<void> {
 		if (!this.ctx) throw new Error("CallbackClient not initialized");
 		await handleApprovalRequest(this.ctx, processId, request);
+	}
+
+	async onLogData(info: LogDataInfo): Promise<void> {
+		if (!this.ctx) throw new Error("CallbackClient not initialized");
+		await handleLogData(this.ctx, info);
+	}
+
+	async onSessionInfo(info: SessionInfoUpdate): Promise<void> {
+		if (!this.ctx) throw new Error("CallbackClient not initialized");
+		await handleSessionInfo(this.ctx, info);
+	}
+
+	async onSummary(info: SummaryInfo): Promise<void> {
+		if (!this.ctx) throw new Error("CallbackClient not initialized");
+		await handleSummary(this.ctx, info);
 	}
 }

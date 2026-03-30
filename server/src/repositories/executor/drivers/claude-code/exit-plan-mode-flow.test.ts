@@ -17,12 +17,8 @@ import { describe, expect, test } from "bun:test";
 import type { ILogger } from "../../../../infra/logger/types";
 import { Approval } from "../../../../models/approval";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
-import type {
-	ApprovalRepository,
-	ExecutionProcessLogsRepository,
-} from "../../..";
 import { ApprovalStore } from "../../../approval-store";
-import { createServiceCtx, type Full } from "../../../common";
+import { createServiceCtx } from "../../../common";
 import type { ClaudeCodeProcess } from "./claude-code-executor";
 import {
 	AUTO_APPROVE_CALLBACK_ID,
@@ -43,30 +39,6 @@ function createMockLogger(): ILogger {
 		debug: noop,
 		child: () => createMockLogger(),
 	} as unknown as ILogger;
-}
-
-function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
-	return {
-		appendLogs: () => {},
-		getLogs: () => "",
-	} as unknown as Full<ExecutionProcessLogsRepository>;
-}
-
-function createMockApprovalRepo(): Full<ApprovalRepository> {
-	const store = new Map<string, Approval>();
-	return {
-		get: (spec: Approval.Spec) => {
-			if (spec.type === "ById") {
-				return store.get(spec.id) ?? null;
-			}
-			return null;
-		},
-		upsert: (approval: Approval) => {
-			store.set(approval.id, approval);
-		},
-		list: () => ({ items: [], hasMore: false }),
-		delete: () => 0,
-	} as unknown as Full<ApprovalRepository>;
 }
 
 function makeStream(lines: object[]): ReadableStream<Uint8Array> {
@@ -106,12 +78,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 	test("hookCallback + canUseTool flow creates approval visible via listPending", async () => {
 		// Setup: real components
 		const approvalStore = new ApprovalStore();
-		const approvalRepo = createMockApprovalRepo();
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const processId = "test-process-1";
 
@@ -151,7 +118,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 			});
 
 			// This is what handleApprovalRequest does: blocks until user responds
-			approvalStore.createAndWait(createServiceCtx(), approval, approvalRepo);
+			approvalStore.createAndWait(createServiceCtx(), approval);
 			// Note: we don't await - in production it blocks, but we just need it
 			// to store in pending Map (which happens synchronously in the Promise constructor)
 		});
@@ -215,11 +182,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 	 */
 	test("AUTO_APPROVE hookCallback auto-approves without creating approval", async () => {
 		const approvalStore = new ApprovalStore();
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const processId = "test-process-2";
 		const hookDecisions: string[] = [];
@@ -263,11 +226,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 	 */
 	test("non-ExitPlanMode canUseTool is auto-approved", async () => {
 		const approvalStore = new ApprovalStore();
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const processId = "test-process-3";
 		const autoApproved: string[] = [];
@@ -307,12 +266,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 	 */
 	test("full cycle: create approval → user approves → promise resolves", async () => {
 		const approvalStore = new ApprovalStore();
-		const approvalRepo = createMockApprovalRepo();
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const processId = "test-process-4";
 		let approvalResponse: { status: string; reason: string | null } | null =
@@ -337,7 +291,6 @@ describe("ExitPlanMode approval flow (integration)", () => {
 			const response = await approvalStore.createAndWait(
 				createServiceCtx(),
 				approval,
-				approvalRepo,
 			);
 			approvalResponse = response;
 		});
@@ -376,7 +329,6 @@ describe("ExitPlanMode approval flow (integration)", () => {
 			approvalId,
 			"approved",
 			null,
-			approvalRepo,
 		);
 		expect(success).toBe(true);
 
@@ -404,12 +356,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 	 */
 	test("REAL FORMAT: hook_callback (snake_case) + canUseTool creates approval", async () => {
 		const approvalStore = new ApprovalStore();
-		const approvalRepo = createMockApprovalRepo();
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const processId = "test-real-format";
 		const hookResponsesSent: Array<{ decision: string }> = [];
@@ -431,7 +378,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 				toolName,
 				toolCallId,
 			});
-			approvalStore.createAndWait(createServiceCtx(), approval, approvalRepo);
+			approvalStore.createAndWait(createServiceCtx(), approval);
 		});
 
 		// Use the REAL format from Claude Code stdout (captured from actual execution)
@@ -479,12 +426,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 	 */
 	test("REAL FORMAT: can_use_tool (snake_case) routes to approval callback", async () => {
 		const approvalStore = new ApprovalStore();
-		const approvalRepo = createMockApprovalRepo();
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const processId = "test-can-use-tool-snake";
 
@@ -497,7 +439,7 @@ describe("ExitPlanMode approval flow (integration)", () => {
 				toolName,
 				toolCallId,
 			});
-			approvalStore.createAndWait(createServiceCtx(), approval, approvalRepo);
+			approvalStore.createAndWait(createServiceCtx(), approval);
 		});
 
 		const autoApproved: string[] = [];

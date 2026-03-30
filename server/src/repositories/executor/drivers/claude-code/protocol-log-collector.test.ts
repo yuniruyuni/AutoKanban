@@ -1,8 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { ILogger } from "../../../../infra/logger/types";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
-import type { ExecutionProcessLogsRepository } from "../../..";
-import type { Full } from "../../../common";
 import { ProtocolLogCollector } from "./protocol-log-collector";
 
 // ============================================
@@ -18,13 +16,6 @@ function createMockLogger(): ILogger {
 		debug: noop,
 		child: () => createMockLogger(),
 	} as unknown as ILogger;
-}
-
-function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
-	return {
-		appendLogs: () => {},
-		getLogs: () => "",
-	} as unknown as Full<ExecutionProcessLogsRepository>;
 }
 
 /**
@@ -55,11 +46,7 @@ function emptyStream(): ReadableStream<Uint8Array> {
 
 describe("ProtocolLogCollector callback routing", () => {
 	test("permission_request with ExitPlanMode triggers approval callback", async () => {
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const approvalRequests: ClaudeControlRequestMessage[] = [];
 		collector.onApprovalRequest((_processId, request) => {
@@ -87,11 +74,7 @@ describe("ProtocolLogCollector callback routing", () => {
 	});
 
 	test("permission_request with non-ExitPlanMode triggers auto-approve callback", async () => {
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const autoApproved: ClaudeControlRequestMessage[] = [];
 		collector.onAutoApprove((_processId, request) => {
@@ -118,11 +101,7 @@ describe("ProtocolLogCollector callback routing", () => {
 	});
 
 	test("canUseTool with ExitPlanMode triggers approval callback", async () => {
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const approvalRequests: ClaudeControlRequestMessage[] = [];
 		collector.onApprovalRequest((_processId, request) => {
@@ -149,11 +128,7 @@ describe("ProtocolLogCollector callback routing", () => {
 	});
 
 	test("canUseTool with non-ExitPlanMode triggers auto-approve callback", async () => {
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const autoApproved: ClaudeControlRequestMessage[] = [];
 		collector.onAutoApprove((_processId, request) => {
@@ -179,11 +154,7 @@ describe("ProtocolLogCollector callback routing", () => {
 	});
 
 	test("hookCallback triggers hook callback", async () => {
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const hookRequests: ClaudeControlRequestMessage[] = [];
 		collector.onHookCallback((_processId, request) => {
@@ -209,11 +180,7 @@ describe("ProtocolLogCollector callback routing", () => {
 	});
 
 	test("full ExitPlanMode flow: hookCallback then canUseTool", async () => {
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const hookRequests: ClaudeControlRequestMessage[] = [];
 		const approvalRequests: ClaudeControlRequestMessage[] = [];
@@ -254,11 +221,7 @@ describe("ProtocolLogCollector callback routing", () => {
 	});
 
 	test("hookCallback with AUTO_APPROVE_CALLBACK_ID triggers hook callback (not approval)", async () => {
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const hookRequests: ClaudeControlRequestMessage[] = [];
 		const approvalRequests: ClaudeControlRequestMessage[] = [];
@@ -291,11 +254,7 @@ describe("ProtocolLogCollector callback routing", () => {
 	});
 
 	test("result triggers idle callback", async () => {
-		const collector = new ProtocolLogCollector(
-			createMockLogsRepo(),
-			undefined,
-			createMockLogger(),
-		);
+		const collector = new ProtocolLogCollector(createMockLogger());
 
 		const idleProcessIds: string[] = [];
 		collector.onIdle((processId) => {

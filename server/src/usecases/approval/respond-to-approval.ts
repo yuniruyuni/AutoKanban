@@ -56,17 +56,24 @@ export const respondToApproval = (input: RespondToApprovalInput) =>
 		},
 
 		post: async (ctx, { approval }) => {
-			// TODO: ApprovalStoreRepository.respond expects Full<ApprovalRepository> but post
-			// only has Service<>. The approval store uses the repo for DB writes internally.
-			// Narrow the interface types in the future.
 			const success = await ctx.repos.approvalStore.respond(
 				approval.id,
 				input.status,
 				input.reason ?? null,
-				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
-				ctx.repos.approval as any,
 			);
 
+			return { success, approval };
+		},
+
+		finish: async (ctx, { success, approval }) => {
+			if (success) {
+				const updated = Approval.respond(
+					approval,
+					input.status,
+					input.reason ?? null,
+				);
+				await ctx.repos.approval.upsert(updated);
+			}
 			return { success };
 		},
 

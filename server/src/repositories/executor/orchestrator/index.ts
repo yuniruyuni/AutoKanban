@@ -97,18 +97,13 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		this.runningProcesses.set(id, runningProcess);
 		this.setupCompletionHandler(runningProcess);
 
-		await driver.initialize(
-			process,
-			id,
-			{
-				onIdle: (pid) => this.handleIdle(pid),
-				onApprovalRequest: (pid, req) => this.handleApprovalRequest(pid, req),
-				onSessionInfo: () => {},
-				onSummary: () => {},
-			},
-			options.logsRepo,
-			options.codingAgentTurnRepo,
-		);
+		await driver.initialize(process, id, {
+			onIdle: (pid) => this.handleIdle(pid),
+			onApprovalRequest: (pid, req) => this.handleApprovalRequest(pid, req),
+			onLogData: (pid, source, data) => this.handleLogData(pid, source, data),
+			onSessionInfo: (pid, info) => this.handleSessionInfo(pid, info),
+			onSummary: (pid, summary) => this.handleSummary(pid, summary),
+		});
 
 		if (
 			options.interruptedTools &&
@@ -285,6 +280,52 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			.catch((err) =>
 				this.logger.error("Error in approval request callback:", err),
 			);
+	}
+
+	private handleLogData(
+		processId: string,
+		source: "stdout" | "stderr",
+		data: string,
+	): void {
+		const rp = this.runningProcesses.get(processId);
+		if (!rp) return;
+
+		rp.callback
+			.onLogData({
+				processId,
+				sessionId: rp.sessionId,
+				source,
+				data,
+			})
+			.catch((err) => this.logger.error("Error in log data callback:", err));
+	}
+
+	private handleSessionInfo(
+		processId: string,
+		info: { resumeToken: string | null; messageToken: string | null },
+	): void {
+		const rp = this.runningProcesses.get(processId);
+		if (!rp) return;
+
+		rp.callback
+			.onSessionInfo({
+				processId,
+				sessionId: rp.sessionId,
+				agentSessionId: info.resumeToken,
+				agentMessageId: info.messageToken,
+			})
+			.catch((err) =>
+				this.logger.error("Error in session info callback:", err),
+			);
+	}
+
+	private handleSummary(processId: string, summary: string): void {
+		const rp = this.runningProcesses.get(processId);
+		if (!rp) return;
+
+		rp.callback
+			.onSummary({ processId, sessionId: rp.sessionId, summary })
+			.catch((err) => this.logger.error("Error in summary callback:", err));
 	}
 
 	private setupCompletionHandler(runningProcess: RunningProcess): void {

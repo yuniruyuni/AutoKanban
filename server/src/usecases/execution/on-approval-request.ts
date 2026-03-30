@@ -61,19 +61,13 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 				toolName: input.request.toolName,
 				toolCallId: input.request.toolCallId,
 			});
+			await ctx.repos.approval.upsert(approval);
 
 			return { approval, taskId: task?.id ?? null };
 		},
 
 		post: async (ctx, { approval, taskId }) => {
-			// TODO: ApprovalStoreRepository.createAndWait expects Full<ApprovalRepository> but post
-			// only has Service<>. The approval store uses the repo for DB writes internally.
-			// Narrow the interface types in the future.
-			const response = await ctx.repos.approvalStore.createAndWait(
-				approval,
-				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
-				ctx.repos.approval as any,
-			);
+			const response = await ctx.repos.approvalStore.createAndWait(approval);
 
 			const approved = response.status === "approved";
 

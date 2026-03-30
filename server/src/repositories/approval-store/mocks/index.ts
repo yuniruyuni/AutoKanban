@@ -6,7 +6,6 @@ export function createMockApprovalStore(
 	return {
 		createAndWait: async () => ({ status: "approved" as const, reason: null }),
 		respond: () => true,
-		getRespondedStatus: () => null,
 		hasPending: () => false,
 		listPending: () => [],
 		clear: () => {},

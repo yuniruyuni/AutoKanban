@@ -1,9 +1,4 @@
 import type { ILogger } from "../../../../infra/logger/types";
-import type {
-	CodingAgentTurnRepository,
-	ExecutionProcessLogsRepository,
-} from "../../..";
-import type { Full } from "../../../common";
 import type { ICodingAgentDriver } from "../../orchestrator/coding-agent-driver";
 import type { DriverApprovalRequest } from "../../orchestrator/driver-approval-request";
 import type { DriverCallbacks } from "../../orchestrator/driver-callbacks";
@@ -78,27 +73,28 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		process: DriverProcess,
 		processId: string,
 		callbacks: DriverCallbacks,
-		logsRepo: Full<ExecutionProcessLogsRepository>,
-		codingAgentTurnRepo?: Full<CodingAgentTurnRepository>,
 	): Promise<void> {
 		const nativeProcess = process as unknown as ClaudeCodeProcess;
 		this.processes.set(processId, nativeProcess);
 
-		// Create protocol log collector for this process.
-		// ProtocolLogCollector handles session info and summary updates directly
-		// via codingAgentTurnRepo. We don't need to intercept these for callbacks
-		// since the orchestrator reads from DB.
-		const collector = new ProtocolLogCollector(
-			logsRepo,
-			codingAgentTurnRepo,
-			this.logger,
-		);
+		const collector = new ProtocolLogCollector(this.logger);
 
-		// Wire internal protocol handling
+		// Wire callbacks
 
-		// Idle detection
 		collector.onIdle((pid) => {
 			callbacks.onIdle(pid);
+		});
+
+		collector.onLogData((pid, source, data) => {
+			callbacks.onLogData(pid, source, data);
+		});
+
+		collector.onSessionInfo((pid, info) => {
+			callbacks.onSessionInfo(pid, info);
+		});
+
+		collector.onSummary((pid, summary) => {
+			callbacks.onSummary(pid, summary);
 		});
 
 		// ExitPlanMode approval → emit to orchestrator

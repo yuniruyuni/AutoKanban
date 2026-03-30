@@ -11,8 +11,6 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ILogger } from "../../../../infra/logger/types";
-import type { ExecutionProcessLogsRepository } from "../../..";
-import type { Full } from "../../../common";
 import type { DriverApprovalRequest } from "../../orchestrator/driver-approval-request";
 import { ClaudeCodeDriver } from "./claude-code-driver";
 
@@ -25,15 +23,6 @@ function createMockLogger(): ILogger {
 		debug: noop,
 		child: () => createMockLogger(),
 	} as unknown as ILogger;
-}
-
-function createMockLogsRepo(): Full<ExecutionProcessLogsRepository> {
-	return {
-		appendLogs: () => {},
-		getLogs: () => null,
-		upsertLogs: () => {},
-		deleteLogs: () => {},
-	} as unknown as Full<ExecutionProcessLogsRepository>;
 }
 
 describe.skip("ClaudeCodeDriver E2E (actual claude-code)", () => {
@@ -63,26 +52,22 @@ describe.skip("ClaudeCodeDriver E2E (actual claude-code)", () => {
 
 				const processId = "test-e2e-plan";
 
-				await driver.initialize(
-					process,
-					processId,
-					{
-						onIdle: (pid) => {
-							events.idles.push(pid);
-						},
-						onApprovalRequest: (pid, request) => {
-							console.log(
-								"[E2E] onApprovalRequest fired!",
-								pid,
-								request.toolName,
-							);
-							events.approvalRequests.push(request);
-						},
-						onSessionInfo: () => {},
-						onSummary: () => {},
+				await driver.initialize(process, processId, {
+					onIdle: (pid) => {
+						events.idles.push(pid);
 					},
-					createMockLogsRepo(),
-				);
+					onApprovalRequest: (pid, request) => {
+						console.log(
+							"[E2E] onApprovalRequest fired!",
+							pid,
+							request.toolName,
+						);
+						events.approvalRequests.push(request);
+					},
+					onSessionInfo: () => {},
+					onSummary: () => {},
+					onLogData: () => {},
+				});
 
 				// Send a simple prompt that will trigger plan mode → ExitPlanMode
 				await driver.sendMessage(

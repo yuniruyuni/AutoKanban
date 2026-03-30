@@ -14,4 +14,9 @@ export interface DriverCallbacks {
 		info: { resumeToken: string | null; messageToken: string | null },
 	) => void;
 	onSummary: (processId: string, summary: string) => void;
+	onLogData: (
+		processId: string,
+		source: "stdout" | "stderr",
+		data: string,
+	) => void;
 }

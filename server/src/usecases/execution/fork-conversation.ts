@@ -125,13 +125,6 @@ export const forkConversation = (input: ForkConversationInput) =>
 				prompt,
 				resumeSessionId: agentSessionId,
 				resumeMessageId: messageUuid,
-				// TODO: ExecutorStartProtocolOptions expects Full<> repos but post only has Service<>.
-				// These repos are used asynchronously by the executor for log collection,
-				// so they work correctly at runtime. Narrow the interface types in the future.
-				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
-				logsRepo: ctx.repos.executionProcessLogs as any,
-				// biome-ignore lint/suspicious/noExplicitAny: see TODO above
-				codingAgentTurnRepo: ctx.repos.codingAgentTurn as any,
 			});
 
 			return {

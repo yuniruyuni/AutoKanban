@@ -1,9 +1,4 @@
 import type { ILogger } from "../../../../infra/logger/types";
-import type {
-	CodingAgentTurnRepository,
-	ExecutionProcessLogsRepository,
-} from "../../..";
-import type { Full } from "../../../common";
 import type { ICodingAgentDriver } from "../../orchestrator/coding-agent-driver";
 import type { DriverApprovalRequest } from "../../orchestrator/driver-approval-request";
 import type { DriverCallbacks } from "../../orchestrator/driver-callbacks";
@@ -77,14 +72,12 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 	async initialize(
 		driverProcess: DriverProcess,
 		processId: string,
-		_callbacks: DriverCallbacks,
-		logsRepo: Full<ExecutionProcessLogsRepository>,
-		_codingAgentTurnRepo?: Full<CodingAgentTurnRepository>,
+		callbacks: DriverCallbacks,
 	): Promise<void> {
 		// Collect stdout logs
-		this.collectStream(processId, "stdout", driverProcess.stdout, logsRepo);
+		this.collectStream(processId, "stdout", driverProcess.stdout, callbacks);
 		// Collect stderr logs
-		this.collectStream(processId, "stderr", driverProcess.stderr, logsRepo);
+		this.collectStream(processId, "stderr", driverProcess.stderr, callbacks);
 
 		// Gemini CLI in headless mode emits idle when process exits.
 		// No protocol handshake needed.
@@ -140,7 +133,7 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 		processId: string,
 		source: "stdout" | "stderr",
 		stream: ReadableStream<Uint8Array>,
-		logsRepo: Full<ExecutionProcessLogsRepository>,
+		callbacks: DriverCallbacks,
 	): Promise<void> {
 		const reader = stream.getReader();
 		const decoder = new TextDecoder();
@@ -151,8 +144,7 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 				if (done) break;
 
 				const data = decoder.decode(value, { stream: true });
-				const timestamp = new Date().toISOString();
-				logsRepo.appendLogs(processId, `[${timestamp}] [${source}] ${data}\n`);
+				callbacks.onLogData(processId, source, data);
 			}
 		} catch (error) {
 			this.logger.error(`Error collecting ${source}:`, error);

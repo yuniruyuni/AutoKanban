@@ -1,6 +1,5 @@
-import { Approval } from "../../../models/approval";
-import type { ApprovalRepository } from "../..";
-import type { Full, ServiceCtx } from "../../common";
+import type { Approval } from "../../../models/approval";
+import type { ServiceCtx } from "../../common";
 import type { ApprovalStoreRepository } from "../repository";
 
 export interface ApprovalResponse {
@@ -19,15 +18,7 @@ export class ApprovalStore implements ApprovalStoreRepository {
 	async createAndWait(
 		_ctx: ServiceCtx,
 		approval: Approval,
-		repo: Full<ApprovalRepository>,
 	): Promise<ApprovalResponse> {
-		await repo.upsert(approval);
-
-		const existing = await repo.get(Approval.ById(approval.id));
-		if (existing && existing.status !== "pending") {
-			return { status: existing.status, reason: existing.reason };
-		}
-
 		return new Promise<ApprovalResponse>((resolve) => {
 			this.pending.set(approval.id, { approval, resolve });
 		});
@@ -38,32 +29,13 @@ export class ApprovalStore implements ApprovalStoreRepository {
 		id: string,
 		status: "approved" | "denied",
 		reason: string | null,
-		repo: Full<ApprovalRepository>,
 	): Promise<boolean> {
-		const existing = await repo.get(Approval.ById(id));
-		if (!existing) return false;
-
-		const updated = Approval.respond(existing, status, reason);
-		await repo.upsert(updated);
-
 		const pending = this.pending.get(id);
-		if (pending) {
-			pending.resolve({ status, reason });
-			this.pending.delete(id);
-			return true;
-		}
+		if (!pending) return false;
 
+		pending.resolve({ status, reason });
+		this.pending.delete(id);
 		return true;
-	}
-
-	async getRespondedStatus(
-		_ctx: ServiceCtx,
-		approvalId: string,
-		repo: Full<ApprovalRepository>,
-	): Promise<ApprovalResponse | null> {
-		const approval = await repo.get(Approval.ById(approvalId));
-		if (!approval || approval.status === "pending") return null;
-		return { status: approval.status, reason: approval.reason };
 	}
 
 	hasPending(_ctx: ServiceCtx, executionProcessId: string): boolean {

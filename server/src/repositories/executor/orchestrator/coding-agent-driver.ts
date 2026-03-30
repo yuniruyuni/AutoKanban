@@ -1,8 +1,3 @@
-import type {
-	CodingAgentTurnRepository,
-	ExecutionProcessLogsRepository,
-} from "../..";
-import type { Full } from "../../common";
 import type { DriverApprovalRequest } from "./driver-approval-request";
 import type { DriverCallbacks } from "./driver-callbacks";
 import type { DriverProcess } from "./driver-process";
@@ -30,14 +25,11 @@ export interface ICodingAgentDriver {
 	 * Called immediately after spawn(). The driver should:
 	 * - Perform any protocol handshake (e.g., register hooks, set permission mode)
 	 * - Start parsing stdout and emitting events via callbacks
-	 * - Start collecting logs via logsRepo
 	 */
 	initialize(
 		process: DriverProcess,
 		processId: string,
 		callbacks: DriverCallbacks,
-		logsRepo: Full<ExecutionProcessLogsRepository>,
-		codingAgentTurnRepo?: Full<CodingAgentTurnRepository>,
 	): Promise<void>;
 
 	/** Send a user message to the running process. */
