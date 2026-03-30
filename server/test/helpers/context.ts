@@ -1,5 +1,4 @@
 import type { Database } from "../../src/repositories/common";
-import type { ILogStreamer } from "../../src/presentation/sse/log-streamer";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn/postgres";
 import { ExecutionProcessRepository } from "../../src/repositories/execution-process/postgres";
@@ -145,7 +144,6 @@ export function createMockContext(
 		db: mockDb,
 		rawRepos,
 		repos: new Proxy({} as FullRepos<Repos>, handler),
-		logStreamer: {} as ILogStreamer,
 	};
 }
 
@@ -213,6 +211,5 @@ export function createIntegrationContext(db: Database): Context {
 		db,
 		rawRepos,
 		repos,
-		logStreamer: {} as ILogStreamer,
 	};
 }

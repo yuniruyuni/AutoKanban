@@ -1,5 +1,4 @@
 import type { Database } from "../repositories/common";
-import type { ILogStreamer } from "../presentation/sse/log-streamer";
 import type {
 	DbReadRepos,
 	DbWriteRepos,
@@ -40,5 +39,4 @@ export interface Context {
 	db: Database;
 	rawRepos: Repos;
 	repos: FullRepos<Repos>;
-	logStreamer: ILogStreamer;
 }

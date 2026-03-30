@@ -45,7 +45,6 @@ const mockContext: Context = {
 		].map((k) => [k, {}]),
 	) as unknown as Context["rawRepos"],
 	repos: {} as Context["repos"],
-	logStreamer: {} as Context["logStreamer"],
 };
 
 describe("browseDirectory", () => {

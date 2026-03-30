@@ -1,5 +1,4 @@
 import type { PgDatabase } from "./repositories/common";
-import { LogStreamer } from "./presentation/sse/log-streamer";
 import { AgentConfigRepository } from "./repositories/agent-config";
 import { ApprovalRepository } from "./repositories/approval/postgres";
 import { approvalStore } from "./repositories/approval-store";
@@ -133,8 +132,6 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		logger,
 	);
 
-	const logStreamer = new LogStreamer(executor, logStoreManager, logger);
-
 	// Re-bind after setting executor and devServer
 	const finalRepos = bindAllRepos(rawRepos, fullCtx);
 
@@ -147,6 +144,5 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		db,
 		rawRepos,
 		repos: finalRepos,
-		logStreamer,
 	};
 }
