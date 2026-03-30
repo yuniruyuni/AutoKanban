@@ -1,6 +1,5 @@
 export { FAIL_BRAND, type Fail, fail, isFail, type Unfail } from "./fail";
 export { generateId } from "./id";
-export type { LogEntry, LogStoreSubscription } from "./log";
 export type { Cursor, Page, Sort } from "./pagination";
 export type { PendingPermission } from "./permission";
 export {

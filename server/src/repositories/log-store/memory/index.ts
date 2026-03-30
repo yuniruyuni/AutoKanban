@@ -2,7 +2,7 @@
  * In-memory log storage with broadcast capability.
  * Stores logs from process start and allows late subscribers to get history + live updates.
  */
-import type { LogEntry, LogStoreSubscription } from "../../../models/common";
+import type { LogEntry, LogStoreSubscription } from "../../../models/log-store";
 import type { ServiceCtx } from "../../common";
 import type {
 	LogStore as LogStoreDef,

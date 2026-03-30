@@ -1,4 +1,4 @@
-import type { LogEntry, LogStoreSubscription } from "../../models/common";
+import type { LogEntry, LogStoreSubscription } from "../../models/log-store";
 import type { ServiceCtx } from "../common";
 
 export interface LogStore {
