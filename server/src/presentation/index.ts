@@ -7,6 +7,7 @@ import type { Context } from "../usecases/context";
 import { runMcpServer } from "./mcp/stdio";
 import { sseRoutes } from "./sse/routers";
 import { sseServer } from "./sse/stream";
+import { registerHealthRoute } from "./system/routers/health";
 import { startup } from "./system/routers/startup";
 import { appRouter } from "./trpc/routers";
 
@@ -37,7 +38,8 @@ export async function startServer(ctx: Context) {
 		}),
 	);
 
-	app.get("/health", (c) => c.json({ status: "ok" }));
+	// System routes
+	registerHealthRoute(app);
 
 	// SSE protocol
 	app.use("/sse/*", sseServer({ routes: sseRoutes, ctx }));
