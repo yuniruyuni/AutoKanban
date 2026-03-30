@@ -13,7 +13,7 @@ import type {
 	DriverApprovalRequest,
 	DriverProcess,
 	ICodingAgentDriver,
-} from "../../../types/coding-agent-driver";
+} from "../types";
 import {
 	createServiceCtx,
 	type Full,

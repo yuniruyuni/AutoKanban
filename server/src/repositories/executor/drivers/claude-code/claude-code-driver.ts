@@ -4,7 +4,7 @@ import type {
 	DriverProcess,
 	DriverSpawnOptions,
 	ICodingAgentDriver,
-} from "../../../../types/coding-agent-driver";
+} from "../../types";
 import type { Full } from "../../../common";
 import type { ILogger } from "../../../../lib/logger/types";
 import type {

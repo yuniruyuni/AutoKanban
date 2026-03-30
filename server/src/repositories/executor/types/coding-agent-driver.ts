@@ -1,8 +1,8 @@
-import type { Full } from "../../repositories/common";
+import type { Full } from "../../common";
 import type {
 	CodingAgentTurnRepository,
 	ExecutionProcessLogsRepository,
-} from "../../repositories";
+} from "../..";
 import type { DriverApprovalRequest } from "./driver-approval-request";
 import type { DriverCallbacks } from "./driver-callbacks";
 import type { DriverProcess } from "./driver-process";
