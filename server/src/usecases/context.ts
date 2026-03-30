@@ -1,5 +1,5 @@
 import type { Database } from "../repositories/common";
-import type { ILogStreamer } from "../presentation/log-streamer";
+import type { ILogStreamer } from "../presentation/sse/log-streamer";
 import type {
 	DbReadRepos,
 	DbWriteRepos,

@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { TRPCError } from "@trpc/server";
-import type { Fail } from "../models/common";
-import { fail } from "../models/common";
-import type { Result } from "../usecases/runner";
+import type { Fail } from "../../models/common";
+import { fail } from "../../models/common";
+import type { Result } from "../../usecases/runner";
 import { handleResult } from "./handle-result";
 
 // ============================================

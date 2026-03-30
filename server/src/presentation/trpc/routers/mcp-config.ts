@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { getAutoKanbanCommand, readPortFile } from "../../lib/port-file";
-import { getPreconfiguredServers } from "../mcp/default-servers";
-import { publicProcedure, router } from "../trpc";
+import { getAutoKanbanCommand, readPortFile } from "../../../lib/port-file";
+import { getPreconfiguredServers } from "../../../models/agent-config-defaults";
+import { publicProcedure, router } from "../init";
 
 export const mcpConfigRouter = router({
 	getAgentConfig: publicProcedure

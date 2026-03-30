@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { createTaskTemplate } from "../../usecases/task-template/create-task-template";
-import { deleteTaskTemplate } from "../../usecases/task-template/delete-task-template";
-import { listTaskTemplates } from "../../usecases/task-template/list-task-templates";
-import { updateTaskTemplate } from "../../usecases/task-template/update-task-template";
+import { createTaskTemplate } from "../../../usecases/task-template/create-task-template";
+import { deleteTaskTemplate } from "../../../usecases/task-template/delete-task-template";
+import { listTaskTemplates } from "../../../usecases/task-template/list-task-templates";
+import { updateTaskTemplate } from "../../../usecases/task-template/update-task-template";
 import { handleResult } from "../handle-result";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from "../init";
 
 const conditionSchema = z.enum(["no_dev_server"]).nullable().optional();
 

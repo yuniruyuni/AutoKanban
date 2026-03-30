@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { createMockLogger } from "../../test/helpers/logger";
 import type { PgDatabase } from "../repositories/common";
 import { fail } from "../models/common";
-import type { ILogStreamer } from "../presentation/log-streamer";
+import type { ILogStreamer } from "../presentation/sse/log-streamer";
 import type { Context } from "./context";
 import { usecase } from "./runner";
 

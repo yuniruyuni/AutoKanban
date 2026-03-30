@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { findWorkspaceByPath } from "../../usecases/workspace/find-workspace-by-path";
-import { getAttemptExecution } from "../../usecases/workspace/get-attempt-execution";
-import { listAttempts } from "../../usecases/workspace/list-attempts";
+import { findWorkspaceByPath } from "../../../usecases/workspace/find-workspace-by-path";
+import { getAttemptExecution } from "../../../usecases/workspace/get-attempt-execution";
+import { listAttempts } from "../../../usecases/workspace/list-attempts";
 import { handleResult } from "../handle-result";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from "../init";
 
 export const workspaceRouter = router({
 	findByPath: publicProcedure

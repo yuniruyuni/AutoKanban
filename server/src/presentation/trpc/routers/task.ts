@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { createTask } from "../../usecases/task/create-task";
-import { deleteTask } from "../../usecases/task/delete-task";
-import { getTask } from "../../usecases/task/get-task";
-import { listTasks } from "../../usecases/task/list-tasks";
-import { updateTask } from "../../usecases/task/update-task";
+import { createTask } from "../../../usecases/task/create-task";
+import { deleteTask } from "../../../usecases/task/delete-task";
+import { getTask } from "../../../usecases/task/get-task";
+import { listTasks } from "../../../usecases/task/list-tasks";
+import { updateTask } from "../../../usecases/task/update-task";
 import { handleResult } from "../handle-result";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from "../init";
 
 const TaskStatusSchema = z.enum([
 	"todo",

@@ -7,7 +7,7 @@ import {
 	ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { getBaseUrl } from "../../lib/port-file";
-import { registerMcpTools } from "./tools";
+import { registerMcpTools } from "./routers/tools";
 import { TrpcHttpClient } from "./trpc-client";
 
 export async function runMcpServer(): Promise<void> {

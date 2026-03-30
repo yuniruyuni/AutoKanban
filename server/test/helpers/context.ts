@@ -1,5 +1,5 @@
 import type { Database } from "../../src/repositories/common";
-import type { ILogStreamer } from "../../src/presentation/log-streamer";
+import type { ILogStreamer } from "../../src/presentation/sse/log-streamer";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn/postgres";
 import { ExecutionProcessRepository } from "../../src/repositories/execution-process/postgres";

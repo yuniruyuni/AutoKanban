@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { createTool } from "../../usecases/tool/create-tool";
-import { deleteTool } from "../../usecases/tool/delete-tool";
-import { executeTool } from "../../usecases/tool/execute-tool";
-import { listTools } from "../../usecases/tool/list-tools";
-import { updateTool } from "../../usecases/tool/update-tool";
+import { createTool } from "../../../usecases/tool/create-tool";
+import { deleteTool } from "../../../usecases/tool/delete-tool";
+import { executeTool } from "../../../usecases/tool/execute-tool";
+import { listTools } from "../../../usecases/tool/list-tools";
+import { updateTool } from "../../../usecases/tool/update-tool";
 import { handleResult } from "../handle-result";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from "../init";
 
 export const toolRouter = router({
 	list: publicProcedure.query(async ({ ctx }) =>

@@ -1,15 +1,15 @@
 import { z } from "zod";
-import { browseDirectory } from "../../usecases/project/browse-directory";
-import { createProject } from "../../usecases/project/create-project";
-import { deleteProject } from "../../usecases/project/delete-project";
-import { getGitInfo } from "../../usecases/project/get-git-info";
-import { getProject } from "../../usecases/project/get-project";
-import { initCommit } from "../../usecases/project/init-commit";
-import { initGitRepo } from "../../usecases/project/init-git-repo";
-import { listProjects } from "../../usecases/project/list-projects";
-import { updateProject } from "../../usecases/project/update-project";
+import { browseDirectory } from "../../../usecases/project/browse-directory";
+import { createProject } from "../../../usecases/project/create-project";
+import { deleteProject } from "../../../usecases/project/delete-project";
+import { getGitInfo } from "../../../usecases/project/get-git-info";
+import { getProject } from "../../../usecases/project/get-project";
+import { initCommit } from "../../../usecases/project/init-commit";
+import { initGitRepo } from "../../../usecases/project/init-git-repo";
+import { listProjects } from "../../../usecases/project/list-projects";
+import { updateProject } from "../../../usecases/project/update-project";
 import { handleResult } from "../handle-result";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from "../init";
 
 export const projectRouter = router({
 	create: publicProcedure

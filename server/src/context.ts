@@ -1,5 +1,5 @@
 import type { PgDatabase } from "./repositories/common";
-import { LogStreamer } from "./presentation/log-streamer";
+import { LogStreamer } from "./presentation/sse/log-streamer";
 import { AgentConfigRepository } from "./repositories/agent-config";
 import { ApprovalRepository } from "./repositories/approval/postgres";
 import { approvalStore } from "./repositories/approval-store";

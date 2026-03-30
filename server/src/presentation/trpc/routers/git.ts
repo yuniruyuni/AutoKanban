@@ -1,17 +1,17 @@
 import { z } from "zod";
-import { abortRebase } from "../../usecases/git/abort-rebase";
-import { continueRebase } from "../../usecases/git/continue-rebase";
-import { createPullRequest } from "../../usecases/git/create-pull-request";
-import { finalizePrMerge } from "../../usecases/git/finalize-pr-merge";
-import { getBranchStatus } from "../../usecases/git/get-branch-status";
-import { getDiffs } from "../../usecases/git/get-diffs";
-import { getFileDiff } from "../../usecases/git/get-file-diff";
-import { listBranches } from "../../usecases/git/list-branches";
-import { mergeBranch } from "../../usecases/git/merge-branch";
-import { pushBranch } from "../../usecases/git/push-branch";
-import { rebaseBranch } from "../../usecases/git/rebase-branch";
+import { abortRebase } from "../../../usecases/git/abort-rebase";
+import { continueRebase } from "../../../usecases/git/continue-rebase";
+import { createPullRequest } from "../../../usecases/git/create-pull-request";
+import { finalizePrMerge } from "../../../usecases/git/finalize-pr-merge";
+import { getBranchStatus } from "../../../usecases/git/get-branch-status";
+import { getDiffs } from "../../../usecases/git/get-diffs";
+import { getFileDiff } from "../../../usecases/git/get-file-diff";
+import { listBranches } from "../../../usecases/git/list-branches";
+import { mergeBranch } from "../../../usecases/git/merge-branch";
+import { pushBranch } from "../../../usecases/git/push-branch";
+import { rebaseBranch } from "../../../usecases/git/rebase-branch";
 import { handleResult } from "../handle-result";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from "../init";
 
 export const gitRouter = router({
 	// List branches

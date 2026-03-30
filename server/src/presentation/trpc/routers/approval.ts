@@ -2,9 +2,9 @@ import { z } from "zod";
 import {
 	getPendingApprovals,
 	respondToApproval,
-} from "../../usecases/approval/respond-to-approval";
+} from "../../../usecases/approval/respond-to-approval";
 import { handleResult } from "../handle-result";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from "../init";
 
 export const approvalRouter = router({
 	respond: publicProcedure

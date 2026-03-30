@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { createVariant } from "../../usecases/variant/create-variant";
-import { deleteVariant } from "../../usecases/variant/delete-variant";
-import { listVariants } from "../../usecases/variant/list-variants";
-import { updateVariant } from "../../usecases/variant/update-variant";
+import { createVariant } from "../../../usecases/variant/create-variant";
+import { deleteVariant } from "../../../usecases/variant/delete-variant";
+import { listVariants } from "../../../usecases/variant/list-variants";
+import { updateVariant } from "../../../usecases/variant/update-variant";
 import { handleResult } from "../handle-result";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, router } from "../init";
 
 export const variantRouter = router({
 	list: publicProcedure

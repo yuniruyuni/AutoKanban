@@ -1,4 +1,4 @@
-import { router } from "../trpc";
+import { router } from "../init";
 import { approvalRouter } from "./approval";
 import { devServerRouter } from "./dev-server";
 import { executionRouter } from "./execution";
