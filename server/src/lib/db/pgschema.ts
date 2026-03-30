@@ -1,7 +1,15 @@
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import {
+	chmodSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
+import { homedir, tmpdir } from "node:os";
+import { join } from "node:path";
+import schemaSql from "../../../schema.sql";
 
 const PGSCHEMA_VERSION = "1.8.0";
 const BIN_DIR = join(homedir(), ".auto-kanban", "bin");
@@ -64,52 +72,56 @@ async function downloadBinary(): Promise<string> {
 	return binaryPath;
 }
 
-export async function ensurePgSchema(
-	connectionParams: {
-		host: string;
-		port: number;
-		user: string;
-		password: string;
-		database: string;
-	},
-	schemaPath?: string,
-): Promise<void> {
+export async function ensurePgSchema(connectionParams: {
+	host: string;
+	port: number;
+	user: string;
+	password: string;
+	database: string;
+}): Promise<void> {
 	const binaryPath = await downloadBinary();
-	const resolvedSchemaPath =
-		schemaPath ?? resolve(import.meta.dir, "../../schema.sql");
 
-	const result = spawnSync(
-		binaryPath,
-		[
-			"apply",
-			"--host",
-			connectionParams.host,
-			"--port",
-			connectionParams.port.toString(),
-			"--db",
-			connectionParams.database,
-			"--user",
-			connectionParams.user,
-			"--schema",
-			"public",
-			"--file",
-			resolvedSchemaPath,
-			"--auto-approve",
-		],
-		{
-			env: {
-				...process.env,
-				PGPASSWORD: connectionParams.password,
+	// Write embedded schema.sql to a secure temp directory
+	const tempDir = mkdtempSync(join(tmpdir(), "autokanban-schema-"));
+	const schemaPath = join(tempDir, "schema.sql");
+	try {
+		writeFileSync(schemaPath, schemaSql);
+
+		const result = spawnSync(
+			binaryPath,
+			[
+				"apply",
+				"--host",
+				connectionParams.host,
+				"--port",
+				connectionParams.port.toString(),
+				"--db",
+				connectionParams.database,
+				"--user",
+				connectionParams.user,
+				"--schema",
+				"public",
+				"--file",
+				schemaPath,
+				"--auto-approve",
+			],
+			{
+				env: {
+					...process.env,
+					PGPASSWORD: connectionParams.password,
+				},
+				stdio: "pipe",
 			},
-			stdio: "pipe",
-		},
-	);
-
-	if (result.status !== 0) {
-		const stderr = result.stderr?.toString() ?? "";
-		const stdout = result.stdout?.toString() ?? "";
-		throw new Error(
-			`pgschema apply failed (exit ${result.status}):\n${stderr}\n${stdout}`,
 		);
+
+		if (result.status !== 0) {
+			const stderr = result.stderr?.toString() ?? "";
+			const stdout = result.stdout?.toString() ?? "";
+			throw new Error(
+				`pgschema apply failed (exit ${result.status}):\n${stderr}\n${stdout}`,
+			);
+		}
+	} finally {
+		rmSync(tempDir, { recursive: true, force: true });
 	}
 }

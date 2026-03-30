@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -9,6 +7,7 @@ import {
 import { getBaseUrl } from "../../lib/port-file";
 import { registerMcpTools } from "./routers/tools";
 import { TrpcHttpClient } from "../../lib/trpc/client";
+import autoKanbanSchema from "./auto-kanban.schema.json";
 
 export async function runMcpServer(): Promise<void> {
 	const baseUrl = getBaseUrl();
@@ -39,17 +38,12 @@ export async function runMcpServer(): Promise<void> {
 
 	server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 		if (request.params.uri === "auto-kanban://schema") {
-			const schemaPath = join(
-				import.meta.dir,
-				"./auto-kanban.schema.json",
-			);
-			const schema = readFileSync(schemaPath, "utf-8");
 			return {
 				contents: [
 					{
 						uri: request.params.uri,
 						mimeType: "application/schema+json",
-						text: schema,
+						text: JSON.stringify(autoKanbanSchema, null, 2),
 					},
 				],
 			};
