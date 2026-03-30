@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { PgDatabase } from "../../src/db/pg-client";
 import { EmbeddedPostgresManager } from "../../src/db/postgres";
 
+let pgManager: EmbeddedPostgresManager | null = null;
 let sharedDb: PgDatabase | null = null;
 
 const TEST_PORT = 5555;
@@ -13,7 +14,7 @@ const TEST_DATABASE = "autokanban";
 async function ensureReady(): Promise<PgDatabase> {
 	if (sharedDb) return sharedDb;
 
-	const pgManager = new EmbeddedPostgresManager({
+	pgManager = new EmbeddedPostgresManager({
 		port: TEST_PORT,
 		dataDir: join(import.meta.dir, "../../.test-pg-data"),
 	});
@@ -56,6 +57,18 @@ async function ensureReady(): Promise<PgDatabase> {
 	return sharedDb;
 }
 
+// Stop PostgreSQL when the process exits so bun doesn't hang
+process.on("beforeExit", async () => {
+	if (sharedDb) {
+		await sharedDb.close();
+		sharedDb = null;
+	}
+	if (pgManager) {
+		await pgManager.stop();
+		pgManager = null;
+	}
+});
+
 /**
  * Get a PgDatabase for tests. Starts embedded-postgres on first call.
  * Truncates all tables for isolation between tests.
@@ -90,5 +103,5 @@ export async function createTestDB(): Promise<PgDatabase> {
  * The shared connection is kept alive across tests.
  */
 export async function closeTestDB(_db: PgDatabase): Promise<void> {
-	// Intentionally no-op: shared pool stays alive
+	// Intentionally no-op: shared pool stays alive until process exit
 }
