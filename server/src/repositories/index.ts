@@ -90,11 +90,9 @@ type ExtractRepos<Ctx> = { [K in keyof Repos]: ExtractMethods<Repos[K], Ctx> };
  * matching the Ctx marker have that first argument pre-filled.
  */
 export function bindRepos<Ctx>(raw: Repos, ctx: Ctx): ExtractRepos<Ctx> {
-	const result = {} as Record<string, unknown>;
-	for (const key of Object.keys(raw)) {
-		result[key] = bindCtx((raw as unknown as Record<string, object>)[key], ctx);
-	}
-	return result as ExtractRepos<Ctx>;
+	return Object.fromEntries(
+		Object.entries(raw).map(([key, repo]) => [key, bindCtx(repo, ctx)]),
+	) as ExtractRepos<Ctx>;
 }
 
 // ============================================
