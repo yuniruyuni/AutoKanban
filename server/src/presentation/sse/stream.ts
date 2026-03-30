@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { Context as HonoContext } from "hono";
+import type { Context as HonoContext, MiddlewareHandler } from "hono";
 import { streamSSE } from "hono/streaming";
 import type { Context } from "../../usecases/context";
 import type { Usecase } from "../../usecases/runner";
@@ -75,16 +75,32 @@ export function sseRoute<TParams, TState>(
 }
 
 /**
- * Aggregate SSE routes into a Hono sub-app.
- * Mount with: app.route("/", sseRoutes(ctx))
+ * Aggregate multiple SSE routes.
  */
-export function sseRouter(...routes: SSERoute[]): (ctx: Context) => Hono {
-	return (ctx) => {
-		const app = new Hono();
-		for (const route of routes) {
-			route.mount(app, ctx);
-		}
-		return app;
+export function sseRouter(...routes: SSERoute[]): SSERoute {
+	return {
+		mount(app, ctx) {
+			for (const route of routes) {
+				route.mount(app, ctx);
+			}
+		},
+	};
+}
+
+/**
+ * Create a Hono middleware for SSE routes.
+ * Mount with: app.use("/sse/*", sseServer({ routes, ctx }))
+ */
+export function sseServer(options: {
+	routes: SSERoute;
+	ctx: Context;
+}): MiddlewareHandler {
+	const app = new Hono();
+	options.routes.mount(app, options.ctx);
+	return async (c, next) => {
+		const res = await app.fetch(c.req.raw);
+		if (res.status !== 404) return res;
+		await next();
 	};
 }
 

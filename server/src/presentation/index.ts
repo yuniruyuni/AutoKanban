@@ -6,6 +6,7 @@ import { removePortFile, writePortFile } from "../lib/port-file";
 import type { Context } from "../usecases/context";
 import { runMcpServer } from "./mcp/stdio";
 import { sseRoutes } from "./sse/routers";
+import { sseServer } from "./sse/stream";
 import { startup } from "./system/routers/startup";
 import { appRouter } from "./trpc/routers";
 
@@ -39,7 +40,7 @@ export async function startServer(ctx: Context) {
 	app.get("/health", (c) => c.json({ status: "ok" }));
 
 	// SSE protocol
-	app.route("/sse", sseRoutes(ctx));
+	app.use("/sse/*", sseServer({ routes: sseRoutes, ctx }));
 
 	// Port file + shutdown
 	writePortFile(PORT);
