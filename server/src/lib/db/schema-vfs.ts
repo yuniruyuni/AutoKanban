@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { schemaFiles } from "../../../schema";
+import { schemaFiles } from "../../../schema/manifest";
 
 export interface SchemaDir {
 	/** Absolute path to the temp directory containing schema files */
