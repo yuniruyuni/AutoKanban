@@ -1,40 +1,19 @@
 import { randomUUID } from "node:crypto";
-import {
-	buildContextFromLogs,
-	buildContextRestoredPrompt,
-} from "../../../models/conversation/context-builder";
-import { Approval } from "../../../models/approval";
-import { CodingAgentTurn } from "../../../models/coding-agent-turn";
-import { ExecutionProcess } from "../../../models/execution-process";
-import { Session } from "../../../models/session";
-import { Task } from "../../../models/task";
-import { Workspace } from "../../../models/workspace";
 import type { ICodingAgentDriver } from "./coding-agent-driver";
 import type { DriverApprovalRequest } from "./driver-approval-request";
 import type { DriverProcess } from "./driver-process";
-import {
-	createServiceCtx,
-	type Full,
-	type Service,
-	type ServiceCtx,
-} from "../../common";
+import type { Full } from "../../common";
+import type { ServiceCtx } from "../../common";
 import type { ILogger } from "../../../lib/logger/types";
 import type {
-	ApprovalRepository,
-	ApprovalStoreRepository,
 	CodingAgentTurnRepository,
 	ExecutionProcessLogsRepository,
-	ExecutionProcessRepository,
 	ExecutorProcessInfo,
 	ExecutorRepository as ExecutorRepositoryDef,
 	ExecutorStartOptions,
 	ExecutorStartProtocolOptions,
-	SessionRepository,
-	TaskRepository,
-	WorkspaceRepository,
 } from "../..";
-import { LogCollector } from "../../log-collector";
-import { logStoreManager } from "../../log-store";
+import type { ExecutionProcess } from "../../../models/execution-process";
 
 export interface RunningProcess extends ExecutorProcessInfo {
 	process: DriverProcess;
@@ -50,63 +29,45 @@ export interface ProcessCompletionInfo {
 	exitCode: number | null;
 }
 
-export type ProcessCompletionCallback = (info: ProcessCompletionInfo) => void;
+export type ProcessCompletionCallback = (
+	info: ProcessCompletionInfo,
+) => void | Promise<void>;
 
 export interface ProcessIdleInfo {
 	processId: string;
 	sessionId: string;
 }
 
-export type ProcessIdleCallback = (info: ProcessIdleInfo) => void;
+export type ProcessIdleCallback = (
+	info: ProcessIdleInfo,
+) => void | Promise<void>;
+
+export type ApprovalRequestCallback = (
+	processId: string,
+	request: DriverApprovalRequest,
+) => void | Promise<void>;
 
 /**
  * Generic orchestrator for coding agent process lifecycle.
  * Delegates protocol-specific logic to ICodingAgentDriver implementations.
- * Handles process spawning, stopping, approval flow, and completion.
+ * Handles process spawning, stopping, and completion detection.
+ *
+ * This repository is pure process I/O — no database operations.
+ * DB operations triggered by process events are handled by lifecycle handlers
+ * in the usecases layer.
  */
 export class ExecutorRepository implements ExecutorRepositoryDef {
 	private runningProcesses = new Map<string, RunningProcess>();
 	private completionCallbacks: ProcessCompletionCallback[] = [];
 	private idleCallbacks: ProcessIdleCallback[] = [];
-	private logCollector: LogCollector;
+	private approvalRequestCallbacks: ApprovalRequestCallback[] = [];
 	private logger: ILogger;
 
-	private approvalRepo?: Full<ApprovalRepository>;
-	private approvalStoreRef?: Service<ApprovalStoreRepository>;
-	private taskRepo?: Full<TaskRepository>;
-	private sessionRepo?: Full<SessionRepository>;
-	private workspaceRepo?: Full<WorkspaceRepository>;
-
 	constructor(
-		private executionProcessRepo: Full<ExecutionProcessRepository>,
-		private codingAgentTurnRepo: Full<CodingAgentTurnRepository> | undefined,
 		private drivers: Map<string, ICodingAgentDriver>,
-		private executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
 		logger: ILogger,
 	) {
 		this.logger = logger.child("ExecutorRepository");
-		this.logCollector = new LogCollector(
-			executionProcessLogsRepo,
-			logger.child("LogCollector"),
-		);
-	}
-
-	/**
-	 * Sets the approval-related repos for approval handling.
-	 * Called after construction to avoid circular dependencies.
-	 */
-	setApprovalDeps(deps: {
-		approvalRepo: Full<ApprovalRepository>;
-		approvalStore: Service<ApprovalStoreRepository>;
-		taskRepo: Full<TaskRepository>;
-		sessionRepo: Full<SessionRepository>;
-		workspaceRepo: Full<WorkspaceRepository>;
-	}): void {
-		this.approvalRepo = deps.approvalRepo;
-		this.approvalStoreRef = deps.approvalStore;
-		this.taskRepo = deps.taskRepo;
-		this.sessionRepo = deps.sessionRepo;
-		this.workspaceRepo = deps.workspaceRepo;
 	}
 
 	onProcessComplete(callback: ProcessCompletionCallback): void {
@@ -115,6 +76,10 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 
 	onIdle(callback: ProcessIdleCallback): void {
 		this.idleCallbacks.push(callback);
+	}
+
+	onApprovalRequest(callback: ApprovalRequestCallback): void {
+		this.approvalRequestCallbacks.push(callback);
 	}
 
 	async start(
@@ -140,21 +105,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		};
 
 		this.runningProcesses.set(id, runningProcess);
-
-		await this.executionProcessRepo.upsert({
-			id,
-			sessionId: options.sessionId,
-			runReason: options.runReason,
-			status: "running",
-			exitCode: null,
-			startedAt: now,
-			completedAt: null,
-			createdAt: now,
-			updatedAt: now,
-		});
-
 		this.setupCompletionHandler(runningProcess);
-		this.logCollector.collect(id, process.stdout, process.stderr);
 
 		return runningProcess;
 	}
@@ -187,27 +138,6 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		};
 
 		this.runningProcesses.set(id, runningProcess);
-
-		await this.executionProcessRepo.upsert({
-			id,
-			sessionId: options.sessionId,
-			runReason: options.runReason,
-			status: "running",
-			exitCode: null,
-			startedAt: now,
-			completedAt: null,
-			createdAt: now,
-			updatedAt: now,
-		});
-
-		if (options.runReason === "codingagent" && this.codingAgentTurnRepo) {
-			const turn = CodingAgentTurn.create({
-				executionProcessId: id,
-				prompt: options.prompt,
-			});
-			await this.codingAgentTurnRepo.upsert(turn);
-		}
-
 		this.setupCompletionHandler(runningProcess);
 
 		await driver.initialize(
@@ -215,12 +145,13 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			id,
 			{
 				onIdle: (pid) => this.notifyIdleCallbacks(pid),
-				onApprovalRequest: (pid, req) => this.handleApprovalRequest(pid, req),
+				onApprovalRequest: (pid, req) =>
+					this.notifyApprovalRequestCallbacks(pid, req),
 				onSessionInfo: () => {},
 				onSummary: () => {},
 			},
-			this.executionProcessLogsRepo,
-			this.codingAgentTurnRepo,
+			options.logsRepo!,
+			options.codingAgentTurnRepo,
 		);
 
 		if (
@@ -249,28 +180,13 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		return true;
 	}
 
-	async kill(processId: string): Promise<boolean> {
+	async kill(_ctx: ServiceCtx, processId: string): Promise<boolean> {
 		const runningProcess = this.runningProcesses.get(processId);
 		if (!runningProcess) {
 			return false;
 		}
 
 		runningProcess.driver.kill(runningProcess.process);
-
-		const now = new Date();
-		const existing = await this.executionProcessRepo.get(
-			ExecutionProcess.ById(processId),
-		);
-
-		if (existing) {
-			await this.executionProcessRepo.upsert({
-				...existing,
-				status: "killed",
-				completedAt: now,
-				updatedAt: now,
-			});
-		}
-
 		this.runningProcesses.delete(processId);
 		return true;
 	}
@@ -287,18 +203,6 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 
 		try {
 			await runningProcess.driver.sendMessage(runningProcess.process, prompt);
-
-			const userMessage = {
-				type: "user",
-				message: {
-					role: "user",
-					content: prompt,
-				},
-			};
-			const timestamp = new Date().toISOString();
-			const logEntry = `[${timestamp}] [stdout] ${JSON.stringify(userMessage)}\n`;
-			await this.executionProcessLogsRepo.appendLogs(processId, logEntry);
-
 			return true;
 		} catch (error) {
 			this.logger.error("Failed to send message:", error);
@@ -405,146 +309,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 	}
 
 	// ============================================
-	// Approval Handling (generic)
-	// ============================================
-
-	private async handleApprovalRequest(
-		processId: string,
-		request: DriverApprovalRequest,
-	): Promise<void> {
-		if (!this.approvalRepo || !this.approvalStoreRef) {
-			this.logger.error(
-				"Approval repos not configured, falling back to auto-approve",
-			);
-			const rp = this.runningProcesses.get(processId);
-			if (rp) {
-				await rp.driver.respondToApproval(rp.process, request, true);
-			}
-			return;
-		}
-
-		const approval = Approval.create({
-			executionProcessId: processId,
-			toolName: request.toolName,
-			toolCallId: request.toolCallId,
-		});
-
-		const execProcess = await this.executionProcessRepo.get(
-			ExecutionProcess.ById(processId),
-		);
-		if (execProcess && execProcess.status === "running") {
-			await this.executionProcessRepo.upsert({
-				...execProcess,
-				status: "awaiting_approval",
-				updatedAt: new Date(),
-			});
-		}
-
-		const taskId = await this.findTaskIdForProcess(processId);
-		if (taskId && this.taskRepo) {
-			const task = await this.taskRepo.get(Task.ById(taskId));
-			if (task && task.status === "inprogress") {
-				await this.taskRepo.upsert({
-					...task,
-					status: "inreview",
-					updatedAt: new Date(),
-				});
-			}
-		}
-
-		try {
-			const response = await this.approvalStoreRef.createAndWait(
-				approval,
-				this.approvalRepo,
-			);
-
-			const approved = response.status === "approved";
-
-			const rp = this.runningProcesses.get(processId);
-			if (rp) {
-				await rp.driver.respondToApproval(
-					rp.process,
-					request,
-					approved,
-					response.reason ?? undefined,
-				);
-			}
-
-			const currentProcess = await this.executionProcessRepo.get(
-				ExecutionProcess.ById(processId),
-			);
-			if (currentProcess && currentProcess.status === "awaiting_approval") {
-				await this.executionProcessRepo.upsert({
-					...currentProcess,
-					status: "running",
-					updatedAt: new Date(),
-				});
-			}
-
-			if (taskId && this.taskRepo) {
-				const task = await this.taskRepo.get(Task.ById(taskId));
-				if (task && task.status === "inreview") {
-					await this.taskRepo.upsert({
-						...task,
-						status: "inprogress",
-						updatedAt: new Date(),
-					});
-				}
-			}
-		} catch (error) {
-			this.logger.error("Error handling approval request:", error);
-		}
-	}
-
-	private async findTaskIdForProcess(
-		processId: string,
-	): Promise<string | null> {
-		const runningProcess = this.runningProcesses.get(processId);
-		if (!runningProcess || !this.sessionRepo || !this.workspaceRepo)
-			return null;
-
-		try {
-			const session = await this.sessionRepo.get(
-				Session.ById(runningProcess.sessionId),
-			);
-			if (!session) return null;
-
-			const workspace = await this.workspaceRepo.get(
-				Workspace.ById(session.workspaceId),
-			);
-			if (!workspace) return null;
-
-			return workspace.taskId;
-		} catch {
-			return null;
-		}
-	}
-
-	private async collectSessionLogs(sessionId: string): Promise<string[]> {
-		const sessions = this.sessionRepo ? [{ id: sessionId }] : [];
-		const logs: string[] = [];
-
-		for (const s of sessions) {
-			const epPage = await this.executionProcessRepo.list(
-				ExecutionProcess.BySessionId(s.id),
-				{
-					limit: 100,
-					sort: { keys: ["createdAt", "id"], order: "asc" },
-				},
-			);
-			for (const ep of epPage.items) {
-				const epLogs = await this.executionProcessLogsRepo.getLogs(ep.id);
-				if (epLogs?.logs) {
-					logs.push(epLogs.logs);
-				}
-			}
-		}
-
-		return logs;
-	}
-
-	// ============================================
-	// Idle & Completion Handling
+	// Idle, Approval & Completion Handling
 	// ============================================
 
 	private notifyIdleCallbacks(processId: string): void {
@@ -565,72 +330,28 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		}
 	}
 
+	private notifyApprovalRequestCallbacks(
+		processId: string,
+		request: DriverApprovalRequest,
+	): void {
+		for (const callback of this.approvalRequestCallbacks) {
+			try {
+				callback(processId, request);
+			} catch (err) {
+				this.logger.error("Error in approval request callback:", err);
+			}
+		}
+	}
+
 	private setupCompletionHandler(runningProcess: RunningProcess): void {
 		runningProcess.driver.wait(runningProcess.process).then(async (result) => {
-			const now = new Date();
 			const status: ExecutionProcess.Status = result.killed
 				? "killed"
 				: result.exitCode === 0
 					? "completed"
 					: "failed";
 
-			const existing = await this.executionProcessRepo.get(
-				ExecutionProcess.ById(runningProcess.id),
-			);
-
-			if (existing) {
-				await this.executionProcessRepo.upsert({
-					...existing,
-					status,
-					exitCode: result.exitCode,
-					completedAt: now,
-					updatedAt: now,
-				});
-			}
-
 			this.runningProcesses.delete(runningProcess.id);
-			logStoreManager.close(createServiceCtx(), runningProcess.id);
-
-			const elapsed = now.getTime() - runningProcess.startedAt.getTime();
-			if (
-				(status === "failed" ||
-					(status === "killed" && result.exitCode !== null)) &&
-				runningProcess.startOptions?.resumeSessionId &&
-				elapsed < 15000
-			) {
-				this.logger.info(
-					"[RESUME_RETRY] Resume failed quickly, retrying without resume",
-					{
-						processId: runningProcess.id,
-						elapsed,
-						sessionId: runningProcess.sessionId,
-					},
-				);
-				try {
-					const allLogs = await this.collectSessionLogs(
-						runningProcess.sessionId,
-					);
-					const contextSummary = buildContextFromLogs(allLogs);
-					const contextPrompt = buildContextRestoredPrompt(
-						runningProcess.startOptions.prompt ?? "",
-						contextSummary,
-					);
-
-					await this.startProtocol(createServiceCtx(), {
-						...runningProcess.startOptions,
-						prompt: contextPrompt,
-						resumeSessionId: undefined,
-						resumeMessageId: undefined,
-						interruptedTools: undefined,
-					});
-					return;
-				} catch (retryError) {
-					this.logger.error(
-						"[RESUME_RETRY] Retry without resume also failed",
-						retryError,
-					);
-				}
-			}
 
 			const completionInfo: ProcessCompletionInfo = {
 				processId: runningProcess.id,

@@ -42,7 +42,9 @@ describe("startExecution", () => {
 			} as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({
@@ -87,7 +89,9 @@ describe("startExecution", () => {
 			} as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({
@@ -139,7 +143,9 @@ describe("startExecution", () => {
 			} as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({
@@ -190,7 +196,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async (opts: { prompt: string }) => {
@@ -233,7 +241,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async (opts: { prompt: string }) => {
@@ -282,7 +292,9 @@ describe("startExecution", () => {
 					agentSessionId: "prev-session-abc",
 					agentMessageId: "prev-message-xyz",
 				}),
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async (opts: { resumeSessionId?: string }) => {
@@ -325,7 +337,9 @@ describe("startExecution", () => {
 			} as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			variant: { get: () => null } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
@@ -371,7 +385,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			variant: {
 				get: () => ({
 					id: "variant-1",
@@ -429,7 +445,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async (opts: {
@@ -470,7 +488,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			variant: {
 				get: () => ({
 					id: "variant-2",
@@ -525,7 +545,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			variant: {
 				get: () => ({
 					id: "variant-3",
@@ -678,7 +700,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({
@@ -726,7 +750,9 @@ describe("startExecution", () => {
 			session: { upsert: () => {} } as never,
 			codingAgentTurn: {
 				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
 			} as never,
+			executionProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({

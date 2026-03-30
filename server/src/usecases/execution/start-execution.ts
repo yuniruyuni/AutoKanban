@@ -2,8 +2,9 @@ import {
 	findPendingToolUses,
 	type PendingToolUse,
 } from "../../models/conversation/conversation-parser";
-import { fail } from "../../models/common";
+import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { ExecutionProcess } from "../../models/execution-process";
+import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
@@ -348,7 +349,30 @@ export const startExecution = (input: StartExecutionInput) =>
 								toolName: t.toolName,
 							}))
 						: undefined,
+				logsRepo: ctx.repos.executionProcessLogs,
+				codingAgentTurnRepo: ctx.repos.codingAgentTurn,
 			});
+
+			// Create ExecutionProcess DB record
+			const now = new Date();
+			await ctx.repos.executionProcess.upsert({
+				id: runningProcess.id,
+				sessionId: session.id,
+				runReason: "codingagent",
+				status: "running",
+				exitCode: null,
+				startedAt: now,
+				completedAt: null,
+				createdAt: now,
+				updatedAt: now,
+			});
+
+			// Create CodingAgentTurn DB record
+			const turn = CodingAgentTurn.create({
+				executionProcessId: runningProcess.id,
+				prompt,
+			});
+			await ctx.repos.codingAgentTurn.upsert(turn);
 
 			const result: StartExecutionResult = {
 				workspaceId: workspace.id,

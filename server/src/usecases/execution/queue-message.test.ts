@@ -87,6 +87,7 @@ describe("queueMessage", () => {
 			} as never,
 			executionProcess: {
 				list: () => ({ items: [], hasMore: false }),
+				upsert: () => {},
 			} as never,
 			workspaceRepo: {
 				list: () => ({
@@ -99,6 +100,7 @@ describe("queueMessage", () => {
 			} as never,
 			codingAgentTurn: {
 				findLatestResumeInfo: () => null,
+				upsert: () => {},
 			} as never,
 			messageQueue: {
 				queue: () => queuedMessage,

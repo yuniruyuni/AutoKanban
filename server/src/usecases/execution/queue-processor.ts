@@ -1,3 +1,4 @@
+import { ExecutionProcess } from "../../models/execution-process";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
@@ -121,11 +122,25 @@ export function setupQueueProcessor(
 				return;
 			}
 
-			await repos.executor.start({
+			const rp = await repos.executor.start({
 				sessionId: info.sessionId,
 				runReason: "codingagent",
 				workingDir,
 				prompt: queuedMessage.prompt,
+			});
+
+			// Create ExecutionProcess DB record
+			const now = new Date();
+			await repos.executionProcess.upsert({
+				id: rp.id,
+				sessionId: info.sessionId,
+				runReason: "codingagent",
+				status: "running",
+				exitCode: null,
+				startedAt: now,
+				completedAt: null,
+				createdAt: now,
+				updatedAt: now,
 			});
 		} catch (error) {
 			log.error("Failed to process queued message:", error);

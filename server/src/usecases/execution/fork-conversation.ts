@@ -1,3 +1,4 @@
+import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import { ExecutionProcess } from "../../models/execution-process";
 import { Session } from "../../models/session";
@@ -98,7 +99,30 @@ export const forkConversation = (input: ForkConversationInput) =>
 				prompt,
 				resumeSessionId: agentSessionId,
 				resumeMessageId: messageUuid,
+				logsRepo: ctx.repos.executionProcessLogs,
+				codingAgentTurnRepo: ctx.repos.codingAgentTurn,
 			});
+
+			// Create ExecutionProcess DB record
+			const now = new Date();
+			await ctx.repos.executionProcess.upsert({
+				id: processInfo.id,
+				sessionId: session.id,
+				runReason: "codingagent",
+				status: "running",
+				exitCode: null,
+				startedAt: now,
+				completedAt: null,
+				createdAt: now,
+				updatedAt: now,
+			});
+
+			// Create CodingAgentTurn DB record
+			const turn = CodingAgentTurn.create({
+				executionProcessId: processInfo.id,
+				prompt,
+			});
+			await ctx.repos.codingAgentTurn.upsert(turn);
 
 			return {
 				success: true,

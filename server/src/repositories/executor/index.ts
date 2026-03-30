@@ -1,5 +1,6 @@
 export {
 	ExecutorRepository,
+	type ApprovalRequestCallback,
 	type ProcessCompletionCallback,
 	type ProcessCompletionInfo,
 	type ProcessIdleCallback,

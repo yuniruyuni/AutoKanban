@@ -1,5 +1,7 @@
 import type { ExecutionProcess } from "../../models/execution-process";
-import type { ServiceCtx } from "../common";
+import type { Full, ServiceCtx } from "../common";
+import type { CodingAgentTurnRepository } from "../coding-agent-turn/repository";
+import type { ExecutionProcessLogsRepository } from "../execution-process-logs/repository";
 
 export interface ExecutorStartOptions {
 	sessionId: string;
@@ -24,6 +26,10 @@ export interface ExecutorStartProtocolOptions {
 	interruptedTools?: Array<{ toolId: string; toolName: string }>;
 	/** Which driver to use. Defaults to "claude-code". */
 	executor?: string;
+	/** Logs repository for the driver to collect logs. Passed in by the caller. */
+	logsRepo?: Full<ExecutionProcessLogsRepository>;
+	/** Coding agent turn repository for the driver. Passed in by the caller. */
+	codingAgentTurnRepo?: Full<CodingAgentTurnRepository>;
 }
 
 export interface ExecutorProcessInfo {
@@ -43,6 +49,7 @@ export interface ExecutorRepository {
 		options: ExecutorStartProtocolOptions,
 	): Promise<ExecutorProcessInfo>;
 	stop(ctx: ServiceCtx, processId: string): Promise<boolean>;
+	kill(ctx: ServiceCtx, processId: string): Promise<boolean>;
 	sendMessage(
 		ctx: ServiceCtx,
 		processId: string,
@@ -55,6 +62,12 @@ export interface ExecutorRepository {
 		approved: boolean,
 		requestSubtype?: string,
 		reason?: string,
+		updatedPermissions?: Array<{
+			type: string;
+			mode?: string;
+			destination?: string;
+		}>,
+		toolInput?: Record<string, unknown>,
 	): Promise<boolean>;
 	startProtocolAndWait(
 		ctx: ServiceCtx,

@@ -24,6 +24,7 @@ import { WorkspaceRepository } from "./repositories/workspace/postgres";
 import { WorkspaceConfigRepository } from "./repositories/workspace-config";
 import { WorkspaceRepoRepository } from "./repositories/workspace-repo/postgres";
 import { WorktreeRepository } from "./repositories/worktree";
+import { setupExecutionLifecycle } from "./usecases/execution/lifecycle";
 import { setupQueueProcessor } from "./usecases/execution/queue-processor";
 import type { Context } from "./usecases/context";
 import { bindRepos } from "./repositories";
@@ -45,62 +46,18 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	const variantRepo = new VariantRepository();
 	const approvalRepo = new ApprovalRepository();
 
-	// Bind with pool-level ctx for orchestrator dependencies
+	// Create executor (pure process I/O, no DB dependencies)
+	const drivers = new Map();
+	drivers.set("claude-code", new ClaudeCodeDriver(logger));
+	drivers.set("gemini-cli", new GeminiCliDriver(logger));
+	const executor = new ExecutorRepository(drivers, logger);
+
+	// Bind with pool-level ctx for DevServerRepository dependency
 	const fullCtx = createFullCtx(db);
-	const boundEpRepo = bindRepos(
-		{ executionProcess: executionProcessRepo } as any,
-		fullCtx,
-	).executionProcess;
-	const boundCatRepo = bindRepos(
-		{ codingAgentTurn: codingAgentTurnRepo } as any,
-		fullCtx,
-	).codingAgentTurn;
 	const boundEpLogsRepo = bindRepos(
 		{ executionProcessLogs: executionProcessLogsRepo } as any,
 		fullCtx,
 	).executionProcessLogs;
-
-	// Create executor (needs bound DB repos for internal use)
-	const drivers = new Map();
-	drivers.set("claude-code", new ClaudeCodeDriver(logger));
-	drivers.set("gemini-cli", new GeminiCliDriver(logger));
-	const executor = new ExecutorRepository(
-		boundEpRepo,
-		boundCatRepo,
-		drivers,
-		boundEpLogsRepo,
-		logger,
-	);
-
-	// Wire up approval dependencies
-	const boundApprovalRepo = bindRepos(
-		{ approval: approvalRepo } as any,
-		fullCtx,
-	).approval;
-	const boundApprovalStore = bindRepos(
-		{ approvalStore } as any,
-		fullCtx,
-	).approvalStore;
-	const boundTaskRepo = bindRepos(
-		{ task: taskRepo } as any,
-		fullCtx,
-	).task;
-	const boundSessionRepo = bindRepos(
-		{ session: sessionRepo } as any,
-		fullCtx,
-	).session;
-	const boundWorkspaceRepo = bindRepos(
-		{ workspace: workspaceRepo } as any,
-		fullCtx,
-	).workspace;
-
-	executor.setApprovalDeps({
-		approvalRepo: boundApprovalRepo,
-		approvalStore: boundApprovalStore,
-		taskRepo: boundTaskRepo,
-		sessionRepo: boundSessionRepo,
-		workspaceRepo: boundWorkspaceRepo,
-	});
 
 	// Assemble all raw repos (all defined, no undefined)
 	const rawRepos = {
@@ -132,7 +89,10 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	// Bind all repos with full ctx
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	// Set up queue processor
+	// Set up lifecycle handlers (bridges executor events to DB operations)
+	setupExecutionLifecycle(executor, repos, logger);
+
+	// Set up queue processor (bridges completion/idle events to queue consumption)
 	setupQueueProcessor(executor, repos, logger);
 
 	return {
