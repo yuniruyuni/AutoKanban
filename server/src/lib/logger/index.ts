@@ -1,4 +1,4 @@
-import type { ILogger } from "../../types/logger";
+import type { ILogger } from "./types";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 

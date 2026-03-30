@@ -10,7 +10,7 @@ import type {
 } from "../../repositories/executor";
 import type { MessageQueueRepository } from "../../repositories/message-queue/memory";
 import { createServiceCtx, type Full } from "../../repositories/common";
-import type { ILogger } from "../../types/logger";
+import type { ILogger } from "../../lib/logger/types";
 import type {
 	ProjectRepository,
 	SessionRepository,

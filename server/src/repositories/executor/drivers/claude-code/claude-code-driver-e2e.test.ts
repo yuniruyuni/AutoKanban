@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { DriverApprovalRequest } from "../../../../types/coding-agent-driver";
 import type { Full } from "../../../common";
-import type { ILogger } from "../../../../types/logger";
+import type { ILogger } from "../../../../lib/logger/types";
 import type { ExecutionProcessLogsRepository } from "../../..";
 import { ClaudeCodeDriver } from "./claude-code-driver";
 

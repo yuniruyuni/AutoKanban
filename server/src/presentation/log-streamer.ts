@@ -1,6 +1,6 @@
 import type { LogStoreSubscription } from "../models/common";
 import { createServiceCtx } from "../repositories/common";
-import type { ILogger } from "../types/logger";
+import type { ILogger } from "../lib/logger/types";
 import type {
 	ExecutorRepository,
 	LogStore,

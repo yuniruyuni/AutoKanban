@@ -6,7 +6,7 @@ import {
 } from "../../../../lib/conversation/claude-json-parser";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
 import { createServiceCtx, type Full } from "../../../common";
-import type { ILogger } from "../../../../types/logger";
+import type { ILogger } from "../../../../lib/logger/types";
 import type {
 	CodingAgentTurnRepository,
 	ExecutionProcessLogsRepository,

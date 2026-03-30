@@ -20,7 +20,7 @@ import {
 	type Service,
 	type ServiceCtx,
 } from "../../common";
-import type { ILogger } from "../../../types/logger";
+import type { ILogger } from "../../../lib/logger/types";
 import type {
 	ApprovalRepository,
 	ApprovalStoreRepository,

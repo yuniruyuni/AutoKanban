@@ -26,7 +26,7 @@ import type {
 	PlanAction,
 	ToolEntry as ToolEntryType,
 	ToolStatus,
-} from "../../types/conversation";
+} from "./types";
 import { computeIdleState } from "./idle-state";
 import {
 	computeDefaultPlanStatus,

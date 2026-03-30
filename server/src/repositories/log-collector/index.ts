@@ -1,5 +1,5 @@
 import { createServiceCtx, type Full } from "../common";
-import type { ILogger } from "../../types/logger";
+import type { ILogger } from "../../lib/logger/types";
 import type { ExecutionProcessLogsRepository } from "..";
 import { type LogStore, logStoreManager } from "../log-store";
 

@@ -12,8 +12,8 @@ export type {
 	ToolResult,
 	ToolStatus,
 	UserMessageEntry,
-} from "./conversation";
-export type { ILogger } from "./logger";
+} from "../lib/conversation/types";
+export type { ILogger } from "../lib/logger/types";
 export type {
 	AgentConfigRepository,
 	ApprovalRepository,

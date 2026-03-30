@@ -34,7 +34,7 @@ import {
 	type FullRepos,
 	type ServiceCtx,
 } from "./repositories/common";
-import type { ILogger } from "./types/logger";
+import type { ILogger } from "./lib/logger/types";
 import type { Repos } from "./repositories";
 
 function createRawRepos(logger: ILogger): Repos {

@@ -5,7 +5,7 @@
  * for rich rendering in the chat UI.
  */
 
-import type { ToolAction } from "../../types/conversation";
+import type { ToolAction } from "../conversation/types";
 
 /**
  * Map tool name and input to a structured ToolAction
