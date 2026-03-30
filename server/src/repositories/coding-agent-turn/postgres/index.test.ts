@@ -22,6 +22,22 @@ let EXECUTION_PROCESS_ID: string;
 let SESSION_ID: string;
 let WORKSPACE_ID: string;
 
+/** Mark the seeded execution process as completed so resume-info queries can find it. */
+async function markExecutionProcessCompleted(): Promise<void> {
+	const epRepo = new ExecutionProcessRepository();
+	const ep = await epRepo.get(rCtx, {
+		type: "ById",
+		id: EXECUTION_PROCESS_ID,
+	} as never);
+	if (ep) {
+		await epRepo.upsert(wCtx, {
+			...ep,
+			status: "completed" as const,
+			completedAt: new Date(),
+		});
+	}
+}
+
 beforeEach(async () => {
 	db = await createTestDB();
 	turnRepo = new CodingAgentTurnRepository();
@@ -355,7 +371,9 @@ describe("CodingAgentTurnRepository updateSummary", () => {
 });
 
 describe("CodingAgentTurnRepository findLatestResumeInfo", () => {
-	test("returns resume info for session with agent session", async () => {
+	test("returns resume info for completed process", async () => {
+		await markExecutionProcessCompleted();
+
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: "resume-session",
@@ -367,6 +385,19 @@ describe("CodingAgentTurnRepository findLatestResumeInfo", () => {
 		expect(info).not.toBeNull();
 		expect(info?.agentSessionId).toBe("resume-session");
 		expect(info?.agentMessageId).toBe("resume-msg");
+	});
+
+	test("returns null for running process (cannot resume active session)", async () => {
+		const turn = createTestCodingAgentTurn({
+			executionProcessId: EXECUTION_PROCESS_ID,
+			agentSessionId: "active-session",
+			agentMessageId: "active-msg",
+		});
+		await turnRepo.upsert(wCtx, turn);
+
+		// EP is still 'running' from seed, so should return null
+		const info = await turnRepo.findLatestResumeInfo(rCtx, SESSION_ID);
+		expect(info).toBeNull();
 	});
 
 	test("returns null when no turns have agent session id", async () => {
@@ -387,7 +418,9 @@ describe("CodingAgentTurnRepository findLatestResumeInfo", () => {
 });
 
 describe("CodingAgentTurnRepository findLatestResumeInfoByWorkspaceId", () => {
-	test("returns resume info across workspace sessions (3-table JOIN)", async () => {
+	test("returns resume info for completed process across workspace sessions", async () => {
+		await markExecutionProcessCompleted();
+
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: "ws-resume-session",

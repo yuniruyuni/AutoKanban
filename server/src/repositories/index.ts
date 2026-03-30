@@ -26,6 +26,7 @@ export type {
 export type { ApprovalStoreRepository } from "./approval-store/repository";
 export type { DevServerRepository } from "./dev-server/repository";
 export type { DraftRepository } from "./draft/repository";
+export type { DraftPullRequestRepository } from "./draft-pull-request/repository";
 export type {
 	ExecutorProcessInfo,
 	ExecutorRepository,
@@ -59,6 +60,7 @@ import type { ApprovalStoreRepository } from "./approval-store/repository";
 import type { CodingAgentTurnRepository } from "./coding-agent-turn/repository";
 import type { DevServerRepository } from "./dev-server/repository";
 import type { DraftRepository } from "./draft/repository";
+import type { DraftPullRequestRepository } from "./draft-pull-request/repository";
 import type { ExecutionProcessRepository } from "./execution-process/repository";
 import type { ExecutionProcessLogsRepository } from "./execution-process-logs/repository";
 import type { ExecutorRepository } from "./executor/repository";
@@ -122,6 +124,7 @@ export interface Repos {
 	agentConfig: AgentConfigRepository;
 	workspaceConfig: WorkspaceConfigRepository;
 	draft: DraftRepository;
+	draftPullRequest: DraftPullRequestRepository;
 	permissionStore: PermissionStoreRepository;
 	approvalStore: ApprovalStoreRepository;
 	logStoreManager: LogStoreManager;

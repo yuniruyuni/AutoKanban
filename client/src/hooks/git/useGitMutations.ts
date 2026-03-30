@@ -32,6 +32,8 @@ export function useGitMutations() {
 		},
 	});
 
+	const generatePRDescription = trpc.git.generatePRDescription.useMutation();
+
 	const createPR = trpc.git.createPR.useMutation({
 		onSuccess: () => {
 			utils.git.getBranchStatus.invalidate();
@@ -79,6 +81,11 @@ export function useGitMutations() {
 			});
 		},
 		isMerging: merge.isPending,
+
+		generatePRDescription: async (workspaceId: string, projectId: string) => {
+			return generatePRDescription.mutateAsync({ workspaceId, projectId });
+		},
+		isGeneratingPRDescription: generatePRDescription.isPending,
 
 		createPR: async (
 			workspaceId: string,

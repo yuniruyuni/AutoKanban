@@ -23,12 +23,18 @@ describe("createPullRequest", () => {
 			project: { get: () => project } as never,
 			worktree: createMockWorktreeRepository(),
 			workspaceRepo: { listByWorkspace: () => [], upsert: () => {} } as never,
-			session: { list: () => ({ items: [], hasMore: false }) } as never,
-			codingAgentTurn: {
-				findLatestResumeInfoByWorkspaceId: () => null,
-			} as never,
-			executor: {
-				startProtocolAndWait: async () => ({ exitCode: 1 }),
+			draftPullRequest: {
+				get: () => ({
+					workspaceId: workspace.id,
+					projectId: project.id,
+					status: "completed",
+					title: "Generated Title",
+					body: "Generated Body",
+					logs: "",
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				}),
+				delete: () => true,
 			} as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "feature/test",
@@ -74,12 +80,9 @@ describe("createPullRequest", () => {
 				],
 				upsert: () => {},
 			} as never,
-			session: { list: () => ({ items: [], hasMore: false }) } as never,
-			codingAgentTurn: {
-				findLatestResumeInfoByWorkspaceId: () => null,
-			} as never,
-			executor: {
-				startProtocolAndWait: async () => ({ exitCode: 1 }),
+			draftPullRequest: {
+				get: () => undefined,
+				delete: () => true,
 			} as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "feature/test",
@@ -149,9 +152,6 @@ describe("createPullRequest", () => {
 			workspace: { get: () => workspace } as never,
 			project: { get: () => project } as never,
 			workspaceRepo: { listByWorkspace: () => [] } as never,
-			codingAgentTurn: {
-				findLatestResumeInfoByWorkspaceId: () => null,
-			} as never,
 			worktree: createMockWorktreeRepository({
 				worktreeExists: async () => false,
 			}),
@@ -178,9 +178,6 @@ describe("createPullRequest", () => {
 			project: { get: () => project } as never,
 			worktree: createMockWorktreeRepository(),
 			workspaceRepo: { listByWorkspace: () => [], upsert: () => {} } as never,
-			codingAgentTurn: {
-				findLatestResumeInfoByWorkspaceId: () => null,
-			} as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "main",
 				push: async () => {
@@ -210,9 +207,6 @@ describe("createPullRequest", () => {
 			project: { get: () => project } as never,
 			worktree: createMockWorktreeRepository(),
 			workspaceRepo: { listByWorkspace: () => [], upsert: () => {} } as never,
-			codingAgentTurn: {
-				findLatestResumeInfoByWorkspaceId: () => null,
-			} as never,
 			git: createMockGitRepository({
 				getCurrentBranch: async () => "main",
 				createPullRequest: async () => {

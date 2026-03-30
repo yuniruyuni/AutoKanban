@@ -213,6 +213,25 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		return rp.driver.wait(rp.process);
 	}
 
+	spawnStructured(
+		_ctx: ServiceCtx,
+		executorName: string | undefined,
+		options: {
+			workingDir: string;
+			prompt: string;
+			schema: Record<string, unknown>;
+			model?: string;
+		},
+	): {
+		stdout: ReadableStream<Uint8Array>;
+		stderr: ReadableStream<Uint8Array>;
+		exited: Promise<number>;
+	} | null {
+		const driver = this.getDriver(executorName);
+		if (!driver.spawnStructured) return null;
+		return driver.spawnStructured(options);
+	}
+
 	async runStructured(
 		_ctx: ServiceCtx,
 		executorName: string | undefined,
@@ -220,7 +239,6 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			workingDir: string;
 			prompt: string;
 			schema: Record<string, unknown>;
-			resumeSessionId?: string;
 			model?: string;
 		},
 	): Promise<unknown> {

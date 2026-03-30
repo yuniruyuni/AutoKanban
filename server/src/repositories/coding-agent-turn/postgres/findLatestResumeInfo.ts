@@ -14,6 +14,7 @@ export async function findLatestResumeInfo(
        JOIN execution_processes ep ON ep.id = cat.execution_process_id
        WHERE ep.session_id = ?
          AND cat.agent_session_id IS NOT NULL
+         AND ep.status NOT IN ('running', 'awaiting_approval')
        ORDER BY cat.created_at DESC
        LIMIT 1`,
 		params: [sessionId],

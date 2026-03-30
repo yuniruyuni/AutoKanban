@@ -15,6 +15,7 @@ export async function findLatestResumeInfoByWorkspaceId(
        JOIN sessions s ON s.id = ep.session_id
        WHERE s.workspace_id = ?
          AND cat.agent_session_id IS NOT NULL
+         AND ep.status NOT IN ('running', 'awaiting_approval')
        ORDER BY cat.created_at DESC
        LIMIT 1`,
 		params: [workspaceId],

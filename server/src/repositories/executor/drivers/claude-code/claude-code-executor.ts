@@ -341,17 +341,19 @@ export class ClaudeCodeExecutor {
 	}
 
 	/**
-	 * Runs Claude Code in print mode with --json-schema for structured output.
-	 * Supports --resume + --fork-session for context inheritance.
-	 * Returns the parsed structured_output or null on failure.
+	 * Spawns a Claude Code process in print mode with --json-schema for structured output.
+	 * Returns streams and exit promise without waiting for completion.
 	 */
-	async runStructured<T>(options: {
+	spawnStructured(options: {
 		workingDir: string;
 		prompt: string;
 		schema: Record<string, unknown>;
-		resumeSessionId?: string;
 		model?: string;
-	}): Promise<T | null> {
+	}): {
+		stdout: ReadableStream<Uint8Array>;
+		stderr: ReadableStream<Uint8Array>;
+		exited: Promise<number>;
+	} {
 		const args: string[] = [
 			"--print",
 			"--output-format=json",
@@ -364,18 +366,48 @@ export class ClaudeCodeExecutor {
 			args.push("--model", options.model);
 		}
 
-		if (options.resumeSessionId) {
-			args.push("--resume", options.resumeSessionId, "--fork-session");
-		}
-
 		args.push(options.prompt);
 
-		const process = this.spawnProcess(options.workingDir, args);
-		const exitCode = await process.proc.exited;
+		const cmd = ["bunx", CLAUDE_CODE_PACKAGE, ...args];
+		const proc = Bun.spawn({
+			cmd,
+			cwd: options.workingDir,
+			stdin: "ignore",
+			stdout: "pipe",
+			stderr: "pipe",
+			env: {
+				...process.env,
+				CI: "true",
+				NPM_CONFIG_LOGLEVEL: "error",
+			},
+		});
+		return {
+			stdout: proc.stdout,
+			stderr: proc.stderr,
+			exited: proc.exited,
+		};
+	}
+
+	/**
+	 * Runs Claude Code in print mode with --json-schema for structured output.
+	 * Returns the parsed structured_output or null on failure.
+	 */
+	async runStructured<T>(options: {
+		workingDir: string;
+		prompt: string;
+		schema: Record<string, unknown>;
+		model?: string;
+	}): Promise<T | null> {
+		const proc = this.spawnStructured(options);
+
+		const [exitCode, stdout] = await Promise.all([
+			proc.exited,
+			new Response(proc.stdout).text(),
+			new Response(proc.stderr).text(), // drain stderr to prevent deadlock
+		]);
 
 		if (exitCode !== 0) return null;
 
-		const stdout = await new Response(process.stdout).text();
 		try {
 			const result = JSON.parse(stdout);
 			return (result.structured_output as T) ?? null;

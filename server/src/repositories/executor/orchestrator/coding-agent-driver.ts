@@ -66,15 +66,28 @@ export interface ICodingAgentDriver {
 	wait(process: DriverProcess): Promise<{ exitCode: number; killed: boolean }>;
 
 	/**
+	 * Spawn a one-shot structured output process and return streams without waiting.
+	 * Optional — not all drivers support structured output.
+	 */
+	spawnStructured?(options: {
+		workingDir: string;
+		prompt: string;
+		schema: Record<string, unknown>;
+		model?: string;
+	}): {
+		stdout: ReadableStream<Uint8Array>;
+		stderr: ReadableStream<Uint8Array>;
+		exited: Promise<number>;
+	};
+
+	/**
 	 * Run a one-shot prompt with structured output (JSON schema validation).
-	 * Supports session context inheritance via resumeSessionId.
 	 * Optional — not all drivers support structured output.
 	 */
 	runStructured?<T>(options: {
 		workingDir: string;
 		prompt: string;
 		schema: Record<string, unknown>;
-		resumeSessionId?: string;
 		model?: string;
 	}): Promise<T | null>;
 }

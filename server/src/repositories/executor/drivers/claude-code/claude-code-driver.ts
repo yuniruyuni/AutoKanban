@@ -214,11 +214,23 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		}
 	}
 
+	spawnStructured(options: {
+		workingDir: string;
+		prompt: string;
+		schema: Record<string, unknown>;
+		model?: string;
+	}): {
+		stdout: ReadableStream<Uint8Array>;
+		stderr: ReadableStream<Uint8Array>;
+		exited: Promise<number>;
+	} {
+		return this.executor.spawnStructured(options);
+	}
+
 	async runStructured<T>(options: {
 		workingDir: string;
 		prompt: string;
 		schema: Record<string, unknown>;
-		resumeSessionId?: string;
 		model?: string;
 	}): Promise<T | null> {
 		return this.executor.runStructured<T>(options);

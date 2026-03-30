@@ -9,6 +9,7 @@ import { CodingAgentTurnRepository } from "./repositories/coding-agent-turn/post
 import { createFullCtx } from "./repositories/common";
 import { DevServerRepository } from "./repositories/dev-server";
 import { draftRepository } from "./repositories/draft";
+import { draftPullRequestRepository } from "./repositories/draft-pull-request";
 import { ExecutionProcessRepository } from "./repositories/execution-process/postgres";
 import { ExecutionProcessLogsRepository } from "./repositories/execution-process-logs/postgres";
 import { ExecutorRepository } from "./repositories/executor";
@@ -60,6 +61,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		agentConfig: new AgentConfigRepository(),
 		workspaceConfig: new WorkspaceConfigRepository(),
 		draft: draftRepository,
+		draftPullRequest: draftPullRequestRepository,
 		permissionStore,
 		approvalStore,
 		logStoreManager,

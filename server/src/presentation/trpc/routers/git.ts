@@ -3,6 +3,7 @@ import { abortRebase } from "../../../usecases/git/abort-rebase";
 import { continueRebase } from "../../../usecases/git/continue-rebase";
 import { createPullRequest } from "../../../usecases/git/create-pull-request";
 import { finalizePrMerge } from "../../../usecases/git/finalize-pr-merge";
+import { generatePrDescription } from "../../../usecases/git/generate-pr-description";
 import { getBranchStatus } from "../../../usecases/git/get-branch-status";
 import { getDiffs } from "../../../usecases/git/get-diffs";
 import { getFileDiff } from "../../../usecases/git/get-file-diff";
@@ -147,5 +148,17 @@ export const gitRouter = router({
 		)
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await finalizePrMerge(input).run(ctx)),
+		),
+
+	// Generate PR description (background, streamed via SSE)
+	generatePRDescription: publicProcedure
+		.input(
+			z.object({
+				workspaceId: z.string().uuid(),
+				projectId: z.string().uuid(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) =>
+			handleResult(await generatePrDescription(input).run(ctx)),
 		),
 });

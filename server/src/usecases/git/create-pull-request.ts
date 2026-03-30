@@ -1,9 +1,7 @@
-import type { CodingAgentResumeInfo } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
-import type { PostContext } from "../context";
 import { usecase } from "../runner";
 
 export interface CreatePullRequestInput {
@@ -41,25 +39,15 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 
 			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
 
-			// Pre-read resume info for PR description generation (DB read)
-			const resumeInfo =
-				await ctx.repos.codingAgentTurn.findLatestResumeInfoByWorkspaceId(
-					workspace.id,
-				);
-
 			return {
 				workspace,
 				project,
 				targetBranch,
 				workspaceRepo,
-				resumeInfo,
 			};
 		},
 
-		post: async (
-			ctx,
-			{ workspace, project, targetBranch, workspaceRepo, resumeInfo },
-		) => {
+		post: async (ctx, { workspace, project, targetBranch, workspaceRepo }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -99,15 +87,15 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 				input.force ?? false,
 			);
 
-			// Generate PR description via CodingAgent (session fork)
-			const description = await generatePrDescription(ctx, {
-				resumeInfo,
-				worktreePath,
-			});
-			const prTitle = description?.title ?? input.taskTitle;
-			const prBody = description?.body ?? "";
+			// Read DraftPullRequest from in-memory store for title/body
+			const draft = ctx.repos.draftPullRequest.get(
+				input.workspaceId,
+				input.projectId,
+			);
+			const prTitle = draft?.title ?? input.taskTitle;
+			const prBody = draft?.body ?? "";
 
-			// Create PR with generated (or fallback) title and body
+			// Create PR with draft (or fallback) title and body
 			const { url } = await ctx.repos.git.createPullRequest(
 				worktreePath,
 				prTitle,
@@ -115,6 +103,9 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 				targetBranch,
 				input.draft,
 			);
+
+			// Clean up the draft pull request from in-memory store
+			ctx.repos.draftPullRequest.delete(input.workspaceId, input.projectId);
 
 			// Prepare workspace repo update for finish step
 			const workspaceRepoToUpdate =
@@ -143,48 +134,3 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 			return result;
 		},
 	});
-
-// ============================================
-// PR description generation helper
-// ============================================
-
-const PR_DESCRIPTION_PROMPT = `Analyze the changes in this branch compared to the base branch and generate a Pull Request title and description.
-
-The title should be concise and summarize the changes.
-The body should be detailed markdown explaining what changed and why.`;
-
-const PR_DESCRIPTION_SCHEMA = {
-	type: "object",
-	properties: {
-		title: {
-			type: "string",
-			description: "Concise PR title summarizing the changes",
-		},
-		body: {
-			type: "string",
-			description:
-				"Detailed PR body in markdown explaining what changed and why",
-		},
-	},
-	required: ["title", "body"],
-};
-
-async function generatePrDescription(
-	ctx: PostContext,
-	params: {
-		resumeInfo: CodingAgentResumeInfo | null;
-		worktreePath: string;
-	},
-): Promise<{ title: string; body: string } | null> {
-	try {
-		return (await ctx.repos.executor.runStructured(undefined, {
-			workingDir: params.worktreePath,
-			prompt: PR_DESCRIPTION_PROMPT,
-			schema: PR_DESCRIPTION_SCHEMA,
-			resumeSessionId: params.resumeInfo?.agentSessionId ?? undefined,
-		})) as { title: string; body: string } | null;
-	} catch (error) {
-		ctx.logger.warn("Failed to generate PR description", error);
-		return null;
-	}
-}

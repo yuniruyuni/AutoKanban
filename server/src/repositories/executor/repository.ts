@@ -69,6 +69,20 @@ export interface ExecutorRepository {
 		ctx: ServiceCtx,
 		options: ExecutorStartProtocolOptions,
 	): Promise<{ exitCode: number }>;
+	spawnStructured(
+		ctx: ServiceCtx,
+		executorName: string | undefined,
+		options: {
+			workingDir: string;
+			prompt: string;
+			schema: Record<string, unknown>;
+			model?: string;
+		},
+	): {
+		stdout: ReadableStream<Uint8Array>;
+		stderr: ReadableStream<Uint8Array>;
+		exited: Promise<number>;
+	} | null;
 	runStructured(
 		ctx: ServiceCtx,
 		executorName: string | undefined,
@@ -76,7 +90,6 @@ export interface ExecutorRepository {
 			workingDir: string;
 			prompt: string;
 			schema: Record<string, unknown>;
-			resumeSessionId?: string;
 			model?: string;
 		},
 	): Promise<unknown>;

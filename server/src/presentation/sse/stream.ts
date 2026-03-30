@@ -89,7 +89,7 @@ export function sseServer(options: {
 	routes: SSERoute;
 	ctx: Context;
 }): MiddlewareHandler {
-	const app = new Hono();
+	const app = new Hono().basePath("/sse");
 	options.routes.mount(app, options.ctx);
 	return async (c, next) => {
 		const res = await app.fetch(c.req.raw);

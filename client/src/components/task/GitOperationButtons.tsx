@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/atoms/Button";
 import { Dialog, DialogContent, DialogHeader } from "@/components/atoms/Dialog";
 import { Input } from "@/components/atoms/Input";
+import { CreatePRDialog } from "@/components/task/CreatePRDialog";
 import { useBranchStatus, useDiffs, useGitMutations } from "@/hooks/useGit";
 import { cn } from "@/lib/utils";
 
@@ -38,14 +39,13 @@ export function GitOperationButtons({
 		isContinuingRebase,
 		merge,
 		isMerging,
-		createPR,
-		isCreatingPR,
 		finalizePrMerge,
 		isFinalizingPrMerge,
 	} = useGitMutations();
 
 	const [showRebaseDialog, setShowRebaseDialog] = useState(false);
 	const [showMergeDialog, setShowMergeDialog] = useState(false);
+	const [showCreatePRDialog, setShowCreatePRDialog] = useState(false);
 	const [targetBranch, setTargetBranch] = useState(
 		status?.targetBranch ?? "main",
 	);
@@ -175,16 +175,6 @@ export function GitOperationButtons({
 		}
 	};
 
-	const handleCreatePR = async () => {
-		try {
-			setError(null);
-			await createPR(workspaceId, projectId, taskTitle ?? "");
-			refetch();
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Create PR failed");
-		}
-	};
-
 	return (
 		<div className="flex items-center gap-3">
 			{/* Error display */}
@@ -254,14 +244,13 @@ export function GitOperationButtons({
 										if (primaryAction === "merge") {
 											setShowMergeDialog(true);
 										} else {
-											handleCreatePR();
+											setShowCreatePRDialog(true);
 										}
 									}}
 									disabled={
 										primaryAction === "merge"
 											? !canMerge
-											: isCreatingPR ||
-												(status.ahead === 0 && diffs.length === 0)
+											: status.ahead === 0 && diffs.length === 0
 									}
 									className={cn(
 										"flex items-center justify-center rounded-l-md bg-[#E87B35] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed",
@@ -274,11 +263,7 @@ export function GitOperationButtons({
 											: undefined
 									}
 								>
-									{primaryAction === "merge"
-										? "Merge"
-										: isCreatingPR
-											? "Creating..."
-											: "Create PR"}
+									{primaryAction === "merge" ? "Merge" : "Create PR"}
 								</button>
 								{/* Dropdown toggle */}
 								<button
@@ -405,6 +390,18 @@ export function GitOperationButtons({
 					</div>
 				</DialogContent>
 			</Dialog>
+
+			{/* Create PR Dialog */}
+			<CreatePRDialog
+				open={showCreatePRDialog}
+				onClose={() => {
+					setShowCreatePRDialog(false);
+					refetch();
+				}}
+				workspaceId={workspaceId}
+				projectId={projectId}
+				taskTitle={taskTitle ?? ""}
+			/>
 		</div>
 	);
 }
