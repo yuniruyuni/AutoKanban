@@ -1,31 +1,34 @@
-import type { PgDatabase } from "../../../db/pg-client";
 import type { ExecutionProcessLogs } from "../../../models/execution-process";
-import type { IExecutionProcessLogsRepository } from "../repository";
+import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { IExecutionProcessLogsRepositoryDef } from "../repository";
 import { appendLogs } from "./append-logs";
 import { deleteLogs } from "./delete-logs";
 import { getLogs } from "./get-logs";
 import { upsertLogs } from "./upsert-logs";
 
 export class ExecutionProcessLogsRepository
-	implements IExecutionProcessLogsRepository
+	implements IExecutionProcessLogsRepositoryDef
 {
-	constructor(private db: PgDatabase) {}
-
 	async getLogs(
+		ctx: DbReadCtx,
 		executionProcessId: string,
 	): Promise<ExecutionProcessLogs | null> {
-		return getLogs(this.db, executionProcessId);
+		return getLogs(ctx.db, executionProcessId);
 	}
 
-	async upsertLogs(logs: ExecutionProcessLogs): Promise<void> {
-		await upsertLogs(this.db, logs);
+	async upsertLogs(ctx: DbWriteCtx, logs: ExecutionProcessLogs): Promise<void> {
+		await upsertLogs(ctx.db, logs);
 	}
 
-	async appendLogs(executionProcessId: string, newLogs: string): Promise<void> {
-		await appendLogs(this.db, executionProcessId, newLogs);
+	async appendLogs(
+		ctx: DbWriteCtx,
+		executionProcessId: string,
+		newLogs: string,
+	): Promise<void> {
+		await appendLogs(ctx.db, executionProcessId, newLogs);
 	}
 
-	async deleteLogs(executionProcessId: string): Promise<void> {
-		await deleteLogs(this.db, executionProcessId);
+	async deleteLogs(ctx: DbWriteCtx, executionProcessId: string): Promise<void> {
+		await deleteLogs(ctx.db, executionProcessId);
 	}
 }

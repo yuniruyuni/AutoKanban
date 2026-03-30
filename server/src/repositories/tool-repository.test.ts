@@ -4,14 +4,20 @@ import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import type { PgDatabase } from "../db/pg-client";
 import { Tool } from "../models/tool";
+import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
+import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
 import { ToolRepository } from "./tool";
 
 let db: PgDatabase;
 let toolRepo: ToolRepository;
+let rCtx: DbReadCtx;
+let wCtx: DbWriteCtx;
 
 beforeEach(async () => {
 	db = await createTestDB();
-	toolRepo = new ToolRepository(db);
+	toolRepo = new ToolRepository();
+	rCtx = createDbReadCtx(db);
+	wCtx = createDbWriteCtx(db);
 });
 
 afterEach(async () => {
@@ -31,27 +37,27 @@ describe("ToolRepository round-trip", () => {
 			command: "npm run deploy",
 			sortOrder: 5,
 		});
-		await toolRepo.upsert(tool);
+		await toolRepo.upsert(wCtx, tool);
 
-		const retrieved = await toolRepo.get(Tool.ById(tool.id));
+		const retrieved = await toolRepo.get(rCtx, Tool.ById(tool.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Tool, tool, ["createdAt", "updatedAt"]);
 	});
 
 	test("preserves default iconColor", async () => {
 		const tool = createTestTool(); // default iconColor = '#6B7280'
-		await toolRepo.upsert(tool);
+		await toolRepo.upsert(wCtx, tool);
 
-		const retrieved = await toolRepo.get(Tool.ById(tool.id));
+		const retrieved = await toolRepo.get(rCtx, Tool.ById(tool.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.iconColor).toBe("#6B7280");
 	});
 
 	test("preserves sortOrder=0", async () => {
 		const tool = createTestTool({ sortOrder: 0 });
-		await toolRepo.upsert(tool);
+		await toolRepo.upsert(wCtx, tool);
 
-		const retrieved = await toolRepo.get(Tool.ById(tool.id));
+		const retrieved = await toolRepo.get(rCtx, Tool.ById(tool.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.sortOrder).toBe(0);
 	});
@@ -64,7 +70,7 @@ describe("ToolRepository round-trip", () => {
 describe("ToolRepository update round-trip", () => {
 	test("reflects all changed fields", async () => {
 		const tool = createTestTool();
-		await toolRepo.upsert(tool);
+		await toolRepo.upsert(wCtx, tool);
 
 		const updated: Tool = {
 			...tool,
@@ -75,9 +81,9 @@ describe("ToolRepository update round-trip", () => {
 			sortOrder: 10,
 			updatedAt: new Date(),
 		};
-		await toolRepo.upsert(updated);
+		await toolRepo.upsert(wCtx, updated);
 
-		const retrieved = await toolRepo.get(Tool.ById(tool.id));
+		const retrieved = await toolRepo.get(rCtx, Tool.ById(tool.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Tool, updated, ["createdAt", "updatedAt"]);
 	});
@@ -89,17 +95,17 @@ describe("ToolRepository update round-trip", () => {
 
 describe("ToolRepository empty collection", () => {
 	test("get returns null for non-existent id", async () => {
-		expect(await toolRepo.get(Tool.ById("non-existent"))).toBeNull();
+		expect(await toolRepo.get(rCtx, Tool.ById("non-existent"))).toBeNull();
 	});
 
 	test("list returns empty page", async () => {
-		const page = await toolRepo.list(Tool.All(), { limit: 10 });
+		const page = await toolRepo.list(rCtx, Tool.All(), { limit: 10 });
 		expect(page.items).toHaveLength(0);
 		expect(page.hasMore).toBe(false);
 	});
 
 	test("listAll returns empty array", async () => {
-		expect(await toolRepo.listAll()).toHaveLength(0);
+		expect(await toolRepo.listAll(rCtx)).toHaveLength(0);
 	});
 });
 
@@ -111,11 +117,12 @@ describe("ToolRepository multiple elements", () => {
 	test("stores and retrieves multiple tools", async () => {
 		for (let i = 0; i < 3; i++) {
 			await toolRepo.upsert(
+				wCtx,
 				createTestTool({ name: `Tool ${i}`, sortOrder: i }),
 			);
 		}
 
-		const page = await toolRepo.list(Tool.All(), { limit: 50 });
+		const page = await toolRepo.list(rCtx, Tool.All(), { limit: 50 });
 		expect(page.items).toHaveLength(3);
 	});
 });
@@ -127,15 +134,15 @@ describe("ToolRepository multiple elements", () => {
 describe("ToolRepository delete", () => {
 	test("deletes and confirms absence", async () => {
 		const tool = createTestTool();
-		await toolRepo.upsert(tool);
+		await toolRepo.upsert(wCtx, tool);
 
-		const deleted = await toolRepo.delete(Tool.ById(tool.id));
+		const deleted = await toolRepo.delete(wCtx, Tool.ById(tool.id));
 		expect(deleted).toBe(1);
-		expect(await toolRepo.get(Tool.ById(tool.id))).toBeNull();
+		expect(await toolRepo.get(rCtx, Tool.ById(tool.id))).toBeNull();
 	});
 
 	test("returns 0 when nothing to delete", async () => {
-		expect(await toolRepo.delete(Tool.ById("non-existent"))).toBe(0);
+		expect(await toolRepo.delete(wCtx, Tool.ById("non-existent"))).toBe(0);
 	});
 });
 
@@ -146,18 +153,18 @@ describe("ToolRepository delete", () => {
 describe("ToolRepository spec filtering", () => {
 	test("ById finds correct tool", async () => {
 		const tool = createTestTool();
-		await toolRepo.upsert(tool);
+		await toolRepo.upsert(wCtx, tool);
 
-		const retrieved = await toolRepo.get(Tool.ById(tool.id));
+		const retrieved = await toolRepo.get(rCtx, Tool.ById(tool.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(tool.id);
 	});
 
 	test("All matches all tools", async () => {
-		await toolRepo.upsert(createTestTool({ name: "Tool A" }));
-		await toolRepo.upsert(createTestTool({ name: "Tool B" }));
+		await toolRepo.upsert(wCtx, createTestTool({ name: "Tool A" }));
+		await toolRepo.upsert(wCtx, createTestTool({ name: "Tool B" }));
 
-		const page = await toolRepo.list(Tool.All(), { limit: 50 });
+		const page = await toolRepo.list(rCtx, Tool.All(), { limit: 50 });
 		expect(page.items).toHaveLength(2);
 	});
 });
@@ -168,11 +175,20 @@ describe("ToolRepository spec filtering", () => {
 
 describe("ToolRepository listAll", () => {
 	test("returns tools sorted by sortOrder ascending", async () => {
-		await toolRepo.upsert(createTestTool({ name: "Third", sortOrder: 3 }));
-		await toolRepo.upsert(createTestTool({ name: "First", sortOrder: 1 }));
-		await toolRepo.upsert(createTestTool({ name: "Second", sortOrder: 2 }));
+		await toolRepo.upsert(
+			wCtx,
+			createTestTool({ name: "Third", sortOrder: 3 }),
+		);
+		await toolRepo.upsert(
+			wCtx,
+			createTestTool({ name: "First", sortOrder: 1 }),
+		);
+		await toolRepo.upsert(
+			wCtx,
+			createTestTool({ name: "Second", sortOrder: 2 }),
+		);
 
-		const all = await toolRepo.listAll();
+		const all = await toolRepo.listAll(rCtx);
 		expect(all).toHaveLength(3);
 		expect(all[0].name).toBe("First");
 		expect(all[1].name).toBe("Second");
@@ -194,8 +210,8 @@ describe("ToolRepository executeCommand", () => {
 			capturedCwd = opts.cwd;
 		}) as never;
 
-		const repo = new ToolRepository(null as never, spawnSpy);
-		repo.executeCommand("code /my/project", "/my/project");
+		const repo = new ToolRepository(spawnSpy);
+		repo.executeCommand(wCtx, "code /my/project", "/my/project");
 
 		// Must use sh -c to support PATH-based commands (code, cursor, etc.)
 		expect(capturedCmd).toEqual(["sh", "-c", "code /my/project"]);
@@ -209,8 +225,8 @@ describe("ToolRepository executeCommand", () => {
 			capturedCwd = opts.cwd;
 		}) as never;
 
-		const repo = new ToolRepository(null as never, spawnSpy);
-		repo.executeCommand("echo test");
+		const repo = new ToolRepository(spawnSpy);
+		repo.executeCommand(wCtx, "echo test");
 
 		expect(capturedCwd).toBeUndefined();
 	});

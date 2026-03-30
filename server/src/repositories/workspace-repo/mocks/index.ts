@@ -1,8 +1,8 @@
-import type { IWorkspaceRepoRepository } from "../repository";
+import type { IWorkspaceRepoRepositoryDef } from "../repository";
 
 export function createMockWorkspaceRepoRepository(
-	overrides: Partial<IWorkspaceRepoRepository> = {},
-): IWorkspaceRepoRepository {
+	overrides: Partial<IWorkspaceRepoRepositoryDef> = {},
+): IWorkspaceRepoRepositoryDef {
 	return {
 		get: async () => null,
 		list: async () => ({ items: [], hasMore: false }),
@@ -10,5 +10,5 @@ export function createMockWorkspaceRepoRepository(
 		upsert: async () => {},
 		delete: async () => 0,
 		...overrides,
-	} as IWorkspaceRepoRepository;
+	} as IWorkspaceRepoRepositoryDef;
 }

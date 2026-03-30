@@ -26,6 +26,10 @@ export const rebaseBranch = (input: RebaseBranchInput) =>
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
+			return { workspace, project };
+		},
+
+		post: async (ctx, { workspace, project }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -41,10 +45,6 @@ export const rebaseBranch = (input: RebaseBranchInput) =>
 				return fail("NOT_FOUND", "Worktree does not exist");
 			}
 
-			return { worktreePath };
-		},
-
-		write: async (ctx, { worktreePath }) => {
 			// Fetch latest from remote first
 			await ctx.repos.git.fetch(worktreePath);
 

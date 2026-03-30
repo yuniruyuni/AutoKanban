@@ -47,32 +47,31 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 				return fail("VALIDATION", "No PR URL found for this workspace repo");
 			}
 
-			// Verify PR is actually merged
-			const pr = await ctx.repos.git.getPrStatus(
-				project.repoPath,
-				workspaceRepo.prUrl,
-			);
-			if (pr.state !== "merged") {
-				return fail("VALIDATION", `PR is not merged (state: ${pr.state})`);
-			}
-
 			const targetBranch = workspaceRepo.targetBranch;
+			const prUrl = workspaceRepo.prUrl;
 
 			return {
 				workspace,
 				project,
 				task,
 				targetBranch,
+				prUrl,
 				alreadyDone: false as const,
 			};
 		},
 
-		write: async (ctx, data) => {
+		post: async (ctx, data) => {
 			if (data.alreadyDone) {
 				return { success: true };
 			}
 
-			const { project, task, targetBranch } = data;
+			const { project, task, targetBranch, prUrl } = data;
+
+			// Verify PR is actually merged
+			const pr = await ctx.repos.git.getPrStatus(project.repoPath, prUrl);
+			if (pr.state !== "merged") {
+				return fail("VALIDATION", `PR is not merged (state: ${pr.state})`);
+			}
 
 			// Pull default branch
 			await ctx.repos.git.pullBranch(project.repoPath, targetBranch);

@@ -34,13 +34,6 @@ export const respondToPermission = (input: RespondToPermissionInput) =>
 				});
 			}
 
-			const permission = ctx.repos.permissionStore.get(input.requestId);
-			if (!permission) {
-				return fail("NOT_FOUND", "Permission request not found", {
-					requestId: input.requestId,
-				});
-			}
-
 			// Get the execution process
 			const executionProcessPage = await ctx.repos.executionProcess.list(
 				ExecutionProcess.BySessionId(input.sessionId),
@@ -54,10 +47,17 @@ export const respondToPermission = (input: RespondToPermissionInput) =>
 				});
 			}
 
-			return { session, permission, latestProcess };
+			return { session, latestProcess };
 		},
 
 		post: async (ctx, { latestProcess }) => {
+			const permission = ctx.repos.permissionStore.get(input.requestId);
+			if (!permission) {
+				return fail("NOT_FOUND", "Permission request not found", {
+					requestId: input.requestId,
+				});
+			}
+
 			const success = await ctx.repos.executor.sendPermissionResponse(
 				latestProcess.id,
 				input.requestId,
@@ -90,6 +90,10 @@ export const getPendingPermissions = (input: { sessionId: string }) =>
 				});
 			}
 
+			return { session };
+		},
+
+		post: (ctx) => {
 			const permissions = ctx.repos.permissionStore.listBySession(
 				input.sessionId,
 			);

@@ -1,8 +1,8 @@
 import { spawn } from "bun";
-import type { PgDatabase } from "../../../db/pg-client";
 import type { Cursor, Page } from "../../../models/common";
 import type { Tool } from "../../../models/tool";
-import type { IToolRepository } from "../repository";
+import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { IToolRepositoryDef } from "../repository";
 import { del } from "./delete";
 import { executeCommand, type SpawnFn } from "./executeCommand";
 import { get } from "./get";
@@ -12,40 +12,42 @@ import { upsert } from "./upsert";
 
 export type { SpawnFn } from "./executeCommand";
 
-export class ToolRepository implements IToolRepository {
+export class ToolRepository implements IToolRepositoryDef {
 	private spawnFn: SpawnFn;
 
-	constructor(
-		private db: PgDatabase,
-		spawnFn?: SpawnFn,
-	) {
+	constructor(spawnFn?: SpawnFn) {
 		this.spawnFn = spawnFn ?? spawn;
 	}
 
-	async get(spec: Tool.Spec): Promise<Tool | null> {
-		return get(this.db, spec);
+	async get(ctx: DbReadCtx, spec: Tool.Spec): Promise<Tool | null> {
+		return get(ctx.db, spec);
 	}
 
 	async list(
+		ctx: DbReadCtx,
 		spec: Tool.Spec,
 		cursor: Cursor<Tool.SortKey>,
 	): Promise<Page<Tool>> {
-		return list(this.db, spec, cursor);
+		return list(ctx.db, spec, cursor);
 	}
 
-	async listAll(): Promise<Tool[]> {
-		return listAll(this.db);
+	async listAll(ctx: DbReadCtx): Promise<Tool[]> {
+		return listAll(ctx.db);
 	}
 
-	async upsert(tool: Tool): Promise<void> {
-		await upsert(this.db, tool);
+	async upsert(ctx: DbWriteCtx, tool: Tool): Promise<void> {
+		await upsert(ctx.db, tool);
 	}
 
-	async delete(spec: Tool.Spec): Promise<number> {
-		return del(this.db, spec);
+	async delete(ctx: DbWriteCtx, spec: Tool.Spec): Promise<number> {
+		return del(ctx.db, spec);
 	}
 
-	async executeCommand(command: string, cwd?: string): Promise<void> {
+	async executeCommand(
+		_ctx: DbWriteCtx,
+		command: string,
+		cwd?: string,
+	): Promise<void> {
 		await executeCommand(this.spawnFn, command, cwd);
 	}
 }

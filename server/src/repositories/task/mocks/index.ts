@@ -1,14 +1,15 @@
-import type { ITaskRepository } from "../repository";
+import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { ITaskRepositoryDef } from "../repository";
 
 export function createMockTaskRepository(
-	overrides: Partial<ITaskRepository> = {},
-): ITaskRepository {
+	overrides: Partial<ITaskRepositoryDef> = {},
+): ITaskRepositoryDef {
 	return {
-		get: async () => null,
-		list: async () => ({ items: [], hasMore: false }),
-		upsert: async () => {},
-		delete: async () => 0,
-		count: async () => 0,
+		get: async (_ctx: DbReadCtx) => null,
+		list: async (_ctx: DbReadCtx) => ({ items: [], hasMore: false }),
+		upsert: async (_ctx: DbWriteCtx) => {},
+		delete: async (_ctx: DbWriteCtx) => 0,
+		count: async (_ctx: DbReadCtx) => 0,
 		...overrides,
-	} as ITaskRepository;
+	} as ITaskRepositoryDef;
 }

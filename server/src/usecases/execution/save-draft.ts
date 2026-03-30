@@ -21,7 +21,7 @@ export const saveDraft = (input: SaveDraftInput) =>
 			return { session };
 		},
 
-		write: (ctx) => {
+		post: (ctx) => {
 			ctx.repos.draft.save(input.sessionId, input.text);
 			return { success: true };
 		},
@@ -43,6 +43,10 @@ export const getDraft = (input: GetDraftInput) =>
 				});
 			}
 
+			return { session };
+		},
+
+		post: (ctx) => {
 			const draft = ctx.repos.draft.get(input.sessionId);
 			return {
 				text: draft?.text ?? "",

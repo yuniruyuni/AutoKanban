@@ -27,6 +27,12 @@ export const mergeBranch = (input: MergeBranchInput) =>
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
+			const task = await ctx.repos.task.get(Task.ById(workspace.taskId));
+
+			return { workspace, project, task };
+		},
+
+		post: async (ctx, { workspace, project, task }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -41,12 +47,6 @@ export const mergeBranch = (input: MergeBranchInput) =>
 				return fail("NOT_FOUND", "Worktree does not exist");
 			}
 
-			const task = await ctx.repos.task.get(Task.ById(workspace.taskId));
-
-			return { worktreePath, workspace, project, task };
-		},
-
-		write: async (ctx, { worktreePath, workspace, project, task }) => {
 			// Fast-forward merge
 			try {
 				await ctx.repos.git.fastForwardMerge(worktreePath, input.targetBranch);

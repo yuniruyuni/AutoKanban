@@ -41,19 +41,6 @@ export const startDevServer = (input: StartDevServerInput) =>
 				return fail("INVALID_STATE", "Workspace has no worktree path");
 			}
 
-			// Resolve actual repo path inside worktree
-			// workspace.worktreePath is the workspace dir (e.g. .../worktrees/{id}),
-			// the actual repo is at .../worktrees/{id}/{projectName}
-			const worktreePath = ctx.repos.worktree.getWorktreePath(
-				workspace.id,
-				project.name,
-			);
-
-			const config = await ctx.repos.workspaceConfig.load(worktreePath);
-			if (!config.server) {
-				return fail("INVALID_STATE", "No server script in auto-kanban.json");
-			}
-
 			// Find latest session
 			const sessionPage = await ctx.repos.session.list(
 				Session.ByWorkspaceId(workspace.id),
@@ -83,8 +70,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 				alreadyRunning: false as const,
 				session,
 				workspace,
-				serverCommand: config.server,
-				worktreePath,
+				project,
 			};
 		},
 
@@ -103,14 +89,26 @@ export const startDevServer = (input: StartDevServerInput) =>
 			return data;
 		},
 
-		post: (ctx, data) => {
+		post: async (ctx, data) => {
 			if (data.alreadyRunning) return data;
+
+			// Resolve actual repo path inside worktree
+			const worktreePath = ctx.repos.worktree.getWorktreePath(
+				data.workspace.id,
+				data.project.name,
+			);
+
+			const config = await ctx.repos.workspaceConfig.load(worktreePath);
+			if (!config.server) {
+				return fail("INVALID_STATE", "No server script in auto-kanban.json");
+			}
+
 			ctx.repos.devServer.start({
 				processId: data.executionProcess.id,
-				command: data.serverCommand,
-				workingDir: data.worktreePath,
+				command: config.server,
+				workingDir: worktreePath,
 			});
-			return data;
+			return { ...data, worktreePath, serverCommand: config.server };
 		},
 
 		result: (data) => ({

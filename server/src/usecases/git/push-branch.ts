@@ -27,6 +27,10 @@ export const pushBranch = (input: PushBranchInput) =>
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
+			return { workspace, project };
+		},
+
+		post: async (ctx, { workspace, project }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -45,10 +49,6 @@ export const pushBranch = (input: PushBranchInput) =>
 			// Get current branch
 			const branch = await ctx.repos.git.getCurrentBranch(worktreePath);
 
-			return { worktreePath, branch };
-		},
-
-		write: async (ctx, { worktreePath, branch }) => {
 			// Push
 			await ctx.repos.git.push(
 				worktreePath,

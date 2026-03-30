@@ -1,26 +1,28 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 import { createTestExecutionProcess } from "../../test/factories";
-import { closeTestDB, createTestDB } from "../../test/helpers/db";
+import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
 import type { PgDatabase } from "../db/pg-client";
 import { ExecutionProcess } from "../models/execution-process";
+import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
+import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
 import { ExecutionProcessRepository } from "./execution-process";
 
 let db: PgDatabase;
 let epRepo: ExecutionProcessRepository;
+let rCtx: DbReadCtx;
+let wCtx: DbWriteCtx;
 let SESSION_ID: string;
 
 beforeEach(async () => {
 	db = await createTestDB();
-	epRepo = new ExecutionProcessRepository(db);
+	epRepo = new ExecutionProcessRepository();
+	rCtx = createDbReadCtx(db);
+	wCtx = createDbWriteCtx(db);
 
 	const seed = await seedFullChain(db);
 	SESSION_ID = seed.session.id;
-});
-
-afterEach(async () => {
-	await closeTestDB(db);
 });
 
 // ============================================
@@ -36,9 +38,9 @@ describe("ExecutionProcessRepository round-trip", () => {
 			exitCode: null,
 			completedAt: null,
 		});
-		await epRepo.upsert(ep);
+		await epRepo.upsert(wCtx, ep);
 
-		const retrieved = await epRepo.get(ExecutionProcess.ById(ep.id));
+		const retrieved = await epRepo.get(rCtx, ExecutionProcess.ById(ep.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as ExecutionProcess, ep, [
 			"startedAt",
@@ -56,9 +58,9 @@ describe("ExecutionProcessRepository round-trip", () => {
 			exitCode: 0,
 			completedAt,
 		});
-		await epRepo.upsert(ep);
+		await epRepo.upsert(wCtx, ep);
 
-		const retrieved = await epRepo.get(ExecutionProcess.ById(ep.id));
+		const retrieved = await epRepo.get(rCtx, ExecutionProcess.ById(ep.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.exitCode).toBe(0);
 		expect(retrieved?.completedAt).not.toBeNull();
@@ -75,9 +77,9 @@ describe("ExecutionProcessRepository round-trip", () => {
 			exitCode: null,
 			completedAt: null,
 		});
-		await epRepo.upsert(ep);
+		await epRepo.upsert(wCtx, ep);
 
-		const retrieved = await epRepo.get(ExecutionProcess.ById(ep.id));
+		const retrieved = await epRepo.get(rCtx, ExecutionProcess.ById(ep.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.exitCode).toBeNull();
 		expect(retrieved?.completedAt).toBeNull();
@@ -91,12 +93,12 @@ describe("ExecutionProcessRepository round-trip", () => {
 describe("ExecutionProcessRepository update round-trip", () => {
 	test("reflects status, exitCode, completedAt changes", async () => {
 		const ep = createTestExecutionProcess({ sessionId: SESSION_ID });
-		await epRepo.upsert(ep);
+		await epRepo.upsert(wCtx, ep);
 
 		const completed = ExecutionProcess.complete(ep, "completed", 0);
-		await epRepo.upsert(completed);
+		await epRepo.upsert(wCtx, completed);
 
-		const retrieved = await epRepo.get(ExecutionProcess.ById(ep.id));
+		const retrieved = await epRepo.get(rCtx, ExecutionProcess.ById(ep.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.status).toBe("completed");
 		expect(retrieved?.exitCode).toBe(0);
@@ -110,11 +112,14 @@ describe("ExecutionProcessRepository update round-trip", () => {
 
 describe("ExecutionProcessRepository empty collection", () => {
 	test("get returns null for non-existent id", async () => {
-		expect(await epRepo.get(ExecutionProcess.ById("non-existent"))).toBeNull();
+		expect(
+			await epRepo.get(rCtx, ExecutionProcess.ById("non-existent")),
+		).toBeNull();
 	});
 
 	test("list returns empty page", async () => {
 		const page = await epRepo.list(
+			rCtx,
 			ExecutionProcess.BySessionId("non-existent"),
 			{
 				limit: 10,
@@ -134,13 +139,18 @@ describe("ExecutionProcessRepository multiple elements", () => {
 		// seedFullChain already created 1 execution process for this session
 		for (let i = 0; i < 3; i++) {
 			await epRepo.upsert(
+				wCtx,
 				createTestExecutionProcess({ sessionId: SESSION_ID }),
 			);
 		}
 
-		const page = await epRepo.list(ExecutionProcess.BySessionId(SESSION_ID), {
-			limit: 50,
-		});
+		const page = await epRepo.list(
+			rCtx,
+			ExecutionProcess.BySessionId(SESSION_ID),
+			{
+				limit: 50,
+			},
+		);
 		expect(page.items).toHaveLength(4); // 1 from seed + 3 new
 	});
 });
@@ -152,15 +162,17 @@ describe("ExecutionProcessRepository multiple elements", () => {
 describe("ExecutionProcessRepository delete", () => {
 	test("deletes and confirms absence", async () => {
 		const ep = createTestExecutionProcess({ sessionId: SESSION_ID });
-		await epRepo.upsert(ep);
+		await epRepo.upsert(wCtx, ep);
 
-		const deleted = await epRepo.delete(ExecutionProcess.ById(ep.id));
+		const deleted = await epRepo.delete(wCtx, ExecutionProcess.ById(ep.id));
 		expect(deleted).toBe(1);
-		expect(await epRepo.get(ExecutionProcess.ById(ep.id))).toBeNull();
+		expect(await epRepo.get(rCtx, ExecutionProcess.ById(ep.id))).toBeNull();
 	});
 
 	test("returns 0 when nothing to delete", async () => {
-		expect(await epRepo.delete(ExecutionProcess.ById("non-existent"))).toBe(0);
+		expect(
+			await epRepo.delete(wCtx, ExecutionProcess.ById("non-existent")),
+		).toBe(0);
 	});
 });
 
@@ -171,21 +183,25 @@ describe("ExecutionProcessRepository delete", () => {
 describe("ExecutionProcessRepository spec filtering", () => {
 	test("ById finds correct process", async () => {
 		const ep = createTestExecutionProcess({ sessionId: SESSION_ID });
-		await epRepo.upsert(ep);
+		await epRepo.upsert(wCtx, ep);
 
-		const retrieved = await epRepo.get(ExecutionProcess.ById(ep.id));
+		const retrieved = await epRepo.get(rCtx, ExecutionProcess.ById(ep.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(ep.id);
 	});
 
 	test("BySessionId filters by session", async () => {
 		const ep = createTestExecutionProcess({ sessionId: SESSION_ID });
-		await epRepo.upsert(ep);
+		await epRepo.upsert(wCtx, ep);
 
 		// seedFullChain already created 1 execution process for this session
-		const page = await epRepo.list(ExecutionProcess.BySessionId(SESSION_ID), {
-			limit: 50,
-		});
+		const page = await epRepo.list(
+			rCtx,
+			ExecutionProcess.BySessionId(SESSION_ID),
+			{
+				limit: 50,
+			},
+		);
 		expect(page.items).toHaveLength(2); // 1 from seed + 1 new
 		expect(page.items.every((p) => p.sessionId === SESSION_ID)).toBe(true);
 	});
@@ -198,11 +214,15 @@ describe("ExecutionProcessRepository spec filtering", () => {
 			exitCode: 0,
 			completedAt: new Date(),
 		});
-		await epRepo.upsert(completed);
+		await epRepo.upsert(wCtx, completed);
 
-		const page = await epRepo.list(ExecutionProcess.ByStatus("completed"), {
-			limit: 50,
-		});
+		const page = await epRepo.list(
+			rCtx,
+			ExecutionProcess.ByStatus("completed"),
+			{
+				limit: 50,
+			},
+		);
 		expect(page.items).toHaveLength(1);
 		expect(page.items[0].status).toBe("completed");
 	});
@@ -216,10 +236,11 @@ describe("ExecutionProcessRepository spec filtering", () => {
 			sessionId: SESSION_ID,
 			runReason: "setupscript",
 		});
-		await epRepo.upsert(agent);
-		await epRepo.upsert(setup);
+		await epRepo.upsert(wCtx, agent);
+		await epRepo.upsert(wCtx, setup);
 
 		const page = await epRepo.list(
+			rCtx,
 			ExecutionProcess.ByRunReason("setupscript"),
 			{
 				limit: 50,

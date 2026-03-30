@@ -1,4 +1,4 @@
-import type { WriteContext } from "../types/context";
+import type { PostContext } from "../types/context";
 
 const PR_DESCRIPTION_PROMPT = `Analyze the changes in this branch compared to the base branch and generate a Pull Request title and description.
 
@@ -22,7 +22,7 @@ const PR_DESCRIPTION_SCHEMA = {
 };
 
 export async function generatePrDescription(
-	ctx: WriteContext,
+	ctx: PostContext,
 	params: {
 		workspaceId: string;
 		worktreePath: string;

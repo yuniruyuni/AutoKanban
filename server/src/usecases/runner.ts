@@ -1,27 +1,20 @@
-import type { PgDatabase } from "../db/pg-client";
 import { type Fail, fail, isFail, type Unfail } from "../models/common";
-import { ApprovalRepository } from "../repositories/approval";
-import { CodingAgentTurnRepository } from "../repositories/coding-agent-turn";
-import { ExecutionProcessRepository } from "../repositories/execution-process";
-import { ExecutionProcessLogsRepository } from "../repositories/execution-process-logs";
-import { ProjectRepository } from "../repositories/project";
-import { SessionRepository } from "../repositories/session";
-import { TaskRepository } from "../repositories/task";
-import { TaskTemplateRepository } from "../repositories/task-template";
-import { ToolRepository } from "../repositories/tool";
-import { VariantRepository } from "../repositories/variant";
-import { WorkspaceRepository } from "../repositories/workspace";
-import { WorkspaceConfigRepository } from "../repositories/workspace-config";
-import { WorkspaceRepoRepository } from "../repositories/workspace-repo";
 import type {
 	Context,
+	DbRepoDefs,
 	PostContext,
 	PreContext,
 	ProcessContext,
 	ReadContext,
-	Repos,
 	WriteContext,
 } from "../types/context";
+import {
+	bindDbCtx,
+	createDbReadCtx,
+	createDbWriteCtx,
+	type DbReadCtx,
+	type DbWriteCtx,
+} from "../types/db-capability";
 
 // Re-export context types for convenience
 export type {
@@ -72,36 +65,40 @@ interface UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult> {
 }
 
 // ============================================
-// Transaction-scoped repository creation
+// Repo binding helpers
 // ============================================
 
-function createTransactionRepos(repos: Repos, tx: PgDatabase): Repos {
+function bindReadRepos(raw: DbRepoDefs, dbCtx: DbReadCtx) {
 	return {
-		// DB-backed: recreate with transaction-scoped PgDatabase
-		task: new TaskRepository(tx),
-		taskTemplate: new TaskTemplateRepository(tx),
-		project: new ProjectRepository(tx),
-		workspace: new WorkspaceRepository(tx),
-		workspaceRepo: new WorkspaceRepoRepository(tx),
-		session: new SessionRepository(tx),
-		executionProcess: new ExecutionProcessRepository(tx),
-		executionProcessLogs: new ExecutionProcessLogsRepository(tx),
-		codingAgentTurn: new CodingAgentTurnRepository(tx),
-		tool: new ToolRepository(tx),
-		variant: new VariantRepository(tx),
-		approval: new ApprovalRepository(tx),
-		// Non-DB: pass through
-		git: repos.git,
-		worktree: repos.worktree,
-		executor: repos.executor,
-		messageQueue: repos.messageQueue,
-		agentConfig: repos.agentConfig,
-		workspaceConfig: repos.workspaceConfig,
-		draft: repos.draft,
-		permissionStore: repos.permissionStore,
-		approvalStore: repos.approvalStore,
-		logStoreManager: repos.logStoreManager,
-		devServer: repos.devServer,
+		task: bindDbCtx(raw.task, dbCtx),
+		taskTemplate: bindDbCtx(raw.taskTemplate, dbCtx),
+		project: bindDbCtx(raw.project, dbCtx),
+		workspace: bindDbCtx(raw.workspace, dbCtx),
+		workspaceRepo: bindDbCtx(raw.workspaceRepo, dbCtx),
+		session: bindDbCtx(raw.session, dbCtx),
+		executionProcess: bindDbCtx(raw.executionProcess, dbCtx),
+		executionProcessLogs: bindDbCtx(raw.executionProcessLogs, dbCtx),
+		codingAgentTurn: bindDbCtx(raw.codingAgentTurn, dbCtx),
+		tool: bindDbCtx(raw.tool, dbCtx),
+		variant: bindDbCtx(raw.variant, dbCtx),
+		approval: bindDbCtx(raw.approval, dbCtx),
+	};
+}
+
+function bindWriteRepos(raw: DbRepoDefs, dbCtx: DbWriteCtx) {
+	return {
+		task: bindDbCtx(raw.task, dbCtx),
+		taskTemplate: bindDbCtx(raw.taskTemplate, dbCtx),
+		project: bindDbCtx(raw.project, dbCtx),
+		workspace: bindDbCtx(raw.workspace, dbCtx),
+		workspaceRepo: bindDbCtx(raw.workspaceRepo, dbCtx),
+		session: bindDbCtx(raw.session, dbCtx),
+		executionProcess: bindDbCtx(raw.executionProcess, dbCtx),
+		executionProcessLogs: bindDbCtx(raw.executionProcessLogs, dbCtx),
+		codingAgentTurn: bindDbCtx(raw.codingAgentTurn, dbCtx),
+		tool: bindDbCtx(raw.tool, dbCtx),
+		variant: bindDbCtx(raw.variant, dbCtx),
+		approval: bindDbCtx(raw.approval, dbCtx),
 	};
 }
 
@@ -124,11 +121,6 @@ export function usecase<
 			try {
 				const preCtx: PreContext = { now: ctx.now, logger: ctx.logger };
 				const processCtx: ProcessContext = { now: ctx.now, logger: ctx.logger };
-				const postCtx: PostContext = {
-					now: ctx.now,
-					logger: ctx.logger,
-					repos: ctx.repos,
-				};
 
 				// pre (outside transaction)
 				let state: unknown = await (def.pre?.(preCtx) ?? {});
@@ -136,26 +128,40 @@ export function usecase<
 
 				// read → process → write (transaction scope depends on steps)
 				if (def.write) {
-					// Write transaction: read → process → write
 					state = await ctx.db.transaction(async (tx) => {
-						return runReadProcessWrite(ctx, def, processCtx, tx, state);
+						return executeDbSteps(
+							ctx,
+							def,
+							processCtx,
+							createDbWriteCtx(tx),
+							state,
+						);
 					});
 				} else if (def.read) {
-					// Read-only transaction: read → process
 					state = await ctx.db.readTransaction(async (tx) => {
-						return runReadProcessWrite(ctx, def, processCtx, tx, state);
+						return executeDbSteps(
+							ctx,
+							def,
+							processCtx,
+							createDbReadCtx(tx),
+							state,
+						);
 					});
 				} else {
-					// No DB steps: process only (no transaction)
-					state = await (def.process?.(
-						processCtx,
-						state as Unfail<TRead>,
-					) ?? state);
+					state = await (def.process?.(processCtx, state as Unfail<TRead>) ??
+						state);
 				}
 				if (isFail(state)) return { ok: false, error: state };
 
-				// post (outside transaction)
-				state = await (def.post?.(postCtx, state as Unfail<TWrite>) ?? state);
+				// post (outside transaction, full access)
+				if (def.post) {
+					const postCtx: PostContext = {
+						now: ctx.now,
+						logger: ctx.logger,
+						repos: ctx.repos,
+					};
+					state = await def.post(postCtx, state as Unfail<TWrite>);
+				}
 				if (isFail(state)) return { ok: false, error: state };
 
 				// result
@@ -172,24 +178,18 @@ export function usecase<
 	};
 }
 
-function runReadProcessWrite<TPre, TRead, TProcess, TWrite, TPost, TResult>(
+function executeDbSteps<TPre, TRead, TProcess, TWrite, TPost, TResult>(
 	ctx: Context,
 	def: UsecaseDefinition<TPre, TRead, TProcess, TWrite, TPost, TResult>,
 	processCtx: ProcessContext,
-	tx: PgDatabase,
+	dbCtx: DbReadCtx | DbWriteCtx,
 	state: unknown,
-): MaybePromise<unknown> {
-	const reposFactory = ctx.createTransactionRepos ?? createTransactionRepos;
-	const txRepos = reposFactory(ctx.repos, tx);
+): Promise<unknown> {
+	const readRepos = bindReadRepos(ctx.rawDbRepos, dbCtx);
 	const readCtx: ReadContext = {
 		now: ctx.now,
 		logger: ctx.logger,
-		repos: txRepos,
-	};
-	const writeCtx: WriteContext = {
-		now: ctx.now,
-		logger: ctx.logger,
-		repos: txRepos,
+		repos: readRepos,
 	};
 
 	return (async () => {
@@ -200,7 +200,15 @@ function runReadProcessWrite<TPre, TRead, TProcess, TWrite, TPost, TResult>(
 		s = await (def.process?.(processCtx, s as Unfail<TRead>) ?? s);
 		if (isFail(s)) return s;
 
-		s = await (def.write?.(writeCtx, s as Unfail<TProcess>) ?? s);
+		if (def.write) {
+			const writeRepos = bindWriteRepos(ctx.rawDbRepos, dbCtx as DbWriteCtx);
+			const writeCtx: WriteContext = {
+				now: ctx.now,
+				logger: ctx.logger,
+				repos: writeRepos,
+			};
+			s = await def.write(writeCtx, s as Unfail<TProcess>);
+		}
 		return s;
 	})();
 }

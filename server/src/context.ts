@@ -26,58 +26,108 @@ import { WorkspaceConfigRepository } from "./repositories/workspace-config";
 import { WorkspaceRepoRepository } from "./repositories/workspace-repo";
 import { WorktreeRepository } from "./repositories/worktree";
 import { setupQueueProcessor } from "./setup/queue-processor";
-import type { Context } from "./types/context";
+import type { Context, DbRepoDefs, ExternalRepos } from "./types/context";
+import {
+	bindDbCtx,
+	createDbWriteCtx,
+	type DbWriteCtx,
+} from "./types/db-capability";
 import type { ILogger } from "./types/logger";
 
-export function createContext(db: PgDatabase, logger: ILogger): Context {
-	const executionProcessRepo = new ExecutionProcessRepository(db);
-	const codingAgentTurnRepo = new CodingAgentTurnRepository(db);
-	const sessionRepo = new SessionRepository(db);
-	const workspaceRepo = new WorkspaceRepository(db);
-	const workspaceRepoRepo = new WorkspaceRepoRepository(db);
-	const projectRepo = new ProjectRepository(db);
+function createRawDbRepos(): DbRepoDefs {
+	return {
+		task: new TaskRepository(),
+		taskTemplate: new TaskTemplateRepository(),
+		project: new ProjectRepository(),
+		workspace: new WorkspaceRepository(),
+		workspaceRepo: new WorkspaceRepoRepository(),
+		session: new SessionRepository(),
+		executionProcess: new ExecutionProcessRepository(),
+		executionProcessLogs: new ExecutionProcessLogsRepository(),
+		codingAgentTurn: new CodingAgentTurnRepository(),
+		tool: new ToolRepository(),
+		variant: new VariantRepository(),
+		approval: new ApprovalRepository(),
+	};
+}
 
-	const taskRepo = new TaskRepository(db);
-	const taskTemplateRepo = new TaskTemplateRepository(db);
+function bindAllDbRepos<Ctx extends DbWriteCtx>(raw: DbRepoDefs, ctx: Ctx) {
+	return {
+		task: bindDbCtx(raw.task, ctx),
+		taskTemplate: bindDbCtx(raw.taskTemplate, ctx),
+		project: bindDbCtx(raw.project, ctx),
+		workspace: bindDbCtx(raw.workspace, ctx),
+		workspaceRepo: bindDbCtx(raw.workspaceRepo, ctx),
+		session: bindDbCtx(raw.session, ctx),
+		executionProcess: bindDbCtx(raw.executionProcess, ctx),
+		executionProcessLogs: bindDbCtx(raw.executionProcessLogs, ctx),
+		codingAgentTurn: bindDbCtx(raw.codingAgentTurn, ctx),
+		tool: bindDbCtx(raw.tool, ctx),
+		variant: bindDbCtx(raw.variant, ctx),
+		approval: bindDbCtx(raw.approval, ctx),
+	};
+}
+
+export function createContext(db: PgDatabase, logger: ILogger): Context {
+	const rawDbRepos = createRawDbRepos();
+
+	// Bind DB repos with pool-level db for presentation layer / orchestrator
+	const poolCtx = createDbWriteCtx(db);
+	const boundDbRepos = bindAllDbRepos(rawDbRepos, poolCtx);
+
 	const gitRepo = new GitRepository();
 	const worktreeRepo = new WorktreeRepository(logger);
-	const executionProcessLogsRepo = new ExecutionProcessLogsRepository(db);
 	const drivers = new Map();
 	drivers.set("claude-code", new ClaudeCodeDriver(logger));
 	drivers.set("gemini-cli", new GeminiCliDriver(logger));
 	const executor = new ExecutorRepository(
-		executionProcessRepo,
-		codingAgentTurnRepo,
+		boundDbRepos.executionProcess,
+		boundDbRepos.codingAgentTurn,
 		drivers,
-		executionProcessLogsRepo,
+		boundDbRepos.executionProcessLogs,
 		logger,
 	);
-	const approvalRepo = new ApprovalRepository(db);
 
 	// Wire up approval dependencies for ExitPlanMode handling
 	executor.setApprovalDeps({
-		approvalRepo: approvalRepo,
+		approvalRepo: boundDbRepos.approval,
 		approvalStore: approvalStore,
-		taskRepo,
-		sessionRepo,
-		workspaceRepo,
+		taskRepo: boundDbRepos.task,
+		sessionRepo: boundDbRepos.session,
+		workspaceRepo: boundDbRepos.workspace,
 	});
 
 	const logStreamer = new LogStreamer(executor, logStoreManager, logger);
 	const agentConfig = new AgentConfigRepository();
 	const workspaceConfigRepo = new WorkspaceConfigRepository();
-	const devServer = new DevServerRepository(executionProcessLogsRepo, logger);
+	const devServer = new DevServerRepository(
+		boundDbRepos.executionProcessLogs,
+		logger,
+	);
 
-	// Set up queue processor to auto-consume queued messages on process completion
-	// and handle automatic task status transitions
+	const externalRepos: ExternalRepos = {
+		git: gitRepo,
+		worktree: worktreeRepo,
+		executor,
+		messageQueue: messageQueueRepository,
+		agentConfig,
+		workspaceConfig: workspaceConfigRepo,
+		draft: draftRepository,
+		permissionStore,
+		approvalStore,
+		logStoreManager,
+		devServer,
+	};
+
+	// Set up queue processor
 	setupQueueProcessor({
 		executor,
 		messageQueue: messageQueueRepository,
-		sessionRepo,
-		workspaceRepo,
-		workspaceRepoRepo,
-		projectRepo,
-		taskRepo,
+		sessionRepo: boundDbRepos.session,
+		workspaceRepo: boundDbRepos.workspace,
+		workspaceRepoRepo: boundDbRepos.workspaceRepo,
+		projectRepo: boundDbRepos.project,
+		taskRepo: boundDbRepos.task,
 		logger,
 	});
 
@@ -85,31 +135,9 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		now: new Date(),
 		logger,
 		db,
-		repos: {
-			task: taskRepo,
-			taskTemplate: taskTemplateRepo,
-			project: projectRepo,
-			workspace: workspaceRepo,
-			workspaceRepo: workspaceRepoRepo,
-			session: sessionRepo,
-			executionProcess: executionProcessRepo,
-			executionProcessLogs: executionProcessLogsRepo,
-			codingAgentTurn: codingAgentTurnRepo,
-			tool: new ToolRepository(db),
-			variant: new VariantRepository(db),
-			git: gitRepo,
-			worktree: worktreeRepo,
-			executor,
-			messageQueue: messageQueueRepository,
-			agentConfig,
-			workspaceConfig: workspaceConfigRepo,
-			draft: draftRepository,
-			permissionStore,
-			approval: approvalRepo,
-			approvalStore,
-			logStoreManager,
-			devServer,
-		},
+		rawDbRepos,
+		externalRepos,
+		repos: { ...boundDbRepos, ...externalRepos },
 		logStreamer,
 	};
 }

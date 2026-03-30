@@ -23,7 +23,7 @@ export const getGitInfo = (input: GetGitInfoInput) =>
 			return { path: input.path };
 		},
 
-		read: async (ctx, { path }) => {
+		post: async (ctx, { path }) => {
 			const { git } = ctx.repos;
 
 			// Check if it's a git repository

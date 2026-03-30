@@ -8,7 +8,7 @@ export interface InitCommitInput {
 
 export const initCommit = (input: InitCommitInput) =>
 	usecase({
-		read: async (ctx) => {
+		post: async (ctx) => {
 			const { git } = ctx.repos;
 
 			const isRepo = await git.isGitRepo(input.path);
@@ -21,10 +21,7 @@ export const initCommit = (input: InitCommitInput) =>
 				return fail("ALREADY_HAS_COMMITS", "Repository already has commits");
 			}
 
-			return { path: input.path };
-		},
-
-		process: async (_, { path }) => {
+			const path = input.path;
 			// Create an empty initial commit
 			const commitProc = spawn(
 				["git", "commit", "--allow-empty", "-m", "initial commit"],

@@ -1,8 +1,8 @@
-import type { IToolRepository } from "../repository";
+import type { IToolRepositoryDef } from "../repository";
 
 export function createMockToolRepository(
-	overrides: Partial<IToolRepository> = {},
-): IToolRepository {
+	overrides: Partial<IToolRepositoryDef> = {},
+): IToolRepositoryDef {
 	return {
 		get: async () => null,
 		list: async () => ({ items: [], hasMore: false }),
@@ -11,5 +11,5 @@ export function createMockToolRepository(
 		delete: async () => 0,
 		executeCommand: async () => {},
 		...overrides,
-	} as IToolRepository;
+	} as IToolRepositoryDef;
 }

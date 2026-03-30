@@ -74,6 +74,11 @@ describe("createProject", () => {
 
 	test("fails when repoPath is not a git repository", async () => {
 		const ctx = createMockContext({
+			project: {
+				get: () => null,
+				upsert: () => {},
+			} as never,
+			...templateAndTaskMock,
 			git: {
 				isGitRepo: async () => false,
 			} as never,
@@ -93,6 +98,11 @@ describe("createProject", () => {
 
 	test("fails when repository has no commits", async () => {
 		const ctx = createMockContext({
+			project: {
+				get: () => null,
+				upsert: () => {},
+			} as never,
+			...templateAndTaskMock,
 			git: {
 				isGitRepo: async () => true,
 				listBranches: async () => [],

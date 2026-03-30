@@ -1,36 +1,38 @@
-import type { PgDatabase } from "../../../db/pg-client";
 import type { Cursor, Page } from "../../../models/common";
 import type { TaskTemplate } from "../../../models/task-template";
-import type { ITaskTemplateRepository } from "../repository";
+import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { ITaskTemplateRepositoryDef } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { list } from "./list";
 import { listAll } from "./list-all";
 import { upsert } from "./upsert";
 
-export class TaskTemplateRepository implements ITaskTemplateRepository {
-	constructor(private db: PgDatabase) {}
-
-	async get(spec: TaskTemplate.Spec): Promise<TaskTemplate | null> {
-		return get(this.db, spec);
+export class TaskTemplateRepository implements ITaskTemplateRepositoryDef {
+	async get(
+		ctx: DbReadCtx,
+		spec: TaskTemplate.Spec,
+	): Promise<TaskTemplate | null> {
+		return get(ctx.db, spec);
 	}
 
 	async list(
+		ctx: DbReadCtx,
 		spec: TaskTemplate.Spec,
 		cursor: Cursor<TaskTemplate.SortKey>,
 	): Promise<Page<TaskTemplate>> {
-		return list(this.db, spec, cursor);
+		return list(ctx.db, spec, cursor);
 	}
 
-	async listAll(): Promise<TaskTemplate[]> {
-		return listAll(this.db);
+	async listAll(ctx: DbReadCtx): Promise<TaskTemplate[]> {
+		return listAll(ctx.db);
 	}
 
-	async upsert(template: TaskTemplate): Promise<void> {
-		await upsert(this.db, template);
+	async upsert(ctx: DbWriteCtx, template: TaskTemplate): Promise<void> {
+		await upsert(ctx.db, template);
 	}
 
-	async delete(spec: TaskTemplate.Spec): Promise<number> {
-		return del(this.db, spec);
+	async delete(ctx: DbWriteCtx, spec: TaskTemplate.Spec): Promise<number> {
+		return del(ctx.db, spec);
 	}
 }

@@ -1,8 +1,8 @@
-import type { ITaskTemplateRepository } from "../repository";
+import type { ITaskTemplateRepositoryDef } from "../repository";
 
 export function createMockTaskTemplateRepository(
-	overrides: Partial<ITaskTemplateRepository> = {},
-): ITaskTemplateRepository {
+	overrides: Partial<ITaskTemplateRepositoryDef> = {},
+): ITaskTemplateRepositoryDef {
 	return {
 		get: async () => null,
 		list: async () => ({ items: [], hasMore: false }),
@@ -10,5 +10,5 @@ export function createMockTaskTemplateRepository(
 		upsert: async () => {},
 		delete: async () => 0,
 		...overrides,
-	} as ITaskTemplateRepository;
+	} as ITaskTemplateRepositoryDef;
 }

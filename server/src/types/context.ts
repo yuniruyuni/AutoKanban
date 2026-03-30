@@ -2,77 +2,113 @@
 
 import type { PgDatabase } from "../db/pg-client";
 import type { ILogStreamer } from "../presentation/log-streamer";
+import type { ReadMethods, StripMarkers } from "./db-capability";
 import type { ILogger } from "./logger";
 import type {
 	IAgentConfigRepository,
-	IApprovalRepository,
+	IApprovalRepositoryDef,
 	IApprovalStore,
-	ICodingAgentTurnRepository,
+	ICodingAgentTurnRepositoryDef,
 	IDevServerRepository,
 	IDraftRepository,
-	IExecutionProcessLogsRepository,
-	IExecutionProcessRepository,
+	IExecutionProcessLogsRepositoryDef,
+	IExecutionProcessRepositoryDef,
 	IExecutorRepository,
 	IGitRepository,
 	ILogStoreManager,
 	IMessageQueueRepository,
 	IPermissionStoreRepository,
-	IProjectRepository,
-	ISessionRepository,
-	ITaskRepository,
-	ITaskTemplateRepository,
-	IToolRepository,
-	IVariantRepository,
+	IProjectRepositoryDef,
+	ISessionRepositoryDef,
+	ITaskRepositoryDef,
+	ITaskTemplateRepositoryDef,
+	IToolRepositoryDef,
+	IVariantRepositoryDef,
 	IWorkspaceConfigRepository,
-	IWorkspaceRepoRepository,
-	IWorkspaceRepository,
+	IWorkspaceRepoRepositoryDef,
+	IWorkspaceRepositoryDef,
 	IWorktreeRepository,
 } from "./repository";
 
-export interface Repos {
-	// DB Repositories
-	task: ITaskRepository;
-	taskTemplate: ITaskTemplateRepository;
-	project: IProjectRepository;
-	workspace: IWorkspaceRepository;
-	workspaceRepo: IWorkspaceRepoRepository;
-	session: ISessionRepository;
-	executionProcess: IExecutionProcessRepository;
-	executionProcessLogs: IExecutionProcessLogsRepository;
-	codingAgentTurn: ICodingAgentTurnRepository;
-	tool: IToolRepository;
-	variant: IVariantRepository;
-	// External System Repositories
+// ============================================
+// DB Repository Definitions (with DbCtx markers)
+// ============================================
+
+export interface DbRepoDefs {
+	task: ITaskRepositoryDef;
+	taskTemplate: ITaskTemplateRepositoryDef;
+	project: IProjectRepositoryDef;
+	workspace: IWorkspaceRepositoryDef;
+	workspaceRepo: IWorkspaceRepoRepositoryDef;
+	session: ISessionRepositoryDef;
+	executionProcess: IExecutionProcessRepositoryDef;
+	executionProcessLogs: IExecutionProcessLogsRepositoryDef;
+	codingAgentTurn: ICodingAgentTurnRepositoryDef;
+	tool: IToolRepositoryDef;
+	variant: IVariantRepositoryDef;
+	approval: IApprovalRepositoryDef;
+}
+
+// ============================================
+// External Repositories (no DbCtx markers)
+// ============================================
+
+export interface ExternalRepos {
 	git: IGitRepository;
 	worktree: IWorktreeRepository;
 	executor: IExecutorRepository;
 	messageQueue: IMessageQueueRepository;
 	agentConfig: IAgentConfigRepository;
 	workspaceConfig: IWorkspaceConfigRepository;
-	// In-memory Store Repositories
 	draft: IDraftRepository;
 	permissionStore: IPermissionStoreRepository;
-	approval: IApprovalRepository;
 	approvalStore: IApprovalStore;
 	logStoreManager: ILogStoreManager;
 	devServer: IDevServerRepository;
 }
 
-// Step-specific context types
-export type PreContext = { now: Date; logger: ILogger };
-export type ReadContext = { now: Date; logger: ILogger; repos: Repos };
-export type ProcessContext = { now: Date; logger: ILogger };
-export type WriteContext = { now: Date; logger: ILogger; repos: Repos };
-export type PostContext = { now: Date; logger: ILogger; repos: Repos };
+// ============================================
+// Repos views (derived from DbRepoDefs)
+// ============================================
 
-// Full context (used by .run() and presentation layer)
+/** DB read-only: get, list, count, find* */
+type DbReadRepos = { [K in keyof DbRepoDefs]: ReadMethods<DbRepoDefs[K]> };
+
+/** DB full access: read + write (markers stripped) */
+type DbFullRepos = { [K in keyof DbRepoDefs]: StripMarkers<DbRepoDefs[K]> };
+
+/** ReadContext repos: DB read only (no External — avoids blocking transaction) */
+export type ReadRepos = DbReadRepos;
+
+/** WriteContext repos: DB read + write (no External — avoids blocking transaction) */
+export type WriteRepos = DbFullRepos;
+
+/** PostContext repos: DB full + External (outside transaction) */
+export type PostRepos = DbFullRepos & ExternalRepos;
+
+/** Full repos (used by Context for presentation layer) */
+export type Repos = DbFullRepos & ExternalRepos;
+
+// ============================================
+// Step-specific context types
+// ============================================
+
+export type PreContext = { now: Date; logger: ILogger };
+export type ReadContext = { now: Date; logger: ILogger; repos: ReadRepos };
+export type ProcessContext = { now: Date; logger: ILogger };
+export type WriteContext = { now: Date; logger: ILogger; repos: WriteRepos };
+export type PostContext = { now: Date; logger: ILogger; repos: PostRepos };
+
+// ============================================
+// Full context
+// ============================================
+
 export interface Context {
 	now: Date;
 	logger: ILogger;
 	db: PgDatabase;
+	rawDbRepos: DbRepoDefs;
+	externalRepos: ExternalRepos;
 	repos: Repos;
-	// Presentation-layer services (kept in Context for router access)
 	logStreamer: ILogStreamer;
-	// Override for testing: skip real transaction repos creation
-	createTransactionRepos?: (repos: Repos, tx: PgDatabase) => Repos;
 }

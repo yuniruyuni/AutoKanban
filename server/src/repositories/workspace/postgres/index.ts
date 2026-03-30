@@ -1,7 +1,7 @@
-import type { PgDatabase } from "../../../db/pg-client";
 import type { Cursor, Page } from "../../../models/common";
 import type { Workspace } from "../../../models/workspace";
-import type { IWorkspaceRepository } from "../repository";
+import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { IWorkspaceRepositoryDef } from "../repository";
 import { del } from "./delete";
 import { findByWorktreePath } from "./find-by-worktree-path";
 import { get } from "./get";
@@ -9,33 +9,35 @@ import { getMaxAttempt } from "./get-max-attempt";
 import { list } from "./list";
 import { upsert } from "./upsert";
 
-export class WorkspaceRepository implements IWorkspaceRepository {
-	constructor(private db: PgDatabase) {}
-
-	async get(spec: Workspace.Spec): Promise<Workspace | null> {
-		return get(this.db, spec);
+export class WorkspaceRepository implements IWorkspaceRepositoryDef {
+	async get(ctx: DbReadCtx, spec: Workspace.Spec): Promise<Workspace | null> {
+		return get(ctx.db, spec);
 	}
 
 	async list(
+		ctx: DbReadCtx,
 		spec: Workspace.Spec,
 		cursor: Cursor<Workspace.SortKey>,
 	): Promise<Page<Workspace>> {
-		return list(this.db, spec, cursor);
+		return list(ctx.db, spec, cursor);
 	}
 
-	async findByWorktreePath(worktreePath: string): Promise<Workspace | null> {
-		return findByWorktreePath(this.db, worktreePath);
+	async findByWorktreePath(
+		ctx: DbReadCtx,
+		worktreePath: string,
+	): Promise<Workspace | null> {
+		return findByWorktreePath(ctx.db, worktreePath);
 	}
 
-	async getMaxAttempt(taskId: string): Promise<number> {
-		return getMaxAttempt(this.db, taskId);
+	async getMaxAttempt(ctx: DbReadCtx, taskId: string): Promise<number> {
+		return getMaxAttempt(ctx.db, taskId);
 	}
 
-	async upsert(workspace: Workspace): Promise<void> {
-		return upsert(this.db, workspace);
+	async upsert(ctx: DbWriteCtx, workspace: Workspace): Promise<void> {
+		return upsert(ctx.db, workspace);
 	}
 
-	async delete(spec: Workspace.Spec): Promise<number> {
-		return del(this.db, spec);
+	async delete(ctx: DbWriteCtx, spec: Workspace.Spec): Promise<number> {
+		return del(ctx.db, spec);
 	}
 }

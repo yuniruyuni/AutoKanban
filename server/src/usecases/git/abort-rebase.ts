@@ -25,6 +25,10 @@ export const abortRebase = (input: AbortRebaseInput) =>
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
+			return { workspace, project };
+		},
+
+		post: async (ctx, { workspace, project }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -37,10 +41,6 @@ export const abortRebase = (input: AbortRebaseInput) =>
 				return fail("GIT_ERROR", "No rebase in progress");
 			}
 
-			return { worktreePath };
-		},
-
-		write: async (ctx, { worktreePath }) => {
 			// Abort rebase
 			await ctx.repos.git.abortRebase(worktreePath);
 

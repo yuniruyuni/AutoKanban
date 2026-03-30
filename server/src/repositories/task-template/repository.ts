@@ -1,13 +1,21 @@
 import type { Cursor, Page } from "../../models/common";
 import type { TaskTemplate } from "../../models/task-template";
+import type {
+	DbReadCtx,
+	DbWriteCtx,
+	StripMarkers,
+} from "../../types/db-capability";
 
-export interface ITaskTemplateRepository {
-	get(spec: TaskTemplate.Spec): Promise<TaskTemplate | null>;
+export interface ITaskTemplateRepositoryDef {
+	get(ctx: DbReadCtx, spec: TaskTemplate.Spec): Promise<TaskTemplate | null>;
 	list(
+		ctx: DbReadCtx,
 		spec: TaskTemplate.Spec,
 		cursor: Cursor<TaskTemplate.SortKey>,
 	): Promise<Page<TaskTemplate>>;
-	listAll(): Promise<TaskTemplate[]>;
-	upsert(template: TaskTemplate): Promise<void>;
-	delete(spec: TaskTemplate.Spec): Promise<number>;
+	listAll(ctx: DbReadCtx): Promise<TaskTemplate[]>;
+	upsert(ctx: DbWriteCtx, template: TaskTemplate): Promise<void>;
+	delete(ctx: DbWriteCtx, spec: TaskTemplate.Spec): Promise<number>;
 }
+
+export type ITaskTemplateRepository = StripMarkers<ITaskTemplateRepositoryDef>;

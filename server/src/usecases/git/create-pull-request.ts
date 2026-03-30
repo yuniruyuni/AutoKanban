@@ -31,6 +31,24 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
+			const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
+				workspace.id,
+			);
+			const workspaceRepo = workspaceRepos.find(
+				(wr) => wr.projectId === input.projectId,
+			);
+
+			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
+
+			return {
+				workspace,
+				project,
+				targetBranch,
+				workspaceRepo,
+			};
+		},
+
+		post: async (ctx, { workspace, project, targetBranch, workspaceRepo }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -47,29 +65,6 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 
 			const branch = await ctx.repos.git.getCurrentBranch(worktreePath);
 
-			const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
-				workspace.id,
-			);
-			const workspaceRepo = workspaceRepos.find(
-				(wr) => wr.projectId === input.projectId,
-			);
-
-			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
-
-			return {
-				workspace,
-				project,
-				worktreePath,
-				branch,
-				targetBranch,
-				workspaceRepo,
-			};
-		},
-
-		write: async (
-			ctx,
-			{ workspace, project, worktreePath, branch, targetBranch, workspaceRepo },
-		) => {
 			// Stage and commit any uncommitted changes
 			const diffs = await ctx.repos.git.getDiffs(worktreePath, targetBranch);
 			if (diffs.length > 0) {

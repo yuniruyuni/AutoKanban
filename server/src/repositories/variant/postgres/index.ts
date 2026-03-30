@@ -1,36 +1,35 @@
-import type { PgDatabase } from "../../../db/pg-client";
 import type { Cursor, Page } from "../../../models/common";
 import type { Variant } from "../../../models/variant";
-import type { IVariantRepository } from "../repository";
+import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { IVariantRepositoryDef } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { list } from "./list";
 import { listByExecutor } from "./listByExecutor";
 import { upsert } from "./upsert";
 
-export class VariantRepository implements IVariantRepository {
-	constructor(private db: PgDatabase) {}
-
-	async get(spec: Variant.Spec): Promise<Variant | null> {
-		return get(this.db, spec);
+export class VariantRepository implements IVariantRepositoryDef {
+	async get(ctx: DbReadCtx, spec: Variant.Spec): Promise<Variant | null> {
+		return get(ctx.db, spec);
 	}
 
 	async list(
+		ctx: DbReadCtx,
 		spec: Variant.Spec,
 		cursor: Cursor<Variant.SortKey>,
 	): Promise<Page<Variant>> {
-		return list(this.db, spec, cursor);
+		return list(ctx.db, spec, cursor);
 	}
 
-	async listByExecutor(executor: string): Promise<Variant[]> {
-		return listByExecutor(this.db, executor);
+	async listByExecutor(ctx: DbReadCtx, executor: string): Promise<Variant[]> {
+		return listByExecutor(ctx.db, executor);
 	}
 
-	async upsert(variant: Variant): Promise<void> {
-		await upsert(this.db, variant);
+	async upsert(ctx: DbWriteCtx, variant: Variant): Promise<void> {
+		await upsert(ctx.db, variant);
 	}
 
-	async delete(spec: Variant.Spec): Promise<number> {
-		return del(this.db, spec);
+	async delete(ctx: DbWriteCtx, spec: Variant.Spec): Promise<number> {
+		return del(ctx.db, spec);
 	}
 }

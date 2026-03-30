@@ -27,6 +27,22 @@ export const getFileDiff = (input: GetFileDiffInput) =>
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
+			// Get base commit
+			let baseCommit = input.baseCommit;
+			if (!baseCommit) {
+				const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
+					workspace.id,
+				);
+				const workspaceRepo = workspaceRepos.find(
+					(wr) => wr.projectId === input.projectId,
+				);
+				baseCommit = workspaceRepo?.targetBranch ?? project.branch;
+			}
+
+			return { workspace, project, baseCommit };
+		},
+
+		post: async (ctx, { workspace, project, baseCommit }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -40,18 +56,6 @@ export const getFileDiff = (input: GetFileDiffInput) =>
 
 			if (!exists) {
 				return fail("NOT_FOUND", "Worktree does not exist");
-			}
-
-			// Get base commit
-			let baseCommit = input.baseCommit;
-			if (!baseCommit) {
-				const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
-					workspace.id,
-				);
-				const workspaceRepo = workspaceRepos.find(
-					(wr) => wr.projectId === input.projectId,
-				);
-				baseCommit = workspaceRepo?.targetBranch ?? project.branch;
 			}
 
 			// Get file diff

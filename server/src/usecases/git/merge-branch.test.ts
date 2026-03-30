@@ -123,6 +123,7 @@ describe("mergeBranch", () => {
 		const ctx = createMockContext({
 			workspace: { get: () => workspace } as never,
 			project: { get: () => project } as never,
+			task: { get: () => null } as never,
 			worktree: createMockWorktreeRepository({
 				worktreeExists: async () => false,
 			}),

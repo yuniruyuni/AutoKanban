@@ -83,6 +83,15 @@ export interface GetPendingApprovalsInput {
 export const getPendingApprovals = (input: GetPendingApprovalsInput) =>
 	usecase({
 		read: async (ctx) => {
+			// Fallback to DB for pending approvals (server restart recovery)
+			const spec = Approval.ByExecutionProcessId(input.executionProcessId).and(
+				Approval.ByStatus("pending"),
+			);
+			const page = await ctx.repos.approval.list(spec, { limit: 100 });
+			return { dbApprovals: page.items };
+		},
+
+		post: (ctx, { dbApprovals }) => {
 			// First check in-memory store (normal flow)
 			const inMemory = ctx.repos.approvalStore.listPending(
 				input.executionProcessId,
@@ -91,12 +100,8 @@ export const getPendingApprovals = (input: GetPendingApprovalsInput) =>
 				return { approvals: inMemory };
 			}
 
-			// Fallback to DB for pending approvals (server restart recovery)
-			const spec = Approval.ByExecutionProcessId(input.executionProcessId).and(
-				Approval.ByStatus("pending"),
-			);
-			const page = await ctx.repos.approval.list(spec, { limit: 100 });
-			return { approvals: page.items };
+			// Use DB fallback
+			return { approvals: dbApprovals };
 		},
 
 		result: ({ approvals }) => ({

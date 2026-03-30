@@ -9,6 +9,7 @@ import { ProjectRepository } from "../../src/repositories/project";
 import { SessionRepository } from "../../src/repositories/session";
 import { TaskRepository } from "../../src/repositories/task";
 import { WorkspaceRepository } from "../../src/repositories/workspace";
+import { createDbWriteCtx } from "../../src/types/db-capability";
 import {
 	createTestExecutionProcess,
 	createTestProject,
@@ -38,11 +39,12 @@ export async function seedFullChain(db: PgDatabase): Promise<SeedResult> {
 		sessionId: session.id,
 	});
 
-	await new ProjectRepository(db).upsert(project);
-	await new TaskRepository(db).upsert(task);
-	await new WorkspaceRepository(db).upsert(workspace);
-	await new SessionRepository(db).upsert(session);
-	await new ExecutionProcessRepository(db).upsert(executionProcess);
+	const wCtx = createDbWriteCtx(db);
+	await new ProjectRepository().upsert(wCtx, project);
+	await new TaskRepository().upsert(wCtx, task);
+	await new WorkspaceRepository().upsert(wCtx, workspace);
+	await new SessionRepository().upsert(wCtx, session);
+	await new ExecutionProcessRepository().upsert(wCtx, executionProcess);
 
 	return { project, task, workspace, session, executionProcess };
 }

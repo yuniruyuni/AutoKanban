@@ -17,9 +17,25 @@ const mockContext: Context = {
 		readTransaction: async <T>(fn: (tx: PgDatabase) => Promise<T>) =>
 			fn({} as PgDatabase),
 	} as PgDatabase,
+	rawDbRepos: Object.fromEntries(
+		[
+			"task",
+			"taskTemplate",
+			"project",
+			"workspace",
+			"workspaceRepo",
+			"session",
+			"executionProcess",
+			"executionProcessLogs",
+			"codingAgentTurn",
+			"tool",
+			"variant",
+			"approval",
+		].map((k) => [k, {}]),
+	) as unknown as Context["rawDbRepos"],
+	externalRepos: {} as Context["externalRepos"],
 	repos: {} as Context["repos"],
 	logStreamer: {} as Context["logStreamer"],
-	createTransactionRepos: (repos) => repos,
 };
 
 describe("browseDirectory", () => {

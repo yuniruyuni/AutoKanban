@@ -24,27 +24,6 @@ export const createProject = (input: CreateProjectInput) =>
 		},
 
 		read: async (ctx) => {
-			// Validate that repoPath is a git repository with at least one commit
-			const isRepo = await ctx.repos.git.isGitRepo(input.repoPath);
-			if (!isRepo) {
-				return fail(
-					"INVALID_INPUT",
-					"The specified path is not a git repository",
-					{
-						repoPath: input.repoPath,
-					},
-				);
-			}
-
-			const branches = await ctx.repos.git.listBranches(input.repoPath);
-			if (branches.length === 0) {
-				return fail(
-					"INVALID_INPUT",
-					"The repository has no commits yet. Please make an initial commit first.",
-					{ repoPath: input.repoPath },
-				);
-			}
-
 			// Check if a project with this repo path already exists
 			const existing = await ctx.repos.project.get(
 				Project.ByRepoPath(input.repoPath),
@@ -88,6 +67,31 @@ export const createProject = (input: CreateProjectInput) =>
 					description: tmpl.description,
 				});
 				await ctx.repos.task.upsert(task);
+			}
+
+			return project;
+		},
+
+		post: async (ctx, project) => {
+			// Validate that repoPath is a git repository with at least one commit
+			const isRepo = await ctx.repos.git.isGitRepo(input.repoPath);
+			if (!isRepo) {
+				return fail(
+					"INVALID_INPUT",
+					"The specified path is not a git repository",
+					{
+						repoPath: input.repoPath,
+					},
+				);
+			}
+
+			const branches = await ctx.repos.git.listBranches(input.repoPath);
+			if (branches.length === 0) {
+				return fail(
+					"INVALID_INPUT",
+					"The repository has no commits yet. Please make an initial commit first.",
+					{ repoPath: input.repoPath },
+				);
 			}
 
 			return project;

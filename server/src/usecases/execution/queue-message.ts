@@ -69,20 +69,6 @@ export const queueMessage = (input: QueueMessageInput) =>
 			);
 			const latestProcess = executionProcessPage.items[0];
 
-			// Check if the latest process is idle (waiting for input)
-			let isIdle = false;
-			let isRunning = false;
-			if (latestProcess?.status === "running") {
-				isRunning = true;
-				const logs = await ctx.repos.executionProcessLogs.getLogs(
-					latestProcess.id,
-				);
-				if (logs?.logs) {
-					const parseResult = parseLogsToConversation(logs.logs);
-					isIdle = parseResult.isIdle;
-				}
-			}
-
 			// Get the project for the workspace (to get worktree path)
 			const workspaceReposPage = await ctx.repos.workspaceRepo.list(
 				WorkspaceRepo.ByWorkspaceId(workspace.id),
@@ -98,17 +84,6 @@ export const queueMessage = (input: QueueMessageInput) =>
 				input.sessionId,
 			);
 
-			// Find interrupted tools if resuming from a killed/failed EP
-			let interruptedTools: PendingToolUse[] = [];
-			if (resumeInfo && latestProcess && latestProcess.status !== "running") {
-				const logs = await ctx.repos.executionProcessLogs.getLogs(
-					latestProcess.id,
-				);
-				if (logs?.logs) {
-					interruptedTools = findPendingToolUses(logs.logs);
-				}
-			}
-
 			// Look up variant entity to get permissionMode and model
 			const executor = input.executor ?? "claude-code";
 			const variantEntity = input.variant
@@ -121,28 +96,15 @@ export const queueMessage = (input: QueueMessageInput) =>
 				session,
 				workspace,
 				latestProcess,
-				isRunning,
-				isIdle,
 				project,
 				resumeInfo,
-				interruptedTools,
 				variantEntity,
 			};
 		},
 
 		process: (
 			_ctx,
-			{
-				session,
-				workspace,
-				latestProcess,
-				isRunning,
-				isIdle,
-				project,
-				resumeInfo,
-				interruptedTools,
-				variantEntity,
-			},
+			{ session, workspace, latestProcess, project, resumeInfo, variantEntity },
 		) => {
 			// Determine working directory (needed for new process)
 			let workingDir: string | null = null;
@@ -154,52 +116,55 @@ export const queueMessage = (input: QueueMessageInput) =>
 				workingDir = project.repoPath;
 			}
 
-			// Determine if we can send immediately
-			// Case 1: No running process (start a new one)
-			// Case 2: Running process is idle (send to existing process)
-			const canSendImmediately = !isRunning || isIdle;
-
 			return {
 				session,
 				workspace,
 				latestProcess,
-				isRunning,
-				isIdle,
-				canSendImmediately,
 				workingDir,
 				resumeInfo,
-				interruptedTools,
 				variantEntity,
 			};
 		},
 
-		write: (ctx, state) => {
+		post: async (
+			ctx,
+			{ session, latestProcess, workingDir, resumeInfo, variantEntity },
+		) => {
+			// Check if the latest process is idle (waiting for input)
+			let isIdle = false;
+			let isRunning = false;
+			if (latestProcess?.status === "running") {
+				isRunning = true;
+				const logs = await ctx.repos.executionProcessLogs.getLogs(
+					latestProcess.id,
+				);
+				if (logs?.logs) {
+					const parseResult = parseLogsToConversation(logs.logs);
+					isIdle = parseResult.isIdle;
+				}
+			}
+
+			// Find interrupted tools if resuming from a killed/failed EP
+			let interruptedTools: PendingToolUse[] = [];
+			if (resumeInfo && latestProcess && latestProcess.status !== "running") {
+				const logs = await ctx.repos.executionProcessLogs.getLogs(
+					latestProcess.id,
+				);
+				if (logs?.logs) {
+					interruptedTools = findPendingToolUses(logs.logs);
+				}
+			}
+
+			const canSendImmediately = !isRunning || isIdle;
+
 			// Queue the message
 			const queuedMessage = ctx.repos.messageQueue.queue(
-				state.session.id,
+				session.id,
 				input.prompt,
 				input.executor,
 				input.variant,
 			);
 
-			return { ...state, queuedMessage };
-		},
-
-		post: async (
-			ctx,
-			{
-				session,
-				latestProcess,
-				isRunning,
-				isIdle,
-				canSendImmediately,
-				workingDir,
-				queuedMessage,
-				resumeInfo,
-				interruptedTools,
-				variantEntity,
-			},
-		) => {
 			if (!canSendImmediately) {
 				// Cannot send immediately - message stays in queue
 				return {
@@ -304,6 +269,10 @@ export const getQueueStatus = (input: GetQueueStatusInput) =>
 				});
 			}
 
+			return { session };
+		},
+
+		post: (ctx, { session }) => {
 			const status = ctx.repos.messageQueue.getStatus(session.id);
 			return { status };
 		},
@@ -340,7 +309,7 @@ export const cancelQueue = (input: CancelQueueInput) =>
 			return { session };
 		},
 
-		write: (ctx, { session }) => {
+		post: (ctx, { session }) => {
 			const cancelled = ctx.repos.messageQueue.cancel(session.id);
 			return { cancelled };
 		},

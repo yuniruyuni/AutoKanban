@@ -21,6 +21,10 @@ export const listBranches = (input: ListBranchesInput) =>
 				return fail("NOT_FOUND", "Project not found");
 			}
 
+			return { project };
+		},
+
+		post: async (ctx, { project }) => {
 			const branches = await ctx.repos.git.listBranches(project.repoPath);
 			return { branches };
 		},

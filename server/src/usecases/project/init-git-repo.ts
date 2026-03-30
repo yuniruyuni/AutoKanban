@@ -34,7 +34,7 @@ export const initGitRepo = (input: InitGitRepoInput) =>
 			return { path: input.path };
 		},
 
-		read: async (ctx, { path }) => {
+		post: async (ctx, { path }) => {
 			// Check if it's already a git repository
 			const isGitRepo = await ctx.repos.git.isGitRepo(path);
 			if (isGitRepo) {
@@ -43,10 +43,7 @@ export const initGitRepo = (input: InitGitRepoInput) =>
 					"Directory is already a git repository",
 				);
 			}
-			return { path };
-		},
 
-		process: async (_, { path }) => {
 			const defaultBranch = input.defaultBranch ?? "main";
 
 			try {

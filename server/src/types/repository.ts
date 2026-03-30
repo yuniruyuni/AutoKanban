@@ -8,18 +8,51 @@ import type { Project } from "../models/project";
 import type { Workspace } from "../models/workspace";
 import type { WorktreeInfo } from "../models/worktree-info";
 
-export type { ICodingAgentTurnRepository } from "../repositories/coding-agent-turn/repository";
-export type { IExecutionProcessRepository } from "../repositories/execution-process/repository";
-export type { IExecutionProcessLogsRepository } from "../repositories/execution-process-logs/repository";
-export type { IProjectRepository } from "../repositories/project/repository";
-export type { ISessionRepository } from "../repositories/session/repository";
-export type { ITaskRepository } from "../repositories/task/repository";
-export type { ITaskTemplateRepository } from "../repositories/task-template/repository";
-export type { IToolRepository } from "../repositories/tool/repository";
-export type { IVariantRepository } from "../repositories/variant/repository";
-export type { IWorkspaceRepository } from "../repositories/workspace/repository";
+export type {
+	ICodingAgentTurnRepository,
+	ICodingAgentTurnRepositoryDef,
+} from "../repositories/coding-agent-turn/repository";
+export type {
+	IExecutionProcessRepository,
+	IExecutionProcessRepositoryDef,
+} from "../repositories/execution-process/repository";
+export type {
+	IExecutionProcessLogsRepository,
+	IExecutionProcessLogsRepositoryDef,
+} from "../repositories/execution-process-logs/repository";
+export type {
+	IProjectRepository,
+	IProjectRepositoryDef,
+} from "../repositories/project/repository";
+export type {
+	ISessionRepository,
+	ISessionRepositoryDef,
+} from "../repositories/session/repository";
+export type {
+	ITaskRepository,
+	ITaskRepositoryDef,
+} from "../repositories/task/repository";
+export type {
+	ITaskTemplateRepository,
+	ITaskTemplateRepositoryDef,
+} from "../repositories/task-template/repository";
+export type {
+	IToolRepository,
+	IToolRepositoryDef,
+} from "../repositories/tool/repository";
+export type {
+	IVariantRepository,
+	IVariantRepositoryDef,
+} from "../repositories/variant/repository";
+export type {
+	IWorkspaceRepository,
+	IWorkspaceRepositoryDef,
+} from "../repositories/workspace/repository";
 export type { IWorkspaceConfigRepository } from "../repositories/workspace-config/repository";
-export type { IWorkspaceRepoRepository } from "../repositories/workspace-repo/repository";
+export type {
+	IWorkspaceRepoRepository,
+	IWorkspaceRepoRepositoryDef,
+} from "../repositories/workspace-repo/repository";
 
 // ============================================
 // External System Repositories
@@ -176,7 +209,10 @@ export type {
 // In-memory Store Repositories
 // ============================================
 
-export type { IApprovalRepository } from "../repositories/approval/repository";
+export type {
+	IApprovalRepository,
+	IApprovalRepositoryDef,
+} from "../repositories/approval/repository";
 export type { IDraftRepository } from "../repositories/draft/repository";
 
 import type { IApprovalRepository } from "../repositories/approval/repository";

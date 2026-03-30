@@ -1,7 +1,7 @@
-import type { PgDatabase } from "../../../db/pg-client";
 import type { Cursor, Page } from "../../../models/common";
 import type { Project, ProjectWithStats } from "../../../models/project";
-import type { IProjectRepository } from "../repository";
+import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { IProjectRepositoryDef } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";
 import { getWithStats } from "./get-with-stats";
@@ -10,37 +10,39 @@ import { listAll } from "./list-all";
 import { listAllWithStats } from "./list-all-with-stats";
 import { upsert } from "./upsert";
 
-export class ProjectRepository implements IProjectRepository {
-	constructor(private db: PgDatabase) {}
-
-	async get(spec: Project.Spec): Promise<Project | null> {
-		return get(this.db, spec);
+export class ProjectRepository implements IProjectRepositoryDef {
+	async get(ctx: DbReadCtx, spec: Project.Spec): Promise<Project | null> {
+		return get(ctx.db, spec);
 	}
 
 	async list(
+		ctx: DbReadCtx,
 		spec: Project.Spec,
 		cursor: Cursor<Project.SortKey>,
 	): Promise<Page<Project>> {
-		return list(this.db, spec, cursor);
+		return list(ctx.db, spec, cursor);
 	}
 
-	async listAll(): Promise<Project[]> {
-		return listAll(this.db);
+	async listAll(ctx: DbReadCtx): Promise<Project[]> {
+		return listAll(ctx.db);
 	}
 
-	async listAllWithStats(): Promise<ProjectWithStats[]> {
-		return listAllWithStats(this.db);
+	async listAllWithStats(ctx: DbReadCtx): Promise<ProjectWithStats[]> {
+		return listAllWithStats(ctx.db);
 	}
 
-	async getWithStats(projectId: string): Promise<ProjectWithStats | null> {
-		return getWithStats(this.db, projectId);
+	async getWithStats(
+		ctx: DbReadCtx,
+		projectId: string,
+	): Promise<ProjectWithStats | null> {
+		return getWithStats(ctx.db, projectId);
 	}
 
-	async upsert(project: Project): Promise<void> {
-		return upsert(this.db, project);
+	async upsert(ctx: DbWriteCtx, project: Project): Promise<void> {
+		return upsert(ctx.db, project);
 	}
 
-	async delete(spec: Project.Spec): Promise<number> {
-		return del(this.db, spec);
+	async delete(ctx: DbWriteCtx, spec: Project.Spec): Promise<number> {
+		return del(ctx.db, spec);
 	}
 }

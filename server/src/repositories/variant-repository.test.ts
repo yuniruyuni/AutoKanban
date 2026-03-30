@@ -4,14 +4,20 @@ import { closeTestDB, createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import type { PgDatabase } from "../db/pg-client";
 import { Variant } from "../models/variant";
+import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
+import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
 import { VariantRepository } from "./variant";
 
 let db: PgDatabase;
 let variantRepo: VariantRepository;
+let rCtx: DbReadCtx;
+let wCtx: DbWriteCtx;
 
 beforeEach(async () => {
 	db = await createTestDB();
-	variantRepo = new VariantRepository(db);
+	variantRepo = new VariantRepository();
+	rCtx = createDbReadCtx(db);
+	wCtx = createDbWriteCtx(db);
 });
 
 afterEach(async () => {
@@ -25,9 +31,9 @@ afterEach(async () => {
 describe("VariantRepository upsert + get", () => {
 	test("inserts and retrieves a variant", async () => {
 		const variant = createTestVariant();
-		await variantRepo.upsert(variant);
+		await variantRepo.upsert(wCtx, variant);
 
-		const retrieved = await variantRepo.get(Variant.ById(variant.id));
+		const retrieved = await variantRepo.get(rCtx, Variant.ById(variant.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(variant.id);
 		expect(retrieved?.executor).toBe("claude-code");
@@ -37,7 +43,7 @@ describe("VariantRepository upsert + get", () => {
 
 	test("updates existing variant on conflict", async () => {
 		const variant = createTestVariant();
-		await variantRepo.upsert(variant);
+		await variantRepo.upsert(wCtx, variant);
 
 		const updated = {
 			...variant,
@@ -45,18 +51,18 @@ describe("VariantRepository upsert + get", () => {
 			permissionMode: "plan",
 			updatedAt: new Date(),
 		};
-		await variantRepo.upsert(updated);
+		await variantRepo.upsert(wCtx, updated);
 
-		const retrieved = await variantRepo.get(Variant.ById(variant.id));
+		const retrieved = await variantRepo.get(rCtx, Variant.ById(variant.id));
 		expect(retrieved?.name).toBe("UPDATED");
 		expect(retrieved?.permissionMode).toBe("plan");
 	});
 
 	test("preserves null model and appendPrompt", async () => {
 		const variant = createTestVariant({ model: null, appendPrompt: null });
-		await variantRepo.upsert(variant);
+		await variantRepo.upsert(wCtx, variant);
 
-		const retrieved = await variantRepo.get(Variant.ById(variant.id));
+		const retrieved = await variantRepo.get(rCtx, Variant.ById(variant.id));
 		expect(retrieved?.model).toBeNull();
 		expect(retrieved?.appendPrompt).toBeNull();
 	});
@@ -66,15 +72,15 @@ describe("VariantRepository upsert + get", () => {
 			model: "opus",
 			appendPrompt: "Be concise",
 		});
-		await variantRepo.upsert(variant);
+		await variantRepo.upsert(wCtx, variant);
 
-		const retrieved = await variantRepo.get(Variant.ById(variant.id));
+		const retrieved = await variantRepo.get(rCtx, Variant.ById(variant.id));
 		expect(retrieved?.model).toBe("opus");
 		expect(retrieved?.appendPrompt).toBe("Be concise");
 	});
 
 	test("returns null for non-existent id", async () => {
-		const retrieved = await variantRepo.get(Variant.ById("non-existent"));
+		const retrieved = await variantRepo.get(rCtx, Variant.ById("non-existent"));
 		expect(retrieved).toBeNull();
 	});
 
@@ -83,9 +89,9 @@ describe("VariantRepository upsert + get", () => {
 			model: "sonnet",
 			appendPrompt: "Extra instructions",
 		});
-		await variantRepo.upsert(variant);
+		await variantRepo.upsert(wCtx, variant);
 
-		const retrieved = await variantRepo.get(Variant.ById(variant.id));
+		const retrieved = await variantRepo.get(rCtx, Variant.ById(variant.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Variant, variant, [
 			"createdAt",
@@ -103,13 +109,17 @@ describe("VariantRepository spec queries", () => {
 		const v1 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
 		const v2 = createTestVariant({ executor: "claude-code", name: "PLAN" });
 		const v3 = createTestVariant({ executor: "gemini-cli", name: "DEFAULT" });
-		await variantRepo.upsert(v1);
-		await variantRepo.upsert(v2);
-		await variantRepo.upsert(v3);
+		await variantRepo.upsert(wCtx, v1);
+		await variantRepo.upsert(wCtx, v2);
+		await variantRepo.upsert(wCtx, v3);
 
-		const page = await variantRepo.list(Variant.ByExecutor("claude-code"), {
-			limit: 50,
-		});
+		const page = await variantRepo.list(
+			rCtx,
+			Variant.ByExecutor("claude-code"),
+			{
+				limit: 50,
+			},
+		);
 		expect(page.items).toHaveLength(2);
 		expect(page.items.every((v) => v.executor === "claude-code")).toBe(true);
 	});
@@ -117,10 +127,11 @@ describe("VariantRepository spec queries", () => {
 	test("ByExecutorAndName finds exact match", async () => {
 		const v1 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
 		const v2 = createTestVariant({ executor: "claude-code", name: "PLAN" });
-		await variantRepo.upsert(v1);
-		await variantRepo.upsert(v2);
+		await variantRepo.upsert(wCtx, v1);
+		await variantRepo.upsert(wCtx, v2);
 
 		const retrieved = await variantRepo.get(
+			rCtx,
 			Variant.ByExecutorAndName("claude-code", "PLAN"),
 		);
 		expect(retrieved).not.toBeNull();
@@ -129,9 +140,10 @@ describe("VariantRepository spec queries", () => {
 
 	test("ByExecutorAndName returns null when no match", async () => {
 		const v1 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
-		await variantRepo.upsert(v1);
+		await variantRepo.upsert(wCtx, v1);
 
 		const retrieved = await variantRepo.get(
+			rCtx,
 			Variant.ByExecutorAndName("claude-code", "NON_EXISTENT"),
 		);
 		expect(retrieved).toBeNull();
@@ -140,10 +152,11 @@ describe("VariantRepository spec queries", () => {
 	test("ByExecutorAndName distinguishes different executors", async () => {
 		const v1 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
 		const v2 = createTestVariant({ executor: "gemini-cli", name: "DEFAULT" });
-		await variantRepo.upsert(v1);
-		await variantRepo.upsert(v2);
+		await variantRepo.upsert(wCtx, v1);
+		await variantRepo.upsert(wCtx, v2);
 
 		const retrieved = await variantRepo.get(
+			rCtx,
 			Variant.ByExecutorAndName("gemini-cli", "DEFAULT"),
 		);
 		expect(retrieved?.id).toBe(v2.id);
@@ -159,16 +172,16 @@ describe("VariantRepository listByExecutor", () => {
 		const v1 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
 		const v2 = createTestVariant({ executor: "claude-code", name: "PLAN" });
 		const v3 = createTestVariant({ executor: "gemini-cli", name: "DEFAULT" });
-		await variantRepo.upsert(v1);
-		await variantRepo.upsert(v2);
-		await variantRepo.upsert(v3);
+		await variantRepo.upsert(wCtx, v1);
+		await variantRepo.upsert(wCtx, v2);
+		await variantRepo.upsert(wCtx, v3);
 
-		const variants = await variantRepo.listByExecutor("claude-code");
+		const variants = await variantRepo.listByExecutor(rCtx, "claude-code");
 		expect(variants).toHaveLength(2);
 	});
 
 	test("returns empty array for unknown executor", async () => {
-		const variants = await variantRepo.listByExecutor("unknown-executor");
+		const variants = await variantRepo.listByExecutor(rCtx, "unknown-executor");
 		expect(variants).toHaveLength(0);
 	});
 });
@@ -180,21 +193,21 @@ describe("VariantRepository listByExecutor", () => {
 describe("VariantRepository UNIQUE constraint", () => {
 	test("UNIQUE(executor, name) prevents duplicate entries", async () => {
 		const v1 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
-		await variantRepo.upsert(v1);
+		await variantRepo.upsert(wCtx, v1);
 
 		// Creating a different variant with same executor+name should fail on INSERT
 		const v2 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
-		expect(() => variantRepo.upsert(v2)).toThrow();
+		expect(() => variantRepo.upsert(wCtx, v2)).toThrow();
 	});
 
 	test("same name with different executor is allowed", async () => {
 		const v1 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
 		const v2 = createTestVariant({ executor: "gemini-cli", name: "DEFAULT" });
-		await variantRepo.upsert(v1);
-		await variantRepo.upsert(v2);
+		await variantRepo.upsert(wCtx, v1);
+		await variantRepo.upsert(wCtx, v2);
 
-		const all1 = await variantRepo.listByExecutor("claude-code");
-		const all2 = await variantRepo.listByExecutor("gemini-cli");
+		const all1 = await variantRepo.listByExecutor(rCtx, "claude-code");
+		const all2 = await variantRepo.listByExecutor(rCtx, "gemini-cli");
 		expect(all1).toHaveLength(1);
 		expect(all2).toHaveLength(1);
 	});
@@ -211,12 +224,16 @@ describe("VariantRepository pagination", () => {
 				executor: "claude-code",
 				name: `VARIANT_${i}`,
 			});
-			await variantRepo.upsert(v);
+			await variantRepo.upsert(wCtx, v);
 		}
 
-		const page = await variantRepo.list(Variant.ByExecutor("claude-code"), {
-			limit: 3,
-		});
+		const page = await variantRepo.list(
+			rCtx,
+			Variant.ByExecutor("claude-code"),
+			{
+				limit: 3,
+			},
+		);
 		expect(page.items).toHaveLength(3);
 		expect(page.hasMore).toBe(true);
 		expect(page.nextCursor).toBeDefined();
@@ -228,12 +245,16 @@ describe("VariantRepository pagination", () => {
 				executor: "claude-code",
 				name: `VARIANT_${i}`,
 			});
-			await variantRepo.upsert(v);
+			await variantRepo.upsert(wCtx, v);
 		}
 
-		const page = await variantRepo.list(Variant.ByExecutor("claude-code"), {
-			limit: 10,
-		});
+		const page = await variantRepo.list(
+			rCtx,
+			Variant.ByExecutor("claude-code"),
+			{
+				limit: 10,
+			},
+		);
 		expect(page.items).toHaveLength(3);
 		expect(page.hasMore).toBe(false);
 		expect(page.nextCursor).toBeUndefined();
@@ -247,15 +268,18 @@ describe("VariantRepository pagination", () => {
 describe("VariantRepository delete", () => {
 	test("deletes a variant", async () => {
 		const variant = createTestVariant();
-		await variantRepo.upsert(variant);
+		await variantRepo.upsert(wCtx, variant);
 
-		const deleted = await variantRepo.delete(Variant.ById(variant.id));
+		const deleted = await variantRepo.delete(wCtx, Variant.ById(variant.id));
 		expect(deleted).toBe(1);
-		expect(await variantRepo.get(Variant.ById(variant.id))).toBeNull();
+		expect(await variantRepo.get(rCtx, Variant.ById(variant.id))).toBeNull();
 	});
 
 	test("returns 0 when nothing to delete", async () => {
-		const deleted = await variantRepo.delete(Variant.ById("non-existent"));
+		const deleted = await variantRepo.delete(
+			wCtx,
+			Variant.ById("non-existent"),
+		);
 		expect(deleted).toBe(0);
 	});
 
@@ -263,13 +287,20 @@ describe("VariantRepository delete", () => {
 		const v1 = createTestVariant({ executor: "claude-code", name: "DEFAULT" });
 		const v2 = createTestVariant({ executor: "claude-code", name: "PLAN" });
 		const v3 = createTestVariant({ executor: "gemini-cli", name: "DEFAULT" });
-		await variantRepo.upsert(v1);
-		await variantRepo.upsert(v2);
-		await variantRepo.upsert(v3);
+		await variantRepo.upsert(wCtx, v1);
+		await variantRepo.upsert(wCtx, v2);
+		await variantRepo.upsert(wCtx, v3);
 
-		const deleted = await variantRepo.delete(Variant.ByExecutor("claude-code"));
+		const deleted = await variantRepo.delete(
+			wCtx,
+			Variant.ByExecutor("claude-code"),
+		);
 		expect(deleted).toBe(2);
-		expect(await variantRepo.listByExecutor("claude-code")).toHaveLength(0);
-		expect(await variantRepo.listByExecutor("gemini-cli")).toHaveLength(1);
+		expect(await variantRepo.listByExecutor(rCtx, "claude-code")).toHaveLength(
+			0,
+		);
+		expect(await variantRepo.listByExecutor(rCtx, "gemini-cli")).toHaveLength(
+			1,
+		);
 	});
 });

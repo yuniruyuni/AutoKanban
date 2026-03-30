@@ -1,32 +1,34 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 import { createTestProject, createTestTask } from "../../test/factories";
-import { closeTestDB, createTestDB } from "../../test/helpers/db";
+import { createTestDB } from "../../test/helpers/db";
 import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import type { PgDatabase } from "../db/pg-client";
 import { and } from "../models/common";
 import { Task } from "../models/task";
+import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
+import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
 import { ProjectRepository } from "./project";
 import { TaskRepository } from "./task";
 
 let db: PgDatabase;
 let taskRepo: TaskRepository;
 let projectRepo: ProjectRepository;
+let rCtx: DbReadCtx;
+let wCtx: DbWriteCtx;
 const PROJECT_ID = "test-project-1";
 
 beforeEach(async () => {
 	db = await createTestDB();
-	taskRepo = new TaskRepository(db);
-	projectRepo = new ProjectRepository(db);
+	taskRepo = new TaskRepository();
+	projectRepo = new ProjectRepository();
+	rCtx = createDbReadCtx(db);
+	wCtx = createDbWriteCtx(db);
 	// Insert a project so FK constraints are satisfied
 	const project = createTestProject({
 		id: PROJECT_ID,
 		repoPath: `/tmp/repo-${Date.now()}`,
 	});
-	await projectRepo.upsert(project);
-});
-
-afterEach(async () => {
-	await closeTestDB(db);
+	await projectRepo.upsert(wCtx, project);
 });
 
 // ============================================
@@ -36,9 +38,9 @@ afterEach(async () => {
 describe("TaskRepository upsert + get", () => {
 	test("inserts and retrieves a task", async () => {
 		const task = createTestTask({ projectId: PROJECT_ID });
-		await taskRepo.upsert(task);
+		await taskRepo.upsert(wCtx, task);
 
-		const retrieved = await taskRepo.get(Task.ById(task.id));
+		const retrieved = await taskRepo.get(rCtx, Task.ById(task.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(task.id);
 		expect(retrieved?.title).toBe(task.title);
@@ -47,20 +49,20 @@ describe("TaskRepository upsert + get", () => {
 
 	test("updates existing task on conflict", async () => {
 		const task = createTestTask({ projectId: PROJECT_ID });
-		await taskRepo.upsert(task);
+		await taskRepo.upsert(wCtx, task);
 
 		const updated = { ...task, title: "Updated Title", updatedAt: new Date() };
-		await taskRepo.upsert(updated);
+		await taskRepo.upsert(wCtx, updated);
 
-		const retrieved = await taskRepo.get(Task.ById(task.id));
+		const retrieved = await taskRepo.get(rCtx, Task.ById(task.id));
 		expect(retrieved?.title).toBe("Updated Title");
 	});
 
 	test("preserves null description", async () => {
 		const task = createTestTask({ projectId: PROJECT_ID, description: null });
-		await taskRepo.upsert(task);
+		await taskRepo.upsert(wCtx, task);
 
-		const retrieved = await taskRepo.get(Task.ById(task.id));
+		const retrieved = await taskRepo.get(rCtx, Task.ById(task.id));
 		expect(retrieved?.description).toBeNull();
 	});
 
@@ -69,14 +71,14 @@ describe("TaskRepository upsert + get", () => {
 			projectId: PROJECT_ID,
 			description: "Some details",
 		});
-		await taskRepo.upsert(task);
+		await taskRepo.upsert(wCtx, task);
 
-		const retrieved = await taskRepo.get(Task.ById(task.id));
+		const retrieved = await taskRepo.get(rCtx, Task.ById(task.id));
 		expect(retrieved?.description).toBe("Some details");
 	});
 
 	test("returns null for non-existent id", async () => {
-		const retrieved = await taskRepo.get(Task.ById("non-existent"));
+		const retrieved = await taskRepo.get(rCtx, Task.ById("non-existent"));
 		expect(retrieved).toBeNull();
 	});
 
@@ -87,16 +89,16 @@ describe("TaskRepository upsert + get", () => {
 			description: "Detailed desc",
 			status: "inprogress",
 		});
-		await taskRepo.upsert(task);
+		await taskRepo.upsert(wCtx, task);
 
-		const retrieved = await taskRepo.get(Task.ById(task.id));
+		const retrieved = await taskRepo.get(rCtx, Task.ById(task.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Task, task, ["createdAt", "updatedAt"]);
 	});
 
 	test("P2: update round-trip reflects all changed fields", async () => {
 		const task = createTestTask({ projectId: PROJECT_ID });
-		await taskRepo.upsert(task);
+		await taskRepo.upsert(wCtx, task);
 
 		const updated: Task = {
 			...task,
@@ -105,18 +107,18 @@ describe("TaskRepository upsert + get", () => {
 			status: "inprogress",
 			updatedAt: new Date(),
 		};
-		await taskRepo.upsert(updated);
+		await taskRepo.upsert(wCtx, updated);
 
-		const retrieved = await taskRepo.get(Task.ById(task.id));
+		const retrieved = await taskRepo.get(rCtx, Task.ById(task.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Task, updated, ["createdAt", "updatedAt"]);
 	});
 
 	test("P1: round-trip with null description", async () => {
 		const task = createTestTask({ projectId: PROJECT_ID, description: null });
-		await taskRepo.upsert(task);
+		await taskRepo.upsert(wCtx, task);
 
-		const retrieved = await taskRepo.get(Task.ById(task.id));
+		const retrieved = await taskRepo.get(rCtx, Task.ById(task.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as Task, task, ["createdAt", "updatedAt"]);
 	});
@@ -129,9 +131,9 @@ describe("TaskRepository upsert + get", () => {
 describe("TaskRepository spec queries", () => {
 	test("ByProject filters by project", async () => {
 		const task1 = createTestTask({ projectId: PROJECT_ID });
-		await taskRepo.upsert(task1);
+		await taskRepo.upsert(wCtx, task1);
 
-		const page = await taskRepo.list(Task.ByProject(PROJECT_ID), {
+		const page = await taskRepo.list(rCtx, Task.ByProject(PROJECT_ID), {
 			limit: 50,
 		});
 		expect(page.items).toHaveLength(1);
@@ -144,10 +146,12 @@ describe("TaskRepository spec queries", () => {
 			projectId: PROJECT_ID,
 			status: "inprogress",
 		});
-		await taskRepo.upsert(task1);
-		await taskRepo.upsert(task2);
+		await taskRepo.upsert(wCtx, task1);
+		await taskRepo.upsert(wCtx, task2);
 
-		const page = await taskRepo.list(Task.ByStatus("todo"), { limit: 50 });
+		const page = await taskRepo.list(rCtx, Task.ByStatus("todo"), {
+			limit: 50,
+		});
 		expect(page.items).toHaveLength(1);
 		expect(page.items[0].status).toBe("todo");
 	});
@@ -159,13 +163,17 @@ describe("TaskRepository spec queries", () => {
 			status: "inprogress",
 		});
 		const task3 = createTestTask({ projectId: PROJECT_ID, status: "done" });
-		await taskRepo.upsert(task1);
-		await taskRepo.upsert(task2);
-		await taskRepo.upsert(task3);
+		await taskRepo.upsert(wCtx, task1);
+		await taskRepo.upsert(wCtx, task2);
+		await taskRepo.upsert(wCtx, task3);
 
-		const page = await taskRepo.list(Task.ByStatuses("todo", "inprogress"), {
-			limit: 50,
-		});
+		const page = await taskRepo.list(
+			rCtx,
+			Task.ByStatuses("todo", "inprogress"),
+			{
+				limit: 50,
+			},
+		);
 		expect(page.items).toHaveLength(2);
 	});
 
@@ -175,14 +183,14 @@ describe("TaskRepository spec queries", () => {
 			projectId: PROJECT_ID,
 			status: "inprogress",
 		});
-		await taskRepo.upsert(task1);
-		await taskRepo.upsert(task2);
+		await taskRepo.upsert(wCtx, task1);
+		await taskRepo.upsert(wCtx, task2);
 
 		const spec = and(
 			Task.ByProject(PROJECT_ID),
 			Task.ByStatus("todo"),
 		) as Task.Spec;
-		const page = await taskRepo.list(spec, { limit: 50 });
+		const page = await taskRepo.list(rCtx, spec, { limit: 50 });
 		expect(page.items).toHaveLength(1);
 		expect(page.items[0].status).toBe("todo");
 	});
@@ -196,10 +204,10 @@ describe("TaskRepository pagination", () => {
 	test("respects limit", async () => {
 		for (let i = 0; i < 5; i++) {
 			const task = createTestTask({ projectId: PROJECT_ID });
-			await taskRepo.upsert(task);
+			await taskRepo.upsert(wCtx, task);
 		}
 
-		const page = await taskRepo.list(Task.ByProject(PROJECT_ID), {
+		const page = await taskRepo.list(rCtx, Task.ByProject(PROJECT_ID), {
 			limit: 3,
 		});
 		expect(page.items).toHaveLength(3);
@@ -210,10 +218,10 @@ describe("TaskRepository pagination", () => {
 	test("hasMore is false when all items fit", async () => {
 		for (let i = 0; i < 3; i++) {
 			const task = createTestTask({ projectId: PROJECT_ID });
-			await taskRepo.upsert(task);
+			await taskRepo.upsert(wCtx, task);
 		}
 
-		const page = await taskRepo.list(Task.ByProject(PROJECT_ID), {
+		const page = await taskRepo.list(rCtx, Task.ByProject(PROJECT_ID), {
 			limit: 10,
 		});
 		expect(page.items).toHaveLength(3);
@@ -222,7 +230,7 @@ describe("TaskRepository pagination", () => {
 	});
 
 	test("empty result returns empty items", async () => {
-		const page = await taskRepo.list(Task.ByProject("non-existent"), {
+		const page = await taskRepo.list(rCtx, Task.ByProject("non-existent"), {
 			limit: 10,
 		});
 		expect(page.items).toHaveLength(0);
@@ -238,10 +246,10 @@ describe("TaskRepository pagination", () => {
 			projectId: PROJECT_ID,
 			createdAt: new Date("2025-01-02"),
 		});
-		await taskRepo.upsert(task1);
-		await taskRepo.upsert(task2);
+		await taskRepo.upsert(wCtx, task1);
+		await taskRepo.upsert(wCtx, task2);
 
-		const page = await taskRepo.list(Task.ByProject(PROJECT_ID), {
+		const page = await taskRepo.list(rCtx, Task.ByProject(PROJECT_ID), {
 			limit: 10,
 			sort: { keys: ["createdAt", "id"] as const, order: "desc" },
 		});
@@ -257,15 +265,15 @@ describe("TaskRepository pagination", () => {
 describe("TaskRepository delete + count", () => {
 	test("deletes a task", async () => {
 		const task = createTestTask({ projectId: PROJECT_ID });
-		await taskRepo.upsert(task);
+		await taskRepo.upsert(wCtx, task);
 
-		const deleted = await taskRepo.delete(Task.ById(task.id));
+		const deleted = await taskRepo.delete(wCtx, Task.ById(task.id));
 		expect(deleted).toBe(1);
-		expect(await taskRepo.get(Task.ById(task.id))).toBeNull();
+		expect(await taskRepo.get(rCtx, Task.ById(task.id))).toBeNull();
 	});
 
 	test("returns 0 when nothing to delete", async () => {
-		const deleted = await taskRepo.delete(Task.ById("non-existent"));
+		const deleted = await taskRepo.delete(wCtx, Task.ById("non-existent"));
 		expect(deleted).toBe(0);
 	});
 
@@ -273,16 +281,16 @@ describe("TaskRepository delete + count", () => {
 		const task1 = createTestTask({ projectId: PROJECT_ID, status: "todo" });
 		const task2 = createTestTask({ projectId: PROJECT_ID, status: "todo" });
 		const task3 = createTestTask({ projectId: PROJECT_ID, status: "done" });
-		await taskRepo.upsert(task1);
-		await taskRepo.upsert(task2);
-		await taskRepo.upsert(task3);
+		await taskRepo.upsert(wCtx, task1);
+		await taskRepo.upsert(wCtx, task2);
+		await taskRepo.upsert(wCtx, task3);
 
-		expect(await taskRepo.count(Task.ByStatus("todo"))).toBe(2);
-		expect(await taskRepo.count(Task.ByStatus("done"))).toBe(1);
-		expect(await taskRepo.count(Task.ByStatus("cancelled"))).toBe(0);
+		expect(await taskRepo.count(rCtx, Task.ByStatus("todo"))).toBe(2);
+		expect(await taskRepo.count(rCtx, Task.ByStatus("done"))).toBe(1);
+		expect(await taskRepo.count(rCtx, Task.ByStatus("cancelled"))).toBe(0);
 	});
 
 	test("count returns 0 for empty", async () => {
-		expect(await taskRepo.count(Task.ByProject(PROJECT_ID))).toBe(0);
+		expect(await taskRepo.count(rCtx, Task.ByProject(PROJECT_ID))).toBe(0);
 	});
 });

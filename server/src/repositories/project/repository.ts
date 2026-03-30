@@ -1,15 +1,26 @@
 import type { Cursor, Page } from "../../models/common";
 import type { Project, ProjectWithStats } from "../../models/project";
+import type {
+	DbReadCtx,
+	DbWriteCtx,
+	StripMarkers,
+} from "../../types/db-capability";
 
-export interface IProjectRepository {
-	get(spec: Project.Spec): Promise<Project | null>;
+export interface IProjectRepositoryDef {
+	get(ctx: DbReadCtx, spec: Project.Spec): Promise<Project | null>;
 	list(
+		ctx: DbReadCtx,
 		spec: Project.Spec,
 		cursor: Cursor<Project.SortKey>,
 	): Promise<Page<Project>>;
-	listAll(): Promise<Project[]>;
-	listAllWithStats(): Promise<ProjectWithStats[]>;
-	getWithStats(projectId: string): Promise<ProjectWithStats | null>;
-	upsert(project: Project): Promise<void>;
-	delete(spec: Project.Spec): Promise<number>;
+	listAll(ctx: DbReadCtx): Promise<Project[]>;
+	listAllWithStats(ctx: DbReadCtx): Promise<ProjectWithStats[]>;
+	getWithStats(
+		ctx: DbReadCtx,
+		projectId: string,
+	): Promise<ProjectWithStats | null>;
+	upsert(ctx: DbWriteCtx, project: Project): Promise<void>;
+	delete(ctx: DbWriteCtx, spec: Project.Spec): Promise<number>;
 }
+
+export type IProjectRepository = StripMarkers<IProjectRepositoryDef>;

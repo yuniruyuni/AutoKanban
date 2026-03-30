@@ -8,17 +8,23 @@ import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
 import type { PgDatabase } from "../db/pg-client";
 import { WorkspaceRepo } from "../models/workspace-repo";
+import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
+import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
 import { ProjectRepository } from "./project";
 import { WorkspaceRepoRepository } from "./workspace-repo";
 
 let db: PgDatabase;
 let wsRepoRepo: WorkspaceRepoRepository;
+let rCtx: DbReadCtx;
+let wCtx: DbWriteCtx;
 let WORKSPACE_ID: string;
 let PROJECT_ID: string;
 
 beforeEach(async () => {
 	db = await createTestDB();
-	wsRepoRepo = new WorkspaceRepoRepository(db);
+	wsRepoRepo = new WorkspaceRepoRepository();
+	rCtx = createDbReadCtx(db);
+	wCtx = createDbWriteCtx(db);
 
 	const seed = await seedFullChain(db);
 	WORKSPACE_ID = seed.workspace.id;
@@ -40,9 +46,9 @@ describe("WorkspaceRepoRepository round-trip", () => {
 			projectId: PROJECT_ID,
 			targetBranch: "feature-branch",
 		});
-		await wsRepoRepo.upsert(wr);
+		await wsRepoRepo.upsert(wCtx, wr);
 
-		const retrieved = await wsRepoRepo.get(WorkspaceRepo.ById(wr.id));
+		const retrieved = await wsRepoRepo.get(rCtx, WorkspaceRepo.ById(wr.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as WorkspaceRepo, wr, [
 			"createdAt",
@@ -62,16 +68,16 @@ describe("WorkspaceRepoRepository update round-trip", () => {
 			projectId: PROJECT_ID,
 			targetBranch: "original",
 		});
-		await wsRepoRepo.upsert(wr);
+		await wsRepoRepo.upsert(wCtx, wr);
 
 		const updated: WorkspaceRepo = {
 			...wr,
 			targetBranch: "updated-branch",
 			updatedAt: new Date(),
 		};
-		await wsRepoRepo.upsert(updated);
+		await wsRepoRepo.upsert(wCtx, updated);
 
-		const retrieved = await wsRepoRepo.get(WorkspaceRepo.ById(wr.id));
+		const retrieved = await wsRepoRepo.get(rCtx, WorkspaceRepo.ById(wr.id));
 		expect(retrieved).not.toBeNull();
 		expectEntityEqual(retrieved as WorkspaceRepo, updated, [
 			"createdAt",
@@ -86,11 +92,14 @@ describe("WorkspaceRepoRepository update round-trip", () => {
 
 describe("WorkspaceRepoRepository empty collection", () => {
 	test("get returns null for non-existent id", async () => {
-		expect(await wsRepoRepo.get(WorkspaceRepo.ById("non-existent"))).toBeNull();
+		expect(
+			await wsRepoRepo.get(rCtx, WorkspaceRepo.ById("non-existent")),
+		).toBeNull();
 	});
 
 	test("list returns empty page", async () => {
 		const page = await wsRepoRepo.list(
+			rCtx,
 			WorkspaceRepo.ByWorkspaceId("non-existent"),
 			{
 				limit: 10,
@@ -101,7 +110,9 @@ describe("WorkspaceRepoRepository empty collection", () => {
 	});
 
 	test("listByWorkspace returns empty array", async () => {
-		expect(await wsRepoRepo.listByWorkspace("non-existent")).toHaveLength(0);
+		expect(await wsRepoRepo.listByWorkspace(rCtx, "non-existent")).toHaveLength(
+			0,
+		);
 	});
 });
 
@@ -112,7 +123,7 @@ describe("WorkspaceRepoRepository empty collection", () => {
 describe("WorkspaceRepoRepository multiple elements", () => {
 	test("stores and retrieves multiple workspace repos", async () => {
 		// Need multiple projects for unique (workspace_id, project_id) constraint
-		const projectRepo = new ProjectRepository(db);
+		const projectRepo = new ProjectRepository();
 		const project2 = createTestProject({
 			name: "Project 2",
 			repoPath: "/tmp/repo-2",
@@ -121,10 +132,11 @@ describe("WorkspaceRepoRepository multiple elements", () => {
 			name: "Project 3",
 			repoPath: "/tmp/repo-3",
 		});
-		await projectRepo.upsert(project2);
-		await projectRepo.upsert(project3);
+		await projectRepo.upsert(wCtx, project2);
+		await projectRepo.upsert(wCtx, project3);
 
 		await wsRepoRepo.upsert(
+			wCtx,
 			createTestWorkspaceRepo({
 				workspaceId: WORKSPACE_ID,
 				projectId: PROJECT_ID,
@@ -132,6 +144,7 @@ describe("WorkspaceRepoRepository multiple elements", () => {
 			}),
 		);
 		await wsRepoRepo.upsert(
+			wCtx,
 			createTestWorkspaceRepo({
 				workspaceId: WORKSPACE_ID,
 				projectId: project2.id,
@@ -139,6 +152,7 @@ describe("WorkspaceRepoRepository multiple elements", () => {
 			}),
 		);
 		await wsRepoRepo.upsert(
+			wCtx,
 			createTestWorkspaceRepo({
 				workspaceId: WORKSPACE_ID,
 				projectId: project3.id,
@@ -147,6 +161,7 @@ describe("WorkspaceRepoRepository multiple elements", () => {
 		);
 
 		const page = await wsRepoRepo.list(
+			rCtx,
 			WorkspaceRepo.ByWorkspaceId(WORKSPACE_ID),
 			{
 				limit: 50,
@@ -166,15 +181,17 @@ describe("WorkspaceRepoRepository delete", () => {
 			workspaceId: WORKSPACE_ID,
 			projectId: PROJECT_ID,
 		});
-		await wsRepoRepo.upsert(wr);
+		await wsRepoRepo.upsert(wCtx, wr);
 
-		const deleted = await wsRepoRepo.delete(WorkspaceRepo.ById(wr.id));
+		const deleted = await wsRepoRepo.delete(wCtx, WorkspaceRepo.ById(wr.id));
 		expect(deleted).toBe(1);
-		expect(await wsRepoRepo.get(WorkspaceRepo.ById(wr.id))).toBeNull();
+		expect(await wsRepoRepo.get(rCtx, WorkspaceRepo.ById(wr.id))).toBeNull();
 	});
 
 	test("returns 0 when nothing to delete", async () => {
-		expect(await wsRepoRepo.delete(WorkspaceRepo.ById("non-existent"))).toBe(0);
+		expect(
+			await wsRepoRepo.delete(wCtx, WorkspaceRepo.ById("non-existent")),
+		).toBe(0);
 	});
 });
 
@@ -188,9 +205,9 @@ describe("WorkspaceRepoRepository spec filtering", () => {
 			workspaceId: WORKSPACE_ID,
 			projectId: PROJECT_ID,
 		});
-		await wsRepoRepo.upsert(wr);
+		await wsRepoRepo.upsert(wCtx, wr);
 
-		const retrieved = await wsRepoRepo.get(WorkspaceRepo.ById(wr.id));
+		const retrieved = await wsRepoRepo.get(rCtx, WorkspaceRepo.ById(wr.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.id).toBe(wr.id);
 	});
@@ -200,9 +217,10 @@ describe("WorkspaceRepoRepository spec filtering", () => {
 			workspaceId: WORKSPACE_ID,
 			projectId: PROJECT_ID,
 		});
-		await wsRepoRepo.upsert(wr);
+		await wsRepoRepo.upsert(wCtx, wr);
 
 		const page = await wsRepoRepo.list(
+			rCtx,
 			WorkspaceRepo.ByWorkspaceId(WORKSPACE_ID),
 			{
 				limit: 50,
@@ -217,11 +235,15 @@ describe("WorkspaceRepoRepository spec filtering", () => {
 			workspaceId: WORKSPACE_ID,
 			projectId: PROJECT_ID,
 		});
-		await wsRepoRepo.upsert(wr);
+		await wsRepoRepo.upsert(wCtx, wr);
 
-		const page = await wsRepoRepo.list(WorkspaceRepo.ByProjectId(PROJECT_ID), {
-			limit: 50,
-		});
+		const page = await wsRepoRepo.list(
+			rCtx,
+			WorkspaceRepo.ByProjectId(PROJECT_ID),
+			{
+				limit: 50,
+			},
+		);
 		expect(page.items).toHaveLength(1);
 		expect(page.items[0].projectId).toBe(PROJECT_ID);
 	});
@@ -231,9 +253,10 @@ describe("WorkspaceRepoRepository spec filtering", () => {
 			workspaceId: WORKSPACE_ID,
 			projectId: PROJECT_ID,
 		});
-		await wsRepoRepo.upsert(wr);
+		await wsRepoRepo.upsert(wCtx, wr);
 
 		const retrieved = await wsRepoRepo.get(
+			rCtx,
 			WorkspaceRepo.ByWorkspaceAndProject(WORKSPACE_ID, PROJECT_ID),
 		);
 		expect(retrieved).not.toBeNull();
@@ -248,14 +271,15 @@ describe("WorkspaceRepoRepository spec filtering", () => {
 
 describe("WorkspaceRepoRepository listByWorkspace", () => {
 	test("returns all records for a workspace", async () => {
-		const projectRepo = new ProjectRepository(db);
+		const projectRepo = new ProjectRepository();
 		const project2 = createTestProject({
 			name: "P2",
 			repoPath: "/tmp/repo-p2",
 		});
-		await projectRepo.upsert(project2);
+		await projectRepo.upsert(wCtx, project2);
 
 		await wsRepoRepo.upsert(
+			wCtx,
 			createTestWorkspaceRepo({
 				workspaceId: WORKSPACE_ID,
 				projectId: PROJECT_ID,
@@ -263,6 +287,7 @@ describe("WorkspaceRepoRepository listByWorkspace", () => {
 			}),
 		);
 		await wsRepoRepo.upsert(
+			wCtx,
 			createTestWorkspaceRepo({
 				workspaceId: WORKSPACE_ID,
 				projectId: project2.id,
@@ -270,7 +295,7 @@ describe("WorkspaceRepoRepository listByWorkspace", () => {
 			}),
 		);
 
-		const results = await wsRepoRepo.listByWorkspace(WORKSPACE_ID);
+		const results = await wsRepoRepo.listByWorkspace(rCtx, WORKSPACE_ID);
 		expect(results).toHaveLength(2);
 	});
 });

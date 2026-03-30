@@ -213,6 +213,7 @@ describe("getDiffs", () => {
 		const ctx = createMockContext({
 			workspace: { get: () => workspace } as never,
 			project: { get: () => project } as never,
+			workspaceRepo: { listByWorkspace: () => [] } as never,
 			worktree: createMockWorktreeRepository({
 				worktreeExists: async () => false,
 			}),

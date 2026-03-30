@@ -25,6 +25,20 @@ export const getBranchStatus = (input: GetBranchStatusInput) =>
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
+			const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
+				workspace.id,
+			);
+			const workspaceRepo = workspaceRepos.find(
+				(wr) => wr.projectId === input.projectId,
+			);
+
+			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
+			const prUrl = workspaceRepo?.prUrl ?? null;
+
+			return { workspace, project, targetBranch, prUrl };
+		},
+
+		post: async (ctx, { workspace, project, targetBranch, prUrl }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -41,21 +55,12 @@ export const getBranchStatus = (input: GetBranchStatusInput) =>
 			}
 
 			// Get branch status
-			const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
-				workspace.id,
-			);
-			const workspaceRepo = workspaceRepos.find(
-				(wr) => wr.projectId === input.projectId,
-			);
-
-			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
 			const status = await ctx.repos.git.getBranchStatus(
 				worktreePath,
 				targetBranch,
 			);
 
 			// Enrich with PR status if available
-			const prUrl = workspaceRepo?.prUrl ?? null;
 			let prState: "open" | "closed" | "merged" | null = null;
 			if (prUrl) {
 				try {

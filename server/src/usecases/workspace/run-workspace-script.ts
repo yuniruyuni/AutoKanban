@@ -44,20 +44,6 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 				return fail("INVALID_STATE", "Workspace has no worktree path");
 			}
 
-			const worktreePath = ctx.repos.worktree.getWorktreePath(
-				workspace.id,
-				project.name,
-			);
-
-			const config = await ctx.repos.workspaceConfig.load(worktreePath);
-			const command = config[input.scriptType];
-			if (!command) {
-				return fail(
-					"INVALID_STATE",
-					`No ${input.scriptType} script in auto-kanban.json`,
-				);
-			}
-
 			// Find latest session
 			const sessionPage = await ctx.repos.session.list(
 				Session.ByWorkspaceId(workspace.id),
@@ -88,7 +74,7 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 				);
 			}
 
-			return { session, worktreePath, command };
+			return { session, workspace, projectName: project.name };
 		},
 
 		process: (_ctx, data) => {
@@ -104,13 +90,28 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 			return data;
 		},
 
-		post: (ctx, data) => {
+		post: async (ctx, data) => {
+			// External calls: resolve worktree path and load workspace config
+			const worktreePath = ctx.repos.worktree.getWorktreePath(
+				data.workspace.id,
+				data.projectName,
+			);
+
+			const config = await ctx.repos.workspaceConfig.load(worktreePath);
+			const command = config[input.scriptType];
+			if (!command) {
+				return fail(
+					"INVALID_STATE",
+					`No ${input.scriptType} script in auto-kanban.json`,
+				);
+			}
+
 			ctx.repos.devServer.start({
 				processId: data.executionProcess.id,
-				command: data.command,
-				workingDir: data.worktreePath,
+				command,
+				workingDir: worktreePath,
 			});
-			return data;
+			return { ...data, worktreePath, command };
 		},
 
 		result: (data) => ({

@@ -13,13 +13,30 @@ const mockDb = {
 		fn({} as PgDatabase),
 } as PgDatabase;
 
+const emptyRepo = {} as Record<string, never>;
+const mockRawDbRepos = {
+	task: emptyRepo,
+	taskTemplate: emptyRepo,
+	project: emptyRepo,
+	workspace: emptyRepo,
+	workspaceRepo: emptyRepo,
+	session: emptyRepo,
+	executionProcess: emptyRepo,
+	executionProcessLogs: emptyRepo,
+	codingAgentTurn: emptyRepo,
+	tool: emptyRepo,
+	variant: emptyRepo,
+	approval: emptyRepo,
+} as unknown as Context["rawDbRepos"];
+
 const mockCtx: Context = {
 	now: new Date("2025-01-15T10:00:00.000Z"),
 	logger: createMockLogger(),
 	db: mockDb,
+	rawDbRepos: mockRawDbRepos,
+	externalRepos: {} as Context["externalRepos"],
 	repos: {} as Context["repos"],
 	logStreamer: {} as ILogStreamer,
-	createTransactionRepos: (repos) => repos,
 };
 
 // ============================================

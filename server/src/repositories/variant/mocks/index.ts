@@ -1,8 +1,8 @@
-import type { IVariantRepository } from "../repository";
+import type { IVariantRepositoryDef } from "../repository";
 
 export function createMockVariantRepository(
-	overrides: Partial<IVariantRepository> = {},
-): IVariantRepository {
+	overrides: Partial<IVariantRepositoryDef> = {},
+): IVariantRepositoryDef {
 	return {
 		get: async () => null,
 		list: async () => ({ items: [], hasMore: false }),
@@ -10,5 +10,5 @@ export function createMockVariantRepository(
 		upsert: async () => {},
 		delete: async () => 0,
 		...overrides,
-	} as IVariantRepository;
+	} as IVariantRepositoryDef;
 }

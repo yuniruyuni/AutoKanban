@@ -3,28 +3,48 @@ import type {
 	CodingAgentTurn,
 } from "../../models/coding-agent-turn";
 import type { Cursor, Page } from "../../models/common";
+import type {
+	DbReadCtx,
+	DbWriteCtx,
+	StripMarkers,
+} from "../../types/db-capability";
 
-export interface ICodingAgentTurnRepository {
-	get(spec: CodingAgentTurn.Spec): Promise<CodingAgentTurn | null>;
+export interface ICodingAgentTurnRepositoryDef {
+	get(
+		ctx: DbReadCtx,
+		spec: CodingAgentTurn.Spec,
+	): Promise<CodingAgentTurn | null>;
 	list(
+		ctx: DbReadCtx,
 		spec: CodingAgentTurn.Spec,
 		cursor: Cursor<CodingAgentTurn.SortKey>,
 	): Promise<Page<CodingAgentTurn>>;
-	upsert(turn: CodingAgentTurn): Promise<void>;
-	delete(spec: CodingAgentTurn.Spec): Promise<number>;
+	findLatestResumeInfo(
+		ctx: DbReadCtx,
+		sessionId: string,
+	): Promise<CodingAgentResumeInfo | null>;
+	findLatestResumeInfoByWorkspaceId(
+		ctx: DbReadCtx,
+		workspaceId: string,
+	): Promise<CodingAgentResumeInfo | null>;
+	upsert(ctx: DbWriteCtx, turn: CodingAgentTurn): Promise<void>;
+	delete(ctx: DbWriteCtx, spec: CodingAgentTurn.Spec): Promise<number>;
 	updateAgentSessionId(
+		ctx: DbWriteCtx,
 		executionProcessId: string,
 		agentSessionId: string,
 	): Promise<void>;
 	updateAgentMessageId(
+		ctx: DbWriteCtx,
 		executionProcessId: string,
 		agentMessageId: string,
 	): Promise<void>;
-	updateSummary(executionProcessId: string, summary: string): Promise<void>;
-	findLatestResumeInfo(
-		sessionId: string,
-	): Promise<CodingAgentResumeInfo | null>;
-	findLatestResumeInfoByWorkspaceId(
-		workspaceId: string,
-	): Promise<CodingAgentResumeInfo | null>;
+	updateSummary(
+		ctx: DbWriteCtx,
+		executionProcessId: string,
+		summary: string,
+	): Promise<void>;
 }
+
+export type ICodingAgentTurnRepository =
+	StripMarkers<ICodingAgentTurnRepositoryDef>;

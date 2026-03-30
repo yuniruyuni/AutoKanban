@@ -1,13 +1,14 @@
-import type { ISessionRepository } from "../repository";
+import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { ISessionRepositoryDef } from "../repository";
 
 export function createMockSessionRepository(
-	overrides: Partial<ISessionRepository> = {},
-): ISessionRepository {
+	overrides: Partial<ISessionRepositoryDef> = {},
+): ISessionRepositoryDef {
 	return {
-		get: async () => null,
-		list: async () => ({ items: [], hasMore: false }),
-		upsert: async () => {},
-		delete: async () => 0,
+		get: async (_ctx: DbReadCtx) => null,
+		list: async (_ctx: DbReadCtx) => ({ items: [], hasMore: false }),
+		upsert: async (_ctx: DbWriteCtx) => {},
+		delete: async (_ctx: DbWriteCtx) => 0,
 		...overrides,
-	} as ISessionRepository;
+	} as ISessionRepositoryDef;
 }

@@ -25,6 +25,10 @@ export const continueRebase = (input: ContinueRebaseInput) =>
 				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
 			}
 
+			return { workspace, project };
+		},
+
+		post: async (ctx, { workspace, project }) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -47,10 +51,6 @@ export const continueRebase = (input: ContinueRebaseInput) =>
 				);
 			}
 
-			return { worktreePath };
-		},
-
-		write: async (ctx, { worktreePath }) => {
 			// Continue rebase
 			try {
 				await ctx.repos.git.continueRebase(worktreePath);

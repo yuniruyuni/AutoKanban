@@ -1,12 +1,20 @@
 import type { Cursor, Page } from "../../models/common";
 import type { Session } from "../../models/session";
+import type {
+	DbReadCtx,
+	DbWriteCtx,
+	StripMarkers,
+} from "../../types/db-capability";
 
-export interface ISessionRepository {
-	get(spec: Session.Spec): Promise<Session | null>;
+export interface ISessionRepositoryDef {
+	get(ctx: DbReadCtx, spec: Session.Spec): Promise<Session | null>;
 	list(
+		ctx: DbReadCtx,
 		spec: Session.Spec,
 		cursor: Cursor<Session.SortKey>,
 	): Promise<Page<Session>>;
-	upsert(session: Session): Promise<void>;
-	delete(spec: Session.Spec): Promise<number>;
+	upsert(ctx: DbWriteCtx, session: Session): Promise<void>;
+	delete(ctx: DbWriteCtx, spec: Session.Spec): Promise<number>;
 }
+
+export type ISessionRepository = StripMarkers<ISessionRepositoryDef>;

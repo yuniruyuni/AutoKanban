@@ -13,57 +13,50 @@ export interface ExecuteToolInput {
 
 export const executeTool = (input: ExecuteToolInput) =>
 	usecase({
-		read: async (ctx) => {
+		pre: async () => {
 			if (!input.taskId && !input.projectId) {
 				return fail(
 					"INVALID_INPUT",
 					"Either taskId or projectId must be provided",
 				);
 			}
+			return {};
+		},
 
+		read: async (ctx) => {
 			const tool = await ctx.repos.tool.get(Tool.ById(input.toolId));
 			if (!tool) {
 				return fail("NOT_FOUND", "Tool not found", { toolId: input.toolId });
 			}
 
-			// Determine the path based on taskId or projectId
+			// Gather DB data needed to determine the path
+			let project: Project | null = null;
+			let workspaceId: string | null = null;
 			let targetPath: string | null = null;
 
 			if (input.taskId) {
-				// Get task to find the project
 				const task = await ctx.repos.task.get(Task.ById(input.taskId));
 				if (!task) {
 					return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
 				}
 
-				// Get project to get project name
-				const project = await ctx.repos.project.get(
-					Project.ById(task.projectId),
-				);
+				project = await ctx.repos.project.get(Project.ById(task.projectId));
 				if (!project) {
 					return fail("NOT_FOUND", "Project not found", {
 						projectId: task.projectId,
 					});
 				}
 
-				// Get workspace to get workspaceId
 				const workspace = await ctx.repos.workspace.get(
 					Workspace.ByTaskIdActive(input.taskId),
 				);
 				if (workspace) {
-					// Use the actual worktree path: {workspaceDir}/{projectName}
-					targetPath = ctx.repos.worktree.getWorktreePath(
-						workspace.id,
-						project.name,
-					);
+					workspaceId = workspace.id;
 				} else {
-					// Fallback to project repoPath when no workspace exists yet
 					targetPath = project.repoPath;
 				}
 			} else if (input.projectId) {
-				const project = await ctx.repos.project.get(
-					Project.ById(input.projectId),
-				);
+				project = await ctx.repos.project.get(Project.ById(input.projectId));
 				if (!project) {
 					return fail("NOT_FOUND", "Project not found", {
 						projectId: input.projectId,
@@ -72,27 +65,34 @@ export const executeTool = (input: ExecuteToolInput) =>
 				targetPath = project.repoPath;
 			}
 
-			return { tool, targetPath };
+			return { tool, project, workspaceId, targetPath };
 		},
 
-		process: (_, { tool, targetPath }) => {
-			// Get the path - fallback to empty string if not available
-			const path = targetPath ?? "";
-
-			// Replace {path} placeholder with actual path
-			const command = tool.command.replace(/\{path\}/g, path);
-
-			return { command, path };
+		process: (_, { tool, project, workspaceId, targetPath }) => {
+			return {
+				tool,
+				projectName: project?.name ?? null,
+				workspaceId,
+				targetPath,
+			};
 		},
 
-		write: async (ctx, { command, path }) => {
+		post: async (ctx, { tool, projectName, workspaceId, targetPath }) => {
+			// Resolve worktree path (External call) if needed
+			let path = targetPath;
+			if (workspaceId && projectName) {
+				path = ctx.repos.worktree.getWorktreePath(workspaceId, projectName);
+			}
+
+			const finalPath = path ?? "";
+			const command = tool.command.replace(/\{path\}/g, finalPath);
+
 			if (!command.trim()) {
 				return fail("INVALID_COMMAND", "Command is empty");
 			}
 
 			try {
-				await ctx.repos.tool.executeCommand(command, path || undefined);
-
+				await ctx.repos.tool.executeCommand(command, finalPath || undefined);
 				return { success: true, command };
 			} catch (error) {
 				return fail("EXECUTION_ERROR", `Failed to execute command: ${error}`);
