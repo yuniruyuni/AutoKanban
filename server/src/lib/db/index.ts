@@ -1,4 +1,5 @@
 import { PgDatabase } from "../../repositories/common";
+import type { ILogger } from "../logger/types";
 import { ensurePgSchema } from "./pgschema";
 import { EmbeddedPostgresManager } from "./postgres";
 
@@ -12,13 +13,21 @@ export function getDatabase(): PgDatabase {
 	return db;
 }
 
-export async function initDatabase(): Promise<PgDatabase> {
+export async function initDatabase(logger: ILogger): Promise<PgDatabase> {
+	const log = logger.child("Database");
+
+	log.info("Starting embedded PostgreSQL...");
 	pgManager = new EmbeddedPostgresManager();
 	await pgManager.start();
+	log.info(`PostgreSQL running on port ${pgManager.connectionParams.port}`);
 
+	log.info("Applying schema with pgschema...");
 	await ensurePgSchema(pgManager.connectionParams);
+	log.info("Schema applied");
 
+	log.info("Connecting to database...");
 	db = new PgDatabase(pgManager.poolConfig);
+	log.info("Database ready");
 
 	return db;
 }
