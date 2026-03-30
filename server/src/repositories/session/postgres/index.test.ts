@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from "bun:test";
-import { createTestSession } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
-import { expectEntityEqual } from "../../test/helpers/entity-equality";
-import { seedFullChain } from "../../test/helpers/seed";
-import type { PgDatabase } from "../db/pg-client";
-import { Session } from "../models/session";
-import type { DbReadCtx, DbWriteCtx } from "../repositories/common";
-import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";
-import { SessionRepository } from "./session/postgres";
+import { createTestSession } from "../../../../test/factories";
+import { createTestDB } from "../../../../test/helpers/db";
+import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
+import { seedFullChain } from "../../../../test/helpers/seed";
+import type { PgDatabase } from "../../../db/pg-client";
+import { Session } from "../../../models/session";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
+import { createDbReadCtx, createDbWriteCtx } from "../../common";
+import { SessionRepository } from ".";
 
 let db: PgDatabase;
 let sessionRepo: SessionRepository;

@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { createTestExecutionProcessLogs } from "../../test/factories";
-import { closeTestDB, createTestDB } from "../../test/helpers/db";
-import { seedFullChain } from "../../test/helpers/seed";
-import type { PgDatabase } from "../db/pg-client";
-import type { DbReadCtx, DbWriteCtx } from "../repositories/common";
-import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";
-import { ExecutionProcessLogsRepository } from "./execution-process-logs/postgres";
+import { createTestExecutionProcessLogs } from "../../../../test/factories";
+import { closeTestDB, createTestDB } from "../../../../test/helpers/db";
+import { seedFullChain } from "../../../../test/helpers/seed";
+import type { PgDatabase } from "../../../db/pg-client";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
+import { createDbReadCtx, createDbWriteCtx } from "../../common";
+import { ExecutionProcessLogsRepository } from ".";
 
 let db: PgDatabase;
 let logsRepo: ExecutionProcessLogsRepository;

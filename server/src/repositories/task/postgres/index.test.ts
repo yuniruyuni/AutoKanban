@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, test } from "bun:test";
-import { createTestProject, createTestTask } from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
-import { expectEntityEqual } from "../../test/helpers/entity-equality";
-import type { PgDatabase } from "../db/pg-client";
-import { and } from "../models/common";
-import { Task } from "../models/task";
-import type { DbReadCtx, DbWriteCtx } from "../repositories/common";
-import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";
-import { ProjectRepository } from "./project/postgres";
-import { TaskRepository } from "./task/postgres";
+import { createTestProject, createTestTask } from "../../../../test/factories";
+import { createTestDB } from "../../../../test/helpers/db";
+import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
+import type { PgDatabase } from "../../../db/pg-client";
+import { and } from "../../../models/common";
+import { Task } from "../../../models/task";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
+import { createDbReadCtx, createDbWriteCtx } from "../../common";
+import { ProjectRepository } from "../../project/postgres";
+import { TaskRepository } from ".";
 
 let db: PgDatabase;
 let taskRepo: TaskRepository;

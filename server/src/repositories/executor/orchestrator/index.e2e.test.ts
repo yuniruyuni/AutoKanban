@@ -10,14 +10,14 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Approval } from "../models/approval";
+import type { Approval } from "../../../models/approval";
 import {
 	bindCtx,
 	createServiceCtx,
 	type Full,
 	type Service,
-} from "../repositories/common";
-import type { ILogger } from "../types/logger";
+} from "../../common";
+import type { ILogger } from "../../../types/logger";
 import type {
 	ApprovalRepository,
 	ExecutionProcessLogsRepository,
@@ -25,10 +25,10 @@ import type {
 	SessionRepository,
 	TaskRepository,
 	WorkspaceRepository,
-} from "../repositories";
-import { ApprovalStore } from "./approval-store";
-import { ExecutorRepository } from "./executor";
-import { ClaudeCodeDriver } from "./executor/drivers/claude-code";
+} from "../..";
+import { ApprovalStore } from "../../approval-store";
+import { ExecutorRepository } from "..";
+import { ClaudeCodeDriver } from "../drivers/claude-code";
 
 function createMockLogger(): ILogger {
 	const noop = () => {};

@@ -3,16 +3,16 @@ import {
 	createTestProject,
 	createTestTask,
 	createTestWorkspace,
-} from "../../test/factories";
-import { createTestDB } from "../../test/helpers/db";
-import { expectEntityEqual } from "../../test/helpers/entity-equality";
-import type { PgDatabase } from "../db/pg-client";
-import { Workspace } from "../models/workspace";
-import type { DbReadCtx, DbWriteCtx } from "../repositories/common";
-import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";
-import { ProjectRepository } from "./project/postgres";
-import { TaskRepository } from "./task/postgres";
-import { WorkspaceRepository } from "./workspace/postgres";
+} from "../../../../test/factories";
+import { createTestDB } from "../../../../test/helpers/db";
+import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
+import type { PgDatabase } from "../../../db/pg-client";
+import { Workspace } from "../../../models/workspace";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
+import { createDbReadCtx, createDbWriteCtx } from "../../common";
+import { ProjectRepository } from "../../project/postgres";
+import { TaskRepository } from "../../task/postgres";
+import { WorkspaceRepository } from ".";
 
 let db: PgDatabase;
 let workspaceRepo: WorkspaceRepository;

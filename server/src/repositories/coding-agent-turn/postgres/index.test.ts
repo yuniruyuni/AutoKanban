@@ -2,17 +2,17 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
 	createTestCodingAgentTurn,
 	createTestExecutionProcess,
-} from "../../test/factories";
-import { closeTestDB, createTestDB } from "../../test/helpers/db";
-import { expectEntityEqual } from "../../test/helpers/entity-equality";
-import { seedFullChain } from "../../test/helpers/seed";
-import type { PgDatabase } from "../db/pg-client";
-import { CodingAgentTurn } from "../models/coding-agent-turn";
-import type { DbReadCtx, DbWriteCtx } from "../repositories/common";
-import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";
-import { CodingAgentTurnRepository } from "./coding-agent-turn/postgres";
-import { ExecutionProcessRepository } from "./execution-process/postgres";
-import { SessionRepository } from "./session/postgres";
+} from "../../../../test/factories";
+import { closeTestDB, createTestDB } from "../../../../test/helpers/db";
+import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
+import { seedFullChain } from "../../../../test/helpers/seed";
+import type { PgDatabase } from "../../../db/pg-client";
+import { CodingAgentTurn } from "../../../models/coding-agent-turn";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
+import { createDbReadCtx, createDbWriteCtx } from "../../common";
+import { CodingAgentTurnRepository } from ".";
+import { ExecutionProcessRepository } from "../../execution-process/postgres";
+import { SessionRepository } from "../../session/postgres";
 
 let db: PgDatabase;
 let turnRepo: CodingAgentTurnRepository;
