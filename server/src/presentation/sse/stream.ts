@@ -1,4 +1,4 @@
-import type { Hono } from "hono";
+import { Hono } from "hono";
 import type { Context as HonoContext } from "hono";
 import { streamSSE } from "hono/streaming";
 import type { Context } from "../../usecases/context";
@@ -20,8 +20,8 @@ export interface SSEStreamDef<TParams, TState> {
 	interval?: number;
 }
 
-export interface SSERouter {
-	register(app: Hono, ctx: Context): void;
+export interface SSERoute {
+	mount(app: Hono, ctx: Context): void;
 }
 
 /**
@@ -31,9 +31,9 @@ export function sseRoute<TParams, TState>(
 	path: string,
 	extractParams: (c: HonoContext) => TParams,
 	def: SSEStreamDef<TParams, TState>,
-): SSERouter {
+): SSERoute {
 	return {
-		register(app, ctx) {
+		mount(app, ctx) {
 			const interval = def.interval ?? 500;
 
 			app.get(path, async (c) => {
@@ -75,15 +75,16 @@ export function sseRoute<TParams, TState>(
 }
 
 /**
- * Aggregate multiple SSE routes into a single router.
+ * Aggregate SSE routes into a Hono sub-app.
+ * Mount with: app.route("/", sseRoutes(ctx))
  */
-export function sseRouter(...routes: SSERouter[]): SSERouter {
-	return {
-		register(app, ctx) {
-			for (const route of routes) {
-				route.register(app, ctx);
-			}
-		},
+export function sseRouter(...routes: SSERoute[]): (ctx: Context) => Hono {
+	return (ctx) => {
+		const app = new Hono();
+		for (const route of routes) {
+			route.mount(app, ctx);
+		}
+		return app;
 	};
 }
 
