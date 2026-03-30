@@ -40,7 +40,7 @@ export interface ClaudeCodeResult {
 }
 
 // Use specific version for stability
-const CLAUDE_CODE_PACKAGE = "@anthropic-ai/claude-code@2.1.32";
+const CLAUDE_CODE_PACKAGE = "@anthropic-ai/claude-code@latest";
 
 // Hook callback ID for auto-approving non-ExitPlanMode tools
 export const AUTO_APPROVE_CALLBACK_ID = "AUTO_APPROVE_CALLBACK_ID";
@@ -432,9 +432,6 @@ export class ClaudeCodeExecutor {
 			stderr: "pipe",
 			env: {
 				...process.env,
-				// Ensure non-interactive mode
-				CI: "true",
-				// Suppress npm noise
 				NPM_CONFIG_LOGLEVEL: "error",
 			},
 		});
