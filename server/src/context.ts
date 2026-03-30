@@ -26,35 +26,99 @@ import { WorkspaceRepoRepository } from "./repositories/workspace-repo/postgres"
 import { WorktreeRepository } from "./repositories/worktree";
 import { setupQueueProcessor } from "./usecases/execution/queue-processor";
 import type { Context } from "./usecases/context";
-import {
-	bindCtx,
-	createFullCtx,
-	type DbWriteCtx,
-	type FullRepos,
-	type ServiceCtx,
-} from "./repositories/common";
+import { bindRepos } from "./repositories";
+import { createFullCtx } from "./repositories/common";
 import type { ILogger } from "./lib/logger/types";
-import type { Repos } from "./repositories";
 
-function createRawRepos(logger: ILogger): Repos {
-	return {
-		// DB repositories
-		task: new TaskRepository(),
-		taskTemplate: new TaskTemplateRepository(),
-		project: new ProjectRepository(),
-		workspace: new WorkspaceRepository(),
-		workspaceRepo: new WorkspaceRepoRepository(),
-		session: new SessionRepository(),
-		executionProcess: new ExecutionProcessRepository(),
-		executionProcessLogs: new ExecutionProcessLogsRepository(),
-		codingAgentTurn: new CodingAgentTurnRepository(),
-		tool: new ToolRepository(),
-		variant: new VariantRepository(),
-		approval: new ApprovalRepository(),
-		// External repositories (placeholders, set after binding)
+export function createContext(db: PgDatabase, logger: ILogger): Context {
+	// Create DB repositories (stateless)
+	const taskRepo = new TaskRepository();
+	const taskTemplateRepo = new TaskTemplateRepository();
+	const projectRepo = new ProjectRepository();
+	const workspaceRepo = new WorkspaceRepository();
+	const workspaceRepoRepo = new WorkspaceRepoRepository();
+	const sessionRepo = new SessionRepository();
+	const executionProcessRepo = new ExecutionProcessRepository();
+	const executionProcessLogsRepo = new ExecutionProcessLogsRepository();
+	const codingAgentTurnRepo = new CodingAgentTurnRepository();
+	const toolRepo = new ToolRepository();
+	const variantRepo = new VariantRepository();
+	const approvalRepo = new ApprovalRepository();
+
+	// Bind with pool-level ctx for orchestrator dependencies
+	const fullCtx = createFullCtx(db);
+	const boundEpRepo = bindRepos(
+		{ executionProcess: executionProcessRepo } as any,
+		fullCtx,
+	).executionProcess;
+	const boundCatRepo = bindRepos(
+		{ codingAgentTurn: codingAgentTurnRepo } as any,
+		fullCtx,
+	).codingAgentTurn;
+	const boundEpLogsRepo = bindRepos(
+		{ executionProcessLogs: executionProcessLogsRepo } as any,
+		fullCtx,
+	).executionProcessLogs;
+
+	// Create executor (needs bound DB repos for internal use)
+	const drivers = new Map();
+	drivers.set("claude-code", new ClaudeCodeDriver(logger));
+	drivers.set("gemini-cli", new GeminiCliDriver(logger));
+	const executor = new ExecutorRepository(
+		boundEpRepo,
+		boundCatRepo,
+		drivers,
+		boundEpLogsRepo,
+		logger,
+	);
+
+	// Wire up approval dependencies
+	const boundApprovalRepo = bindRepos(
+		{ approval: approvalRepo } as any,
+		fullCtx,
+	).approval;
+	const boundApprovalStore = bindRepos(
+		{ approvalStore } as any,
+		fullCtx,
+	).approvalStore;
+	const boundTaskRepo = bindRepos(
+		{ task: taskRepo } as any,
+		fullCtx,
+	).task;
+	const boundSessionRepo = bindRepos(
+		{ session: sessionRepo } as any,
+		fullCtx,
+	).session;
+	const boundWorkspaceRepo = bindRepos(
+		{ workspace: workspaceRepo } as any,
+		fullCtx,
+	).workspace;
+
+	executor.setApprovalDeps({
+		approvalRepo: boundApprovalRepo,
+		approvalStore: boundApprovalStore,
+		taskRepo: boundTaskRepo,
+		sessionRepo: boundSessionRepo,
+		workspaceRepo: boundWorkspaceRepo,
+	});
+
+	// Assemble all raw repos (all defined, no undefined)
+	const rawRepos = {
+		task: taskRepo,
+		taskTemplate: taskTemplateRepo,
+		project: projectRepo,
+		workspace: workspaceRepo,
+		workspaceRepo: workspaceRepoRepo,
+		session: sessionRepo,
+		executionProcess: executionProcessRepo,
+		executionProcessLogs: executionProcessLogsRepo,
+		codingAgentTurn: codingAgentTurnRepo,
+		tool: toolRepo,
+		variant: variantRepo,
+		approval: approvalRepo,
 		git: new GitRepository(),
 		worktree: new WorktreeRepository(logger),
-		executor: undefined as unknown as Repos["executor"],
+		executor,
 		messageQueue: messageQueueRepository,
 		agentConfig: new AgentConfigRepository(),
 		workspaceConfig: new WorkspaceConfigRepository(),
@@ -62,87 +126,20 @@ function createRawRepos(logger: ILogger): Repos {
 		permissionStore,
 		approvalStore,
 		logStoreManager,
-		devServer: undefined as unknown as Repos["devServer"],
+		devServer: new DevServerRepository(boundEpLogsRepo, logger),
 	};
-}
 
-function bindAllRepos(
-	raw: Repos,
-	ctx: DbWriteCtx & ServiceCtx,
-): FullRepos<Repos> {
-	return {
-		task: bindCtx(raw.task, ctx),
-		taskTemplate: bindCtx(raw.taskTemplate, ctx),
-		project: bindCtx(raw.project, ctx),
-		workspace: bindCtx(raw.workspace, ctx),
-		workspaceRepo: bindCtx(raw.workspaceRepo, ctx),
-		session: bindCtx(raw.session, ctx),
-		executionProcess: bindCtx(raw.executionProcess, ctx),
-		executionProcessLogs: bindCtx(raw.executionProcessLogs, ctx),
-		codingAgentTurn: bindCtx(raw.codingAgentTurn, ctx),
-		tool: bindCtx(raw.tool, ctx),
-		variant: bindCtx(raw.variant, ctx),
-		approval: bindCtx(raw.approval, ctx),
-		// External repos also get ctx binding now (ServiceCtx)
-		git: bindCtx(raw.git, ctx),
-		worktree: bindCtx(raw.worktree, ctx),
-		executor: bindCtx(raw.executor, ctx),
-		messageQueue: bindCtx(raw.messageQueue, ctx),
-		agentConfig: bindCtx(raw.agentConfig, ctx),
-		workspaceConfig: bindCtx(raw.workspaceConfig, ctx),
-		draft: bindCtx(raw.draft, ctx),
-		permissionStore: bindCtx(raw.permissionStore, ctx),
-		approvalStore: bindCtx(raw.approvalStore, ctx),
-		logStoreManager: bindCtx(raw.logStoreManager, ctx),
-		devServer: bindCtx(raw.devServer, ctx),
-	};
-}
+	// Bind all repos with full ctx
+	const repos = bindRepos(rawRepos, fullCtx);
 
-export function createContext(db: PgDatabase, logger: ILogger): Context {
-	const rawRepos = createRawRepos(logger);
-
-	// Bind repos with pool-level db + service ctx for presentation layer / orchestrator
-	const fullCtx = createFullCtx(db);
-	const boundRepos = bindAllRepos(rawRepos, fullCtx);
-
-	const drivers = new Map();
-	drivers.set("claude-code", new ClaudeCodeDriver(logger));
-	drivers.set("gemini-cli", new GeminiCliDriver(logger));
-	const executor = new ExecutorRepository(
-		boundRepos.executionProcess,
-		boundRepos.codingAgentTurn,
-		drivers,
-		boundRepos.executionProcessLogs,
-		logger,
-	);
-
-	// Wire up approval dependencies for ExitPlanMode handling
-	executor.setApprovalDeps({
-		approvalRepo: boundRepos.approval,
-		approvalStore: boundRepos.approvalStore,
-		taskRepo: boundRepos.task,
-		sessionRepo: boundRepos.session,
-		workspaceRepo: boundRepos.workspace,
-	});
-
-	// Set executor and devServer on rawRepos
-	rawRepos.executor = executor;
-	rawRepos.devServer = new DevServerRepository(
-		boundRepos.executionProcessLogs,
-		logger,
-	);
-
-	// Re-bind after setting executor and devServer
-	const finalRepos = bindAllRepos(rawRepos, fullCtx);
-
-	// Set up queue processor with executor (for event subscription) and bound repos
-	setupQueueProcessor(executor, finalRepos, logger);
+	// Set up queue processor
+	setupQueueProcessor(executor, repos, logger);
 
 	return {
 		now: new Date(),
 		logger,
 		db,
 		rawRepos,
-		repos: finalRepos,
+		repos,
 	};
 }
