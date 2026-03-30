@@ -20,51 +20,71 @@ export interface SSEStreamDef<TParams, TState> {
 	interval?: number;
 }
 
-export function registerSSERoute<TParams, TState>(
-	app: Hono,
+export interface SSERouter {
+	register(app: Hono, ctx: Context): void;
+}
+
+/**
+ * Define a single SSE route.
+ */
+export function sseRoute<TParams, TState>(
 	path: string,
-	ctx: Context,
 	extractParams: (c: HonoContext) => TParams,
 	def: SSEStreamDef<TParams, TState>,
-): void {
-	const interval = def.interval ?? 500;
+): SSERouter {
+	return {
+		register(app, ctx) {
+			const interval = def.interval ?? 500;
 
-	app.get(path, async (c) => {
-		const params = extractParams(c);
+			app.get(path, async (c) => {
+				const params = extractParams(c);
 
-		return streamSSE(c, async (stream) => {
-			const controller = new AbortController();
-			stream.onAbort(() => controller.abort());
+				return streamSSE(c, async (stream) => {
+					const controller = new AbortController();
+					stream.onAbort(() => controller.abort());
 
-			// Snapshot
-			const snap = await def.snapshot(params).run(ctx);
-			if (!snap.ok) return;
-			let state = snap.value.state;
-			for (const event of snap.value.events) {
-				await stream.writeSSE({
-					event: event.type,
-					data: JSON.stringify(event.data),
+					const snap = await def.snapshot(params).run(ctx);
+					if (!snap.ok) return;
+					let state = snap.value.state;
+					for (const event of snap.value.events) {
+						await stream.writeSSE({
+							event: event.type,
+							data: JSON.stringify(event.data),
+						});
+					}
+
+					while (!controller.signal.aborted) {
+						await sleep(interval, controller.signal);
+						if (controller.signal.aborted) break;
+
+						const delta = await def.delta(params, state).run(ctx);
+						if (!delta.ok) continue;
+						state = delta.value.state;
+
+						for (const event of delta.value.events) {
+							await stream.writeSSE({
+								event: event.type,
+								data: JSON.stringify(event.data),
+							});
+						}
+					}
 				});
+			});
+		},
+	};
+}
+
+/**
+ * Aggregate multiple SSE routes into a single router.
+ */
+export function sseRouter(...routes: SSERouter[]): SSERouter {
+	return {
+		register(app, ctx) {
+			for (const route of routes) {
+				route.register(app, ctx);
 			}
-
-			// Delta loop
-			while (!controller.signal.aborted) {
-				await sleep(interval, controller.signal);
-				if (controller.signal.aborted) break;
-
-				const delta = await def.delta(params, state).run(ctx);
-				if (!delta.ok) continue;
-				state = delta.value.state;
-
-				for (const event of delta.value.events) {
-					await stream.writeSSE({
-						event: event.type,
-						data: JSON.stringify(event.data),
-					});
-				}
-			}
-		});
-	});
+		},
+	};
 }
 
 function sleep(ms: number, signal: AbortSignal): Promise<void> {

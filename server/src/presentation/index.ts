@@ -5,8 +5,7 @@ import { closeDatabase } from "../lib/db";
 import { removePortFile, writePortFile } from "../lib/port-file";
 import type { Context } from "../usecases/context";
 import { runMcpServer } from "./mcp/stdio";
-import { registerLogStreamRoute } from "./sse/routers/log-stream";
-import { registerStructuredLogStreamRoute } from "./sse/routers/structured-log-stream";
+import { sseRoutes } from "./sse/routers";
 import { startup } from "./system/routers/startup";
 import { appRouter } from "./trpc/routers";
 
@@ -40,8 +39,7 @@ export async function startServer(ctx: Context) {
 	app.get("/health", (c) => c.json({ status: "ok" }));
 
 	// SSE protocol
-	registerLogStreamRoute(app, ctx);
-	registerStructuredLogStreamRoute(app, ctx);
+	sseRoutes.register(app, ctx);
 
 	// Port file + shutdown
 	writePortFile(PORT);
