@@ -4,15 +4,9 @@ import { streamSSE } from "hono/streaming";
 import type { Context } from "../../usecases/context";
 import type { Usecase } from "../../usecases/runner";
 
-export interface SSEEvent {
-	type: string;
-	data: unknown;
-}
+export type { SSEDeltaResult, SSEEvent } from "../../models/sse";
 
-export interface SSEDeltaResult<TState> {
-	events: SSEEvent[];
-	state: TState;
-}
+import type { SSEDeltaResult } from "../../models/sse";
 
 export interface SSEStreamDef<TParams, TState> {
 	snapshot: (params: TParams) => Usecase<SSEDeltaResult<TState>>;

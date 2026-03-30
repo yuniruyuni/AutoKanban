@@ -1,4 +1,4 @@
-import type { SSEDeltaResult } from "../../presentation/sse/stream";
+import type { SSEDeltaResult } from "../../models/sse";
 import { usecase } from "../runner";
 
 // ============================================

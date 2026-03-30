@@ -6,12 +6,12 @@ import {
 	parseLogsToConversation,
 } from "../../models/conversation/conversation-parser";
 import { ExecutionProcess } from "../../models/execution-process";
+import type { QueuedMessage, QueueStatus } from "../../models/message-queue";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Variant } from "../../models/variant";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
-import type { QueuedMessage, QueueStatus } from "../../repositories";
 import { usecase } from "../runner";
 
 // ============================================

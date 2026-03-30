@@ -3,7 +3,7 @@ import {
 	parseLogsToConversation,
 } from "../../models/conversation/conversation-parser";
 import type { ConversationEntry } from "../../models/conversation/types";
-import type { SSEDeltaResult, SSEEvent } from "../../presentation/sse/stream";
+import type { SSEDeltaResult, SSEEvent } from "../../models/sse";
 import { usecase } from "../runner";
 
 // ============================================

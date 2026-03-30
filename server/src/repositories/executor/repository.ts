@@ -27,7 +27,7 @@ export interface ExecutorStartProtocolOptions {
 	/** Which driver to use. Defaults to "claude-code". */
 	executor?: string;
 	/** Logs repository for the driver to collect logs. Passed in by the caller. */
-	logsRepo?: Full<ExecutionProcessLogsRepository>;
+	logsRepo: Full<ExecutionProcessLogsRepository>;
 	/** Coding agent turn repository for the driver. Passed in by the caller. */
 	codingAgentTurnRepo?: Full<CodingAgentTurnRepository>;
 }

@@ -106,7 +106,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 				onSessionInfo: () => {},
 				onSummary: () => {},
 			},
-			options.logsRepo!,
+			options.logsRepo,
 			options.codingAgentTurnRepo,
 		);
 

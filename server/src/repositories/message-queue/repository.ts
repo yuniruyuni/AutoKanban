@@ -1,17 +1,7 @@
+import type { QueuedMessage, QueueStatus } from "../../models/message-queue";
 import type { ServiceCtx } from "../common";
 
-export interface QueuedMessage {
-	sessionId: string;
-	prompt: string;
-	executor?: string;
-	variant?: string;
-	queuedAt: Date;
-}
-
-export interface QueueStatus {
-	hasMessage: boolean;
-	message?: QueuedMessage;
-}
+export type { QueuedMessage, QueueStatus } from "../../models/message-queue";
 
 export interface MessageQueueRepository {
 	queue(
