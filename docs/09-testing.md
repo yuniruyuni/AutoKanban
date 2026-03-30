@@ -87,80 +87,62 @@ describe('Task', () => {
 **方針**: 実際のDBを使用したIntegration Test
 
 ```typescript
-// repositories/task-repository.test.ts
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
-import { Database } from 'bun:sqlite';
-import { TaskRepository } from './task-repository';
-import { Task } from '../models/task';
-import { and } from '../models/common';
+// repositories/task/postgres/index.test.ts
+import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
+import { TaskRepositoryPostgres } from './index';
+import { Task } from '../../../models/task';
+import { and } from '../../../models/common';
+import type { DbReadCtx, DbWriteCtx } from '../../common';
+// embedded-postgresでテスト用DBを起動
+// テストファイルは実装の隣に配置
 
-describe('TaskRepository', () => {
-  let db: Database;
-  let repo: TaskRepository;
+describe('TaskRepositoryPostgres', () => {
+  // テスト用のembedded-postgres DB接続を利用
+  let readCtx: DbReadCtx;
+  let writeCtx: DbWriteCtx;
+  let repo: TaskRepositoryPostgres;
 
-  beforeEach(() => {
-    // インメモリDBで毎回クリーンな状態
-    db = new Database(':memory:');
-    db.run(`
-      CREATE TABLE tasks (
-        id TEXT PRIMARY KEY,
-        project_id TEXT NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT,
-        status TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
-    `);
-    repo = new TaskRepository(db);
+  beforeAll(async () => {
+    // embedded-postgresでテスト用DB起動・スキーマ適用
+    // ... setup省略
+    repo = new TaskRepositoryPostgres();
   });
 
-  afterEach(() => {
-    db.close();
+  afterAll(async () => {
+    // DB接続クローズ
   });
 
   describe('upsert', () => {
-    test('新規タスクを挿入できる', () => {
+    test('新規タスクを挿入できる', async () => {
       const task = Task.create({ projectId: 'proj-1', title: 'Test' });
-      repo.upsert(task);
+      await repo.upsert(writeCtx, task);
 
-      const found = repo.get(Task.ById(task.id));
+      const found = await repo.get(readCtx, Task.ById(task.id));
       expect(found).not.toBeNull();
       expect(found!.title).toBe('Test');
-    });
-
-    test('既存タスクを更新できる', () => {
-      const task = Task.create({ projectId: 'proj-1', title: 'Test' });
-      repo.upsert(task);
-
-      const updated = { ...task, title: 'Updated' };
-      repo.upsert(updated);
-
-      const found = repo.get(Task.ById(task.id));
-      expect(found!.title).toBe('Updated');
     });
   });
 
   describe('list', () => {
-    test('プロジェクトIDでフィルタリングできる', () => {
-      repo.upsert(Task.create({ projectId: 'proj-1', title: 'Task 1' }));
-      repo.upsert(Task.create({ projectId: 'proj-2', title: 'Task 2' }));
+    test('プロジェクトIDでフィルタリングできる', async () => {
+      await repo.upsert(writeCtx, Task.create({ projectId: 'proj-1', title: 'Task 1' }));
+      await repo.upsert(writeCtx, Task.create({ projectId: 'proj-2', title: 'Task 2' }));
 
       const cursor = { limit: 10, sort: Task.defaultSort };
-      const page = repo.list(Task.ByProject('proj-1'), cursor);
+      const page = await repo.list(readCtx, Task.ByProject('proj-1'), cursor);
 
       expect(page.items).toHaveLength(1);
       expect(page.items[0].title).toBe('Task 1');
     });
 
-    test('複合条件でフィルタリングできる', () => {
-      repo.upsert(Task.create({ projectId: 'proj-1', title: 'Task 1' }));
+    test('複合条件でフィルタリングできる', async () => {
+      await repo.upsert(writeCtx, Task.create({ projectId: 'proj-1', title: 'Task 1' }));
       const task2 = Task.create({ projectId: 'proj-1', title: 'Task 2' });
-      repo.upsert({ ...task2, status: 'done' });
+      await repo.upsert(writeCtx, { ...task2, status: 'done' });
 
       const spec = and(Task.ByProject('proj-1'), Task.ByStatuses('todo'));
       const cursor = { limit: 10, sort: Task.defaultSort };
-      const page = repo.list(spec, cursor);
+      const page = await repo.list(readCtx, spec, cursor);
 
       expect(page.items).toHaveLength(1);
       expect(page.items[0].status).toBe('todo');
@@ -168,13 +150,13 @@ describe('TaskRepository', () => {
   });
 
   describe('pagination', () => {
-    test('hasMoreが正しく設定される', () => {
+    test('hasMoreが正しく設定される', async () => {
       for (let i = 0; i < 5; i++) {
-        repo.upsert(Task.create({ projectId: 'proj-1', title: `Task ${i}` }));
+        await repo.upsert(writeCtx, Task.create({ projectId: 'proj-1', title: `Task ${i}` }));
       }
 
       const cursor = { limit: 3, sort: Task.defaultSort };
-      const page = repo.list(Task.ByProject('proj-1'), cursor);
+      const page = await repo.list(readCtx, Task.ByProject('proj-1'), cursor);
 
       expect(page.items).toHaveLength(3);
       expect(page.hasMore).toBe(true);
@@ -286,32 +268,26 @@ describe('taskRouter', () => {
 ### テストDB
 
 ```typescript
-// test/helpers/db.ts
-import { Database } from 'bun:sqlite';
-import { schema } from '../../src/repositories/schema';
-
-export function createTestDB(): Database {
-  const db = new Database(':memory:');
-  db.run(schema);
-  return db;
-}
+// テストではembedded-postgresを使用
+// 各テストスイートでトランザクションを開始し、テスト後にロールバックすることで
+// テスト間の独立性を保証
+// スキーマはpgschemaにより起動時に自動適用される
 ```
 
 ### テストコンテキスト
 
 ```typescript
-// test/helpers/context.ts
-import { createTestDB } from './db';
-import { TaskRepository } from '../../src/repositories/task-repository';
-import { ProjectRepository } from '../../src/repositories/project-repository';
+// テストコンテキストはembedded-postgres接続を使用
+import { PgDatabase } from '../../src/repositories/common';
+import { TaskRepositoryPostgres } from '../../src/repositories/task/postgres';
+import { ProjectRepositoryPostgres } from '../../src/repositories/project/postgres';
 
-export function createTestContext() {
-  const db = createTestDB();
+export function createTestContext(db: PgDatabase) {
   return {
     db,
     repos: {
-      task: new TaskRepository(db),
-      project: new ProjectRepository(db),
+      task: new TaskRepositoryPostgres(),
+      project: new ProjectRepositoryPostgres(),
     },
     now: new Date('2025-01-01T00:00:00Z'),
   };
@@ -369,20 +345,21 @@ server/
 ├── src/
 │   ├── models/
 │   │   ├── task.ts
-│   │   └── task.test.ts      # 同一ディレクトリにテスト
+│   │   └── task.test.ts          # 同一ディレクトリにテスト
 │   ├── repositories/
-│   │   ├── task-repository.ts
-│   │   └── task-repository.test.ts
+│   │   ├── common/
+│   │   │   ├── sql.ts
+│   │   │   └── sql.test.ts       # 実装の隣にテスト
+│   │   └── task/
+│   │       └── postgres/
+│   │           ├── index.ts
+│   │           └── index.test.ts  # 実装の隣にテスト
 │   └── usecases/
+│       ├── runner.ts
+│       ├── runner.test.ts
 │       └── task/
 │           ├── create-task.ts
 │           └── create-task.test.ts
-└── test/
-    ├── helpers/              # テストユーティリティ
-    │   ├── db.ts
-    │   └── context.ts
-    └── factories/            # テストデータファクトリ
-        └── task.ts
 ```
 
 ---

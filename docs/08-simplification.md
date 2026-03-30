@@ -14,7 +14,7 @@
 | ランタイム | **Bun** | 高速実行、シングルバイナリ |
 | Webフレームワーク | **Hono** | 軽量、Bun最適化 |
 | API | **tRPC** | 型安全、コード生成不要 |
-| DB操作 | **SQL Builder + bun:sqlite** | 安全な合成、高速、柔軟 |
+| DB操作 | **SQL Builder + PostgreSQL (embedded-postgres)** | 安全な合成、高速、柔軟 |
 | 状態管理 | **Valtio** | ミュータブル操作、ボイラープレート削減 |
 | アーキテクチャ | **レイヤードアーキテクチャ** | 責務分離、テスト容易性 |
 
@@ -169,7 +169,7 @@ const where = compToSQL(spec, taskSpecToSQL);
 ```
 
 **利点:**
-- bun:sqliteの高速性を最大限活用
+- PostgreSQLの豊富な型システムと機能を活用
 - SQLインジェクション防止（プレースホルダ強制）
 - イミュータブルな設計で予測可能な動作
 - Tagged Template Literalで直感的なSQL記述
@@ -300,7 +300,7 @@ bun build --compile --outfile dist/auto-kanban
 
 **利点:**
 - 高速な起動・実行
-- ビルトインSQLite
+- PostgreSQL (embedded-postgres)
 - シングルバイナリ生成
 - パッケージマネージャ統合
 

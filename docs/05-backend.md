@@ -44,11 +44,12 @@
 server/
 ├── src/
 │   ├── index.ts              # エントリポイント
+│   ├── context.ts            # コンテキスト（DI）
 │   │
 │   ├── presentation/         # Presentation Layer（受動的な外部受信）
 │   │   ├── trpc.ts               # tRPC初期化
-│   │   ├── context.ts            # コンテキスト（DI）
 │   │   ├── websocket.ts          # WebSocket設定
+│   │   ├── handle-result.ts      # Result<T,Fail>→T変換
 │   │   └── routers/              # tRPCルーター
 │   │       ├── index.ts          # App Router
 │   │       ├── task.ts
@@ -58,6 +59,8 @@ server/
 │   │       └── config.ts
 │   │
 │   ├── usecases/             # Usecase Layer
+│   │   ├── context.ts            # Usecase用コンテキスト型定義
+│   │   ├── runner.ts             # Usecaseランナー（トランザクション管理）
 │   │   ├── task/
 │   │   │   ├── create-task.ts
 │   │   │   ├── update-task.ts
@@ -70,26 +73,39 @@ server/
 │   │   │   ├── create-workspace.ts
 │   │   │   ├── start-session.ts
 │   │   │   └── cleanup-workspace.ts
-│   │   └── executor/
+│   │   └── execution/
 │   │       ├── run-agent.ts
 │   │       └── abort-agent.ts
 │   │
 │   ├── repositories/         # Repository Layer（能動的な外部呼び出し）
-│   │   ├── common.ts             # compToSQL共通関数
-│   │   ├── sql.ts                # SQLオブジェクト（合成可能）
-│   │   ├── pagination.ts         # ページネーション（Cursor, Pager, Page）
-│   │   ├── database.ts           # DB初期化
-│   │   ├── transaction.ts        # トランザクション
-│   │   ├── schema.sql            # DDL定義
-│   │   ├── task-repository.ts    # DB: Task
-│   │   ├── project-repository.ts # DB: Project
-│   │   ├── workspace-repository.ts
-│   │   ├── session-repository.ts
-│   │   ├── execution-process-repository.ts
-│   │   ├── git-repository.ts     # 外部: Git操作
-│   │   ├── executor-repository.ts # 外部: エージェント実行
-│   │   ├── config-repository.ts  # 外部: 設定ファイル読み書き
-│   │   └── event-repository.ts   # 外部: EventEmitter
+│   │   ├── index.ts              # Repos型 + 全repository re-export
+│   │   ├── common/               # 共通基盤
+│   │   │   ├── pg-client.ts          # PgDatabase (Database interface実装)
+│   │   │   ├── database.ts           # Database interface定義
+│   │   │   ├── capability.ts         # DbReadCtx/DbWriteCtx/ServiceCtx型
+│   │   │   ├── sql.ts                # SQLオブジェクト（合成可能）
+│   │   │   ├── sql-helpers.ts        # SQL変換ヘルパー
+│   │   │   └── index.ts             # re-exports
+│   │   ├── task/                 # DB: Task
+│   │   │   ├── repository.ts        # TaskRepository interface
+│   │   │   └── postgres/            # PostgreSQL実装
+│   │   ├── project/              # DB: Project
+│   │   ├── workspace/            # DB: Workspace
+│   │   ├── session/              # DB: Session
+│   │   ├── execution-process/    # DB: ExecutionProcess
+│   │   ├── executor/             # 外部: エージェント実行
+│   │   ├── git/                  # 外部: Git操作
+│   │   └── log-store/            # 外部: ログ管理
+│   │
+│   ├── lib/                  # 共通ライブラリ
+│   │   ├── db/                   # embedded-postgres起動・管理
+│   │   ├── mcp/                  # MCPサーバー
+│   │   ├── setup/                # セットアップユーティリティ
+│   │   ├── logger/               # ロガー（types.ts含む）
+│   │   ├── conversation/         # 会話型定義（types.ts含む）
+│   │   └── git/                  # Git操作ユーティリティ
+│   │
+│   ├── schemas/              # Zodスキーマ
 │   │
 │   └── models/               # Model Layer
 │       ├── common.ts             # Comp<T>ジェネリック型
@@ -348,13 +364,23 @@ export function compToSQL<T extends { type: string }>(
 ### DBアクセスRepository例
 
 ```typescript
-// repositories/task-repository.ts
-import { sql, SQL } from './sql';
-import { compToSQL } from './common';
-import type { Comp } from '../models/common';
-import { Task } from '../models/task';
+// repositories/task/repository.ts - interface定義
+import type { DbReadCtx, DbWriteCtx } from '../common';
+import type { Task } from '../../models/task';
 
-// 基本Spec→SQL変換（Task固有）
+export interface TaskRepository {
+  get(ctx: DbReadCtx, spec: Task.Spec): Promise<Task | null>;
+  list(ctx: DbReadCtx, spec: Task.Spec, cursor: Cursor<Task.SortKey>): Promise<Page<Task>>;
+  upsert(ctx: DbWriteCtx, task: Task): Promise<void>;
+  delete(ctx: DbWriteCtx, spec: Task.Spec): Promise<number>;
+}
+
+// repositories/task/postgres/index.ts - PostgreSQL実装
+import { sql, SQL } from '../../common';
+import { compToSQL } from '../../common';
+import type { DbReadCtx, DbWriteCtx } from '../../common';
+import type { Task } from '../../../models/task';
+
 function taskSpecToSQL(spec: Task.Spec): SQL {
   switch (spec.type) {
     case 'ById':
@@ -366,17 +392,17 @@ function taskSpecToSQL(spec: Task.Spec): SQL {
   }
 }
 
-export class TaskRepository {
-  // Comp<Task.Spec>を受け取る
-  list(spec: Comp<Task.Spec>, cursor: Cursor): Page<Task> {
+export class TaskRepositoryPostgres implements TaskRepository {
+  // DbReadCtx/DbWriteCtxを第一引数に取る
+  async get(ctx: DbReadCtx, spec: Task.Spec): Promise<Task | null> {
     const where = compToSQL(spec, taskSpecToSQL);
-    // ...
+    return ctx.db.queryGet<Task>(sql`SELECT * FROM tasks WHERE ${where}`);
   }
 }
 
-// 使用例
-taskRepo.get(Task.ById('task-123'));  // 単一条件
-taskRepo.list(                         // 合成条件
+// 使用例（usecase内）
+await ctx.repos.task.get(ctx, Task.ById('task-123'));  // 単一条件
+await ctx.repos.task.list(ctx,                          // 合成条件
   and(Task.ByProject('proj-1'), Task.ByStatuses('todo', 'inprogress')),
   cursor
 );
@@ -966,25 +992,21 @@ export const badPattern = () => usecase({
 ### コンテキスト定義
 
 ```typescript
-// presentation/context.ts
-import { PgDatabase } from '../db/pg-client';
-import { initializeDatabase } from '../repositories/database';
-import { GitRepositoryImpl } from '../repositories/git-repository';
-import { ExecutorRepositoryImpl } from '../repositories/executor-repository';
-import { Logger } from '../logger';
+// context.ts（サーバールート）
+import { PgDatabase } from './repositories/common';
+import type { Logger } from './lib/logger/types';
 
-let db: PgDatabase | null = null;
-
-export async function createContext() {
-  if (!db) {
-    db = await initializeDatabase();
-  }
-
+// createContext はサーバー起動時にDB・Logger等を受け取り、
+// usecaseランナーに渡すコンテキストを構築する
+export function createContext(db: PgDatabase, logger: Logger) {
   return {
     db,
-    logger: new Logger(),
-    gitRepo: new GitRepositoryImpl(),
-    executorRepo: new ExecutorRepositoryImpl(),
+    logger,
+    repos: {
+      // DB repositories + External repositories
+      // ...
+    },
+    now: new Date(),
   };
 }
 

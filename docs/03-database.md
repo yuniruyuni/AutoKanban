@@ -655,89 +655,64 @@ export function compToSQL<T extends { type: string }>(
 Repository層では`Comp<Task.Spec>`を受け取り、共通関数で変換します。
 
 ```typescript
-// repositories/task-repository.ts
-import { PgDatabase } from '../db/pg-client';
-import { sql, SQL } from './sql';
-import { compToSQL } from './common';
-import { paginationSQL, createPage, type Page, type Pageable } from './pagination';
-import type { Comp } from '../models/common';
-import { Task } from '../models/task';
+// repositories/task/repository.ts - Repository interface定義
+import type { DbReadCtx, DbWriteCtx } from '../common';
+import type { Cursor, Page } from '../../models/common';
+import type { Task } from '../../models/task';
 
-/**
- * 基本Spec → SQL変換（Task固有）
- * and/or/notは共通関数が処理するので、基本Specのみ実装
- */
+// DbReadCtx/DbWriteCtxを第一引数に取るパターン
+export interface TaskRepository {
+  get(ctx: DbReadCtx, spec: Task.Spec): Promise<Task | null>;
+  list(ctx: DbReadCtx, spec: Task.Spec, cursor: Cursor<Task.SortKey>): Promise<Page<Task>>;
+  count(ctx: DbReadCtx, spec: Task.Spec): Promise<number>;
+  upsert(ctx: DbWriteCtx, task: Task): Promise<void>;
+  delete(ctx: DbWriteCtx, spec: Task.Spec): Promise<number>;
+}
+
+// repositories/task/postgres/index.ts - PostgreSQL実装
+import type { DbReadCtx, DbWriteCtx } from '../../common';
+import { sql, SQL } from '../../common';
+import { compToSQL } from '../../common';
+import type { Task } from '../../../models/task';
+
 function taskSpecToSQL(spec: Task.Spec): SQL {
   switch (spec.type) {
     case 'ById':
       return sql`id = ${spec.id}`;
-
     case 'ByProject':
       return sql`project_id = ${spec.projectId}`;
-
-    case 'ByStatus':
-      return sql`status = ${spec.status}`;
-
     case 'ByStatuses':
       return sql`status IN (${sql.params(...spec.statuses)})`;
-
-    case 'ByTitleContains':
-      return sql`title LIKE ${`%${spec.keyword}%`}`;
-
-    case 'ByCreatedAtRange': {
-      const conditions: SQL[] = [];
-      if (spec.from) conditions.push(sql`created_at >= ${spec.from}`);
-      if (spec.to) conditions.push(sql`created_at <= ${spec.to}`);
-      return sql.and(...conditions);
-    }
+    // ...
   }
 }
 
-export class TaskRepository {
-  constructor(private db: PgDatabase) {}
-
-  // Comp<Task.Spec> を受け取る（and/or/not合成可能）
-  list(spec: Comp<Task.Spec>, pageable: Pageable): Page<Task> {
+export class TaskRepositoryPostgres implements TaskRepository {
+  // ctxを第一引数で受け取り、ctx.db経由でクエリ実行
+  async get(ctx: DbReadCtx, spec: Task.Spec): Promise<Task | null> {
     const where = compToSQL(spec, taskSpecToSQL);
-    // ...
+    return ctx.db.queryGet<Task>(sql`SELECT * FROM tasks WHERE ${where}`);
   }
 
-  get(spec: Comp<Task.Spec>): Task | null {
-    const where = compToSQL(spec, taskSpecToSQL);
-    // ...
-  }
-
-  delete(spec: Comp<Task.Spec>): void {
-    const where = compToSQL(spec, taskSpecToSQL);
-    // ...
+  async upsert(ctx: DbWriteCtx, task: Task): Promise<void> {
+    await ctx.db.queryRun(sql`
+      INSERT INTO tasks (id, project_id, title, ...)
+      VALUES (${task.id}, ${task.projectId}, ${task.title}, ...)
+      ON CONFLICT(id) DO UPDATE SET ...
+    `);
   }
 }
 ```
 
 ```typescript
-// repositories/project-repository.ts
-import { sql, SQL } from './sql';
-import { compToSQL } from './common';
-import type { Comp } from '../models/common';
-import { Project } from '../models/project';
+// repositories/project/repository.ts
+import type { DbReadCtx, DbWriteCtx } from '../common';
+import type { Project } from '../../models/project';
 
-function projectSpecToSQL(spec: Project.Spec): SQL {
-  switch (spec.type) {
-    case 'ById':
-      return sql`id = ${spec.id}`;
-
-    case 'ByNameContains':
-      return sql`name LIKE ${`%${spec.keyword}%`}`;
-  }
-}
-
-export class ProjectRepository {
-  constructor(private db: PgDatabase) {}
-
-  list(spec: Comp<Project.Spec>, pageable: Pageable): Page<Project> {
-    const where = compToSQL(spec, projectSpecToSQL);
-    // ...
-  }
+export interface ProjectRepository {
+  get(ctx: DbReadCtx, spec: Project.Spec): Promise<Project | null>;
+  list(ctx: DbReadCtx, spec: Project.Spec, cursor: Cursor<Project.SortKey>): Promise<Page<Project>>;
+  upsert(ctx: DbWriteCtx, project: Project): Promise<void>;
 }
 ```
 
@@ -1152,7 +1127,7 @@ export function defaultCursor<K extends string>(
 
 ```typescript
 // repositories/task-repository.ts
-import { PgDatabase } from '../db/pg-client';
+import { PgDatabase } from '../repositories/common';
 import { sql, SQL } from './sql';
 import { compToSQL } from './common';
 import { createPager, type Cursor, type Page, type ColumnMapping } from './pagination';
@@ -1305,7 +1280,7 @@ export class TaskRepository {
 
 ```typescript
 // repositories/project-repository.ts
-import { PgDatabase } from '../db/pg-client';
+import { PgDatabase } from '../repositories/common';
 import { sql, SQL } from './sql';
 import { compToSQL } from './common';
 import { createPager, type Cursor, type Page, type ColumnMapping } from './pagination';
@@ -1487,7 +1462,7 @@ export class GitRepository {
 
 ```typescript
 // repositories/transaction.ts
-import { PgDatabase } from '../db/pg-client';
+import { PgDatabase } from '../repositories/common';
 
 /**
  * 非同期トランザクション
@@ -1513,7 +1488,7 @@ export async function transactionAsync<T>(
 
 ```typescript
 // repositories/database.ts
-import { PgDatabase } from '../db/pg-client';
+import { PgDatabase } from '../repositories/common';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -1531,7 +1506,7 @@ export async function initializeDatabase(): Promise<PgDatabase> {
 
 ```typescript
 // usecases/list-tasks.ts
-import type { PgDatabase } from '../db/pg-client';
+import type { PgDatabase } from '../repositories/common';
 import { TaskRepository } from '../repositories/task-repository';
 import { and, type Comp } from '../models/common';
 import { Task } from '../models/task';
@@ -1563,7 +1538,7 @@ export class ListTasksUsecase {
 }
 
 // usecases/create-task.ts
-import type { PgDatabase } from '../db/pg-client';
+import type { PgDatabase } from '../repositories/common';
 import { createId } from '@paralleldrive/cuid2';
 import { TaskRepository } from '../repositories/task-repository';
 import { Task, createTask } from '../models/task';
@@ -1592,7 +1567,7 @@ export class CreateTaskUsecase {
 }
 
 // usecases/delete-task.ts
-import type { PgDatabase } from '../db/pg-client';
+import type { PgDatabase } from '../repositories/common';
 import { TaskRepository } from '../repositories/task-repository';
 import { Task } from '../models/task';
 
@@ -1609,7 +1584,7 @@ export class DeleteTaskUsecase {
 }
 
 // usecases/get-task.ts
-import type { PgDatabase } from '../db/pg-client';
+import type { PgDatabase } from '../repositories/common';
 import { TaskRepository } from '../repositories/task-repository';
 import { Task } from '../models/task';
 
@@ -1632,7 +1607,7 @@ export class GetTaskUsecase {
 
 ```typescript
 // usecases/get-project-summary.ts
-import type { PgDatabase } from '../db/pg-client';
+import type { PgDatabase } from '../repositories/common';
 import { sql, SQL } from '../repositories/sql';
 import { Project } from '../models/project';
 import { Task } from '../models/task';

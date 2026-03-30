@@ -11,16 +11,18 @@ Model → Repository → Usecase → Presentation
 
 - レイヤー間データは **Model型のみ**（DTOなし）
 - **Usecase間の相互呼び出し禁止**
-- Repository interface: `server/src/types/repository.ts`
-- Context定義: `server/src/types/context.ts`（step別Context型: PreContext, ReadContext, ProcessContext, WriteContext, PostContext）
-- 補助ディレクトリ: `lib/`（純粋関数ユーティリティ）、`setup/`（起動時初期化）、`mcp/`（MCPサーバー実装）、`db/`（DB初期化・マイグレーション）
+- Repository定義: `server/src/repositories/index.ts`（Repos型 + 全repository re-export）
+- Context定義: `server/src/usecases/context.ts`
+- 補助ディレクトリ: `lib/`（意味単位のモジュール: db/, mcp/, setup/, logger/, conversation/, tool/, git/, port-file/）
 
 ## コーディング規約
 
 - ID生成: 各Modelの `Model.create()` ファクトリ経由（内部で `generateId()` を使用）。直接 `generateId()` や `crypto.randomUUID()` を呼ばない
 - 日時: Model内は `Date` 型、DB格納時は `dateToSQL()` / `dateFromSQL()` — `server/src/repositories/common.ts`
 - SQLカラム: snake_case / TypeScript: camelCase
-- Repository標準メソッド: `get(spec)`, `list(spec, cursor)`, `upsert(entity)`, `delete(spec)`
+- Repository標準メソッド: `get(ctx, spec)`, `list(ctx, spec, cursor)`, `upsert(ctx, entity)`, `delete(ctx, spec)` — 第一引数はctx
+- Repository interfaceは第一引数にDbReadCtx/DbWriteCtx/ServiceCtxマーカーを持つ。型関数DbRead<T>/DbWrite<T>/Service<T>/Full<T>で自動導出
+- Database interface: `server/src/repositories/common/database.ts`（PgDatabaseが実装）
 - DB操作は **upsert** (`INSERT ... ON CONFLICT DO UPDATE`)
 - Schema変更: `server/schema.sql` 編集 → 起動時にpgschemaが差分を自動適用（migration script不要）
 - DB: PostgreSQL（embedded-postgres）。`PgDatabase`ラッパー経由でクエリ実行。Repository層のメソッドは全て`async`
@@ -31,11 +33,14 @@ Model → Repository → Usecase → Presentation
 
 各ステップには制限されたContext型が渡される:
 - `pre`: `PreContext` (`{ now, logger }`)
-- `read`: `ReadContext` (`{ now, logger, repos }`)
+- `read`: `ReadContext` (`{ now, logger, repos: DbReadRepos }`) — **DB readのみ、External不可**
 - `process`: `ProcessContext` (`{ now, logger }`) — **reposアクセス不可、純粋計算のみ**
-- `write`: `WriteContext` (`{ now, logger, repos }`)
-- `post`: `PostContext` (`{ now, logger, repos }`)
+- `write`: `WriteContext` (`{ now, logger, repos: DbWriteRepos }`) — **DB read+write、External不可**
+- `post`: `PostContext` (`{ now, logger, repos: FullRepos }`) — **全アクセス（トランザクション外）**
 - `result`: Context不要 — 最終結果の変換（純粋関数）
+
+read→process→writeはトランザクション内。writeあり→BEGIN、readのみ→BEGIN READ ONLY、どちらもなし→トランザクションなし。
+External repo呼び出し（git, worktree, executor等）はpostステップでのみ実行（トランザクション停滞防止）。
 
 ```typescript
 export const createProject = (input: CreateProjectInput) =>

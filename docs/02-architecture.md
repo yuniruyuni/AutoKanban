@@ -144,10 +144,10 @@ export const taskRouter = router({
 server/
 ├── src/
 │   ├── index.ts           # エントリーポイント
+│   ├── context.ts         # コンテキスト（DI）
 │   │
 │   ├── presentation/      # Presentation Layer（受動的な外部受信）
 │   │   ├── trpc.ts            # tRPC設定
-│   │   ├── context.ts         # コンテキスト（DI）
 │   │   ├── websocket.ts       # WebSocket設定
 │   │   └── routers/
 │   │       ├── index.ts       # appRouter
@@ -157,6 +157,8 @@ server/
 │   │       └── config.ts
 │   │
 │   ├── usecases/          # Usecase Layer
+│   │   ├── context.ts         # Usecase用コンテキスト型定義
+│   │   ├── runner.ts          # Usecaseランナー（トランザクション管理）
 │   │   ├── task/
 │   │   │   ├── create-task.ts
 │   │   │   ├── update-task.ts
@@ -164,19 +166,34 @@ server/
 │   │   ├── workspace/
 │   │   │   ├── create-workspace.ts
 │   │   │   └── start-session.ts
-│   │   └── executor/
+│   │   └── execution/
 │   │       └── run-agent.ts
 │   │
 │   ├── repositories/      # Repository Layer（能動的な外部呼び出し）
-│   │   ├── common.ts           # compToSQL共通関数
-│   │   ├── sql.ts              # SQL構築ユーティリティ
-│   │   ├── pagination.ts       # ページネーション（Cursor, Pager, Page）
-│   │   ├── task-repository.ts
-│   │   ├── project-repository.ts
-│   │   ├── workspace-repository.ts
-│   │   ├── git-repository.ts   # 外部: Git操作
-│   │   ├── executor-repository.ts # 外部: エージェント実行
-│   │   └── event-repository.ts # 外部: EventEmitter
+│   │   ├── index.ts            # Repository interface re-exports
+│   │   ├── common/             # 共通基盤
+│   │   │   ├── pg-client.ts        # PgDatabase (Database interface実装)
+│   │   │   ├── database.ts         # Database interface定義
+│   │   │   ├── sql.ts              # SQL構築ユーティリティ
+│   │   │   ├── sql-helpers.ts      # SQL変換ヘルパー
+│   │   │   └── index.ts            # re-exports
+│   │   ├── task/               # DB: Task
+│   │   ├── project/            # DB: Project
+│   │   ├── workspace/          # DB: Workspace
+│   │   ├── session/            # DB: Session
+│   │   ├── executor/           # 外部: エージェント実行
+│   │   ├── git/                # 外部: Git操作
+│   │   └── log-store/          # 外部: ログ管理
+│   │
+│   ├── lib/               # 共通ライブラリ
+│   │   ├── db/                # embedded-postgres起動・管理
+│   │   ├── mcp/               # MCPサーバー
+│   │   ├── setup/             # セットアップユーティリティ
+│   │   ├── logger/            # ロガー（types.ts含む）
+│   │   ├── conversation/      # 会話型定義（types.ts含む）
+│   │   └── git/               # Git操作ユーティリティ
+│   │
+│   ├── schemas/           # Zodスキーマ
 │   │
 │   └── models/            # Model Layer
 │       ├── common.ts
@@ -432,19 +449,21 @@ Frontend                 Presentation           Usecase              Repository
 ## コンテキストとDI
 
 ```typescript
-// presentation/context.ts
-import { PgDatabase } from '../db/pg-client';
-import { TaskRepositoryImpl } from '../repositories/task-repository';
-import { ProjectRepositoryImpl } from '../repositories/project-repository';
+// usecases/context.ts
+import { PgDatabase } from '../repositories/common';
+import { TaskRepository } from '../repositories/task';
+import { ProjectRepository } from '../repositories/project';
 
-export function createContext() {
-  const db = new PgDatabase();
-
+export function createContext(db: PgDatabase, logger: Logger) {
   return {
     db,
-    taskRepo: new TaskRepositoryImpl(db),
-    projectRepo: new ProjectRepositoryImpl(db),
-    // ... 他のリポジトリ
+    repos: {
+      task: new TaskRepository(db),
+      project: new ProjectRepository(db),
+      // ... 他のリポジトリ
+    },
+    now: new Date(),
+    logger,
   };
 }
 
