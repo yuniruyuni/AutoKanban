@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import type { ExecutionProcessLogs } from "../../../models/execution-process";
 
 export async function upsertLogs(

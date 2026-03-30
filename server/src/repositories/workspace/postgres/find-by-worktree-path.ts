@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import type { Workspace } from "../../../models/workspace";
 import { rowToWorkspace, type WorkspaceRow } from "./common";
 

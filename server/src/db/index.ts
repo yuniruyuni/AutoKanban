@@ -1,4 +1,4 @@
-import { PgDatabase } from "./pg-client";
+import { PgDatabase } from "../repositories/common";
 import { ensurePgSchema } from "./pgschema";
 import { EmbeddedPostgresManager } from "./postgres";
 import { seedTaskTemplates } from "./seed-templates";

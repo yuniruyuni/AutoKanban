@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import type { TaskTemplate } from "../../../models/task-template";
 import { rowToTaskTemplate, type TaskTemplateRow } from "./common";
 

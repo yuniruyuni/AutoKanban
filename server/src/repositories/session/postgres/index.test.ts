@@ -3,7 +3,7 @@ import { createTestSession } from "../../../../test/factories";
 import { createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
 import { seedFullChain } from "../../../../test/helpers/seed";
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import { Session } from "../../../models/session";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";

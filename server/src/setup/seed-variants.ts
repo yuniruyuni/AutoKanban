@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../db/pg-client";
+import type { PgDatabase } from "../repositories/common";
 import { Variant } from "../models/variant";
 import { VariantRepository } from "../repositories/variant/postgres";
 import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";

@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../src/db/pg-client";
+import type { PgDatabase } from "../../src/repositories/common";
 import type { ILogStreamer } from "../../src/presentation/log-streamer";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn/postgres";

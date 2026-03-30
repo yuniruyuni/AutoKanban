@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from "bun:test";
 import { createTestProject, createTestTask } from "../../../../test/factories";
 import { createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import { Project } from "../../../models/project";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";

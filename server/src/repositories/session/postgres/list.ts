@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import type { Cursor, Page } from "../../../models/common";
 import { Session } from "../../../models/session";
 import { compToSQL } from "../../common";

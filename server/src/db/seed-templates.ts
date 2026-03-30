@@ -1,5 +1,5 @@
 import { generateId } from "../models/common";
-import type { PgDatabase } from "./pg-client";
+import type { PgDatabase } from "../repositories/common";
 
 /**
  * Seeds default task templates if none exist yet.

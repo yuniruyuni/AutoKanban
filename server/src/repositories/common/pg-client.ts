@@ -1,5 +1,5 @@
 import pg, { type PoolClient, type QueryResultRow } from "pg";
-import type { SQLFragment } from "../repositories/common";
+import type { SQLFragment } from "./sql";
 
 type Queryable = pg.Pool | PoolClient;
 

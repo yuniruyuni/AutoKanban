@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import type { Task } from "../../../models/task";
 import { compToSQL } from "../../common";
 import type { SQLFragment } from "../../common";

@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../src/db/pg-client";
+import type { PgDatabase } from "../../src/repositories/common";
 import type { ExecutionProcess } from "../../src/models/execution-process";
 import type { Project } from "../../src/models/project";
 import type { Session } from "../../src/models/session";

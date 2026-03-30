@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import type { Approval } from "../../../models/approval";
 import { dateToSQL } from "../../common";
 

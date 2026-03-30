@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import type { CodingAgentResumeInfo } from "../../../models/coding-agent-turn";
 
 export async function findLatestResumeInfo(

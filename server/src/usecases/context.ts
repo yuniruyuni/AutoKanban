@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../db/pg-client";
+import type { PgDatabase } from "../repositories/common";
 import type { ILogStreamer } from "../presentation/log-streamer";
 import type {
 	DbReadRepos,

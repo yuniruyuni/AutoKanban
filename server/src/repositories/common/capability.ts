@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../db/pg-client";
+import type { PgDatabase } from "./pg-client";
 
 // ============================================
 // Capability Marker Types

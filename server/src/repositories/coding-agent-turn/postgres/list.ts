@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import { CodingAgentTurn } from "../../../models/coding-agent-turn";
 import type { Cursor, Page } from "../../../models/common";
 import { compToSQL } from "../../common";

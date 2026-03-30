@@ -1,4 +1,4 @@
-import type { PgDatabase } from "../../../db/pg-client";
+import type { PgDatabase } from "../../common";
 import type { ProjectWithStats } from "../../../models/project";
 import { type ProjectWithStatsRow, rowToProjectWithStats } from "./common";
 

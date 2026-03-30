@@ -3,7 +3,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createMockLogger } from "../../../test/helpers/logger";
-import type { PgDatabase } from "../../db/pg-client";
+import type { PgDatabase } from "../../repositories/common";
 import type { Context } from "../runner";
 import { browseDirectory } from "./browse-directory";
 
