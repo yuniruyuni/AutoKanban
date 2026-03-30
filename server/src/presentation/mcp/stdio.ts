@@ -41,7 +41,7 @@ export async function runMcpServer(): Promise<void> {
 		if (request.params.uri === "auto-kanban://schema") {
 			const schemaPath = join(
 				import.meta.dir,
-				"../schemas/auto-kanban.schema.json",
+				"./auto-kanban.schema.json",
 			);
 			const schema = readFileSync(schemaPath, "utf-8");
 			return {
