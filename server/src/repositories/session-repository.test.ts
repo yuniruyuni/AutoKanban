@@ -5,8 +5,8 @@ import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import { seedFullChain } from "../../test/helpers/seed";
 import type { PgDatabase } from "../db/pg-client";
 import { Session } from "../models/session";
-import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
-import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../repositories/common";
+import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";
 import { SessionRepository } from "./session/postgres";
 
 let db: PgDatabase;

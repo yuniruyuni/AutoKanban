@@ -1,5 +1,5 @@
 import type { PendingPermission } from "../../../models/common";
-import type { ServiceCtx } from "../../../types/db-capability";
+import type { ServiceCtx } from "../../common";
 import type { PermissionStoreRepository } from "../repository";
 
 export class PermissionStore implements PermissionStoreRepository {

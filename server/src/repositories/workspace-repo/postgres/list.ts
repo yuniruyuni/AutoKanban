@@ -2,7 +2,7 @@ import type { PgDatabase } from "../../../db/pg-client";
 import type { Cursor, Page } from "../../../models/common";
 import { WorkspaceRepo } from "../../../models/workspace-repo";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import {
 	columnName,
 	rowToWorkspaceRepo,

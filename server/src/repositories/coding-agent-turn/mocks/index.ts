@@ -1,4 +1,4 @@
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { CodingAgentTurnRepository } from "../repository";
 
 export function createMockCodingAgentTurnRepository(

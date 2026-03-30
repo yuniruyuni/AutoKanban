@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { Variant } from "../../../models/variant";
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { VariantRepository as IVariantRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";

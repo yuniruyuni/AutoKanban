@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { Project, ProjectWithStats } from "../../../models/project";
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { ProjectRepository as IProjectRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";

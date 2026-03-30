@@ -3,7 +3,7 @@
  * Stores logs from process start and allows late subscribers to get history + live updates.
  */
 import type { LogEntry, LogStoreSubscription } from "../../../models/common";
-import type { ServiceCtx } from "../../../types/db-capability";
+import type { ServiceCtx } from "../../common";
 import type {
 	LogStore as LogStoreDef,
 	LogStoreManager as LogStoreManagerDef,

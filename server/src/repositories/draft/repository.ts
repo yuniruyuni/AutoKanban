@@ -1,5 +1,5 @@
 import type { Draft } from "../../models/common";
-import type { ServiceCtx } from "../../types/db-capability";
+import type { ServiceCtx } from "../common";
 
 export interface DraftRepository {
 	save(ctx: ServiceCtx, sessionId: string, text: string): void;

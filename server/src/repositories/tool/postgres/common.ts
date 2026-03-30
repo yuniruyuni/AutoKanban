@@ -1,6 +1,6 @@
 import type { Tool } from "../../../models/tool";
 import { dateFromSQL } from "../../common";
-import { type SQLFragment, sql } from "../../sql";
+import { type SQLFragment, sql } from "../../common";
 
 export interface ToolRow {
 	id: string;

@@ -9,7 +9,7 @@ import {
 	type ParseResult,
 	parseLogsToConversation,
 } from "../lib/conversation-parser";
-import type { Full } from "../types/db-capability";
+import type { Full } from "../repositories/common";
 import type { ExecutionProcessLogsRepository } from "../types/repository";
 
 export interface StructuredLogEvent {

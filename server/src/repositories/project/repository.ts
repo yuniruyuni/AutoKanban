@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../models/common";
 import type { Project, ProjectWithStats } from "../../models/project";
-import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../common";
 
 export interface ProjectRepository {
 	get(ctx: DbReadCtx, spec: Project.Spec): Promise<Project | null>;

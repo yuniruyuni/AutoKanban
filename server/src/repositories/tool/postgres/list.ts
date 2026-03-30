@@ -2,7 +2,7 @@ import type { PgDatabase } from "../../../db/pg-client";
 import type { Cursor, Page } from "../../../models/common";
 import { Tool } from "../../../models/tool";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import { columnName, rowToTool, type ToolRow, toolSpecToSQL } from "./common";
 
 export async function list(

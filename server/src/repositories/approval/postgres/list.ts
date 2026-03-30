@@ -2,7 +2,7 @@ import type { PgDatabase } from "../../../db/pg-client";
 import { Approval } from "../../../models/approval";
 import type { Cursor, Page } from "../../../models/common";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import {
 	type ApprovalRow,
 	approvalSpecToSQL,

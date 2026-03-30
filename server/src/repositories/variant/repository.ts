@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../models/common";
 import type { Variant } from "../../models/variant";
-import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../common";
 
 export interface VariantRepository {
 	get(ctx: DbReadCtx, spec: Variant.Spec): Promise<Variant | null>;

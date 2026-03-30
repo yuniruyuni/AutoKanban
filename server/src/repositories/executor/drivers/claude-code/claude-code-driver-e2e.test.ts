@@ -11,7 +11,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { DriverApprovalRequest } from "../../../../types/coding-agent-driver";
-import type { Full } from "../../../../types/db-capability";
+import type { Full } from "../../../common";
 import type { ILogger } from "../../../../types/logger";
 import type { ExecutionProcessLogsRepository } from "../../../../types/repository";
 import { ClaudeCodeDriver } from "./claude-code-driver";

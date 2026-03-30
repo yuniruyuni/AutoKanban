@@ -2,7 +2,7 @@ import type { PgDatabase } from "../../../db/pg-client";
 import type { Cursor, Page } from "../../../models/common";
 import { Project } from "../../../models/project";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import {
 	columnName,
 	type ProjectRow,

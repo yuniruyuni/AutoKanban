@@ -15,7 +15,7 @@ import {
 	type DbReadRepos,
 	type DbWriteCtx,
 	type DbWriteRepos,
-} from "../types/db-capability";
+} from "../repositories/common";
 import type { Repos } from "../types/repository";
 
 // Re-export context types for convenience

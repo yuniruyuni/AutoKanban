@@ -1,5 +1,5 @@
 import type { ExecutionProcess } from "../../models/execution-process";
-import type { ServiceCtx } from "../../types/db-capability";
+import type { ServiceCtx } from "../common";
 
 export interface ExecutorStartOptions {
 	sessionId: string;

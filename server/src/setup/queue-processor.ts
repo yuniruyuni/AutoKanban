@@ -9,7 +9,7 @@ import type {
 	ProcessIdleInfo,
 } from "../repositories/executor";
 import type { MessageQueueRepository } from "../repositories/message-queue/memory";
-import { createServiceCtx, type Full } from "../types/db-capability";
+import { createServiceCtx, type Full } from "../repositories/common";
 import type { ILogger } from "../types/logger";
 import type {
 	ProjectRepository,

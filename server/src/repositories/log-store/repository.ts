@@ -1,5 +1,5 @@
 import type { LogEntry, LogStoreSubscription } from "../../models/common";
-import type { ServiceCtx } from "../../types/db-capability";
+import type { ServiceCtx } from "../common";
 
 export interface LogStore {
 	append(ctx: ServiceCtx, entry: LogEntry): void;

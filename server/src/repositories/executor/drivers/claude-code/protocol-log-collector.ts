@@ -5,7 +5,7 @@ import {
 	type ParsedResult,
 } from "../../../../lib/claude-json-parser";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
-import { createServiceCtx, type Full } from "../../../../types/db-capability";
+import { createServiceCtx, type Full } from "../../../common";
 import type { ILogger } from "../../../../types/logger";
 import type {
 	CodingAgentTurnRepository,

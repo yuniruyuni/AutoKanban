@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { TaskTemplate } from "../../../models/task-template";
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { TaskTemplateRepository as ITaskTemplateRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";

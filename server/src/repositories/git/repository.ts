@@ -1,6 +1,6 @@
 import type { BranchStatus, ConflictOp } from "../../models/branch-status";
 import type { GitDiff } from "../../models/git-diff";
-import type { ServiceCtx } from "../../types/db-capability";
+import type { ServiceCtx } from "../common";
 
 export interface GitRepository {
 	// Worktree operations

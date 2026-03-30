@@ -4,7 +4,7 @@ import { spawn } from "bun";
 import type { BranchStatus, ConflictOp } from "../../../models/branch-status";
 import { createBranchStatus } from "../../../models/branch-status";
 import type { GitDiff } from "../../../models/git-diff";
-import type { ServiceCtx } from "../../../types/db-capability";
+import type { ServiceCtx } from "../../common";
 import type { GitRepository as GitRepositoryDef } from "../repository";
 
 interface GitCommandResult {

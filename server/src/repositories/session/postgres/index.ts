@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { Session } from "../../../models/session";
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { SessionRepository as ISessionRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";

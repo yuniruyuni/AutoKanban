@@ -10,7 +10,6 @@ export * from "./log-store";
 export * from "./message-queue";
 export * from "./project";
 export * from "./session";
-export * from "./sql";
 export * from "./task";
 export * from "./workspace";
 export * from "./worktree";

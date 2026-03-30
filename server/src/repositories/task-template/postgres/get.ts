@@ -1,7 +1,7 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { TaskTemplate } from "../../../models/task-template";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import {
 	rowToTaskTemplate,
 	type TaskTemplateRow,

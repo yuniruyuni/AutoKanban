@@ -1,5 +1,5 @@
-import type { Comp } from "../models/common";
-import { isCompLogical } from "../models/common";
+import type { Comp } from "../../models/common";
+import { isCompLogical } from "../../models/common";
 import { type SQLFragment, sql } from "./sql";
 
 // ============================================

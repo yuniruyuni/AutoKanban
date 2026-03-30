@@ -1,5 +1,5 @@
 import type { ExecutionProcessLogs } from "../../models/execution-process";
-import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../common";
 
 export interface ExecutionProcessLogsRepository {
 	getLogs(

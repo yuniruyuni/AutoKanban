@@ -1,7 +1,7 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { WorkspaceRepo } from "../../../models/workspace-repo";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import {
 	rowToWorkspaceRepo,
 	type WorkspaceRepoRow,

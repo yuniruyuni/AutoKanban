@@ -1,5 +1,5 @@
 import { Approval } from "../../../models/approval";
-import type { Full, ServiceCtx } from "../../../types/db-capability";
+import type { Full, ServiceCtx } from "../../common";
 import type { ApprovalRepository } from "../../../types/repository";
 import type { ApprovalStoreRepository } from "../repository";
 

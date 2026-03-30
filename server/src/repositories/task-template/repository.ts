@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../models/common";
 import type { TaskTemplate } from "../../models/task-template";
-import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../common";
 
 export interface TaskTemplateRepository {
 	get(ctx: DbReadCtx, spec: TaskTemplate.Spec): Promise<TaskTemplate | null>;

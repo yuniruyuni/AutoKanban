@@ -1,7 +1,7 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { ExecutionProcess } from "../../../models/execution-process";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import { executionProcessSpecToSQL } from "./common";
 
 export async function del(

@@ -33,7 +33,7 @@ import {
 	type DbWriteCtx,
 	type FullRepos,
 	type ServiceCtx,
-} from "./types/db-capability";
+} from "./repositories/common";
 import type { ILogger } from "./types/logger";
 import type { Repos } from "./types/repository";
 

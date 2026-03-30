@@ -1,4 +1,4 @@
-import type { Full } from "../db-capability";
+import type { Full } from "../../repositories/common";
 import type {
 	CodingAgentTurnRepository,
 	ExecutionProcessLogsRepository,

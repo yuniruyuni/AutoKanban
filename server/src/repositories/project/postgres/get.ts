@@ -1,7 +1,7 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { Project } from "../../../models/project";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import { type ProjectRow, projectSpecToSQL, rowToProject } from "./common";
 
 export async function get(

@@ -1,7 +1,7 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { Session } from "../../../models/session";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import { rowToSession, type SessionRow, sessionSpecToSQL } from "./common";
 
 export async function get(

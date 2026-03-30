@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../models/common";
 import type { Tool } from "../../models/tool";
-import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../common";
 
 export interface ToolRepository {
 	get(ctx: DbReadCtx, spec: Tool.Spec): Promise<Tool | null>;

@@ -10,8 +10,8 @@ import { TaskRepository } from "../../src/repositories/task/postgres";
 import { WorkspaceRepository } from "../../src/repositories/workspace/postgres";
 import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo/postgres";
 import type { Context } from "../../src/types/context";
-import type { FullRepos } from "../../src/types/db-capability";
-import { bindCtx, createDbWriteCtx } from "../../src/types/db-capability";
+import type { FullRepos } from "../../src/repositories/common";
+import { bindCtx, createDbWriteCtx } from "../../src/repositories/common";
 import type { Repos } from "../../src/types/repository";
 import { createMockLogger } from "./logger";
 

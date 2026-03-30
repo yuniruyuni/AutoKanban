@@ -1,6 +1,6 @@
 import type { WorkspaceRepo } from "../../../models/workspace-repo";
 import { dateFromSQL } from "../../common";
-import { type SQLFragment, sql } from "../../sql";
+import { type SQLFragment, sql } from "../../common";
 
 export interface WorkspaceRepoRow {
 	id: string;

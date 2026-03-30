@@ -3,7 +3,7 @@ import type {
 	CodingAgentTurn,
 } from "../../../models/coding-agent-turn";
 import type { Cursor, Page } from "../../../models/common";
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { CodingAgentTurnRepository as ICodingAgentTurnRepository } from "../repository";
 import { del } from "./delete";
 import { findLatestResumeInfo } from "./findLatestResumeInfo";

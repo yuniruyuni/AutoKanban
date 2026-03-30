@@ -1,7 +1,7 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { Tool } from "../../../models/tool";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import { toolSpecToSQL } from "./common";
 
 export async function del(db: PgDatabase, spec: Tool.Spec): Promise<number> {

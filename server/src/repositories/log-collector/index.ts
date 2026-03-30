@@ -1,4 +1,4 @@
-import { createServiceCtx, type Full } from "../../types/db-capability";
+import { createServiceCtx, type Full } from "../common";
 import type { ILogger } from "../../types/logger";
 import type { ExecutionProcessLogsRepository } from "../../types/repository";
 import { type LogStore, logStoreManager } from "../log-store";

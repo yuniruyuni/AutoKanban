@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../models/common";
 import type { Workspace } from "../../models/workspace";
-import type { DbReadCtx, DbWriteCtx } from "../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../common";
 
 export interface WorkspaceRepository {
 	get(ctx: DbReadCtx, spec: Workspace.Spec): Promise<Workspace | null>;

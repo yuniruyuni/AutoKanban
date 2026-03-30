@@ -1,5 +1,5 @@
 import type { Draft } from "../../../models/common";
-import type { ServiceCtx } from "../../../types/db-capability";
+import type { ServiceCtx } from "../../common";
 import type { DraftRepository as DraftRepositoryDef } from "../repository";
 
 export class DraftRepository implements DraftRepositoryDef {

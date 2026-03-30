@@ -1,7 +1,7 @@
 import type { PgDatabase } from "../db/pg-client";
 import { Variant } from "../models/variant";
 import { VariantRepository } from "../repositories/variant/postgres";
-import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
+import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";
 
 const DEFAULT_VARIANTS = [
 	{

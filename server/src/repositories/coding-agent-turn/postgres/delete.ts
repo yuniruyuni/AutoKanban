@@ -1,7 +1,7 @@
 import type { PgDatabase } from "../../../db/pg-client";
 import type { CodingAgentTurn } from "../../../models/coding-agent-turn";
 import { compToSQL } from "../../common";
-import type { SQLFragment } from "../../sql";
+import type { SQLFragment } from "../../common";
 import { codingAgentTurnSpecToSQL } from "./common";
 
 export async function del(

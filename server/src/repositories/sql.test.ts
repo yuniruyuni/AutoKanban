@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { sql } from "./sql";
+import { sql } from "./common";
 
 // ============================================
 // sql tagged template literal

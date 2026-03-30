@@ -1,6 +1,6 @@
 import type { Approval } from "../../../models/approval";
 import { dateFromSQL } from "../../common";
-import { type SQLFragment, sql } from "../../sql";
+import { type SQLFragment, sql } from "../../common";
 
 export interface ApprovalRow {
 	id: string;

@@ -19,7 +19,7 @@ import {
 	type Full,
 	type Service,
 	type ServiceCtx,
-} from "../../../types/db-capability";
+} from "../../common";
 import type { ILogger } from "../../../types/logger";
 import type {
 	ApprovalRepository,

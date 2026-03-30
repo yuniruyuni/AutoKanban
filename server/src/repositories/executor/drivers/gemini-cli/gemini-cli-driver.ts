@@ -5,7 +5,7 @@ import type {
 	DriverSpawnOptions,
 	ICodingAgentDriver,
 } from "../../../../types/coding-agent-driver";
-import type { Full } from "../../../../types/db-capability";
+import type { Full } from "../../../common";
 import type { ILogger } from "../../../../types/logger";
 import type {
 	CodingAgentTurnRepository,

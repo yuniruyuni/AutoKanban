@@ -1,7 +1,7 @@
 import type { Project } from "../../models/project";
 import type { Workspace } from "../../models/workspace";
 import type { WorktreeInfo } from "../../models/worktree-info";
-import type { ServiceCtx } from "../../types/db-capability";
+import type { ServiceCtx } from "../common";
 
 export interface WorktreeRepository {
 	getBaseDir(ctx: ServiceCtx): string;

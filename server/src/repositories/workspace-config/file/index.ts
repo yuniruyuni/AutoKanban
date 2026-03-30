@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "jsonc-parser";
 import { WorkspaceConfig } from "../../../models/workspace-config";
-import type { ServiceCtx } from "../../../types/db-capability";
+import type { ServiceCtx } from "../../common";
 import type { WorkspaceConfigRepository as WorkspaceConfigRepositoryDef } from "../repository";
 
 const CONFIG_FILENAME = "auto-kanban.json";

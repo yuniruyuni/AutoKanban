@@ -1,6 +1,6 @@
 import type { Variant } from "../../../models/variant";
 import { dateFromSQL } from "../../common";
-import { type SQLFragment, sql } from "../../sql";
+import { type SQLFragment, sql } from "../../common";
 
 export interface VariantRow {
 	id: string;

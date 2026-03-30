@@ -1,6 +1,6 @@
 import type { Cursor, Page } from "../../../models/common";
 import type { Workspace } from "../../../models/workspace";
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { WorkspaceRepository as IWorkspaceRepository } from "../repository";
 import { del } from "./delete";
 import { findByWorktreePath } from "./find-by-worktree-path";

@@ -1,5 +1,5 @@
 import type { LogStoreSubscription } from "../models/common";
-import { createServiceCtx } from "../types/db-capability";
+import { createServiceCtx } from "../repositories/common";
 import type { ILogger } from "../types/logger";
 import type {
 	ExecutorRepository,

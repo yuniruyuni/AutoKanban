@@ -5,8 +5,8 @@ import { expectEntityEqual } from "../../test/helpers/entity-equality";
 import type { PgDatabase } from "../db/pg-client";
 import { and } from "../models/common";
 import { Task } from "../models/task";
-import type { DbReadCtx, DbWriteCtx } from "../types/db-capability";
-import { createDbReadCtx, createDbWriteCtx } from "../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../repositories/common";
+import { createDbReadCtx, createDbWriteCtx } from "../repositories/common";
 import { ProjectRepository } from "./project/postgres";
 import { TaskRepository } from "./task/postgres";
 

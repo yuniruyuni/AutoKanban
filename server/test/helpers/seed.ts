@@ -9,7 +9,7 @@ import { ProjectRepository } from "../../src/repositories/project/postgres";
 import { SessionRepository } from "../../src/repositories/session/postgres";
 import { TaskRepository } from "../../src/repositories/task/postgres";
 import { WorkspaceRepository } from "../../src/repositories/workspace/postgres";
-import { createDbWriteCtx } from "../../src/types/db-capability";
+import { createDbWriteCtx } from "../../src/repositories/common";
 import {
 	createTestExecutionProcess,
 	createTestProject,

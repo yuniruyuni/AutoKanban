@@ -16,7 +16,7 @@ import {
 	createServiceCtx,
 	type Full,
 	type Service,
-} from "../types/db-capability";
+} from "../repositories/common";
 import type { ILogger } from "../types/logger";
 import type {
 	ApprovalRepository,

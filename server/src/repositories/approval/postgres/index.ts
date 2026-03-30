@@ -1,6 +1,6 @@
 import type { Approval } from "../../../models/approval";
 import type { Cursor, Page } from "../../../models/common";
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { ApprovalRepository as IApprovalRepository } from "../repository";
 import { del } from "./delete";
 import { get } from "./get";

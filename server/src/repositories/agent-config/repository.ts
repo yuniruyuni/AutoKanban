@@ -1,4 +1,4 @@
-import type { ServiceCtx } from "../../types/db-capability";
+import type { ServiceCtx } from "../common";
 
 export interface AgentAdapter {
 	agentId: string;

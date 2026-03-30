@@ -1,6 +1,6 @@
 import type { PgDatabase } from "../db/pg-client";
 import type { ILogStreamer } from "../presentation/log-streamer";
-import type { DbReadRepos, DbWriteRepos, FullRepos } from "./db-capability";
+import type { DbReadRepos, DbWriteRepos, FullRepos } from "../repositories/common";
 import type { ILogger } from "./logger";
 import type { Repos } from "./repository";
 

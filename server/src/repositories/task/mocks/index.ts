@@ -1,4 +1,4 @@
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { TaskRepository } from "../repository";
 
 export function createMockTaskRepository(

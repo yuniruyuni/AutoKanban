@@ -1,7 +1,7 @@
 import { spawn } from "bun";
 import type { Cursor, Page } from "../../../models/common";
 import type { Tool } from "../../../models/tool";
-import type { DbReadCtx, DbWriteCtx } from "../../../types/db-capability";
+import type { DbReadCtx, DbWriteCtx } from "../../common";
 import type { ToolRepository as IToolRepository } from "../repository";
 import { del } from "./delete";
 import { executeCommand, type SpawnFn } from "./executeCommand";

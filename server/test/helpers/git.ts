@@ -1,7 +1,7 @@
 import type { ConflictOp } from "../../src/models/branch-status";
 import type { Project } from "../../src/models/project";
 import type { Workspace } from "../../src/models/workspace";
-import type { Full } from "../../src/types/db-capability";
+import type { Full } from "../../src/repositories/common";
 import type {
 	GitRepository,
 	WorktreeRepository,

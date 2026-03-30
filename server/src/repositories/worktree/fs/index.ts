@@ -4,7 +4,7 @@ import * as path from "node:path";
 import type { Project } from "../../../models/project";
 import type { Workspace } from "../../../models/workspace";
 import type { WorktreeInfo } from "../../../models/worktree-info";
-import type { ServiceCtx } from "../../../types/db-capability";
+import type { ServiceCtx } from "../../common";
 import type { ILogger } from "../../../types/logger";
 import { GitRepository } from "../../git/cli";
 import type { WorktreeRepository as WorktreeRepositoryDef } from "../repository";

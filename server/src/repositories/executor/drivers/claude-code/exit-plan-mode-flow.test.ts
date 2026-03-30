@@ -16,7 +16,7 @@
 import { describe, expect, test } from "bun:test";
 import { Approval } from "../../../../models/approval";
 import type { ClaudeControlRequestMessage } from "../../../../models/claude-protocol";
-import { createServiceCtx, type Full } from "../../../../types/db-capability";
+import { createServiceCtx, type Full } from "../../../common";
 import type { ILogger } from "../../../../types/logger";
 import type {
 	ApprovalRepository,
