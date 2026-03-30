@@ -4,11 +4,12 @@ import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
 import { createContext } from "./context";
 import { closeDatabase, initDatabase } from "./lib/db";
-import { recoverOrphanedProcesses } from "./usecases/setup/recovery";
 import { createLogger } from "./lib/logger";
 import { removePortFile, writePortFile } from "./lib/port-file";
 import { appRouter } from "./presentation";
+import { recoverOrphanedProcesses } from "./usecases/setup/recovery";
 import { seedDefaultVariants } from "./usecases/setup/seed-variants";
+import { seedTaskTemplates } from "./usecases/setup/seed-templates";
 
 // --mcp flag: run as stdio MCP server instead of HTTP server
 if (process.argv.includes("--mcp")) {
@@ -22,19 +23,18 @@ const PORT = Number(process.env.PORT ?? 3000);
 const logger = createLogger();
 
 const db = await initDatabase();
+const ctx = createContext(db, logger);
 
-// Recover any processes that were left running when the server last shut down
-const recoveredCount = await recoverOrphanedProcesses(db);
+// Startup usecases — run after context is ready
+const recoveredCount = await recoverOrphanedProcesses(ctx);
 if (recoveredCount > 0) {
 	logger.info(
 		`Recovered ${recoveredCount} orphaned process(es) from previous server session`,
 	);
 }
 
-// Seed default variants if they don't exist
-await seedDefaultVariants(db);
-
-const ctx = createContext(db, logger);
+await seedDefaultVariants().run(ctx);
+await seedTaskTemplates().run(ctx);
 
 const app = new Hono();
 

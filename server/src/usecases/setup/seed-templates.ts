@@ -1,41 +1,42 @@
-import { generateId } from "../../models/common";
-import type { PgDatabase } from "../../repositories/common";
+import { TaskTemplate } from "../../models/task-template";
+import { usecase } from "../runner";
 
-/**
- * Seeds default task templates if none exist yet.
- * Called during DB initialization.
- */
-export async function seedTaskTemplates(db: PgDatabase): Promise<void> {
-	const row = await db.queryGet<{ c: string }>({
-		query: "SELECT COUNT(*) as c FROM project_task_templates",
-		params: [],
-	});
-	if (row && Number(row.c) > 0) return;
-
-	const now = new Date().toISOString();
-	const templates = [
-		{
-			title: "devServerScriptを調査・設定する",
-			description:
-				"プロジェクトの開発サーバー起動コマンドを調査し、プロジェクト設定のdevServerScriptに登録してください。",
-			condition: "no_dev_server",
-			sortOrder: 0,
+export const seedTaskTemplates = () =>
+	usecase({
+		read: async (ctx) => {
+			const existing = await ctx.repos.taskTemplate.listAll();
+			return { existing };
 		},
-	];
 
-	for (const tmpl of templates) {
-		await db.queryRun({
-			query: `INSERT INTO project_task_templates (id, title, description, condition, sort_order, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-			params: [
-				generateId(),
-				tmpl.title,
-				tmpl.description,
-				tmpl.condition,
-				tmpl.sortOrder,
-				now,
-				now,
-			],
-		});
-	}
-}
+		write: async (ctx, { existing }) => {
+			if (existing.length > 0) return {};
+
+			const templates: Array<{
+				title: string;
+				description: string;
+				condition: TaskTemplate.Condition;
+				sortOrder: number;
+			}> = [
+				{
+					title: "devServerScriptを調査・設定する",
+					description:
+						"プロジェクトの開発サーバー起動コマンドを調査し、プロジェクト設定のdevServerScriptに登録してください。",
+					condition: "no_dev_server",
+					sortOrder: 0,
+				},
+			];
+
+			for (const tmpl of templates) {
+				await ctx.repos.taskTemplate.upsert(
+					TaskTemplate.create({
+						title: tmpl.title,
+						description: tmpl.description,
+						condition: tmpl.condition,
+						sortOrder: tmpl.sortOrder,
+					}),
+				);
+			}
+
+			return {};
+		},
+	});

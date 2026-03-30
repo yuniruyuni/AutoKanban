@@ -1,7 +1,5 @@
-import type { PgDatabase } from "../../repositories/common";
 import { Variant } from "../../models/variant";
-import { VariantRepository } from "../../repositories/variant/postgres";
-import { createDbReadCtx, createDbWriteCtx } from "../../repositories/common";
+import { usecase } from "../runner";
 
 const DEFAULT_VARIANTS = [
 	{
@@ -26,38 +24,48 @@ const DEFAULT_VARIANTS = [
 	},
 ] as const;
 
-export async function seedDefaultVariants(db: PgDatabase): Promise<void> {
-	const repo = new VariantRepository();
-	const rCtx = createDbReadCtx(db);
-	const wCtx = createDbWriteCtx(db);
+export const seedDefaultVariants = () =>
+	usecase({
+		read: async (ctx) => {
+			const variants: Array<{
+				executor: string;
+				name: string;
+				permissionMode: string;
+				existing: Variant | null;
+			}> = [];
+			for (const def of DEFAULT_VARIANTS) {
+				const existing = await ctx.repos.variant.get(
+					Variant.ByExecutorAndName(def.executor, def.name),
+				);
+				variants.push({ ...def, existing });
+			}
+			return { variants };
+		},
 
-	for (const def of DEFAULT_VARIANTS) {
-		const existing = await repo.get(
-			rCtx,
-			Variant.ByExecutorAndName(def.executor, def.name),
-		);
-		if (!existing) {
-			await repo.upsert(
-				wCtx,
-				Variant.create({
-					executor: def.executor,
-					name: def.name,
-					permissionMode: def.permissionMode,
-				}),
+		write: async (ctx, { variants }) => {
+			for (const { executor, name, permissionMode, existing } of variants) {
+				if (!existing) {
+					await ctx.repos.variant.upsert(
+						Variant.create({ executor, name, permissionMode }),
+					);
+				}
+			}
+
+			// Migrate existing DEFAULT variant from bypassPermissions/plan to default mode
+			const defaultVariant = variants.find(
+				(v) => v.executor === "claude-code" && v.name === "DEFAULT",
 			);
-		}
-	}
+			if (
+				defaultVariant?.existing &&
+				defaultVariant.existing.permissionMode !== "default"
+			) {
+				await ctx.repos.variant.upsert({
+					...defaultVariant.existing,
+					permissionMode: "default",
+					updatedAt: new Date(),
+				});
+			}
 
-	// Migrate existing DEFAULT variant from bypassPermissions/plan to default mode
-	const existingDefault = await repo.get(
-		rCtx,
-		Variant.ByExecutorAndName("claude-code", "DEFAULT"),
-	);
-	if (existingDefault && existingDefault.permissionMode !== "default") {
-		await repo.upsert(wCtx, {
-			...existingDefault,
-			permissionMode: "default",
-			updatedAt: new Date(),
-		});
-	}
-}
+			return {};
+		},
+	});

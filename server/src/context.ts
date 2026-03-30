@@ -135,20 +135,11 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 
 	const logStreamer = new LogStreamer(executor, logStoreManager, logger);
 
-	// Set up queue processor
-	setupQueueProcessor({
-		executor,
-		messageQueue: messageQueueRepository,
-		sessionRepo: boundRepos.session,
-		workspaceRepo: boundRepos.workspace,
-		workspaceRepoRepo: boundRepos.workspaceRepo,
-		projectRepo: boundRepos.project,
-		taskRepo: boundRepos.task,
-		logger,
-	});
-
 	// Re-bind after setting executor and devServer
 	const finalRepos = bindAllRepos(rawRepos, fullCtx);
+
+	// Set up queue processor with executor (for event subscription) and bound repos
+	setupQueueProcessor(executor, finalRepos, logger);
 
 	return {
 		now: new Date(),

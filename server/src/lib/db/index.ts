@@ -1,7 +1,6 @@
 import { PgDatabase } from "../../repositories/common";
 import { ensurePgSchema } from "./pgschema";
 import { EmbeddedPostgresManager } from "./postgres";
-import { seedTaskTemplates } from "../../usecases/setup/seed-templates";
 
 let db: PgDatabase | null = null;
 let pgManager: EmbeddedPostgresManager | null = null;
@@ -20,8 +19,6 @@ export async function initDatabase(): Promise<PgDatabase> {
 	await ensurePgSchema(pgManager.connectionParams);
 
 	db = new PgDatabase(pgManager.poolConfig);
-
-	await seedTaskTemplates(db);
 
 	return db;
 }
