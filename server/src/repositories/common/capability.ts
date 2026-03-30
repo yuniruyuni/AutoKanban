@@ -94,8 +94,8 @@ export type FullRepos<T> = { [K in keyof T]: Full<T[K]> };
 // ============================================
 
 /**
- * Create a proxy that auto-injects ctx as the first argument to all methods.
- * Usecases call `repos.task.get(spec)` — the proxy prepends ctx automatically.
+ * Create an object where each method of repo has ctx pre-filled as the first argument.
+ * Usecases call `repos.task.get(spec)` — ctx is automatically prepended.
  */
 export function bindCtx<T extends object, Ctx>(
 	repo: T,
