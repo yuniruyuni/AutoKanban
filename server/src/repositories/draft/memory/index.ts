@@ -1,4 +1,4 @@
-import type { Draft } from "../../../models/common";
+import type { Draft } from "../../../models/draft";
 import type { ServiceCtx } from "../../common";
 import type { DraftRepository as DraftRepositoryDef } from "../repository";
 
