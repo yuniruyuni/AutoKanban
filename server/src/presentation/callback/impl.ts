@@ -1,6 +1,4 @@
-import type { FullRepos } from "../../repositories/common";
-import type { Repos } from "../../repositories";
-import type { ILogger } from "../../lib/logger/types";
+import type { Context } from "../../usecases/context";
 import type { DriverApprovalRequest } from "../../repositories/executor/orchestrator/driver-approval-request";
 import type {
 	CallbackClient,
@@ -14,35 +12,30 @@ import { handleProcessIdle } from "./routers/on-process-idle";
 /**
  * CallbackClient implementation.
  * Delegates to presentation/callback/routers which invoke usecases.
- * Must be initialized with bound repos after Context construction.
+ * Must be initialized with Context after construction.
  */
 export class CallbackClientImpl implements CallbackClient {
-	private repos: FullRepos<Repos> | null = null;
-	private logger: ILogger | null = null;
+	private ctx: Context | null = null;
 
-	initialize(repos: FullRepos<Repos>, logger: ILogger): void {
-		this.repos = repos;
-		this.logger = logger;
+	initialize(ctx: Context): void {
+		this.ctx = ctx;
 	}
 
 	async onProcessComplete(info: ProcessCompletionInfo): Promise<void> {
-		if (!this.repos || !this.logger)
-			throw new Error("CallbackClient not initialized");
-		await handleProcessComplete(this.repos, this.logger, info);
+		if (!this.ctx) throw new Error("CallbackClient not initialized");
+		await handleProcessComplete(this.ctx, info);
 	}
 
 	async onProcessIdle(info: ProcessIdleInfo): Promise<void> {
-		if (!this.repos || !this.logger)
-			throw new Error("CallbackClient not initialized");
-		await handleProcessIdle(this.repos, this.logger, info);
+		if (!this.ctx) throw new Error("CallbackClient not initialized");
+		await handleProcessIdle(this.ctx, info);
 	}
 
 	async onApprovalRequest(
 		processId: string,
 		request: DriverApprovalRequest,
 	): Promise<void> {
-		if (!this.repos || !this.logger)
-			throw new Error("CallbackClient not initialized");
-		await handleApprovalRequest(this.repos, this.logger, processId, request);
+		if (!this.ctx) throw new Error("CallbackClient not initialized");
+		await handleApprovalRequest(this.ctx, processId, request);
 	}
 }

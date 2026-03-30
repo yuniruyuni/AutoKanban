@@ -70,14 +70,16 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	const fullCtx = createFullCtx(db);
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	// 3. Initialize callback client with bound repos
-	callbackClient.initialize(repos, logger);
-
-	return {
+	// 3. Build context and initialize callback client
+	const ctx: Context = {
 		now: new Date(),
 		logger,
 		db,
 		rawRepos,
 		repos,
 	};
+
+	callbackClient.initialize(ctx);
+
+	return ctx;
 }
