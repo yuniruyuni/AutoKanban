@@ -1,11 +1,11 @@
 import type { Database } from "../infra/db/database";
 import type { ILogger } from "../infra/logger/types";
-import type { Repos } from "../repositories";
 import type {
 	DbReadRepos,
 	DbWriteRepos,
 	FullRepos,
-} from "../repositories/common";
+	Repos,
+} from "../repositories";
 
 // ============================================
 // Step-specific context types
