@@ -1,0 +1,3 @@
+ExistingWorkspace: none, active_no_sessions, active_with_sessions
+TargetBranch: default, specified
+TaskDescription: with_description, without_description

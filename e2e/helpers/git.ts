@@ -80,6 +80,21 @@ export async function listBranches(repoPath: string): Promise<string[]> {
 		.filter(Boolean);
 }
 
+/** Write auto-kanban.json to a directory */
+export async function writeAutoKanbanConfig(
+	dir: string,
+	config: {
+		prepare?: string | null;
+		cleanup?: string | null;
+		server?: string | null;
+	},
+): Promise<void> {
+	await writeFile(
+		join(dir, "auto-kanban.json"),
+		JSON.stringify(config, null, 2),
+	);
+}
+
 export async function cleanupTempRepos(): Promise<void> {
 	for (const dir of tempDirs) {
 		await rm(dir, { recursive: true, force: true }).catch(() => {});

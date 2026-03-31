@@ -1,0 +1,7 @@
+ExistingWorkspace	TargetBranch	TaskDescription
+none	specified	with_description
+active_no_sessions	default	with_description
+active_with_sessions	default	without_description
+active_no_sessions	specified	without_description
+none	default	without_description
+active_with_sessions	specified	with_description

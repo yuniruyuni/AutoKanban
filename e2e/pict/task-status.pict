@@ -1,0 +1,5 @@
+FromStatus: todo, inprogress, inreview, done, cancelled
+ToStatus: todo, inprogress, inreview, done, cancelled
+HasActiveWorkspace: yes, no
+
+IF [FromStatus] = [ToStatus] THEN [HasActiveWorkspace] = "";

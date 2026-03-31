@@ -1,0 +1,9 @@
+ScriptType: prepare, cleanup, devserver
+ConfigState: config_with_script, config_script_null, no_config_file
+WorkspaceState: active_with_worktree, active_no_worktree, no_workspace
+ScriptAlreadyRunning: no, yes
+
+IF [WorkspaceState] = "no_workspace" THEN [ScriptAlreadyRunning] = "no";
+IF [WorkspaceState] = "active_no_worktree" THEN [ScriptAlreadyRunning] = "no";
+IF [ScriptType] = "devserver" AND [ScriptAlreadyRunning] = "yes" THEN [ConfigState] <> "config_script_null";
+IF [ScriptType] = "devserver" AND [ScriptAlreadyRunning] = "yes" THEN [ConfigState] <> "no_config_file";

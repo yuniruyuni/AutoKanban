@@ -47,6 +47,8 @@ export async function setupTestServer(): Promise<{
 }
 
 export async function resetTestData(): Promise<void> {
+	// Wait for pending async log writes from previous test to complete
+	await Bun.sleep(50);
 	await createTestDB(); // TRUNCATEs all tables
 	if (ctx) {
 		await startup(ctx); // Re-seed defaults
