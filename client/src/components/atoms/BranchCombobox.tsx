@@ -68,14 +68,20 @@ export function BranchCombobox({
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
+	const inputId = "branch-combobox-input";
+
 	return (
 		<div className="relative flex flex-col gap-2">
 			{label && (
-				<label className="text-sm font-medium text-primary-foreground">
+				<label
+					htmlFor={inputId}
+					className="text-sm font-medium text-primary-foreground"
+				>
 					{label}
 				</label>
 			)}
 			<input
+				id={inputId}
 				ref={inputRef}
 				type="text"
 				value={search}
