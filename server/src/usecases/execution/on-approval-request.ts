@@ -71,12 +71,20 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 
 			const approved = response.status === "approved";
 
+			// Use the control protocol request_id (from protocolContext), not
+			// toolCallId (which may be tool_use_id). The control_response must
+			// match the control_request's request_id for Claude Code to process it.
+			const protocolCtx = input.request.protocolContext as {
+				requestId?: string;
+				requestSubtype?: string;
+			};
+			const requestId = protocolCtx.requestId ?? input.request.toolCallId;
+
 			await ctx.repos.executor.sendPermissionResponse(
 				input.processId,
-				input.request.toolCallId,
+				requestId,
 				approved,
-				(input.request.protocolContext as { requestSubtype?: string })
-					?.requestSubtype,
+				protocolCtx.requestSubtype,
 				response.reason ?? undefined,
 				undefined,
 				input.request.toolInput,
