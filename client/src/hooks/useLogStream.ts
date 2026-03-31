@@ -11,8 +11,6 @@ export interface LogEntry {
 export interface UseLogStreamOptions {
 	executionProcessId: string | null;
 	onLog?: (entry: LogEntry) => void;
-	onEnd?: () => void;
-	onError?: (error: Error) => void;
 }
 
 export function useLogStream(options: UseLogStreamOptions) {
@@ -64,61 +62,27 @@ export function useLogStream(options: UseLogStreamOptions) {
 
 		const eventSource = new EventSource(url);
 		eventSourceRef.current = eventSource;
-		setIsStreaming(true);
 		setError(null);
 
-		eventSource.onmessage = (event) => {
-			try {
-				const data = JSON.parse(event.data);
-
-				if (data.type === "end") {
-					setIsStreaming(false);
-					options.onEnd?.();
-					eventSource.close();
-					return;
-				}
-
-				if (data.type === "error") {
-					// If process not found, try loading from database
-					if (data.message === "Process not found") {
-						console.log(
-							"[useLogStream] Process not found, loading from database",
-						);
-						setShouldFetchDb(true);
-					} else {
-						setError(new Error(data.message));
-					}
-					setIsStreaming(false);
-					options.onError?.(new Error(data.message));
-					eventSource.close();
-					return;
-				}
-
-				// Skip info messages (e.g., "Another stream is already active")
-				if (data.type === "info") {
-					console.log("[useLogStream] Info message:", data.message);
-					return;
-				}
-
-				// Validate log entry structure - skip if invalid
-				if (!data.timestamp || !data.source || data.data === undefined) {
-					console.warn("[useLogStream] Invalid log entry structure:", data);
-					return;
-				}
-
-				// Regular log entry
-				const entry: LogEntry = {
-					timestamp: data.timestamp,
-					source: data.source,
-					data: data.data,
-				};
-
-				setLogs((prev) => [...prev, entry]);
-				options.onLog?.(entry);
-			} catch (e) {
-				console.error("Failed to parse log entry:", e);
-			}
+		eventSource.onopen = () => {
+			setIsStreaming(true);
 		};
+
+		// Listen for named "log" events from the SSE stream
+		eventSource.addEventListener("log", (event) => {
+			try {
+				const raw: string = JSON.parse(event.data);
+				const entries = parseDbLogs(raw);
+				if (entries.length > 0) {
+					setLogs((prev) => [...prev, ...entries]);
+					for (const entry of entries) {
+						options.onLog?.(entry);
+					}
+				}
+			} catch (e) {
+				console.error("Failed to parse log event:", e);
+			}
+		});
 
 		eventSource.onerror = () => {
 			// Try loading from database on connection error
@@ -132,12 +96,7 @@ export function useLogStream(options: UseLogStreamOptions) {
 			eventSource.close();
 			eventSourceRef.current = null;
 		};
-	}, [
-		options.executionProcessId,
-		options.onEnd,
-		options.onError,
-		options.onLog,
-	]);
+	}, [options.executionProcessId, options.onLog]);
 
 	return {
 		logs,
