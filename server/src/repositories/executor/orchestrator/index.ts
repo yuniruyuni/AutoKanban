@@ -116,6 +116,9 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			);
 		}
 
+		// Inject synthetic user message log entry (Claude Code doesn't echo user messages in stdout)
+		this.emitUserMessageLog(id, options.prompt);
+
 		await driver.sendMessage(process, options.prompt);
 
 		return runningProcess;
@@ -153,6 +156,9 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		}
 
 		try {
+			// Inject synthetic user message log entry (Claude Code doesn't echo user messages in stdout)
+			this.emitUserMessageLog(processId, prompt);
+
 			await runningProcess.driver.sendMessage(runningProcess.process, prompt);
 			return true;
 		} catch (error) {
@@ -276,6 +282,20 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 	// ============================================
 	// Internal event handlers → callback client
 	// ============================================
+
+	/**
+	 * Emit a synthetic user message log entry.
+	 * Claude Code protocol mode doesn't echo user messages in stdout,
+	 * so we inject them into the log stream to make them visible in the chat UI.
+	 */
+	private emitUserMessageLog(processId: string, prompt: string): void {
+		const syntheticMessage = JSON.stringify({
+			type: "user",
+			message: { role: "user", content: prompt },
+			is_synthetic: true,
+		});
+		this.handleLogData(processId, "stdout", syntheticMessage);
+	}
 
 	private handleIdle(processId: string): void {
 		const rp = this.runningProcesses.get(processId);

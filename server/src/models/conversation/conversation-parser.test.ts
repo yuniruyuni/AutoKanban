@@ -349,13 +349,14 @@ describe("filtering", () => {
 		expect(result.entries).toHaveLength(0);
 	});
 
-	test("skips synthetic user messages", () => {
+	test("shows synthetic user messages (protocol mode sends all messages as synthetic)", () => {
 		const log = makeLogLine(
 			"stdout",
 			makeUserLog("synthetic", { is_synthetic: true }),
 		);
 		const result = parseLogsToConversation(log);
-		expect(result.entries).toHaveLength(0);
+		expect(result.entries).toHaveLength(1);
+		expect(result.entries[0].type.kind).toBe("user_message");
 	});
 
 	test("skips replay user messages", () => {

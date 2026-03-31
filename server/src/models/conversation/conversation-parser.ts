@@ -371,8 +371,11 @@ function processUserMessage(
 	pendingTools: Map<string, ConversationEntry>,
 	completedPlanTools: Map<string, ConversationEntry>,
 ): ConversationEntry[] {
-	// Skip synthetic/replay messages (these are internal)
-	if (json.is_synthetic || json.is_replay) {
+	// Skip replay messages (these are replayed history from resumed sessions)
+	// Note: is_synthetic is NOT filtered because in protocol mode, all user
+	// messages sent via stdin are marked synthetic by Claude Code, including
+	// the actual user-typed messages we want to display.
+	if (json.is_replay) {
 		return [];
 	}
 
@@ -584,10 +587,9 @@ export function findPendingToolUses(rawLogs: string): PendingToolUse[] {
 				}
 			} else if (json.type === "user") {
 				const userMsg = json as ClaudeUserMessage;
-				// Skip subagent and synthetic messages
+				// Skip subagent and replay messages
 				if (
 					userMsg.parent_tool_use_id ||
-					userMsg.is_synthetic ||
 					userMsg.is_replay
 				)
 					continue;
