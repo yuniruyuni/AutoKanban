@@ -1,13 +1,14 @@
 import type { PgDatabase } from "./infra/db/pg-client";
 import type { ILogger } from "./infra/logger/types";
 import { CallbackClientImpl } from "./presentation/callback/impl";
-import { bindRepos, type Repos } from "./repositories";
+import { bindCtx, bindRepos, type Repos } from "./repositories";
 import { AgentConfigRepository } from "./repositories/agent-config";
 import { ApprovalRepository } from "./repositories/approval/postgres";
 import { approvalStore } from "./repositories/approval-store";
 import { CodingAgentTurnRepository } from "./repositories/coding-agent-turn/postgres";
 import { createFullCtx } from "./repositories/common";
 import { DevServerRepository } from "./repositories/dev-server";
+import { LogCollector } from "./repositories/log-collector";
 import { draftRepository } from "./repositories/draft";
 import { draftPullRequestRepository } from "./repositories/draft-pull-request";
 import { ExecutionProcessRepository } from "./repositories/execution-process/postgres";
@@ -65,14 +66,21 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		permissionStore,
 		approvalStore,
 		logStoreManager,
-		devServer: new DevServerRepository(logger),
+		// Placeholder — replaced after binding (needs bound executionProcessLogs)
+		devServer: {} as Repos["devServer"],
 	};
 
 	// 2. Bind all repos once
 	const fullCtx = createFullCtx(db);
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	// 3. Build context and initialize callback client
+	// 3. Create DevServerRepository with bound LogCollector, then rebind
+	const logCollector = new LogCollector(repos.executionProcessLogs, logger);
+	const devServer = new DevServerRepository(logger, logCollector);
+	rawRepos.devServer = devServer;
+	repos.devServer = bindCtx(devServer, fullCtx);
+
+	// 4. Build context and initialize callback client
 	const ctx: Context = {
 		now: new Date(),
 		logger,
