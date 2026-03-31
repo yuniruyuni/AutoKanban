@@ -77,7 +77,7 @@ async function setupGitState(
 	const exec = await client.execution.start.mutate({ taskId: task.id });
 	const { workspaceId, worktreePath } = exec;
 
-	// Apply worktree changes
+	// Apply worktree changes (independent of MainChanges)
 	if (c.WorktreeChanges === "committed_changes") {
 		await writeFile(join(worktreePath, "worktree-change.txt"), "change\n");
 		await git(worktreePath, ["add", "worktree-change.txt"]);
@@ -93,19 +93,14 @@ async function setupGitState(
 			"main diverge",
 		);
 	} else if (c.MainChanges === "diverged_conflict") {
-		// Add same file in both main and worktree
+		// PICT constraint guarantees WorktreeChanges=committed_changes here.
+		// Add conflicting file on main (worktree already has committed changes).
 		await addFileAndCommit(
 			repoPath,
-			"conflict-file.txt",
-			"main version",
-			"main conflict",
+			"worktree-change.txt",
+			"main version of same file",
+			"main conflict on same file",
 		);
-		await writeFile(
-			join(worktreePath, "conflict-file.txt"),
-			"worktree version\n",
-		);
-		await git(worktreePath, ["add", "conflict-file.txt"]);
-		await git(worktreePath, ["commit", "-m", "worktree conflict"]);
 	}
 
 	return {
@@ -134,7 +129,9 @@ describe("pairwise: git operations", () => {
 						expect(result.diffs).toHaveLength(0);
 						expect(result.totalAdditions).toBe(0);
 					} else if (c.WorktreeChanges === "committed_changes") {
+						// Worktree has commits → diffs should be non-empty
 						expect(result.diffs.length).toBeGreaterThanOrEqual(1);
+						expect(result.totalAdditions).toBeGreaterThanOrEqual(1);
 					}
 					break;
 				}
@@ -144,18 +141,15 @@ describe("pairwise: git operations", () => {
 						workspaceId,
 						projectId,
 					});
-					if (
-						c.WorktreeChanges === "committed_changes" &&
-						c.MainChanges === "none"
-					) {
+					if (c.WorktreeChanges === "no_changes" && c.MainChanges === "none") {
+						expect(result.ahead).toBe(0);
+						expect(result.behind).toBe(0);
+					}
+					if (c.WorktreeChanges === "committed_changes") {
 						expect(result.ahead).toBeGreaterThanOrEqual(1);
 					}
 					if (c.MainChanges.startsWith("diverged")) {
 						expect(result.behind).toBeGreaterThanOrEqual(1);
-					}
-					if (c.WorktreeChanges === "no_changes" && c.MainChanges === "none") {
-						expect(result.ahead).toBe(0);
-						expect(result.behind).toBe(0);
 					}
 					break;
 				}

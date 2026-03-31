@@ -85,11 +85,6 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 			return { ...data, executionProcess: ep };
 		},
 
-		write: async (ctx, data) => {
-			await ctx.repos.executionProcess.upsert(data.executionProcess);
-			return data;
-		},
-
 		post: async (ctx, data) => {
 			// External calls: resolve worktree path and load workspace config
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
@@ -112,6 +107,11 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 				workingDir: worktreePath,
 			});
 			return { ...data, worktreePath, command };
+		},
+
+		finish: async (ctx, data) => {
+			await ctx.repos.executionProcess.upsert(data.executionProcess);
+			return data;
 		},
 
 		result: (data) => ({

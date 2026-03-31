@@ -1,3 +1,5 @@
 Operation: getDiffs, getBranchStatus, rebase, merge
 WorktreeChanges: no_changes, committed_changes
 MainChanges: none, diverged_no_conflict, diverged_conflict
+
+IF [MainChanges] = "diverged_conflict" THEN [WorktreeChanges] = "committed_changes";

@@ -32,13 +32,20 @@ beforeEach(async () => {
 	await resetTestData();
 });
 
+function expectNotFound(e: unknown): void {
+	expect(e).toBeInstanceOf(TRPCClientError);
+	const data = (e as { data?: { httpStatus?: number; code?: string } }).data;
+	expect(data?.httpStatus).toBe(404);
+	expect(data?.code).toBe("NOT_FOUND");
+}
+
 describe("entity not found errors", () => {
 	test("project.get with nonexistent ID", async () => {
 		try {
 			await client.project.get.query({ projectId: FAKE_UUID });
 			expect.unreachable("should throw");
 		} catch (e) {
-			expect(e).toBeInstanceOf(TRPCClientError);
+			expectNotFound(e);
 		}
 	});
 
@@ -47,7 +54,7 @@ describe("entity not found errors", () => {
 			await client.task.get.query({ taskId: FAKE_UUID });
 			expect.unreachable("should throw");
 		} catch (e) {
-			expect(e).toBeInstanceOf(TRPCClientError);
+			expectNotFound(e);
 		}
 	});
 
@@ -59,7 +66,7 @@ describe("entity not found errors", () => {
 			});
 			expect.unreachable("should throw");
 		} catch (e) {
-			expect(e).toBeInstanceOf(TRPCClientError);
+			expectNotFound(e);
 		}
 	});
 
@@ -68,7 +75,7 @@ describe("entity not found errors", () => {
 			await client.task.delete.mutate({ taskId: FAKE_UUID });
 			expect.unreachable("should throw");
 		} catch (e) {
-			expect(e).toBeInstanceOf(TRPCClientError);
+			expectNotFound(e);
 		}
 	});
 
@@ -77,7 +84,7 @@ describe("entity not found errors", () => {
 			await client.execution.start.mutate({ taskId: FAKE_UUID });
 			expect.unreachable("should throw");
 		} catch (e) {
-			expect(e).toBeInstanceOf(TRPCClientError);
+			expectNotFound(e);
 		}
 	});
 
@@ -86,7 +93,7 @@ describe("entity not found errors", () => {
 			await client.git.listBranches.query({ projectId: FAKE_UUID });
 			expect.unreachable("should throw");
 		} catch (e) {
-			expect(e).toBeInstanceOf(TRPCClientError);
+			expectNotFound(e);
 		}
 	});
 
@@ -97,7 +104,7 @@ describe("entity not found errors", () => {
 			});
 			expect.unreachable("should throw");
 		} catch (e) {
-			expect(e).toBeInstanceOf(TRPCClientError);
+			expectNotFound(e);
 		}
 	});
 
@@ -109,7 +116,7 @@ describe("entity not found errors", () => {
 			});
 			expect.unreachable("should throw");
 		} catch (e) {
-			expect(e).toBeInstanceOf(TRPCClientError);
+			expectNotFound(e);
 		}
 	});
 });

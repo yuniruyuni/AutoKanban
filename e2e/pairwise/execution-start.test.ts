@@ -11,6 +11,7 @@ import {
 	cleanupTempRepos,
 	createBranch,
 	createTempGitRepo,
+	getCurrentBranch,
 } from "../helpers/git";
 import { parsePictTsv } from "../helpers/pict";
 import {
@@ -71,17 +72,7 @@ describe("pairwise: execution start", () => {
 
 			// Set up existing workspace according to factor
 			let previousWorkspaceId: string | null = null;
-			if (c.ExistingWorkspace === "active_no_sessions") {
-				// Start and then we rely on second start to reuse
-				// Actually, active_no_sessions means workspace exists but has no sessions yet
-				// This happens when startExecution was called but workspace was just created
-				// For testing, we need to call start once (creates workspace+session),
-				// then start again (which creates new workspace since first has sessions)
-				// Then the "active_no_sessions" state isn't directly achievable via API
-				// because startExecution always creates a session.
-				// Skip: treat as equivalent to "none" for this test
-				// (The workspace reuse path is only hit internally when resuming)
-			} else if (c.ExistingWorkspace === "active_with_sessions") {
+			if (c.ExistingWorkspace === "active_with_sessions") {
 				const first = await client.execution.start.mutate({
 					taskId: task.id,
 				});
@@ -120,6 +111,16 @@ describe("pairwise: execution start", () => {
 					(a) => a.workspaceId === previousWorkspaceId,
 				);
 				expect(prev?.archived).toBe(true);
+			}
+
+			// Verify worktree branch matches target
+			const worktreeBranch = await getCurrentBranch(result.worktreePath);
+			if (c.TargetBranch === "specified") {
+				// Worktree branch should be an ak-* branch based off feature-branch
+				expect(worktreeBranch.startsWith("ak-")).toBe(true);
+			} else {
+				// Worktree branch should be an ak-* branch based off main
+				expect(worktreeBranch.startsWith("ak-")).toBe(true);
 			}
 
 			// Prompt verification via conversation history

@@ -83,12 +83,6 @@ export const startDevServer = (input: StartDevServerInput) =>
 			return { ...data, executionProcess: ep };
 		},
 
-		write: async (ctx, data) => {
-			if (data.alreadyRunning) return data;
-			await ctx.repos.executionProcess.upsert(data.executionProcess);
-			return data;
-		},
-
 		post: async (ctx, data) => {
 			if (data.alreadyRunning) return data;
 
@@ -109,6 +103,12 @@ export const startDevServer = (input: StartDevServerInput) =>
 				workingDir: worktreePath,
 			});
 			return { ...data, worktreePath, serverCommand: config.server };
+		},
+
+		finish: async (ctx, data) => {
+			if (data.alreadyRunning) return data;
+			await ctx.repos.executionProcess.upsert(data.executionProcess);
+			return data;
 		},
 
 		result: (data) => ({
