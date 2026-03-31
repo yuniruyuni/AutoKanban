@@ -50,6 +50,22 @@
         "vitest": "^2.1.8",
       },
     },
+    "e2e": {
+      "name": "@auto-kanban/e2e",
+      "dependencies": {
+        "@hono/trpc-server": "^0.3.2",
+        "@trpc/client": "11.10.0",
+        "@trpc/server": "11.10.0",
+        "embedded-postgres": "^18.3.0-beta.16",
+        "hono": "^4.4.0",
+        "pg": "^8.20.0",
+        "zod": "^3.23.8",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.9.3",
+      },
+    },
     "server": {
       "name": "@auto-kanban/server",
       "version": "0.1.0",
@@ -85,6 +101,8 @@
     "@asamuzakjp/nwsapi": ["@asamuzakjp/nwsapi@2.3.9", "", {}, "sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q=="],
 
     "@auto-kanban/client": ["@auto-kanban/client@workspace:client"],
+
+    "@auto-kanban/e2e": ["@auto-kanban/e2e@workspace:e2e"],
 
     "@auto-kanban/server": ["@auto-kanban/server@workspace:server"],
 
@@ -1179,6 +1197,8 @@
     "zwitch": ["zwitch@2.0.4", "", {}, "sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A=="],
 
     "@auto-kanban/client/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+
+    "@auto-kanban/e2e/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "@auto-kanban/server/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 

@@ -15,6 +15,7 @@ bun run check:lint                 # lint（全パッケージ）
 bun run check:type                 # 型チェック（全パッケージ）
 bun run check:test                 # テスト（全パッケージ）
 bun run check:arch                 # アーキテクチャ依存関係チェック（全パッケージ）
+bun run check:e2e                  # E2Eテスト（APIレベル、e2eパッケージ）
 ```
 
 ## コミット前チェック

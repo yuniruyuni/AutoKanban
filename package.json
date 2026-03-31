@@ -3,7 +3,8 @@
 	"private": true,
 	"workspaces": [
 		"server",
-		"client"
+		"client",
+		"e2e"
 	],
 	"scripts": {
 		"start:dev": "bun run --filter '*' --parallel start:dev",
@@ -14,7 +15,8 @@
 		"check:test": "bun run --filter '*' check:test",
 		"check:test:watch": "bun run --filter '*' --parallel check:test:watch",
 		"check:type": "bun run --filter '*' check:type",
-		"check:arch": "bun run --filter '*' check:arch"
+		"check:arch": "bun run --filter '*' check:arch",
+		"check:e2e": "bun run --filter '@auto-kanban/e2e' check:e2e"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.9",

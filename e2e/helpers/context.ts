@@ -1,0 +1,195 @@
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { PgDatabase } from "../../server/src/infra/db/pg-client";
+import type { ILogger } from "../../server/src/infra/logger/types";
+import { CallbackClientImpl } from "../../server/src/presentation/callback/impl";
+import {
+	bindCtx,
+	bindRepos,
+	createFullCtx,
+	type Repos,
+} from "../../server/src/repositories";
+import { AgentConfigRepository } from "../../server/src/repositories/agent-config";
+import { ApprovalRepository } from "../../server/src/repositories/approval/postgres";
+import { approvalStore } from "../../server/src/repositories/approval-store";
+import { CodingAgentTurnRepository } from "../../server/src/repositories/coding-agent-turn/postgres";
+import { DevServerRepository } from "../../server/src/repositories/dev-server";
+import { draftRepository } from "../../server/src/repositories/draft";
+import { draftPullRequestRepository } from "../../server/src/repositories/draft-pull-request";
+import { ExecutionProcessRepository } from "../../server/src/repositories/execution-process/postgres";
+import { ExecutionProcessLogsRepository } from "../../server/src/repositories/execution-process-logs/postgres";
+import { GitRepository } from "../../server/src/repositories/git";
+import { LogCollector } from "../../server/src/repositories/log-collector";
+import { logStoreManager } from "../../server/src/repositories/log-store";
+import { messageQueueRepository } from "../../server/src/repositories/message-queue";
+import { permissionStore } from "../../server/src/repositories/permission-store";
+import { ProjectRepository } from "../../server/src/repositories/project/postgres";
+import { SessionRepository } from "../../server/src/repositories/session/postgres";
+import { TaskRepository } from "../../server/src/repositories/task/postgres";
+import { TaskTemplateRepository } from "../../server/src/repositories/task-template/postgres";
+import { ToolRepository } from "../../server/src/repositories/tool/postgres";
+import { VariantRepository } from "../../server/src/repositories/variant/postgres";
+import { WorkspaceRepository } from "../../server/src/repositories/workspace/postgres";
+import { WorkspaceConfigRepository } from "../../server/src/repositories/workspace-config";
+import { WorkspaceRepoRepository } from "../../server/src/repositories/workspace-repo/postgres";
+import { WorktreeRepository } from "../../server/src/repositories/worktree";
+import type { Context } from "../../server/src/usecases/context";
+
+/**
+ * Create mock executor that succeeds without spawning real processes.
+ */
+function createMockExecutor(): Repos["executor"] {
+	const processes = new Map<
+		string,
+		{ id: string; sessionId: string; startedAt: Date }
+	>();
+
+	return {
+		async start(_ctx, options) {
+			const info = {
+				id: options.id ?? crypto.randomUUID(),
+				sessionId: options.sessionId,
+				runReason: options.runReason,
+				startedAt: new Date(),
+			};
+			processes.set(info.id, info);
+			return info;
+		},
+		async startProtocol(_ctx, options) {
+			const info = {
+				id: options.id ?? crypto.randomUUID(),
+				sessionId: options.sessionId,
+				runReason: options.runReason,
+				startedAt: new Date(),
+			};
+			processes.set(info.id, info);
+			return info;
+		},
+		async stop(_ctx, processId) {
+			return processes.delete(processId);
+		},
+		async kill(_ctx, processId) {
+			return processes.delete(processId);
+		},
+		async sendMessage() {
+			return true;
+		},
+		async sendPermissionResponse() {
+			return true;
+		},
+		async startProtocolAndWait(_ctx, options) {
+			const info = {
+				id: options.id ?? crypto.randomUUID(),
+				sessionId: options.sessionId,
+				runReason: options.runReason,
+				startedAt: new Date(),
+			};
+			processes.set(info.id, info);
+			return { exitCode: 0 };
+		},
+		spawnStructured() {
+			return null;
+		},
+		async runStructured() {
+			return null;
+		},
+		get(_ctx, processId) {
+			return processes.get(processId) as
+				| {
+						id: string;
+						sessionId: string;
+						runReason: "codingagent";
+						startedAt: Date;
+				  }
+				| undefined;
+		},
+		getBySession(_ctx, sessionId) {
+			return [...processes.values()].filter(
+				(p) => p.sessionId === sessionId,
+			) as Array<{
+				id: string;
+				sessionId: string;
+				runReason: "codingagent";
+				startedAt: Date;
+			}>;
+		},
+		getStdout() {
+			return null;
+		},
+		getStderr() {
+			return null;
+		},
+	} as Repos["executor"];
+}
+
+let worktreeBaseDir: string | null = null;
+
+export async function getWorktreeBaseDir(): Promise<string> {
+	if (!worktreeBaseDir) {
+		worktreeBaseDir = await mkdtemp(join(tmpdir(), "e2e-worktrees-"));
+	}
+	return worktreeBaseDir;
+}
+
+/**
+ * Create an E2E context with:
+ * - Real DB repos (all PostgreSQL repos)
+ * - Real git repo (for git operations)
+ * - Real worktree repo (with temp baseDir)
+ * - Mock executor (no-op, no real agent process)
+ */
+export async function createE2EContext(
+	db: PgDatabase,
+	logger: ILogger,
+): Promise<Context> {
+	const callbackClient = new CallbackClientImpl();
+	const baseDir = await getWorktreeBaseDir();
+
+	const rawRepos: Repos = {
+		task: new TaskRepository(),
+		taskTemplate: new TaskTemplateRepository(),
+		project: new ProjectRepository(),
+		workspace: new WorkspaceRepository(),
+		workspaceRepo: new WorkspaceRepoRepository(),
+		session: new SessionRepository(),
+		executionProcess: new ExecutionProcessRepository(),
+		executionProcessLogs: new ExecutionProcessLogsRepository(),
+		codingAgentTurn: new CodingAgentTurnRepository(),
+		tool: new ToolRepository(),
+		variant: new VariantRepository(),
+		approval: new ApprovalRepository(),
+		git: new GitRepository(),
+		worktree: new WorktreeRepository(logger, baseDir),
+		executor: createMockExecutor(),
+		messageQueue: messageQueueRepository,
+		agentConfig: new AgentConfigRepository(),
+		workspaceConfig: new WorkspaceConfigRepository(),
+		draft: draftRepository,
+		draftPullRequest: draftPullRequestRepository,
+		permissionStore,
+		approvalStore,
+		logStoreManager,
+		devServer: {} as Repos["devServer"],
+	};
+
+	const fullCtx = createFullCtx(db);
+	const repos = bindRepos(rawRepos, fullCtx);
+
+	const logCollector = new LogCollector(repos.executionProcessLogs, logger);
+	const devServer = new DevServerRepository(logger, logCollector);
+	rawRepos.devServer = devServer;
+	repos.devServer = bindCtx(devServer, fullCtx);
+
+	const ctx: Context = {
+		now: new Date(),
+		logger,
+		db,
+		rawRepos,
+		repos,
+	};
+
+	callbackClient.initialize(ctx);
+
+	return ctx;
+}

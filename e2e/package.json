@@ -1,0 +1,25 @@
+{
+	"name": "@auto-kanban/e2e",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"check:e2e": "bun test",
+		"check:lint": "biome check .",
+		"check:lint:fix": "biome check --write .",
+		"check:type": "tsc --noEmit",
+		"check:arch": "echo 'no arch check for e2e'"
+	},
+	"dependencies": {
+		"@trpc/client": "11.10.0",
+		"@hono/trpc-server": "^0.3.2",
+		"@trpc/server": "11.10.0",
+		"hono": "^4.4.0",
+		"embedded-postgres": "^18.3.0-beta.16",
+		"pg": "^8.20.0",
+		"zod": "^3.23.8"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "^5.9.3"
+	}
+}
