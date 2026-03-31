@@ -1,7 +1,7 @@
 import type { PgDatabase } from "./infra/db/pg-client";
 import type { ILogger } from "./infra/logger/types";
 import { CallbackClientImpl } from "./presentation/callback/impl";
-import { bindRepos, type Repos } from "./repositories";
+import { bindCtx, bindRepos, type Repos } from "./repositories";
 import { AgentConfigRepository } from "./repositories/agent-config";
 import { ApprovalRepository } from "./repositories/approval/postgres";
 import { approvalStore } from "./repositories/approval-store";
@@ -16,6 +16,7 @@ import { ExecutorRepository } from "./repositories/executor";
 import { ClaudeCodeDriver } from "./repositories/executor/drivers/claude-code";
 import { GeminiCliDriver } from "./repositories/executor/drivers/gemini-cli";
 import { GitRepository } from "./repositories/git";
+import { LogCollector } from "./repositories/log-collector";
 import { logStoreManager } from "./repositories/log-store";
 import { messageQueueRepository } from "./repositories/message-queue";
 import { permissionStore } from "./repositories/permission-store";
@@ -65,14 +66,21 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		permissionStore,
 		approvalStore,
 		logStoreManager,
-		devServer: new DevServerRepository(logger),
+		// Placeholder — replaced after binding (needs bound executionProcessLogs)
+		devServer: {} as Repos["devServer"],
 	};
 
 	// 2. Bind all repos once
 	const fullCtx = createFullCtx(db);
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	// 3. Build context and initialize callback client
+	// 3. Create DevServerRepository with bound LogCollector, then rebind
+	const logCollector = new LogCollector(repos.executionProcessLogs, logger);
+	const devServer = new DevServerRepository(logger, logCollector);
+	rawRepos.devServer = devServer;
+	repos.devServer = bindCtx(devServer, fullCtx);
+
+	// 4. Build context and initialize callback client
 	const ctx: Context = {
 		now: new Date(),
 		logger,

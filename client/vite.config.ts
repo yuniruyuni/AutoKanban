@@ -13,10 +13,10 @@ export default defineConfig({
 	},
 	server: {
 		host: true,
-		port: 5173,
+		port: Number(process.env.VITE_PORT ?? 5173),
 		proxy: {
 			"/trpc": {
-				target: "http://localhost:3000",
+				target: process.env.VITE_PROXY_TARGET ?? "http://localhost:3000",
 				changeOrigin: true,
 			},
 		},

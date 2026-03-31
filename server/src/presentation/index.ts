@@ -15,9 +15,7 @@ export type { AppRouter } from "./trpc/routers";
 
 export type ServerMode = "main" | "mcp";
 
-type StartServerParams =
-	| { mode: "main"; ctx: Context }
-	| { mode: "mcp" };
+type StartServerParams = { mode: "main"; ctx: Context } | { mode: "mcp" };
 
 export async function startServer(params: StartServerParams) {
 	if (params.mode === "mcp") {

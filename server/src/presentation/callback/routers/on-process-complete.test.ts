@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import type { ProcessCompletionInfo } from "../../../infra/callback/client";
 import {
 	createTestExecutionProcess,
 	createTestSession,
@@ -7,6 +6,8 @@ import {
 	createTestWorkspace,
 } from "../../../../test/factories";
 import { createMockContext } from "../../../../test/helpers/context";
+import type { ProcessCompletionInfo } from "../../../infra/callback/client";
+import type { Task } from "../../../models/task";
 import { handleProcessComplete } from "./on-process-complete";
 
 // ============================================
@@ -23,7 +24,7 @@ function setupMocks(options: {
 	const workspace = createTestWorkspace({ id: session.workspaceId });
 	const task = createTestTask({
 		id: workspace.taskId,
-		status: (options.taskStatus ?? "inprogress") as any,
+		status: (options.taskStatus ?? "inprogress") as Task.Status,
 	});
 	const executionProcess = createTestExecutionProcess({
 		sessionId: session.id,

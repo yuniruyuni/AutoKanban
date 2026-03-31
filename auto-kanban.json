@@ -1,0 +1,8 @@
+{
+  // worktree作成後、エージェント実行前に実行
+  "prepare": "bun install",
+  // 開発サーバ起動（ランダムポートで衝突回避）
+  "server": "sh scripts/start-preview.sh",
+  // worktree削除時のクリーンアップ（SIGTERMでプロセス終了するため不要）
+  "cleanup": ""
+}

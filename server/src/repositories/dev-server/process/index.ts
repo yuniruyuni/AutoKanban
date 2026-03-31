@@ -1,6 +1,7 @@
 import type { Subprocess } from "bun";
 import type { ILogger } from "../../../infra/logger/types";
 import type { ServiceCtx } from "../../common";
+import type { LogCollector } from "../../log-collector";
 import type { DevServerRepository as DevServerRepositoryDef } from "../repository";
 
 interface RunningDevServer {
@@ -11,14 +12,15 @@ interface RunningDevServer {
 
 /**
  * Repository for spawning and managing dev server processes.
- * Pure process I/O only — no DB/repo dependencies.
  */
 export class DevServerRepository implements DevServerRepositoryDef {
 	private runningProcesses = new Map<string, RunningDevServer>();
 	private logger: ILogger;
+	private logCollector: LogCollector;
 
-	constructor(logger: ILogger) {
+	constructor(logger: ILogger, logCollector: LogCollector) {
 		this.logger = logger.child("DevServerRepository");
+		this.logCollector = logCollector;
 	}
 
 	start(
@@ -51,6 +53,8 @@ export class DevServerRepository implements DevServerRepositoryDef {
 			pid: process.pid,
 		};
 		this.runningProcesses.set(processId, running);
+
+		this.logCollector.collect(processId, process.stdout, process.stderr);
 
 		process.exited.then((exitCode) => {
 			this.logger.info(`Dev server ${processId} exited with code ${exitCode}`);

@@ -1,7 +1,7 @@
 import { createContext } from "./context";
 import { initDatabase } from "./infra/db";
 import { createLogger } from "./infra/logger";
-import { startServer, type ServerMode } from "./presentation";
+import { type ServerMode, startServer } from "./presentation";
 
 export type { AppRouter } from "./presentation";
 
