@@ -17,7 +17,7 @@
 	},
 	"dependencies": {
 		"@hono/trpc-server": "^0.3.2",
-		"@modelcontextprotocol/sdk": "^1.12.1",
+		"@modelcontextprotocol/sdk": "1.12.1",
 		"@trpc/server": "11.10.0",
 		"embedded-postgres": "^18.3.0-beta.16",
 		"hono": "^4.4.0",

@@ -1,16 +1,16 @@
-import { createContext } from "./context";
-import { initDatabase } from "./infra/db";
-import { createLogger } from "./infra/logger";
-import { type ServerMode, startServer } from "./presentation";
-
 export type { AppRouter } from "./presentation";
 
 async function main() {
-	const mode: ServerMode = process.argv.includes("--mcp") ? "mcp" : "main";
-
-	if (mode === "mcp") {
-		return startServer({ mode: "mcp" });
+	if (process.argv.includes("--mcp")) {
+		const { runMcpServer } = await import("./presentation/mcp/stdio");
+		return runMcpServer();
 	}
+
+	// Only import heavy dependencies for main HTTP mode
+	const { createLogger } = await import("./infra/logger");
+	const { initDatabase } = await import("./infra/db");
+	const { createContext } = await import("./context");
+	const { startServer } = await import("./presentation");
 
 	const logger = createLogger();
 

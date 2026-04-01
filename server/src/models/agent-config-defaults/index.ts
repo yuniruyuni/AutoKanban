@@ -11,7 +11,7 @@ export function getPreconfiguredServers(): Record<string, PreconfiguredServer> {
 	return {
 		auto_kanban: {
 			name: "Auto Kanban",
-			config: { command: akCmd.command, args: akCmd.args },
+			config: { command: akCmd.command, args: akCmd.args, env: akCmd.env },
 			description: "Auto Kanban task management",
 		},
 		context7: {

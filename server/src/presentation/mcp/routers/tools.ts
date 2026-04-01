@@ -169,13 +169,11 @@ async function buildContextTool(
 ): Promise<ToolDef | null> {
 	const cwd = process.cwd();
 	try {
-		const result = await client.query<{ ok: boolean; value?: unknown }>(
-			"workspace.findByPath",
-			{ worktreePath: cwd },
-		);
-		if (!result?.ok || !result.value) return null;
+		const context = await client.query("workspace.findByPath", {
+			worktreePath: cwd,
+		});
+		if (!context) return null;
 
-		const context = result.value;
 		return {
 			name: "get_context",
 			description:
