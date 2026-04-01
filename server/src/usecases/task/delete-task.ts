@@ -3,6 +3,7 @@ import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import { DevServerProcess } from "../../models/dev-server-process";
+import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
@@ -12,6 +13,7 @@ import { usecase } from "../runner";
 
 export interface DeleteTaskInput {
 	taskId: string;
+	deleteWorktrees?: boolean;
 }
 
 export const deleteTask = (input: DeleteTaskInput) =>
@@ -22,21 +24,30 @@ export const deleteTask = (input: DeleteTaskInput) =>
 				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
 			}
 
+			const project = await ctx.repos.project.get(Project.ById(task.projectId));
+			if (!project) {
+				return fail("NOT_FOUND", "Project not found", {
+					projectId: task.projectId,
+				});
+			}
+
 			// Collect all related entity IDs for cascade deletion
 			const workspaceIds: string[] = [];
+			const workspaces: Workspace[] = [];
 			const sessionIds: string[] = [];
 			const codingAgentProcessIds: string[] = [];
 			const devServerProcessIds: string[] = [];
 			const workspaceScriptProcessIds: string[] = [];
 
-			const workspaces = await ctx.repos.workspace.list(
+			const workspacesPage = await ctx.repos.workspace.list(
 				Workspace.ByTaskId(task.id),
 				{
 					limit: 10000,
 				},
 			);
-			for (const ws of workspaces.items) {
+			for (const ws of workspacesPage.items) {
 				workspaceIds.push(ws.id);
+				workspaces.push(ws);
 				const sessions = await ctx.repos.session.list(
 					Session.ByWorkspaceId(ws.id),
 					{
@@ -77,7 +88,9 @@ export const deleteTask = (input: DeleteTaskInput) =>
 
 			return {
 				task,
+				project,
 				workspaceIds,
+				workspaces,
 				sessionIds,
 				codingAgentProcessIds,
 				devServerProcessIds,
@@ -89,6 +102,8 @@ export const deleteTask = (input: DeleteTaskInput) =>
 			ctx,
 			{
 				task,
+				project,
+				workspaces,
 				workspaceIds,
 				sessionIds,
 				codingAgentProcessIds,
@@ -146,6 +161,25 @@ export const deleteTask = (input: DeleteTaskInput) =>
 			// 6. task
 			await ctx.repos.task.delete(Task.ById(task.id));
 
-			return { deleted: true, taskId: task.id };
+			return { deleted: true, taskId: task.id, workspaces, project };
+		},
+
+		post: async (ctx, { workspaces, project }) => {
+			if (!input.deleteWorktrees) {
+				return { deleted: true, taskId: input.taskId };
+			}
+
+			for (const ws of workspaces) {
+				try {
+					await ctx.repos.worktree.removeAllWorktrees(ws.id, [project], true);
+				} catch (error: any) {
+					ctx.logger.error(
+						`Failed to remove worktrees for workspace ${ws.id}: ${error?.message || error}`,
+						error,
+					);
+				}
+			}
+
+			return { deleted: true, taskId: input.taskId };
 		},
 	});

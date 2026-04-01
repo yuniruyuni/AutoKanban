@@ -61,7 +61,12 @@ export const taskRouter = router({
 		),
 
 	delete: publicProcedure
-		.input(z.object({ taskId: z.string().uuid() }))
+		.input(
+			z.object({
+				taskId: z.string().uuid(),
+				deleteWorktrees: z.boolean().optional(),
+			}),
+		)
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await deleteTask(input).run(ctx)),
 		),
