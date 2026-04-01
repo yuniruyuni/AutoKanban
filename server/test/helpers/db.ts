@@ -9,6 +9,20 @@ let initPromise: Promise<PgDatabase> | null = null;
 
 const DEFAULT_DATA_DIR = join(import.meta.dir, "../../.test-pg-data");
 
+/**
+ * Resolve \i directives in schema.sql using the VFS and return concatenated SQL.
+ */
+function resolveSchema(): string {
+	const entry = schemaFiles["schema.sql"];
+	return entry.replace(/^\\i\s+(.+)$/gm, (_match, path: string) => {
+		const content = schemaFiles[path];
+		if (!content) {
+			throw new Error(`Schema file not found in VFS: ${path}`);
+		}
+		return content;
+	});
+}
+
 async function doInit(dataDir: string): Promise<PgDatabase> {
 	pgManager = new EmbeddedPostgresManager({ dataDir });
 
@@ -26,7 +40,7 @@ async function doInit(dataDir: string): Promise<PgDatabase> {
 	});
 
 	if (!result?.exists) {
-		const schema = schemaFiles["schema.sql"];
+		const schema = resolveSchema();
 		const statements = schema
 			.split(";")
 			.map((s) => s.trim())
