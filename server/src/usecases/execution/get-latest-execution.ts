@@ -57,9 +57,11 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 
 			const session = sessionPage.items[0];
 
-			// Find latest execution process for this session
+			// Find latest codingagent execution process for this session
 			const executionPage = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(session.id),
+				ExecutionProcess.BySessionId(session.id).and(
+					ExecutionProcess.ByRunReason("codingagent"),
+				),
 				{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 			);
 

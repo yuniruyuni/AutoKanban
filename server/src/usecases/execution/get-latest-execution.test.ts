@@ -176,6 +176,49 @@ describe("getLatestExecution", () => {
 		}
 	});
 
+	test("returns null execution when only non-codingagent processes exist", async () => {
+		const workspace = createTestWorkspace();
+		const session = createTestSession({ workspaceId: workspace.id });
+		const devserverProcess = createTestExecutionProcess({
+			sessionId: session.id,
+			runReason: "devserver",
+		});
+		const setupProcess = createTestExecutionProcess({
+			sessionId: session.id,
+			runReason: "setupscript",
+		});
+
+		const ctx = createMockContext({
+			workspace: {
+				get: () => workspace,
+			} as never,
+			session: {
+				list: () => ({ items: [session], hasMore: false }),
+			} as never,
+			executionProcess: {
+				list: () => {
+					// Simulate that the codingagent filter excludes devserver/setupscript EPs
+					return { items: [], hasMore: false };
+				},
+			} as never,
+		});
+
+		const result = await getLatestExecution({
+			taskId: workspace.taskId,
+		}).run(ctx);
+
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.value.workspaceId).toBe(workspace.id);
+			expect(result.value.sessionId).toBe(session.id);
+			expect(result.value.executionProcess).toBeNull();
+		}
+
+		// Verify that non-codingagent processes were created but not returned
+		expect(devserverProcess.runReason).toBe("devserver");
+		expect(setupProcess.runReason).toBe("setupscript");
+	});
+
 	test("returns latest session based on sort order", async () => {
 		const workspace = createTestWorkspace();
 		const _oldSession = createTestSession({
