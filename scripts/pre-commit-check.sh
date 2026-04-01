@@ -3,6 +3,14 @@
 # Returns JSON for Claude Code PreToolUse hook
 set -euo pipefail
 
+# Read tool input from stdin and check if this is a git commit command
+input=$(cat)
+cmd=$(echo "$input" | jq -r '.tool_input.command // ""')
+if ! echo "$cmd" | grep -qE '^\s*git\s+commit\b'; then
+  echo '{"continue":true}'
+  exit 0
+fi
+
 cd "$(git rev-parse --show-toplevel)"
 
 errors=""
