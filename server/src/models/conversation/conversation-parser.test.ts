@@ -352,7 +352,7 @@ describe("filtering", () => {
 	test("skips synthetic user messages", () => {
 		const log = makeLogLine(
 			"stdout",
-			makeUserLog("synthetic", { is_synthetic: true }),
+			makeUserLog("synthetic", { isSynthetic: true }),
 		);
 		const result = parseLogsToConversation(log);
 		expect(result.entries).toHaveLength(0);
@@ -361,7 +361,7 @@ describe("filtering", () => {
 	test("skips replay user messages", () => {
 		const log = makeLogLine(
 			"stdout",
-			makeUserLog("replay", { is_replay: true }),
+			makeUserLog("replay", { isReplay: true }),
 		);
 		const result = parseLogsToConversation(log);
 		expect(result.entries).toHaveLength(0);

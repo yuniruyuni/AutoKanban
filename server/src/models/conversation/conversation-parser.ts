@@ -372,7 +372,7 @@ function processUserMessage(
 	completedPlanTools: Map<string, ConversationEntry>,
 ): ConversationEntry[] {
 	// Skip synthetic/replay messages (these are internal)
-	if (json.is_synthetic || json.is_replay) {
+	if (json.isSynthetic || json.isReplay) {
 		return [];
 	}
 
@@ -587,8 +587,8 @@ export function findPendingToolUses(rawLogs: string): PendingToolUse[] {
 				// Skip subagent and synthetic messages
 				if (
 					userMsg.parent_tool_use_id ||
-					userMsg.is_synthetic ||
-					userMsg.is_replay
+					userMsg.isSynthetic ||
+					userMsg.isReplay
 				)
 					continue;
 

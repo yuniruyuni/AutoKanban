@@ -21,12 +21,9 @@ export type {
 	ClaudeControlRequestMessage,
 	ClaudeControlResponseMessage,
 	ClaudeJsonMessage,
-	ClaudeJsonType,
+	ClaudePartialAssistantMessage,
 	ClaudeResultMessage,
-	ClaudeStreamEventMessage,
 	ClaudeSystemMessage,
-	ClaudeToolResultMessage,
-	ClaudeToolUseMessage,
 	ClaudeUserMessage,
 } from "../../models/claude-protocol";
 
