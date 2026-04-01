@@ -12,6 +12,9 @@ export async function handleProcessComplete(
 ): Promise<void> {
 	await completeExecutionProcess(info).run(ctx);
 
+	// Only codingagent processes trigger follow-up and task status changes
+	if (info.processType !== "codingagent") return;
+
 	const queuedMessage = ctx.repos.messageQueue.consume(info.sessionId);
 	if (queuedMessage) {
 		await processQueuedFollowUp({

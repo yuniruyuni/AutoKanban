@@ -1,5 +1,5 @@
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
+import { DevServerProcess } from "../../models/dev-server-process";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
@@ -52,11 +52,11 @@ export const startDevServer = (input: StartDevServerInput) =>
 			const session = sessionPage.items[0];
 
 			// Check for existing running dev server in this session
-			const existingPage = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(session.id)
-					.and(ExecutionProcess.ByRunReason("devserver"))
-					.and(ExecutionProcess.ByStatus("running")),
-				{ limit: 1, sort: ExecutionProcess.defaultSort },
+			const existingPage = await ctx.repos.devServerProcess.list(
+				DevServerProcess.BySessionId(session.id).and(
+					DevServerProcess.ByStatus("running"),
+				),
+				{ limit: 1, sort: DevServerProcess.defaultSort },
 			);
 			if (existingPage.items.length > 0) {
 				// Already running, return existing
@@ -76,11 +76,10 @@ export const startDevServer = (input: StartDevServerInput) =>
 
 		process: (_ctx, data) => {
 			if (data.alreadyRunning) return data;
-			const ep = ExecutionProcess.create({
+			const devServerProcess = DevServerProcess.create({
 				sessionId: data.session.id,
-				runReason: "devserver",
 			});
-			return { ...data, executionProcess: ep };
+			return { ...data, devServerProcess };
 		},
 
 		post: async (ctx, data) => {
@@ -98,7 +97,8 @@ export const startDevServer = (input: StartDevServerInput) =>
 			}
 
 			ctx.repos.devServer.start({
-				processId: data.executionProcess.id,
+				processId: data.devServerProcess.id,
+				sessionId: data.session.id,
 				command: config.server,
 				workingDir: worktreePath,
 			});
@@ -107,13 +107,13 @@ export const startDevServer = (input: StartDevServerInput) =>
 
 		finish: async (ctx, data) => {
 			if (data.alreadyRunning) return data;
-			await ctx.repos.executionProcess.upsert(data.executionProcess);
+			await ctx.repos.devServerProcess.upsert(data.devServerProcess);
 			return data;
 		},
 
 		result: (data) => ({
 			executionProcessId: data.alreadyRunning
 				? data.executionProcessId
-				: data.executionProcess.id,
+				: data.devServerProcess.id,
 		}),
 	});

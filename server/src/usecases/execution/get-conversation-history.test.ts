@@ -1,20 +1,20 @@
 import { describe, expect, test } from "bun:test";
 import {
-	createTestExecutionProcess,
+	createTestCodingAgentProcess,
 	createTestSession,
 } from "../../../test/factories";
 import { createMockContext } from "../../../test/helpers/context";
 import { getConversationHistory } from "./get-conversation-history";
 
 describe("getConversationHistory", () => {
-	test("returns empty turns when no execution processes exist", async () => {
+	test("returns empty turns when no coding agent processes exist", async () => {
 		const session = createTestSession();
 
 		const ctx = createMockContext({
 			session: {
 				get: () => session,
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [], hasMore: false }),
 			} as never,
 		});
@@ -50,14 +50,12 @@ describe("getConversationHistory", () => {
 
 	test("returns turns for coding agent processes", async () => {
 		const session = createTestSession();
-		const process1 = createTestExecutionProcess({
+		const process1 = createTestCodingAgentProcess({
 			sessionId: session.id,
-			runReason: "codingagent",
 			status: "completed",
 		});
-		const process2 = createTestExecutionProcess({
+		const process2 = createTestCodingAgentProcess({
 			sessionId: session.id,
-			runReason: "codingagent",
 			status: "running",
 		});
 
@@ -78,7 +76,7 @@ describe("getConversationHistory", () => {
 			session: {
 				get: () => session,
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [process1, process2], hasMore: false }),
 			} as never,
 			codingAgentTurn: {
@@ -106,31 +104,20 @@ describe("getConversationHistory", () => {
 		}
 	});
 
-	test("excludes non-codingagent processes", async () => {
+	test("all records in codingAgentProcess table are codingagent type", async () => {
 		const session = createTestSession();
-		const codingProcess = createTestExecutionProcess({
+		const codingProcess = createTestCodingAgentProcess({
 			sessionId: session.id,
-			runReason: "codingagent",
 			status: "completed",
-		});
-		const setupProcess = createTestExecutionProcess({
-			sessionId: session.id,
-			runReason: "setupscript",
-			status: "completed",
-		});
-		const devServerProcess = createTestExecutionProcess({
-			sessionId: session.id,
-			runReason: "devserver",
-			status: "running",
 		});
 
 		const ctx = createMockContext({
 			session: {
 				get: () => session,
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({
-					items: [codingProcess, setupProcess, devServerProcess],
+					items: [codingProcess],
 					hasMore: false,
 				}),
 			} as never,
@@ -150,7 +137,7 @@ describe("getConversationHistory", () => {
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
-			// Only codingagent process should be included
+			// All records in the codingAgentProcess table are codingagent
 			expect(result.value.turns).toHaveLength(1);
 			expect(result.value.turns[0].prompt).toBe("Coding prompt");
 		}
@@ -158,9 +145,8 @@ describe("getConversationHistory", () => {
 
 	test("handles turns without coding agent turn record", async () => {
 		const session = createTestSession();
-		const process = createTestExecutionProcess({
+		const process = createTestCodingAgentProcess({
 			sessionId: session.id,
-			runReason: "codingagent",
 			status: "completed",
 		});
 
@@ -168,7 +154,7 @@ describe("getConversationHistory", () => {
 			session: {
 				get: () => session,
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [process], hasMore: false }),
 			} as never,
 			codingAgentTurn: {
@@ -189,12 +175,11 @@ describe("getConversationHistory", () => {
 		}
 	});
 
-	test("paginates through all execution processes", async () => {
+	test("paginates through all coding agent processes", async () => {
 		const session = createTestSession();
 		const processes = Array.from({ length: 150 }, (_, _i) =>
-			createTestExecutionProcess({
+			createTestCodingAgentProcess({
 				sessionId: session.id,
-				runReason: "codingagent",
 				status: "completed",
 			}),
 		);
@@ -205,7 +190,7 @@ describe("getConversationHistory", () => {
 			session: {
 				get: () => session,
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: (_spec: unknown, cursor: { limit: number; after?: unknown }) => {
 					callCount++;
 					const start = callCount === 1 ? 0 : 100;

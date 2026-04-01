@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-	createTestExecutionProcess,
+	createTestCodingAgentProcess,
 	createTestSession,
 	createTestTask,
 	createTestWorkspace,
@@ -19,6 +19,7 @@ function setupMocks(options: {
 		| { sessionId: string; prompt: string; queuedAt: Date }
 		| undefined;
 	taskStatus?: string;
+	processType?: "codingagent" | "devserver" | "workspacescript";
 }) {
 	const session = createTestSession();
 	const workspace = createTestWorkspace({ id: session.workspaceId });
@@ -26,25 +27,44 @@ function setupMocks(options: {
 		id: workspace.taskId,
 		status: (options.taskStatus ?? "inprogress") as Task.Status,
 	});
-	const executionProcess = createTestExecutionProcess({
+	const codingAgentProcess = createTestCodingAgentProcess({
 		sessionId: session.id,
 		status: "running",
 	});
 
 	const calls = {
-		executionProcessUpserted: false,
+		codingAgentProcessUpserted: false,
+		devServerProcessUpserted: false,
+		workspaceScriptProcessUpserted: false,
 		taskUpserted: false,
 		logStoreManagerClosed: false,
 		executorStartCalled: false,
 	};
 
 	const ctx = createMockContext({
-		executionProcess: {
-			get: () => executionProcess,
+		codingAgentProcess: {
+			get: () => codingAgentProcess,
 			upsert: () => {
-				calls.executionProcessUpserted = true;
+				calls.codingAgentProcessUpserted = true;
 			},
 			list: () => ({ items: [], hasMore: false }),
+		} as never,
+		devServerProcess: {
+			get: () => null,
+			upsert: () => {
+				calls.devServerProcessUpserted = true;
+			},
+			list: () => ({ items: [], hasMore: false }),
+		} as never,
+		workspaceScriptProcess: {
+			get: () => null,
+			upsert: () => {
+				calls.workspaceScriptProcessUpserted = true;
+			},
+			list: () => ({ items: [], hasMore: false }),
+		} as never,
+		codingAgentProcessLogs: {
+			getLogs: () => null,
 		} as never,
 		session: {
 			get: () => session,
@@ -64,9 +84,6 @@ function setupMocks(options: {
 		codingAgentTurn: {
 			findLatestResumeInfo: () => null,
 			upsert: () => {},
-		} as never,
-		executionProcessLogs: {
-			getLogs: () => null,
 		} as never,
 		logStoreManager: {
 			close: () => {
@@ -102,13 +119,14 @@ describe("handleProcessComplete", () => {
 		const info: ProcessCompletionInfo = {
 			processId: "proc-1",
 			sessionId: session.id,
+			processType: "codingagent",
 			status: "completed",
 			exitCode: 0,
 		};
 
 		await handleProcessComplete(ctx, info);
 
-		expect(calls.executionProcessUpserted).toBe(true);
+		expect(calls.codingAgentProcessUpserted).toBe(true);
 		expect(calls.taskUpserted).toBe(true);
 		expect(calls.executorStartCalled).toBe(false);
 	});
@@ -125,13 +143,14 @@ describe("handleProcessComplete", () => {
 		const info: ProcessCompletionInfo = {
 			processId: "proc-1",
 			sessionId: session.id,
+			processType: "codingagent",
 			status: "completed",
 			exitCode: 0,
 		};
 
 		await handleProcessComplete(ctx, info);
 
-		expect(calls.executionProcessUpserted).toBe(true);
+		expect(calls.codingAgentProcessUpserted).toBe(true);
 		// executor.start is not called because workingDir is null (no workspaceRepo)
 		// but the queued message IS consumed and processQueuedFollowUp runs
 		expect(calls.taskUpserted).toBe(false);
@@ -149,6 +168,7 @@ describe("handleProcessComplete", () => {
 		const info: ProcessCompletionInfo = {
 			processId: "proc-1",
 			sessionId: session.id,
+			processType: "codingagent",
 			status: "killed",
 			exitCode: null,
 		};
@@ -172,6 +192,7 @@ describe("handleProcessComplete", () => {
 		const info: ProcessCompletionInfo = {
 			processId: "proc-1",
 			sessionId: session.id,
+			processType: "codingagent",
 			status: "failed",
 			exitCode: 1,
 		};
@@ -189,13 +210,55 @@ describe("handleProcessComplete", () => {
 		const info: ProcessCompletionInfo = {
 			processId: "proc-1",
 			sessionId: session.id,
+			processType: "codingagent",
 			status: "killed",
 			exitCode: null,
 		};
 
 		await handleProcessComplete(ctx, info);
 
-		expect(calls.executionProcessUpserted).toBe(true);
+		expect(calls.codingAgentProcessUpserted).toBe(true);
 		expect(calls.taskUpserted).toBe(true);
+	});
+
+	test("workspacescript completed → does NOT move task to inreview", async () => {
+		const { ctx, session, calls } = setupMocks({
+			queuedMessage: undefined,
+			processType: "workspacescript",
+		});
+
+		const info: ProcessCompletionInfo = {
+			processId: "proc-1",
+			sessionId: session.id,
+			processType: "workspacescript",
+			status: "completed",
+			exitCode: 0,
+		};
+
+		await handleProcessComplete(ctx, info);
+
+		// workspacescript processes don't trigger task status changes
+		expect(calls.taskUpserted).toBe(false);
+		expect(calls.executorStartCalled).toBe(false);
+	});
+
+	test("devserver completed → does NOT move task to inreview", async () => {
+		const { ctx, session, calls } = setupMocks({
+			queuedMessage: undefined,
+			processType: "devserver",
+		});
+
+		const info: ProcessCompletionInfo = {
+			processId: "proc-1",
+			sessionId: session.id,
+			processType: "devserver",
+			status: "completed",
+			exitCode: 0,
+		};
+
+		await handleProcessComplete(ctx, info);
+
+		expect(calls.taskUpserted).toBe(false);
+		expect(calls.executorStartCalled).toBe(false);
 	});
 });

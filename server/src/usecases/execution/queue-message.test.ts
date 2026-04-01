@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-	createTestExecutionProcess,
+	createTestCodingAgentProcess,
 	createTestProject,
 	createTestSession,
 	createTestWorkspace,
@@ -12,7 +12,7 @@ describe("queueMessage", () => {
 	test("queues message and returns not sent immediately when process is busy", async () => {
 		const session = createTestSession();
 		const workspace = createTestWorkspace({ id: session.workspaceId });
-		const process = createTestExecutionProcess({
+		const process = createTestCodingAgentProcess({
 			sessionId: session.id,
 			status: "running",
 		});
@@ -30,12 +30,12 @@ describe("queueMessage", () => {
 			workspace: {
 				get: () => workspace,
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [process], hasMore: false }),
 			} as never,
-			executionProcessLogs: {
+			codingAgentProcessLogs: {
 				getLogs: () => ({
-					executionProcessId: process.id,
+					codingAgentProcessId: process.id,
 					logs: '{"type":"assistant"}',
 				}),
 			} as never,
@@ -85,7 +85,7 @@ describe("queueMessage", () => {
 			workspace: {
 				get: () => workspace,
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [], hasMore: false }),
 				upsert: () => {},
 			} as never,

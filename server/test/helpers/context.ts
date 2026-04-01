@@ -1,16 +1,20 @@
 import type { Database } from "../../src/infra/db/database";
 import type { Repos } from "../../src/repositories";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
+import { CodingAgentProcessRepository } from "../../src/repositories/coding-agent-process/postgres";
+import { CodingAgentProcessLogsRepository } from "../../src/repositories/coding-agent-process-logs/postgres";
 import { CodingAgentTurnRepository } from "../../src/repositories/coding-agent-turn/postgres";
 import type { FullRepos } from "../../src/repositories/common";
 import { bindCtx, createDbWriteCtx } from "../../src/repositories/common";
-import { ExecutionProcessRepository } from "../../src/repositories/execution-process/postgres";
-import { ExecutionProcessLogsRepository } from "../../src/repositories/execution-process-logs/postgres";
+import { DevServerProcessRepository } from "../../src/repositories/dev-server-process/postgres";
+import { DevServerProcessLogsRepository } from "../../src/repositories/dev-server-process-logs/postgres";
 import { ProjectRepository } from "../../src/repositories/project/postgres";
 import { SessionRepository } from "../../src/repositories/session/postgres";
 import { TaskRepository } from "../../src/repositories/task/postgres";
 import { WorkspaceRepository } from "../../src/repositories/workspace/postgres";
 import { WorkspaceRepoRepository } from "../../src/repositories/workspace-repo/postgres";
+import { WorkspaceScriptProcessRepository } from "../../src/repositories/workspace-script-process/postgres";
+import { WorkspaceScriptProcessLogsRepository } from "../../src/repositories/workspace-script-process-logs/postgres";
 import type { Context } from "../../src/usecases/context";
 import { createMockLogger } from "./logger";
 
@@ -21,8 +25,12 @@ const DB_REPO_KEYS = [
 	"workspace",
 	"workspaceRepo",
 	"session",
-	"executionProcess",
-	"executionProcessLogs",
+	"codingAgentProcess",
+	"codingAgentProcessLogs",
+	"devServerProcess",
+	"devServerProcessLogs",
+	"workspaceScriptProcess",
+	"workspaceScriptProcessLogs",
 	"codingAgentTurn",
 	"tool",
 	"variant",
@@ -172,8 +180,12 @@ export function createIntegrationContext(db: Database): Context {
 		project: new ProjectRepository(),
 		workspace: new WorkspaceRepository(),
 		session: new SessionRepository(),
-		executionProcess: new ExecutionProcessRepository(),
-		executionProcessLogs: new ExecutionProcessLogsRepository(),
+		codingAgentProcess: new CodingAgentProcessRepository(),
+		codingAgentProcessLogs: new CodingAgentProcessLogsRepository(),
+		devServerProcess: new DevServerProcessRepository(),
+		devServerProcessLogs: new DevServerProcessLogsRepository(),
+		workspaceScriptProcess: new WorkspaceScriptProcessRepository(),
+		workspaceScriptProcessLogs: new WorkspaceScriptProcessLogsRepository(),
 		workspaceRepo: new WorkspaceRepoRepository(),
 		codingAgentTurn: new CodingAgentTurnRepository(),
 		approval: new ApprovalRepository(),
@@ -200,8 +212,15 @@ export function createIntegrationContext(db: Database): Context {
 		project: bindCtx(rawRepos.project, dbCtx),
 		workspace: bindCtx(rawRepos.workspace, dbCtx),
 		session: bindCtx(rawRepos.session, dbCtx),
-		executionProcess: bindCtx(rawRepos.executionProcess, dbCtx),
-		executionProcessLogs: bindCtx(rawRepos.executionProcessLogs, dbCtx),
+		codingAgentProcess: bindCtx(rawRepos.codingAgentProcess, dbCtx),
+		codingAgentProcessLogs: bindCtx(rawRepos.codingAgentProcessLogs, dbCtx),
+		devServerProcess: bindCtx(rawRepos.devServerProcess, dbCtx),
+		devServerProcessLogs: bindCtx(rawRepos.devServerProcessLogs, dbCtx),
+		workspaceScriptProcess: bindCtx(rawRepos.workspaceScriptProcess, dbCtx),
+		workspaceScriptProcessLogs: bindCtx(
+			rawRepos.workspaceScriptProcessLogs,
+			dbCtx,
+		),
 		workspaceRepo: bindCtx(rawRepos.workspaceRepo, dbCtx),
 		codingAgentTurn: bindCtx(rawRepos.codingAgentTurn, dbCtx),
 		approval: bindCtx(rawRepos.approval, dbCtx),

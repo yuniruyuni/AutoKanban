@@ -1,17 +1,17 @@
 import type { Database } from "../../src/infra/db/database";
-import type { ExecutionProcess } from "../../src/models/execution-process";
+import type { CodingAgentProcess } from "../../src/models/coding-agent-process";
 import type { Project } from "../../src/models/project";
 import type { Session } from "../../src/models/session";
 import type { Task } from "../../src/models/task";
 import type { Workspace } from "../../src/models/workspace";
+import { CodingAgentProcessRepository } from "../../src/repositories/coding-agent-process/postgres";
 import { createDbWriteCtx } from "../../src/repositories/common";
-import { ExecutionProcessRepository } from "../../src/repositories/execution-process/postgres";
 import { ProjectRepository } from "../../src/repositories/project/postgres";
 import { SessionRepository } from "../../src/repositories/session/postgres";
 import { TaskRepository } from "../../src/repositories/task/postgres";
 import { WorkspaceRepository } from "../../src/repositories/workspace/postgres";
 import {
-	createTestExecutionProcess,
+	createTestCodingAgentProcess,
 	createTestProject,
 	createTestSession,
 	createTestTask,
@@ -23,19 +23,19 @@ export interface SeedResult {
 	task: Task;
 	workspace: Workspace;
 	session: Session;
-	executionProcess: ExecutionProcess;
+	executionProcess: CodingAgentProcess;
 }
 
 /**
  * Build the full FK dependency chain in the DB and return all created entities.
- * projects → tasks → workspaces → sessions → execution_processes
+ * projects -> tasks -> workspaces -> sessions -> coding_agent_processes
  */
 export async function seedFullChain(db: Database): Promise<SeedResult> {
 	const project = createTestProject();
 	const task = createTestTask({ projectId: project.id });
 	const workspace = createTestWorkspace({ taskId: task.id });
 	const session = createTestSession({ workspaceId: workspace.id });
-	const executionProcess = createTestExecutionProcess({
+	const executionProcess = createTestCodingAgentProcess({
 		sessionId: session.id,
 	});
 
@@ -44,7 +44,7 @@ export async function seedFullChain(db: Database): Promise<SeedResult> {
 	await new TaskRepository().upsert(wCtx, task);
 	await new WorkspaceRepository().upsert(wCtx, workspace);
 	await new SessionRepository().upsert(wCtx, session);
-	await new ExecutionProcessRepository().upsert(wCtx, executionProcess);
+	await new CodingAgentProcessRepository().upsert(wCtx, executionProcess);
 
 	return { project, task, workspace, session, executionProcess };
 }

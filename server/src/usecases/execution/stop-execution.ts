@@ -1,5 +1,5 @@
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
 import { usecase } from "../runner";
 
 export interface StopExecutionInput {
@@ -9,33 +9,33 @@ export interface StopExecutionInput {
 export const stopExecution = (input: StopExecutionInput) =>
 	usecase({
 		read: async (ctx) => {
-			// Verify execution process exists
-			const executionProcess = await ctx.repos.executionProcess.get(
-				ExecutionProcess.ById(input.executionProcessId),
+			// Verify coding agent process exists
+			const codingAgentProcess = await ctx.repos.codingAgentProcess.get(
+				CodingAgentProcess.ById(input.executionProcessId),
 			);
 
-			if (!executionProcess) {
-				return fail("NOT_FOUND", "Execution process not found", {
+			if (!codingAgentProcess) {
+				return fail("NOT_FOUND", "Coding agent process not found", {
 					executionProcessId: input.executionProcessId,
 				});
 			}
 
 			if (
-				executionProcess.status !== "running" &&
-				executionProcess.status !== "awaiting_approval"
+				codingAgentProcess.status !== "running" &&
+				codingAgentProcess.status !== "awaiting_approval"
 			) {
-				return fail("INVALID_STATE", "Execution process is not active", {
-					status: executionProcess.status,
+				return fail("INVALID_STATE", "Coding agent process is not active", {
+					status: codingAgentProcess.status,
 				});
 			}
 
-			return { executionProcess };
+			return { codingAgentProcess };
 		},
 
-		post: async (ctx, { executionProcess }) => {
+		post: async (ctx, { codingAgentProcess }) => {
 			// Stop the process
-			const stopped = await ctx.repos.executor.stop(executionProcess.id);
+			const stopped = await ctx.repos.executor.stop(codingAgentProcess.id);
 
-			return { stopped, executionProcessId: executionProcess.id };
+			return { stopped, executionProcessId: codingAgentProcess.id };
 		},
 	});

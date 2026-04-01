@@ -1,8 +1,10 @@
-import { fail } from "../../models/common";
 import {
-	ExecutionProcess,
-	type ExecutionProcessLogs,
-} from "../../models/execution-process";
+	CodingAgentProcess,
+	type CodingAgentProcessLogs,
+} from "../../models/coding-agent-process";
+import { fail } from "../../models/common";
+import { DevServerProcess } from "../../models/dev-server-process";
+import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 import { usecase } from "../runner";
 
 export interface GetExecutionInput {
@@ -10,32 +12,59 @@ export interface GetExecutionInput {
 	includeLogs?: boolean;
 }
 
+export type ExecutionProcessUnion =
+	| CodingAgentProcess
+	| DevServerProcess
+	| WorkspaceScriptProcess;
+
 export interface GetExecutionResult {
-	executionProcess: ExecutionProcess;
-	logs?: ExecutionProcessLogs | null;
+	executionProcess: ExecutionProcessUnion;
+	logs?: CodingAgentProcessLogs | null;
 }
 
 export const getExecution = (input: GetExecutionInput) =>
 	usecase({
 		read: async (ctx) => {
-			const executionProcess = await ctx.repos.executionProcess.get(
-				ExecutionProcess.ById(input.executionProcessId),
+			// Try each process type in order
+			const codingAgentProcess = await ctx.repos.codingAgentProcess.get(
+				CodingAgentProcess.ById(input.executionProcessId),
 			);
-
-			if (!executionProcess) {
-				return fail("NOT_FOUND", "Execution process not found", {
-					executionProcessId: input.executionProcessId,
-				});
+			if (codingAgentProcess) {
+				let logs: CodingAgentProcessLogs | null = null;
+				if (input.includeLogs) {
+					logs = await ctx.repos.codingAgentProcessLogs.getLogs(
+						input.executionProcessId,
+					);
+				}
+				const result: GetExecutionResult = {
+					executionProcess: codingAgentProcess,
+					logs,
+				};
+				return result;
 			}
 
-			let logs: ExecutionProcessLogs | null = null;
-			if (input.includeLogs) {
-				logs = await ctx.repos.executionProcessLogs.getLogs(
-					input.executionProcessId,
-				);
+			const devServerProcess = await ctx.repos.devServerProcess.get(
+				DevServerProcess.ById(input.executionProcessId),
+			);
+			if (devServerProcess) {
+				const result: GetExecutionResult = {
+					executionProcess: devServerProcess,
+				};
+				return result;
 			}
 
-			const result: GetExecutionResult = { executionProcess, logs };
-			return result;
+			const workspaceScriptProcess = await ctx.repos.workspaceScriptProcess.get(
+				WorkspaceScriptProcess.ById(input.executionProcessId),
+			);
+			if (workspaceScriptProcess) {
+				const result: GetExecutionResult = {
+					executionProcess: workspaceScriptProcess,
+				};
+				return result;
+			}
+
+			return fail("NOT_FOUND", "Execution process not found", {
+				executionProcessId: input.executionProcessId,
+			});
 		},
 	});

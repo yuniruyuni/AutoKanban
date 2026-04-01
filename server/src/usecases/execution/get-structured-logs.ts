@@ -1,7 +1,7 @@
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
 import { parseLogsToConversation } from "../../models/conversation/conversation-parser";
 import type { ConversationEntry } from "../../models/conversation/types";
-import { ExecutionProcess } from "../../models/execution-process";
 import { usecase } from "../runner";
 
 export interface GetStructuredLogsInput {
@@ -14,26 +14,26 @@ export interface GetStructuredLogsResult {
 }
 
 /**
- * Get structured conversation entries from execution process logs.
+ * Get structured conversation entries from coding agent process logs.
  * Converts raw JSON logs into UI-friendly conversation entries.
  * Also returns isIdle flag indicating if Claude is waiting for input.
  */
 export const getStructuredLogs = (input: GetStructuredLogsInput) =>
 	usecase({
 		read: async (ctx) => {
-			// Verify execution process exists
-			const executionProcess = await ctx.repos.executionProcess.get(
-				ExecutionProcess.ById(input.executionProcessId),
+			// Verify coding agent process exists
+			const codingAgentProcess = await ctx.repos.codingAgentProcess.get(
+				CodingAgentProcess.ById(input.executionProcessId),
 			);
 
-			if (!executionProcess) {
-				return fail("NOT_FOUND", "Execution process not found", {
+			if (!codingAgentProcess) {
+				return fail("NOT_FOUND", "Coding agent process not found", {
 					executionProcessId: input.executionProcessId,
 				});
 			}
 
 			// Get logs
-			const logs = await ctx.repos.executionProcessLogs.getLogs(
+			const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 				input.executionProcessId,
 			);
 			if (!logs?.logs) {

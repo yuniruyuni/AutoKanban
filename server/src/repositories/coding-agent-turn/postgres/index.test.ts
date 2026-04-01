@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
+	createTestCodingAgentProcess,
 	createTestCodingAgentTurn,
-	createTestExecutionProcess,
 } from "../../../../test/factories";
 import { closeTestDB, createTestDB } from "../../../../test/helpers/db";
 import { expectEntityEqual } from "../../../../test/helpers/entity-equality";
 import { seedFullChain } from "../../../../test/helpers/seed";
 import type { Database } from "../../../infra/db/database";
 import { CodingAgentTurn } from "../../../models/coding-agent-turn";
+import { CodingAgentProcessRepository } from "../../coding-agent-process/postgres";
 import type { DbReadCtx, DbWriteCtx } from "../../common";
 import { createDbReadCtx, createDbWriteCtx } from "../../common";
-import { ExecutionProcessRepository } from "../../execution-process/postgres";
 import { SessionRepository } from "../../session/postgres";
 import { CodingAgentTurnRepository } from ".";
 
@@ -22,16 +22,16 @@ let EXECUTION_PROCESS_ID: string;
 let SESSION_ID: string;
 let WORKSPACE_ID: string;
 
-/** Mark the seeded execution process as completed so resume-info queries can find it. */
-async function markExecutionProcessCompleted(): Promise<void> {
-	const epRepo = new ExecutionProcessRepository();
-	const ep = await epRepo.get(rCtx, {
+/** Mark the seeded coding agent process as completed so resume-info queries can find it. */
+async function markCodingAgentProcessCompleted(): Promise<void> {
+	const capRepo = new CodingAgentProcessRepository();
+	const cap = await capRepo.get(rCtx, {
 		type: "ById",
 		id: EXECUTION_PROCESS_ID,
 	} as never);
-	if (ep) {
-		await epRepo.upsert(wCtx, {
-			...ep,
+	if (cap) {
+		await capRepo.upsert(wCtx, {
+			...cap,
 			status: "completed" as const,
 			completedAt: new Date(),
 		});
@@ -170,16 +170,16 @@ describe("CodingAgentTurnRepository empty collection", () => {
 
 describe("CodingAgentTurnRepository multiple elements", () => {
 	test("stores and retrieves multiple turns", async () => {
-		// Need multiple execution processes (unique FK constraint)
+		// Need multiple coding agent processes (unique FK constraint)
 		const _sessionRepo = new SessionRepository();
-		const epRepo = new ExecutionProcessRepository();
+		const capRepo = new CodingAgentProcessRepository();
 
-		const ep1 = createTestExecutionProcess({ sessionId: SESSION_ID });
-		const ep2 = createTestExecutionProcess({ sessionId: SESSION_ID });
-		const ep3 = createTestExecutionProcess({ sessionId: SESSION_ID });
-		await epRepo.upsert(wCtx, ep1);
-		await epRepo.upsert(wCtx, ep2);
-		await epRepo.upsert(wCtx, ep3);
+		const ep1 = createTestCodingAgentProcess({ sessionId: SESSION_ID });
+		const ep2 = createTestCodingAgentProcess({ sessionId: SESSION_ID });
+		const ep3 = createTestCodingAgentProcess({ sessionId: SESSION_ID });
+		await capRepo.upsert(wCtx, ep1);
+		await capRepo.upsert(wCtx, ep2);
+		await capRepo.upsert(wCtx, ep3);
 
 		await turnRepo.upsert(
 			wCtx,
@@ -275,9 +275,9 @@ describe("CodingAgentTurnRepository spec filtering", () => {
 	});
 
 	test("HasAgentSessionId filters turns with non-null agent session", async () => {
-		const epRepo = new ExecutionProcessRepository();
-		const ep2 = createTestExecutionProcess({ sessionId: SESSION_ID });
-		await epRepo.upsert(wCtx, ep2);
+		const capRepo = new CodingAgentProcessRepository();
+		const ep2 = createTestCodingAgentProcess({ sessionId: SESSION_ID });
+		await capRepo.upsert(wCtx, ep2);
 
 		const turnWith = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
@@ -372,7 +372,7 @@ describe("CodingAgentTurnRepository updateSummary", () => {
 
 describe("CodingAgentTurnRepository findLatestResumeInfo", () => {
 	test("returns resume info for completed process", async () => {
-		await markExecutionProcessCompleted();
+		await markCodingAgentProcessCompleted();
 
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
@@ -419,7 +419,7 @@ describe("CodingAgentTurnRepository findLatestResumeInfo", () => {
 
 describe("CodingAgentTurnRepository findLatestResumeInfoByWorkspaceId", () => {
 	test("returns resume info for completed process across workspace sessions", async () => {
-		await markExecutionProcessCompleted();
+		await markCodingAgentProcessCompleted();
 
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,

@@ -5,6 +5,7 @@ export interface DevServerRepository {
 		ctx: ServiceCtx,
 		options: {
 			processId: string;
+			sessionId: string;
 			command: string;
 			workingDir: string;
 		},

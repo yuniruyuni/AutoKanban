@@ -1,7 +1,7 @@
 -- approvals (permission/plan approval requests, DB-persisted)
 CREATE TABLE IF NOT EXISTS approvals (
   id TEXT PRIMARY KEY,
-  execution_process_id TEXT NOT NULL REFERENCES execution_processes(id),
+  execution_process_id TEXT NOT NULL REFERENCES coding_agent_processes(id),
   tool_name TEXT NOT NULL,
   tool_call_id TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'pending',

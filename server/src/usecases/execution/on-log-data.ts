@@ -10,7 +10,7 @@ export const appendExecutionLog = (input: AppendExecutionLogInput) =>
 	usecase({
 		write: async (ctx) => {
 			const timestamp = new Date().toISOString();
-			await ctx.repos.executionProcessLogs.appendLogs(
+			await ctx.repos.codingAgentProcessLogs.appendLogs(
 				input.processId,
 				`[${timestamp}] [${input.source}] ${input.data}\n`,
 			);

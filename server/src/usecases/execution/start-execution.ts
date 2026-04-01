@@ -1,10 +1,10 @@
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import {
 	findPendingToolUses,
 	type PendingToolUse,
 } from "../../models/conversation/conversation-parser";
-import { ExecutionProcess } from "../../models/execution-process";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
@@ -99,16 +99,16 @@ export const startExecution = (input: StartExecutionInput) =>
 				const latestSession = sessionsPage.items[0];
 
 				if (latestSession) {
-					// Find the latest execution process for this session
-					const processesPage = await ctx.repos.executionProcess.list(
-						ExecutionProcess.BySessionId(latestSession.id),
-						{ limit: 1, sort: ExecutionProcess.defaultSort },
+					// Find the latest coding agent process for this session
+					const processesPage = await ctx.repos.codingAgentProcess.list(
+						CodingAgentProcess.BySessionId(latestSession.id),
+						{ limit: 1, sort: CodingAgentProcess.defaultSort },
 					);
 					const latestProcess = processesPage.items[0];
 
 					if (latestProcess) {
 						// Get logs and find interrupted Task tools
-						const logs = await ctx.repos.executionProcessLogs.getLogs(
+						const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 							latestProcess.id,
 						);
 						if (logs?.logs) {
@@ -182,13 +182,12 @@ export const startExecution = (input: StartExecutionInput) =>
 			// Ignore input.prompt - initial prompt should come from task
 			const prompt = taskToPrompt(task);
 
-			// Create ExecutionProcess and CodingAgentTurn in process step (pure)
-			const executionProcess = ExecutionProcess.create({
+			// Create CodingAgentProcess and CodingAgentTurn in process step (pure)
+			const codingAgentProcess = CodingAgentProcess.create({
 				sessionId: session.id,
-				runReason: "codingagent",
 			});
 			const codingAgentTurn = CodingAgentTurn.create({
-				executionProcessId: executionProcess.id,
+				executionProcessId: codingAgentProcess.id,
 				prompt,
 			});
 
@@ -204,7 +203,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
-				executionProcess,
+				codingAgentProcess,
 				codingAgentTurn,
 			};
 		},
@@ -223,7 +222,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
-				executionProcess,
+				codingAgentProcess,
 				codingAgentTurn,
 			},
 		) => {
@@ -254,8 +253,8 @@ export const startExecution = (input: StartExecutionInput) =>
 				});
 			}
 
-			// Persist ExecutionProcess and CodingAgentTurn
-			await ctx.repos.executionProcess.upsert(executionProcess);
+			// Persist CodingAgentProcess and CodingAgentTurn
+			await ctx.repos.codingAgentProcess.upsert(codingAgentProcess);
 			await ctx.repos.codingAgentTurn.upsert(codingAgentTurn);
 
 			return {
@@ -268,7 +267,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
-				executionProcess,
+				codingAgentProcess,
 				codingAgentTurn,
 			};
 		},
@@ -285,7 +284,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
-				executionProcess,
+				codingAgentProcess,
 			},
 		) => {
 			// Create worktree for the project, using targetBranch as the starting point
@@ -340,7 +339,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			});
 
 			await ctx.repos.executor.startProtocol({
-				id: executionProcess.id,
+				id: codingAgentProcess.id,
 				sessionId: session.id,
 				runReason: "codingagent",
 				workingDir,
@@ -361,7 +360,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			const result: StartExecutionResult = {
 				workspaceId: workspace.id,
 				sessionId: session.id,
-				executionProcessId: executionProcess.id,
+				executionProcessId: codingAgentProcess.id,
 				worktreePath,
 			};
 

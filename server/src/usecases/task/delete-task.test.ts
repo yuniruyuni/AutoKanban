@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import {
+	createTestCodingAgentProcessLogs,
 	createTestCodingAgentTurn,
-	createTestExecutionProcessLogs,
 } from "../../../test/factories";
 import { createIntegrationContext } from "../../../test/helpers/context";
 import { createTestDB } from "../../../test/helpers/db";
 import { seedFullChain } from "../../../test/helpers/seed";
 import { Approval } from "../../models/approval";
-import { ExecutionProcess } from "../../models/execution-process";
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
@@ -39,16 +39,16 @@ describe("deleteTask", () => {
 			await seedFullChain(db);
 		const ctx = createIntegrationContext(db);
 
-		// Add child entities that depend on execution_process
+		// Add child entities that depend on coding_agent_process
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: executionProcess.id,
 		});
 		await ctx.repos.codingAgentTurn.upsert(turn);
 
-		const logs = createTestExecutionProcessLogs({
-			executionProcessId: executionProcess.id,
+		const logs = createTestCodingAgentProcessLogs({
+			codingAgentProcessId: executionProcess.id,
 		});
-		await ctx.repos.executionProcessLogs.upsertLogs(logs);
+		await ctx.repos.codingAgentProcessLogs.upsertLogs(logs);
 
 		const approval = Approval.create({
 			executionProcessId: executionProcess.id,
@@ -68,12 +68,12 @@ describe("deleteTask", () => {
 		).toBeNull();
 		expect(await ctx.repos.session.get(Session.ById(session.id))).toBeNull();
 		expect(
-			await ctx.repos.executionProcess.get(
-				ExecutionProcess.ById(executionProcess.id),
+			await ctx.repos.codingAgentProcess.get(
+				CodingAgentProcess.ById(executionProcess.id),
 			),
 		).toBeNull();
 		expect(
-			await ctx.repos.executionProcessLogs.getLogs(executionProcess.id),
+			await ctx.repos.codingAgentProcessLogs.getLogs(executionProcess.id),
 		).toBeNull();
 	});
 

@@ -1,5 +1,5 @@
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
 import { Session } from "../../models/session";
 import { usecase } from "../runner";
 
@@ -34,15 +34,15 @@ export const respondToPermission = (input: RespondToPermissionInput) =>
 				});
 			}
 
-			// Get the execution process
-			const executionProcessPage = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(input.sessionId),
-				{ limit: 1, sort: ExecutionProcess.defaultSort },
+			// Get the coding agent process
+			const codingAgentProcessPage = await ctx.repos.codingAgentProcess.list(
+				CodingAgentProcess.BySessionId(input.sessionId),
+				{ limit: 1, sort: CodingAgentProcess.defaultSort },
 			);
-			const latestProcess = executionProcessPage.items[0];
+			const latestProcess = codingAgentProcessPage.items[0];
 
 			if (!latestProcess || latestProcess.status !== "running") {
-				return fail("INVALID_STATE", "No running execution process", {
+				return fail("INVALID_STATE", "No running coding agent process", {
 					sessionId: input.sessionId,
 				});
 			}

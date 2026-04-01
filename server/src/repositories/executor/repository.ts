@@ -1,10 +1,10 @@
-import type { ExecutionProcess } from "../../models/execution-process";
+import type { ProcessType } from "../../infra/callback/client";
 import type { ServiceCtx } from "../common";
 
 export interface ExecutorStartOptions {
 	id?: string;
 	sessionId: string;
-	runReason: ExecutionProcess.RunReason;
+	runReason: ProcessType;
 	workingDir: string;
 	prompt: string;
 	dangerouslySkipPermissions?: boolean;
@@ -16,7 +16,7 @@ export interface ExecutorStartOptions {
 export interface ExecutorStartProtocolOptions {
 	id?: string;
 	sessionId: string;
-	runReason: ExecutionProcess.RunReason;
+	runReason: ProcessType;
 	workingDir: string;
 	prompt: string;
 	model?: string;
@@ -31,7 +31,7 @@ export interface ExecutorStartProtocolOptions {
 export interface ExecutorProcessInfo {
 	id: string;
 	sessionId: string;
-	runReason: ExecutionProcess.RunReason;
+	runReason: ProcessType;
 	startedAt: Date;
 }
 

@@ -13,12 +13,14 @@ import {
 import { AgentConfigRepository } from "../../server/src/repositories/agent-config";
 import { ApprovalRepository } from "../../server/src/repositories/approval/postgres";
 import { approvalStore } from "../../server/src/repositories/approval-store";
+import { CodingAgentProcessRepository } from "../../server/src/repositories/coding-agent-process/postgres";
+import { CodingAgentProcessLogsRepository } from "../../server/src/repositories/coding-agent-process-logs/postgres";
 import { CodingAgentTurnRepository } from "../../server/src/repositories/coding-agent-turn/postgres";
 import { DevServerRepository } from "../../server/src/repositories/dev-server";
+import { DevServerProcessRepository } from "../../server/src/repositories/dev-server-process/postgres";
+import { DevServerProcessLogsRepository } from "../../server/src/repositories/dev-server-process-logs/postgres";
 import { draftRepository } from "../../server/src/repositories/draft";
 import { draftPullRequestRepository } from "../../server/src/repositories/draft-pull-request";
-import { ExecutionProcessRepository } from "../../server/src/repositories/execution-process/postgres";
-import { ExecutionProcessLogsRepository } from "../../server/src/repositories/execution-process-logs/postgres";
 import { GitRepository } from "../../server/src/repositories/git";
 import { LogCollector } from "../../server/src/repositories/log-collector";
 import { logStoreManager } from "../../server/src/repositories/log-store";
@@ -33,6 +35,8 @@ import { VariantRepository } from "../../server/src/repositories/variant/postgre
 import { WorkspaceRepository } from "../../server/src/repositories/workspace/postgres";
 import { WorkspaceConfigRepository } from "../../server/src/repositories/workspace-config";
 import { WorkspaceRepoRepository } from "../../server/src/repositories/workspace-repo/postgres";
+import { WorkspaceScriptProcessRepository } from "../../server/src/repositories/workspace-script-process/postgres";
+import { WorkspaceScriptProcessLogsRepository } from "../../server/src/repositories/workspace-script-process-logs/postgres";
 import { WorktreeRepository } from "../../server/src/repositories/worktree";
 import type { Context } from "../../server/src/usecases/context";
 
@@ -153,8 +157,12 @@ export async function createE2EContext(
 		workspace: new WorkspaceRepository(),
 		workspaceRepo: new WorkspaceRepoRepository(),
 		session: new SessionRepository(),
-		executionProcess: new ExecutionProcessRepository(),
-		executionProcessLogs: new ExecutionProcessLogsRepository(),
+		codingAgentProcess: new CodingAgentProcessRepository(),
+		codingAgentProcessLogs: new CodingAgentProcessLogsRepository(),
+		devServerProcess: new DevServerProcessRepository(),
+		devServerProcessLogs: new DevServerProcessLogsRepository(),
+		workspaceScriptProcess: new WorkspaceScriptProcessRepository(),
+		workspaceScriptProcessLogs: new WorkspaceScriptProcessLogsRepository(),
 		codingAgentTurn: new CodingAgentTurnRepository(),
 		tool: new ToolRepository(),
 		variant: new VariantRepository(),
@@ -176,8 +184,12 @@ export async function createE2EContext(
 	const fullCtx = createFullCtx(db);
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	const logCollector = new LogCollector(repos.executionProcessLogs, logger);
-	const devServer = new DevServerRepository(logger, logCollector);
+	const logCollector = new LogCollector(repos.devServerProcessLogs, logger);
+	const devServer = new DevServerRepository(
+		logger,
+		logCollector,
+		callbackClient,
+	);
 	rawRepos.devServer = devServer;
 	repos.devServer = bindCtx(devServer, fullCtx);
 

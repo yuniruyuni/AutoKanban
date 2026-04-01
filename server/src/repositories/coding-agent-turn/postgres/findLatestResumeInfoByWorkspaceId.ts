@@ -11,11 +11,11 @@ export async function findLatestResumeInfoByWorkspaceId(
 	}>({
 		query: `SELECT cat.agent_session_id, cat.agent_message_id
        FROM coding_agent_turns cat
-       JOIN execution_processes ep ON ep.id = cat.execution_process_id
-       JOIN sessions s ON s.id = ep.session_id
+       JOIN coding_agent_processes cap ON cap.id = cat.execution_process_id
+       JOIN sessions s ON s.id = cap.session_id
        WHERE s.workspace_id = ?
          AND cat.agent_session_id IS NOT NULL
-         AND ep.status NOT IN ('running', 'awaiting_approval')
+         AND cap.status NOT IN ('running', 'awaiting_approval')
        ORDER BY cat.created_at DESC
        LIMIT 1`,
 		params: [workspaceId],

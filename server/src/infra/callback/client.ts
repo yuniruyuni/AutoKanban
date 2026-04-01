@@ -1,10 +1,18 @@
+import type { CodingAgentProcess } from "../../models/coding-agent-process";
+import type { DevServerProcess } from "../../models/dev-server-process";
 import type { DriverApprovalRequest } from "../../models/driver-approval-request";
-import type { ExecutionProcess } from "../../models/execution-process";
+import type { WorkspaceScriptProcess } from "../../models/workspace-script-process";
+
+export type ProcessType = "codingagent" | "devserver" | "workspacescript";
 
 export interface ProcessCompletionInfo {
 	processId: string;
 	sessionId: string;
-	status: ExecutionProcess.Status;
+	processType: ProcessType;
+	status:
+		| CodingAgentProcess.Status
+		| DevServerProcess.Status
+		| WorkspaceScriptProcess.Status;
 	exitCode: number | null;
 }
 

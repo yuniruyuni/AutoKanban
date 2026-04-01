@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-	createTestExecutionProcess,
+	createTestCodingAgentProcess,
 	createTestSession,
 	createTestWorkspace,
 } from "../../../test/factories";
@@ -60,7 +60,7 @@ describe("getLatestExecution", () => {
 			session: {
 				list: () => ({ items: [session], hasMore: false }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [], hasMore: false }),
 			} as never,
 		});
@@ -80,7 +80,7 @@ describe("getLatestExecution", () => {
 	test("returns full chain when all entities exist", async () => {
 		const workspace = createTestWorkspace();
 		const session = createTestSession({ workspaceId: workspace.id });
-		const process = createTestExecutionProcess({
+		const process = createTestCodingAgentProcess({
 			sessionId: session.id,
 			status: "running",
 		});
@@ -92,7 +92,7 @@ describe("getLatestExecution", () => {
 			session: {
 				list: () => ({ items: [session], hasMore: false }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [process], hasMore: false }),
 			} as never,
 		});
@@ -113,9 +113,9 @@ describe("getLatestExecution", () => {
 	test("includes logs when includeLogs is true", async () => {
 		const workspace = createTestWorkspace();
 		const session = createTestSession({ workspaceId: workspace.id });
-		const process = createTestExecutionProcess({ sessionId: session.id });
+		const process = createTestCodingAgentProcess({ sessionId: session.id });
 		const logs = {
-			executionProcessId: process.id,
+			codingAgentProcessId: process.id,
 			logs: "Log content",
 		};
 
@@ -126,10 +126,10 @@ describe("getLatestExecution", () => {
 			session: {
 				list: () => ({ items: [session], hasMore: false }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [process], hasMore: false }),
 			} as never,
-			executionProcessLogs: {
+			codingAgentProcessLogs: {
 				getLogs: (id: string) => (id === process.id ? logs : null),
 			} as never,
 		});
@@ -148,7 +148,7 @@ describe("getLatestExecution", () => {
 	test("returns null logs when logs not available", async () => {
 		const workspace = createTestWorkspace();
 		const session = createTestSession({ workspaceId: workspace.id });
-		const process = createTestExecutionProcess({ sessionId: session.id });
+		const process = createTestCodingAgentProcess({ sessionId: session.id });
 
 		const ctx = createMockContext({
 			workspace: {
@@ -157,10 +157,10 @@ describe("getLatestExecution", () => {
 			session: {
 				list: () => ({ items: [session], hasMore: false }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [process], hasMore: false }),
 			} as never,
-			executionProcessLogs: {
+			codingAgentProcessLogs: {
 				getLogs: () => null,
 			} as never,
 		});
@@ -176,17 +176,9 @@ describe("getLatestExecution", () => {
 		}
 	});
 
-	test("returns null execution when only non-codingagent processes exist", async () => {
+	test("returns null execution when no coding agent processes exist", async () => {
 		const workspace = createTestWorkspace();
 		const session = createTestSession({ workspaceId: workspace.id });
-		const devserverProcess = createTestExecutionProcess({
-			sessionId: session.id,
-			runReason: "devserver",
-		});
-		const setupProcess = createTestExecutionProcess({
-			sessionId: session.id,
-			runReason: "setupscript",
-		});
 
 		const ctx = createMockContext({
 			workspace: {
@@ -195,9 +187,9 @@ describe("getLatestExecution", () => {
 			session: {
 				list: () => ({ items: [session], hasMore: false }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => {
-					// Simulate that the codingagent filter excludes devserver/setupscript EPs
+					// The coding agent process table is empty
 					return { items: [], hasMore: false };
 				},
 			} as never,
@@ -213,10 +205,6 @@ describe("getLatestExecution", () => {
 			expect(result.value.sessionId).toBe(session.id);
 			expect(result.value.executionProcess).toBeNull();
 		}
-
-		// Verify that non-codingagent processes were created but not returned
-		expect(devserverProcess.runReason).toBe("devserver");
-		expect(setupProcess.runReason).toBe("setupscript");
 	});
 
 	test("returns latest session based on sort order", async () => {
@@ -238,7 +226,7 @@ describe("getLatestExecution", () => {
 			session: {
 				list: () => ({ items: [newSession], hasMore: false }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [], hasMore: false }),
 			} as never,
 		});

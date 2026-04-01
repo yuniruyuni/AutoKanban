@@ -44,7 +44,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({
@@ -91,7 +91,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({
@@ -145,7 +145,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({
@@ -198,7 +198,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async (opts: { prompt: string }) => {
@@ -243,7 +243,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async (opts: { prompt: string }) => {
@@ -294,7 +294,7 @@ describe("startExecution", () => {
 				}),
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async (opts: { resumeSessionId?: string }) => {
@@ -339,7 +339,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			variant: { get: () => null } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
@@ -387,7 +387,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			variant: {
 				get: () => ({
 					id: "variant-1",
@@ -447,7 +447,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async (opts: {
@@ -490,7 +490,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			variant: {
 				get: () => ({
 					id: "variant-2",
@@ -547,7 +547,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			variant: {
 				get: () => ({
 					id: "variant-3",
@@ -634,7 +634,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepositoryCreationFails("Permission denied"),
 		});
 
@@ -665,7 +665,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 		});
 
@@ -706,7 +706,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({
@@ -756,7 +756,7 @@ describe("startExecution", () => {
 				findLatestResumeInfoByWorkspaceId: () => null,
 				upsert: () => {},
 			} as never,
-			executionProcess: { upsert: () => {} } as never,
+			codingAgentProcess: { upsert: () => {} } as never,
 			worktree: createMockWorktreeRepository(),
 			executor: {
 				startProtocol: async () => ({

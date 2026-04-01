@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { CallbackClient } from "../../../infra/callback/client";
 import type { ILogger } from "../../../infra/logger/types";
-import type { ExecutionProcess } from "../../../models/execution-process";
+import type { CodingAgentProcess } from "../../../models/coding-agent-process";
 import type {
 	ExecutorProcessInfo,
 	ExecutorRepository as ExecutorRepositoryDef,
@@ -350,7 +350,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		runningProcess.driver
 			.wait(runningProcess.process)
 			.then(async (result) => {
-				const status: ExecutionProcess.Status = result.killed
+				const status: CodingAgentProcess.Status = result.killed
 					? "killed"
 					: result.exitCode === 0
 						? "completed"
@@ -361,6 +361,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 				await runningProcess.callback.onProcessComplete({
 					processId: runningProcess.id,
 					sessionId: runningProcess.sessionId,
+					processType: "codingagent",
 					status,
 					exitCode: result.exitCode,
 				});

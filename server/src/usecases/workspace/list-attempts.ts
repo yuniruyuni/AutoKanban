@@ -1,4 +1,4 @@
-import { ExecutionProcess } from "../../models/execution-process";
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
@@ -13,7 +13,7 @@ export interface AttemptSummary {
 	branch: string;
 	archived: boolean;
 	sessionId: string | null;
-	latestStatus: ExecutionProcess.Status | null;
+	latestStatus: CodingAgentProcess.Status | null;
 	createdAt: Date;
 }
 
@@ -43,14 +43,12 @@ export const listAttempts = (input: ListAttemptsInput) =>
 				const session =
 					sessionPage.items.length > 0 ? sessionPage.items[0] : null;
 
-				let latestStatus: ExecutionProcess.Status | null = null;
+				let latestStatus: CodingAgentProcess.Status | null = null;
 
 				if (session) {
-					// Get latest codingagent execution process for this session
-					const epPage = await ctx.repos.executionProcess.list(
-						ExecutionProcess.BySessionId(session.id).and(
-							ExecutionProcess.ByRunReason("codingagent"),
-						),
+					// Get latest coding agent process for this session
+					const epPage = await ctx.repos.codingAgentProcess.list(
+						CodingAgentProcess.BySessionId(session.id),
 						{
 							limit: 1,
 							sort: { keys: ["createdAt", "id"], order: "desc" },

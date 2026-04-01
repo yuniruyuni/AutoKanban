@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-	createTestExecutionProcess,
+	createTestCodingAgentProcess,
 	createTestSession,
 } from "../../../test/factories";
 import { createMockContext } from "../../../test/helpers/context";
@@ -26,7 +26,7 @@ describe("getAttemptExecution", () => {
 		}
 	});
 
-	test("returns session but null execution when no execution process exists", async () => {
+	test("returns session but null execution when no coding agent process exists", async () => {
 		const session = createTestSession({
 			id: "session-1",
 			workspaceId: "ws-1",
@@ -36,7 +36,7 @@ describe("getAttemptExecution", () => {
 			session: {
 				list: () => ({ items: [session], nextCursor: null }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [], nextCursor: null }),
 			} as never,
 		});
@@ -58,10 +58,9 @@ describe("getAttemptExecution", () => {
 			id: "session-1",
 			workspaceId: "ws-1",
 		});
-		const ep = createTestExecutionProcess({
+		const ep = createTestCodingAgentProcess({
 			id: "ep-1",
 			sessionId: "session-1",
-			runReason: "codingagent",
 			status: "completed",
 		});
 
@@ -69,7 +68,7 @@ describe("getAttemptExecution", () => {
 			session: {
 				list: () => ({ items: [session], nextCursor: null }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [ep], nextCursor: null }),
 			} as never,
 		});

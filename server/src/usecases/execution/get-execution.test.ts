@@ -1,15 +1,21 @@
 import { describe, expect, test } from "bun:test";
-import { createTestExecutionProcess } from "../../../test/factories";
+import { createTestCodingAgentProcess } from "../../../test/factories";
 import { createMockContext } from "../../../test/helpers/context";
 import { getExecution } from "./get-execution";
 
 describe("getExecution", () => {
-	test("returns execution process without logs by default", async () => {
-		const process = createTestExecutionProcess({ status: "running" });
+	test("returns coding agent process without logs by default", async () => {
+		const process = createTestCodingAgentProcess({ status: "running" });
 
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => process,
+			} as never,
+			devServerProcess: {
+				get: () => null,
+			} as never,
+			workspaceScriptProcess: {
+				get: () => null,
 			} as never,
 		});
 
@@ -25,19 +31,25 @@ describe("getExecution", () => {
 		}
 	});
 
-	test("returns execution process with logs when includeLogs is true", async () => {
-		const process = createTestExecutionProcess({ status: "running" });
+	test("returns coding agent process with logs when includeLogs is true", async () => {
+		const process = createTestCodingAgentProcess({ status: "running" });
 		const logs = {
-			executionProcessId: process.id,
+			codingAgentProcessId: process.id,
 			logs: "Some log content here",
 		};
 
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => process,
 			} as never,
-			executionProcessLogs: {
+			codingAgentProcessLogs: {
 				getLogs: (id: string) => (id === process.id ? logs : null),
+			} as never,
+			devServerProcess: {
+				get: () => null,
+			} as never,
+			workspaceScriptProcess: {
+				get: () => null,
 			} as never,
 		});
 
@@ -54,9 +66,15 @@ describe("getExecution", () => {
 		}
 	});
 
-	test("returns NOT_FOUND when execution process does not exist", async () => {
+	test("returns NOT_FOUND when process does not exist in any table", async () => {
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
+				get: () => null,
+			} as never,
+			devServerProcess: {
+				get: () => null,
+			} as never,
+			workspaceScriptProcess: {
 				get: () => null,
 			} as never,
 		});
@@ -73,14 +91,20 @@ describe("getExecution", () => {
 	});
 
 	test("returns null logs when logs are not available", async () => {
-		const process = createTestExecutionProcess({ status: "running" });
+		const process = createTestCodingAgentProcess({ status: "running" });
 
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => process,
 			} as never,
-			executionProcessLogs: {
+			codingAgentProcessLogs: {
 				getLogs: () => null,
+			} as never,
+			devServerProcess: {
+				get: () => null,
+			} as never,
+			workspaceScriptProcess: {
+				get: () => null,
 			} as never,
 		});
 
@@ -105,11 +129,17 @@ describe("getExecution", () => {
 		];
 
 		for (const status of statuses) {
-			const process = createTestExecutionProcess({ status });
+			const process = createTestCodingAgentProcess({ status });
 
 			const ctx = createMockContext({
-				executionProcess: {
+				codingAgentProcess: {
 					get: () => process,
+				} as never,
+				devServerProcess: {
+					get: () => null,
+				} as never,
+				workspaceScriptProcess: {
+					get: () => null,
 				} as never,
 			});
 

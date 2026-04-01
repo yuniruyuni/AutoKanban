@@ -1,9 +1,9 @@
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
+import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 import { usecase } from "../runner";
 
 export type WorkspaceScriptType = "prepare" | "cleanup";
@@ -12,11 +12,6 @@ export interface RunWorkspaceScriptInput {
 	taskId: string;
 	scriptType: WorkspaceScriptType;
 }
-
-const RUN_REASON_MAP = {
-	prepare: "setupscript",
-	cleanup: "cleanupscript",
-} as const;
 
 export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 	usecase({
@@ -55,19 +50,13 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 			const session = sessionPage.items[0];
 
 			// Check for already running workspace scripts (exclusive)
-			const runningSetup = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(session.id)
-					.and(ExecutionProcess.ByRunReason("setupscript"))
-					.and(ExecutionProcess.ByStatus("running")),
-				{ limit: 1, sort: ExecutionProcess.defaultSort },
+			const runningScripts = await ctx.repos.workspaceScriptProcess.list(
+				WorkspaceScriptProcess.BySessionId(session.id).and(
+					WorkspaceScriptProcess.ByStatus("running"),
+				),
+				{ limit: 1, sort: WorkspaceScriptProcess.defaultSort },
 			);
-			const runningCleanup = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(session.id)
-					.and(ExecutionProcess.ByRunReason("cleanupscript"))
-					.and(ExecutionProcess.ByStatus("running")),
-				{ limit: 1, sort: ExecutionProcess.defaultSort },
-			);
-			if (runningSetup.items.length > 0 || runningCleanup.items.length > 0) {
+			if (runningScripts.items.length > 0) {
 				return fail(
 					"INVALID_STATE",
 					"Another workspace script is already running",
@@ -78,11 +67,11 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 		},
 
 		process: (_ctx, data) => {
-			const ep = ExecutionProcess.create({
+			const workspaceScriptProcess = WorkspaceScriptProcess.create({
 				sessionId: data.session.id,
-				runReason: RUN_REASON_MAP[input.scriptType],
+				scriptType: input.scriptType,
 			});
-			return { ...data, executionProcess: ep };
+			return { ...data, workspaceScriptProcess };
 		},
 
 		post: async (ctx, data) => {
@@ -102,7 +91,8 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 			}
 
 			ctx.repos.devServer.start({
-				processId: data.executionProcess.id,
+				processId: data.workspaceScriptProcess.id,
+				sessionId: data.session.id,
 				command,
 				workingDir: worktreePath,
 			});
@@ -110,11 +100,13 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 		},
 
 		finish: async (ctx, data) => {
-			await ctx.repos.executionProcess.upsert(data.executionProcess);
+			await ctx.repos.workspaceScriptProcess.upsert(
+				data.workspaceScriptProcess,
+			);
 			return data;
 		},
 
 		result: (data) => ({
-			executionProcessId: data.executionProcess.id,
+			executionProcessId: data.workspaceScriptProcess.id,
 		}),
 	});

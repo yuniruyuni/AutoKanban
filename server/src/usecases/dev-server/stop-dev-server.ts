@@ -1,5 +1,5 @@
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
+import { DevServerProcess } from "../../models/dev-server-process";
 import { usecase } from "../runner";
 
 export interface StopDevServerInput {
@@ -9,34 +9,31 @@ export interface StopDevServerInput {
 export const stopDevServer = (input: StopDevServerInput) =>
 	usecase({
 		read: async (ctx) => {
-			const ep = await ctx.repos.executionProcess.get(
-				ExecutionProcess.ById(input.executionProcessId),
+			const ep = await ctx.repos.devServerProcess.get(
+				DevServerProcess.ById(input.executionProcessId),
 			);
 			if (!ep) {
-				return fail("NOT_FOUND", "Execution process not found");
-			}
-			if (ep.runReason !== "devserver") {
-				return fail("INVALID_STATE", "Not a dev server process");
+				return fail("NOT_FOUND", "Dev server process not found");
 			}
 			if (ep.status !== "running") {
 				return fail("INVALID_STATE", "Dev server is not running");
 			}
-			return { executionProcess: ep };
+			return { devServerProcess: ep };
 		},
 
-		write: async (ctx, { executionProcess }) => {
-			const updated = ExecutionProcess.complete(
-				executionProcess,
+		write: async (ctx, { devServerProcess }) => {
+			const updated = DevServerProcess.complete(
+				devServerProcess,
 				"killed",
 				null,
 			);
-			await ctx.repos.executionProcess.upsert(updated);
-			return { executionProcess: updated };
+			await ctx.repos.devServerProcess.upsert(updated);
+			return { devServerProcess: updated };
 		},
 
-		post: (ctx, { executionProcess }) => {
-			ctx.repos.devServer.stop(executionProcess.id);
-			return { executionProcess };
+		post: (ctx, { devServerProcess }) => {
+			ctx.repos.devServer.stop(devServerProcess.id);
+			return { devServerProcess };
 		},
 
 		result: () => ({ stopped: true }),

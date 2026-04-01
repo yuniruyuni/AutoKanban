@@ -1,17 +1,17 @@
 import { describe, expect, test } from "bun:test";
-import { createTestExecutionProcess } from "../../../test/factories";
+import { createTestCodingAgentProcess } from "../../../test/factories";
 import { createMockContext } from "../../../test/helpers/context";
 import { stopExecution } from "./stop-execution";
 
 describe("stopExecution", () => {
-	test("stops a running execution process", async () => {
-		const process = createTestExecutionProcess({ status: "running" });
+	test("stops a running coding agent process", async () => {
+		const process = createTestCodingAgentProcess({ status: "running" });
 
 		let stopCalled = false;
 		let stoppedProcessId: string | undefined;
 
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => process,
 			} as never,
 			executor: {
@@ -36,9 +36,9 @@ describe("stopExecution", () => {
 		expect(stoppedProcessId).toBe(process.id);
 	});
 
-	test("returns NOT_FOUND when execution process does not exist", async () => {
+	test("returns NOT_FOUND when coding agent process does not exist", async () => {
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => null,
 			} as never,
 		});
@@ -50,16 +50,18 @@ describe("stopExecution", () => {
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
 			expect(result.error.code).toBe("NOT_FOUND");
-			expect(result.error.message).toContain("Execution process not found");
+			expect(result.error.message).toContain("Coding agent process not found");
 		}
 	});
 
-	test("stops an awaiting_approval execution process", async () => {
-		const process = createTestExecutionProcess({ status: "awaiting_approval" });
+	test("stops an awaiting_approval coding agent process", async () => {
+		const process = createTestCodingAgentProcess({
+			status: "awaiting_approval",
+		});
 
 		let stopCalled = false;
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => process,
 			} as never,
 			executor: {
@@ -78,13 +80,13 @@ describe("stopExecution", () => {
 		expect(stopCalled).toBe(true);
 	});
 
-	test("returns INVALID_STATE when execution process is completed", async () => {
-		const completedProcess = createTestExecutionProcess({
+	test("returns INVALID_STATE when coding agent process is completed", async () => {
+		const completedProcess = createTestCodingAgentProcess({
 			status: "completed",
 		});
 
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => completedProcess,
 			} as never,
 		});
@@ -100,11 +102,11 @@ describe("stopExecution", () => {
 		}
 	});
 
-	test("returns INVALID_STATE when execution process has failed", async () => {
-		const failedProcess = createTestExecutionProcess({ status: "failed" });
+	test("returns INVALID_STATE when coding agent process has failed", async () => {
+		const failedProcess = createTestCodingAgentProcess({ status: "failed" });
 
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => failedProcess,
 			} as never,
 		});
@@ -119,11 +121,11 @@ describe("stopExecution", () => {
 		}
 	});
 
-	test("returns INVALID_STATE when execution process was killed", async () => {
-		const killedProcess = createTestExecutionProcess({ status: "killed" });
+	test("returns INVALID_STATE when coding agent process was killed", async () => {
+		const killedProcess = createTestCodingAgentProcess({ status: "killed" });
 
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => killedProcess,
 			} as never,
 		});
@@ -139,10 +141,10 @@ describe("stopExecution", () => {
 	});
 
 	test("returns stopped=false when executor.stop fails", async () => {
-		const process = createTestExecutionProcess({ status: "running" });
+		const process = createTestCodingAgentProcess({ status: "running" });
 
 		const ctx = createMockContext({
-			executionProcess: {
+			codingAgentProcess: {
 				get: () => process,
 			} as never,
 			executor: {

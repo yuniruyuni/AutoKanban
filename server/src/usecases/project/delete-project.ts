@@ -1,12 +1,14 @@
 import { Approval } from "../../models/approval";
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
+import { DevServerProcess } from "../../models/dev-server-process";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
+import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 import { usecase } from "../runner";
 
 export interface DeleteProjectInput {
@@ -34,7 +36,9 @@ export const deleteProject = (input: DeleteProjectInput) =>
 
 			const workspaceIds: string[] = [];
 			const sessionIds: string[] = [];
-			const executionProcessIds: string[] = [];
+			const codingAgentProcessIds: string[] = [];
+			const devServerProcessIds: string[] = [];
+			const workspaceScriptProcessIds: string[] = [];
 
 			for (const taskId of taskIds) {
 				const workspaces = await ctx.repos.workspace.list(
@@ -49,12 +53,32 @@ export const deleteProject = (input: DeleteProjectInput) =>
 					);
 					for (const session of sessions.items) {
 						sessionIds.push(session.id);
-						const processes = await ctx.repos.executionProcess.list(
-							ExecutionProcess.BySessionId(session.id),
+
+						// Collect coding agent process IDs
+						const caProcesses = await ctx.repos.codingAgentProcess.list(
+							CodingAgentProcess.BySessionId(session.id),
 							{ limit: 10000 },
 						);
-						for (const proc of processes.items) {
-							executionProcessIds.push(proc.id);
+						for (const proc of caProcesses.items) {
+							codingAgentProcessIds.push(proc.id);
+						}
+
+						// Collect dev server process IDs
+						const dsProcesses = await ctx.repos.devServerProcess.list(
+							DevServerProcess.BySessionId(session.id),
+							{ limit: 10000 },
+						);
+						for (const proc of dsProcesses.items) {
+							devServerProcessIds.push(proc.id);
+						}
+
+						// Collect workspace script process IDs
+						const wsProcesses = await ctx.repos.workspaceScriptProcess.list(
+							WorkspaceScriptProcess.BySessionId(session.id),
+							{ limit: 10000 },
+						);
+						for (const proc of wsProcesses.items) {
+							workspaceScriptProcessIds.push(proc.id);
 						}
 					}
 				}
@@ -65,29 +89,55 @@ export const deleteProject = (input: DeleteProjectInput) =>
 				taskIds,
 				workspaceIds,
 				sessionIds,
-				executionProcessIds,
+				codingAgentProcessIds,
+				devServerProcessIds,
+				workspaceScriptProcessIds,
 			};
 		},
 
 		write: async (
 			ctx,
-			{ project, taskIds, workspaceIds, sessionIds, executionProcessIds },
+			{
+				project,
+				taskIds,
+				workspaceIds,
+				sessionIds,
+				codingAgentProcessIds,
+				devServerProcessIds,
+				workspaceScriptProcessIds,
+			},
 		) => {
 			// Delete in reverse dependency order
 
-			// 1. approvals & coding_agent_turns & execution_process_logs (depend on execution_processes)
-			for (const epId of executionProcessIds) {
+			// 1. approvals & coding_agent_turns & coding_agent_process_logs
+			for (const epId of codingAgentProcessIds) {
 				await ctx.repos.approval.delete(Approval.ByExecutionProcessId(epId));
 				await ctx.repos.codingAgentTurn.delete(
 					CodingAgentTurn.ByExecutionProcessId(epId),
 				);
-				await ctx.repos.executionProcessLogs.deleteLogs(epId);
+				await ctx.repos.codingAgentProcessLogs.deleteLogs(epId);
 			}
 
-			// 2. execution_processes (depend on sessions)
+			// 1b. dev server process logs
+			for (const epId of devServerProcessIds) {
+				await ctx.repos.devServerProcessLogs.deleteLogs(epId);
+			}
+
+			// 1c. workspace script process logs
+			for (const epId of workspaceScriptProcessIds) {
+				await ctx.repos.workspaceScriptProcessLogs.deleteLogs(epId);
+			}
+
+			// 2. processes (depend on sessions)
 			for (const sessionId of sessionIds) {
-				await ctx.repos.executionProcess.delete(
-					ExecutionProcess.BySessionId(sessionId),
+				await ctx.repos.codingAgentProcess.delete(
+					CodingAgentProcess.BySessionId(sessionId),
+				);
+				await ctx.repos.devServerProcess.delete(
+					DevServerProcess.BySessionId(sessionId),
+				);
+				await ctx.repos.workspaceScriptProcess.delete(
+					WorkspaceScriptProcess.BySessionId(sessionId),
 				);
 			}
 

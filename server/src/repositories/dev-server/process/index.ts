@@ -1,4 +1,5 @@
 import type { Subprocess } from "bun";
+import type { CallbackClient } from "../../../infra/callback/client";
 import type { ILogger } from "../../../infra/logger/types";
 import type { ServiceCtx } from "../../common";
 import type { LogCollector } from "../../log-collector";
@@ -7,6 +8,7 @@ import type { DevServerRepository as DevServerRepositoryDef } from "../repositor
 interface RunningDevServer {
 	process: Subprocess;
 	processId: string;
+	sessionId: string;
 	pid: number;
 }
 
@@ -17,21 +19,28 @@ export class DevServerRepository implements DevServerRepositoryDef {
 	private runningProcesses = new Map<string, RunningDevServer>();
 	private logger: ILogger;
 	private logCollector: LogCollector;
+	private callbackClient: CallbackClient;
 
-	constructor(logger: ILogger, logCollector: LogCollector) {
+	constructor(
+		logger: ILogger,
+		logCollector: LogCollector,
+		callbackClient: CallbackClient,
+	) {
 		this.logger = logger.child("DevServerRepository");
 		this.logCollector = logCollector;
+		this.callbackClient = callbackClient;
 	}
 
 	start(
 		_ctx: ServiceCtx,
 		options: {
 			processId: string;
+			sessionId: string;
 			command: string;
 			workingDir: string;
 		},
 	): void {
-		const { processId, command, workingDir } = options;
+		const { processId, sessionId, command, workingDir } = options;
 
 		this.logger.info(`Starting dev server: ${command} in ${workingDir}`);
 
@@ -50,6 +59,7 @@ export class DevServerRepository implements DevServerRepositoryDef {
 		const running: RunningDevServer = {
 			process,
 			processId,
+			sessionId,
 			pid: process.pid,
 		};
 		this.runningProcesses.set(processId, running);
@@ -59,6 +69,21 @@ export class DevServerRepository implements DevServerRepositoryDef {
 		process.exited.then((exitCode) => {
 			this.logger.info(`Dev server ${processId} exited with code ${exitCode}`);
 			this.runningProcesses.delete(processId);
+			const status = exitCode === 0 ? "completed" : "failed";
+			this.callbackClient
+				.onProcessComplete({
+					processId,
+					sessionId,
+					processType: "devserver",
+					status,
+					exitCode: exitCode ?? null,
+				})
+				.catch((err) => {
+					this.logger.error(
+						`Failed to notify process completion for ${processId}:`,
+						err,
+					);
+				});
 		});
 	}
 

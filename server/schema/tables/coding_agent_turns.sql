@@ -1,7 +1,7 @@
 -- coding_agent_turns (tracks Claude Code agent session info for resume)
 CREATE TABLE IF NOT EXISTS coding_agent_turns (
   id TEXT PRIMARY KEY,
-  execution_process_id TEXT NOT NULL UNIQUE REFERENCES execution_processes(id),
+  execution_process_id TEXT NOT NULL UNIQUE REFERENCES coding_agent_processes(id),
   agent_session_id TEXT,
   agent_message_id TEXT,
   prompt TEXT,

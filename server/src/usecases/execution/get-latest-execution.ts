@@ -1,7 +1,7 @@
 import {
-	ExecutionProcess,
-	type ExecutionProcessLogs,
-} from "../../models/execution-process";
+	CodingAgentProcess,
+	type CodingAgentProcessLogs,
+} from "../../models/coding-agent-process";
 import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
@@ -14,13 +14,13 @@ export interface GetLatestExecutionInput {
 export interface GetLatestExecutionResult {
 	workspaceId: string | null;
 	sessionId: string | null;
-	executionProcess: ExecutionProcess | null;
-	logs?: ExecutionProcessLogs | null;
+	executionProcess: CodingAgentProcess | null;
+	logs?: CodingAgentProcessLogs | null;
 }
 
 /**
- * Gets the latest execution process for a task.
- * Follows the chain: Task -> Workspace -> Session -> ExecutionProcess
+ * Gets the latest coding agent process for a task.
+ * Follows the chain: Task -> Workspace -> Session -> CodingAgentProcess
  */
 export const getLatestExecution = (input: GetLatestExecutionInput) =>
 	usecase({
@@ -57,11 +57,9 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 
 			const session = sessionPage.items[0];
 
-			// Find latest codingagent execution process for this session
-			const executionPage = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(session.id).and(
-					ExecutionProcess.ByRunReason("codingagent"),
-				),
+			// Find latest coding agent process for this session
+			const executionPage = await ctx.repos.codingAgentProcess.list(
+				CodingAgentProcess.BySessionId(session.id),
 				{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 			);
 
@@ -77,9 +75,9 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 			const executionProcess = executionPage.items[0];
 
 			// Optionally include logs
-			let logs: ExecutionProcessLogs | null = null;
+			let logs: CodingAgentProcessLogs | null = null;
 			if (input.includeLogs) {
-				logs = await ctx.repos.executionProcessLogs.getLogs(
+				logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 					executionProcess.id,
 				);
 			}

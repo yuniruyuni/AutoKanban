@@ -24,7 +24,7 @@ export interface StructuredLogParams {
 export const getStructuredLogSnapshot = (params: StructuredLogParams) =>
 	usecase({
 		read: async (ctx) => {
-			const logs = await ctx.repos.executionProcessLogs.getLogs(
+			const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 				params.executionProcessId,
 			);
 			return { logs };
@@ -53,7 +53,7 @@ export const getStructuredLogDelta = (
 ) =>
 	usecase({
 		read: async (ctx) => {
-			const logs = await ctx.repos.executionProcessLogs.getLogs(
+			const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 				params.executionProcessId,
 			);
 			return { logs };

@@ -1,6 +1,6 @@
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
 import { Session } from "../../models/session";
 import { usecase } from "../runner";
 
@@ -13,7 +13,7 @@ export interface ConversationTurn {
 	executionProcessId: string;
 	prompt: string | null;
 	summary: string | null;
-	status: ExecutionProcess["status"];
+	status: CodingAgentProcess["status"];
 	createdAt: Date;
 }
 
@@ -39,14 +39,15 @@ export const getConversationHistory = (input: GetConversationHistoryInput) =>
 				});
 			}
 
-			// Get all execution processes for this session (ordered by creation time)
-			const executionProcesses: ExecutionProcess[] = [];
+			// Get all coding agent processes for this session (ordered by creation time)
+			// All records in codingAgentProcess ARE codingagent - no filter needed
+			const codingAgentProcesses: CodingAgentProcess[] = [];
 			let hasMore = true;
 			let cursor: Record<string, string> | undefined;
 
 			while (hasMore) {
-				const page = await ctx.repos.executionProcess.list(
-					ExecutionProcess.BySessionId(input.sessionId),
+				const page = await ctx.repos.codingAgentProcess.list(
+					CodingAgentProcess.BySessionId(input.sessionId),
 					{
 						limit: 100,
 						after: cursor,
@@ -54,20 +55,15 @@ export const getConversationHistory = (input: GetConversationHistoryInput) =>
 					},
 				);
 
-				executionProcesses.push(...page.items);
+				codingAgentProcesses.push(...page.items);
 				hasMore = page.hasMore;
 				cursor = page.nextCursor;
 			}
 
-			// Get coding agent turns for each execution process
+			// Get coding agent turns for each process
 			const turns: ConversationTurn[] = [];
 
-			for (const process of executionProcesses) {
-				// Only include coding agent processes
-				if (process.runReason !== "codingagent") {
-					continue;
-				}
-
+			for (const process of codingAgentProcesses) {
 				const turn = await ctx.repos.codingAgentTurn.get(
 					CodingAgentTurn.ByExecutionProcessId(process.id),
 				);

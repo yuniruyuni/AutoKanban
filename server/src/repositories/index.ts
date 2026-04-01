@@ -3,9 +3,11 @@
 // ============================================
 
 export type { ApprovalRepository } from "./approval/repository";
+export type { CodingAgentProcessRepository } from "./coding-agent-process/repository";
+export type { CodingAgentProcessLogsRepository } from "./coding-agent-process-logs/repository";
 export type { CodingAgentTurnRepository } from "./coding-agent-turn/repository";
-export type { ExecutionProcessRepository } from "./execution-process/repository";
-export type { ExecutionProcessLogsRepository } from "./execution-process-logs/repository";
+export type { DevServerProcessRepository } from "./dev-server-process/repository";
+export type { DevServerProcessLogsRepository } from "./dev-server-process-logs/repository";
 export type { ProjectRepository } from "./project/repository";
 export type { SessionRepository } from "./session/repository";
 export type { TaskRepository } from "./task/repository";
@@ -14,6 +16,8 @@ export type { ToolRepository } from "./tool/repository";
 export type { VariantRepository } from "./variant/repository";
 export type { WorkspaceRepository } from "./workspace/repository";
 export type { WorkspaceRepoRepository } from "./workspace-repo/repository";
+export type { WorkspaceScriptProcessRepository } from "./workspace-script-process/repository";
+export type { WorkspaceScriptProcessLogsRepository } from "./workspace-script-process-logs/repository";
 
 // ============================================
 // External System Repository re-exports
@@ -57,12 +61,14 @@ export * from "./common";
 import type { AgentConfigRepository } from "./agent-config/repository";
 import type { ApprovalRepository } from "./approval/repository";
 import type { ApprovalStoreRepository } from "./approval-store/repository";
+import type { CodingAgentProcessRepository } from "./coding-agent-process/repository";
+import type { CodingAgentProcessLogsRepository } from "./coding-agent-process-logs/repository";
 import type { CodingAgentTurnRepository } from "./coding-agent-turn/repository";
 import type { DevServerRepository } from "./dev-server/repository";
+import type { DevServerProcessRepository } from "./dev-server-process/repository";
+import type { DevServerProcessLogsRepository } from "./dev-server-process-logs/repository";
 import type { DraftRepository } from "./draft/repository";
 import type { DraftPullRequestRepository } from "./draft-pull-request/repository";
-import type { ExecutionProcessRepository } from "./execution-process/repository";
-import type { ExecutionProcessLogsRepository } from "./execution-process-logs/repository";
 import type { ExecutorRepository } from "./executor/repository";
 import type { GitRepository } from "./git/repository";
 import type { LogStoreManager } from "./log-store/repository";
@@ -77,6 +83,8 @@ import type { VariantRepository } from "./variant/repository";
 import type { WorkspaceRepository } from "./workspace/repository";
 import type { WorkspaceConfigRepository } from "./workspace-config/repository";
 import type { WorkspaceRepoRepository } from "./workspace-repo/repository";
+import type { WorkspaceScriptProcessRepository } from "./workspace-script-process/repository";
+import type { WorkspaceScriptProcessLogsRepository } from "./workspace-script-process-logs/repository";
 import type { WorktreeRepository } from "./worktree/repository";
 
 // ============================================
@@ -109,8 +117,12 @@ export interface Repos {
 	workspace: WorkspaceRepository;
 	workspaceRepo: WorkspaceRepoRepository;
 	session: SessionRepository;
-	executionProcess: ExecutionProcessRepository;
-	executionProcessLogs: ExecutionProcessLogsRepository;
+	codingAgentProcess: CodingAgentProcessRepository;
+	codingAgentProcessLogs: CodingAgentProcessLogsRepository;
+	devServerProcess: DevServerProcessRepository;
+	devServerProcessLogs: DevServerProcessLogsRepository;
+	workspaceScriptProcess: WorkspaceScriptProcessRepository;
+	workspaceScriptProcessLogs: WorkspaceScriptProcessLogsRepository;
 	codingAgentTurn: CodingAgentTurnRepository;
 	tool: ToolRepository;
 	variant: VariantRepository;

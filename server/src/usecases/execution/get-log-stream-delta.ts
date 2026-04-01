@@ -25,7 +25,7 @@ export interface LogStreamParams {
 export const getLogStreamSnapshot = (params: LogStreamParams) =>
 	usecase({
 		read: async (ctx) => {
-			const logs = await ctx.repos.executionProcessLogs.getLogs(
+			const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 				params.executionProcessId,
 			);
 			return { logs };
@@ -57,7 +57,7 @@ export const getLogStreamDelta = (
 ) =>
 	usecase({
 		read: async (ctx) => {
-			const logs = await ctx.repos.executionProcessLogs.getLogs(
+			const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 				params.executionProcessId,
 			);
 			return { logs };

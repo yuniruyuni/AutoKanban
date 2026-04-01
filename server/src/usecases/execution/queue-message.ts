@@ -1,3 +1,4 @@
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import {
@@ -5,7 +6,6 @@ import {
 	type PendingToolUse,
 	parseLogsToConversation,
 } from "../../models/conversation/conversation-parser";
-import { ExecutionProcess } from "../../models/execution-process";
 import type { QueuedMessage, QueueStatus } from "../../models/message-queue";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
@@ -63,12 +63,12 @@ export const queueMessage = (input: QueueMessageInput) =>
 				});
 			}
 
-			// Get the latest execution process for this session
-			const executionProcessPage = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(input.sessionId),
-				{ limit: 1, sort: ExecutionProcess.defaultSort },
+			// Get the latest coding agent process for this session
+			const codingAgentProcessPage = await ctx.repos.codingAgentProcess.list(
+				CodingAgentProcess.BySessionId(input.sessionId),
+				{ limit: 1, sort: CodingAgentProcess.defaultSort },
 			);
-			const latestProcess = executionProcessPage.items[0];
+			const latestProcess = codingAgentProcessPage.items[0];
 
 			// Get the project for the workspace (to get worktree path)
 			const workspaceReposPage = await ctx.repos.workspaceRepo.list(
@@ -100,7 +100,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 
 			if (latestProcess?.status === "running") {
 				isRunning = true;
-				const logs = await ctx.repos.executionProcessLogs.getLogs(
+				const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 					latestProcess.id,
 				);
 				if (logs?.logs) {
@@ -110,7 +110,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 			}
 
 			if (resumeInfo && latestProcess && latestProcess.status !== "running") {
-				const logs = await ctx.repos.executionProcessLogs.getLogs(
+				const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 					latestProcess.id,
 				);
 				if (logs?.logs) {
@@ -147,10 +147,9 @@ export const queueMessage = (input: QueueMessageInput) =>
 		) => {
 			const workingDir = Workspace.resolveWorkingDir(workspace, project);
 
-			// Pre-generate EP for potential new process start
-			const executionProcess = ExecutionProcess.create({
+			// Pre-generate CodingAgentProcess for potential new process start
+			const codingAgentProcess = CodingAgentProcess.create({
 				sessionId: session.id,
-				runReason: "codingagent",
 			});
 
 			return {
@@ -160,7 +159,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 				workingDir,
 				resumeInfo,
 				variantEntity,
-				executionProcess,
+				codingAgentProcess,
 				isIdle,
 				isRunning,
 				interruptedTools,
@@ -175,7 +174,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 				workingDir,
 				resumeInfo,
 				variantEntity,
-				executionProcess,
+				codingAgentProcess,
 				isIdle,
 				isRunning,
 				interruptedTools,
@@ -238,7 +237,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 			}
 
 			await ctx.repos.executor.startProtocol({
-				id: executionProcess.id,
+				id: codingAgentProcess.id,
 				sessionId: session.id,
 				runReason: "codingagent",
 				workingDir,
@@ -258,24 +257,26 @@ export const queueMessage = (input: QueueMessageInput) =>
 
 			// Pre-create CodingAgentTurn model for DB persistence in finish step
 			const turn = CodingAgentTurn.create({
-				executionProcessId: executionProcess.id,
+				executionProcessId: codingAgentProcess.id,
 				prompt: queuedMessage.prompt,
 			});
 
 			return {
 				queuedMessage,
 				sentImmediately: true as const,
-				executionProcessId: executionProcess.id,
+				executionProcessId: codingAgentProcess.id,
 				startedNewProcess: true as const,
-				executionProcess,
+				codingAgentProcess,
 				turn,
 			};
 		},
 
 		finish: async (ctx, postResult) => {
-			// Persist ExecutionProcess and CodingAgentTurn DB records for newly started processes
+			// Persist CodingAgentProcess and CodingAgentTurn DB records for newly started processes
 			if (postResult.startedNewProcess) {
-				await ctx.repos.executionProcess.upsert(postResult.executionProcess);
+				await ctx.repos.codingAgentProcess.upsert(
+					postResult.codingAgentProcess,
+				);
 				await ctx.repos.codingAgentTurn.upsert(postResult.turn);
 			}
 

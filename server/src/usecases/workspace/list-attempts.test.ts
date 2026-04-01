@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-	createTestExecutionProcess,
+	createTestCodingAgentProcess,
 	createTestSession,
 	createTestWorkspace,
 } from "../../../test/factories";
@@ -36,10 +36,9 @@ describe("listAttempts", () => {
 			id: "session-1",
 			workspaceId: "ws-1",
 		});
-		const ep = createTestExecutionProcess({
+		const ep = createTestCodingAgentProcess({
 			id: "ep-1",
 			sessionId: "session-1",
-			runReason: "codingagent",
 			status: "completed",
 		});
 
@@ -50,7 +49,7 @@ describe("listAttempts", () => {
 			session: {
 				list: () => ({ items: [session], nextCursor: null }),
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: () => ({ items: [ep], nextCursor: null }),
 			} as never,
 		});
@@ -94,14 +93,12 @@ describe("listAttempts", () => {
 			id: "session-2",
 			workspaceId: "ws-2",
 		});
-		const ep1 = createTestExecutionProcess({
+		const ep1 = createTestCodingAgentProcess({
 			sessionId: "session-1",
-			runReason: "codingagent",
 			status: "failed",
 		});
-		const ep2 = createTestExecutionProcess({
+		const ep2 = createTestCodingAgentProcess({
 			sessionId: "session-2",
-			runReason: "codingagent",
 			status: "running",
 		});
 
@@ -116,7 +113,7 @@ describe("listAttempts", () => {
 					return { items: [session2], nextCursor: null };
 				},
 			} as never,
-			executionProcess: {
+			codingAgentProcess: {
 				list: (spec: { sessionId?: string }) => {
 					if ("sessionId" in spec && spec.sessionId === "session-1")
 						return { items: [ep1], nextCursor: null };

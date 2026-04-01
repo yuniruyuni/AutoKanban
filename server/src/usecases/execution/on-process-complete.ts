@@ -1,49 +1,111 @@
+import type { ProcessType } from "../../infra/callback/client";
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import {
 	findPendingToolUses,
 	type PendingToolUse,
 } from "../../models/conversation/conversation-parser";
-import { ExecutionProcess } from "../../models/execution-process";
+import { DevServerProcess } from "../../models/dev-server-process";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
+import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 import { usecase } from "../runner";
 
 export interface ProcessCompletionInput {
 	processId: string;
 	sessionId: string;
-	status: ExecutionProcess.Status;
+	processType: ProcessType;
+	status:
+		| CodingAgentProcess.Status
+		| DevServerProcess.Status
+		| WorkspaceScriptProcess.Status;
 	exitCode: number | null;
 }
 
 /**
- * Update ExecutionProcess status on completion.
+ * Update process status on completion.
+ * Routes to the correct typed repository based on processType.
  */
 export const completeExecutionProcess = (input: ProcessCompletionInput) =>
 	usecase({
 		read: async (ctx) => {
-			const existing = await ctx.repos.executionProcess.get(
-				ExecutionProcess.ById(input.processId),
-			);
-			return { existing };
+			switch (input.processType) {
+				case "codingagent": {
+					const existing = await ctx.repos.codingAgentProcess.get(
+						CodingAgentProcess.ById(input.processId),
+					);
+					return { existing, processType: input.processType };
+				}
+				case "devserver": {
+					const existing = await ctx.repos.devServerProcess.get(
+						DevServerProcess.ById(input.processId),
+					);
+					return { existing, processType: input.processType };
+				}
+				case "workspacescript": {
+					const existing = await ctx.repos.workspaceScriptProcess.get(
+						WorkspaceScriptProcess.ById(input.processId),
+					);
+					return { existing, processType: input.processType };
+				}
+			}
 		},
 
-		process: (_ctx, { existing }) => {
-			const completed = existing
-				? ExecutionProcess.complete(
-						existing,
-						input.status as "completed" | "failed" | "killed",
+		process: (_ctx, { existing, processType }) => {
+			if (!existing) return { completed: null, processType };
+			const completionStatus = input.status as
+				| "completed"
+				| "failed"
+				| "killed";
+			switch (processType) {
+				case "codingagent": {
+					const completed = CodingAgentProcess.complete(
+						existing as CodingAgentProcess,
+						completionStatus,
 						input.exitCode,
-					)
-				: null;
-			return { completed };
+					);
+					return { completed, processType };
+				}
+				case "devserver": {
+					const completed = DevServerProcess.complete(
+						existing as DevServerProcess,
+						completionStatus,
+						input.exitCode,
+					);
+					return { completed, processType };
+				}
+				case "workspacescript": {
+					const completed = WorkspaceScriptProcess.complete(
+						existing as WorkspaceScriptProcess,
+						completionStatus,
+						input.exitCode,
+					);
+					return { completed, processType };
+				}
+			}
 		},
 
-		write: async (ctx, { completed }) => {
-			if (completed) {
-				await ctx.repos.executionProcess.upsert(completed);
+		write: async (ctx, { completed, processType }) => {
+			if (!completed) return {};
+			switch (processType) {
+				case "codingagent":
+					await ctx.repos.codingAgentProcess.upsert(
+						completed as CodingAgentProcess,
+					);
+					break;
+				case "devserver":
+					await ctx.repos.devServerProcess.upsert(
+						completed as DevServerProcess,
+					);
+					break;
+				case "workspacescript":
+					await ctx.repos.workspaceScriptProcess.upsert(
+						completed as WorkspaceScriptProcess,
+					);
+					break;
 			}
 			return {};
 		},
@@ -100,16 +162,16 @@ export const processQueuedFollowUp = (input: {
 				input.sessionId,
 			);
 
-			// Detect interrupted tools from the latest execution process logs
+			// Detect interrupted tools from the latest coding agent process logs
 			let interruptedTools: PendingToolUse[] = [];
 			if (resumeInfo) {
-				const latestProcessPage = await ctx.repos.executionProcess.list(
-					ExecutionProcess.BySessionId(input.sessionId),
-					{ limit: 1, sort: ExecutionProcess.defaultSort },
+				const latestProcessPage = await ctx.repos.codingAgentProcess.list(
+					CodingAgentProcess.BySessionId(input.sessionId),
+					{ limit: 1, sort: CodingAgentProcess.defaultSort },
 				);
 				const latestProcess = latestProcessPage.items[0];
 				if (latestProcess && latestProcess.status !== "running") {
-					const logs = await ctx.repos.executionProcessLogs.getLogs(
+					const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 						latestProcess.id,
 					);
 					if (logs?.logs) {
@@ -125,46 +187,45 @@ export const processQueuedFollowUp = (input: {
 			if (!workingDir)
 				return {
 					workingDir,
-					executionProcess: null,
+					codingAgentProcess: null,
 					turn: null,
 					resumeInfo,
 					interruptedTools,
 				};
-			const executionProcess = ExecutionProcess.create({
+			const codingAgentProcess = CodingAgentProcess.create({
 				sessionId: input.sessionId,
-				runReason: "codingagent",
 			});
 			const turn = CodingAgentTurn.create({
-				executionProcessId: executionProcess.id,
+				executionProcessId: codingAgentProcess.id,
 				prompt: input.prompt,
 			});
 			return {
 				workingDir,
-				executionProcess,
+				codingAgentProcess,
 				turn,
 				resumeInfo,
 				interruptedTools,
 			};
 		},
 
-		write: async (ctx, { executionProcess, turn, ...rest }) => {
-			if (executionProcess) {
-				await ctx.repos.executionProcess.upsert(executionProcess);
+		write: async (ctx, { codingAgentProcess, turn, ...rest }) => {
+			if (codingAgentProcess) {
+				await ctx.repos.codingAgentProcess.upsert(codingAgentProcess);
 			}
 			if (turn) {
 				await ctx.repos.codingAgentTurn.upsert(turn);
 			}
-			return { ...rest, executionProcess };
+			return { ...rest, codingAgentProcess };
 		},
 
 		post: async (
 			ctx,
-			{ workingDir, executionProcess, resumeInfo, interruptedTools },
+			{ workingDir, codingAgentProcess, resumeInfo, interruptedTools },
 		) => {
-			if (!workingDir || !executionProcess) return {};
+			if (!workingDir || !codingAgentProcess) return {};
 
 			await ctx.repos.executor.startProtocol({
-				id: executionProcess.id,
+				id: codingAgentProcess.id,
 				sessionId: input.sessionId,
 				runReason: "codingagent",
 				workingDir,

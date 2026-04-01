@@ -1,4 +1,4 @@
-import { ExecutionProcess } from "../../models/execution-process";
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { Session } from "../../models/session";
 import { usecase } from "../runner";
 
@@ -31,11 +31,9 @@ export const getAttemptExecution = (input: GetAttemptExecutionInput) =>
 
 			const session = sessionPage.items[0];
 
-			// Find latest codingagent execution process for this session
-			const epPage = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(session.id).and(
-					ExecutionProcess.ByRunReason("codingagent"),
-				),
+			// Find latest coding agent process for this session
+			const epPage = await ctx.repos.codingAgentProcess.list(
+				CodingAgentProcess.BySessionId(session.id),
 				{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 			);
 

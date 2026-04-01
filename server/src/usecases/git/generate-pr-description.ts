@@ -1,6 +1,6 @@
 import type { ILogger } from "../../infra/logger/types";
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";
@@ -81,13 +81,13 @@ export const generatePrDescription = (input: GeneratePrDescriptionInput) =>
 			// 4. Get conversation context from logs (optional - may not exist yet)
 			let conversationContext = "";
 			if (latestSession) {
-				const processesPage = await ctx.repos.executionProcess.list(
-					ExecutionProcess.BySessionId(latestSession.id),
-					{ limit: 1, sort: ExecutionProcess.defaultSort },
+				const processesPage = await ctx.repos.codingAgentProcess.list(
+					CodingAgentProcess.BySessionId(latestSession.id),
+					{ limit: 1, sort: CodingAgentProcess.defaultSort },
 				);
 				const latestProcess = processesPage.items[0];
 				if (latestProcess) {
-					const logs = await ctx.repos.executionProcessLogs.getLogs(
+					const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 						latestProcess.id,
 					);
 					conversationContext = logs?.logs ?? "";

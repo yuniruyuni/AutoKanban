@@ -1,7 +1,18 @@
 import type { ILogger } from "../../infra/logger/types";
-import type { ExecutionProcessLogsRepository } from "..";
-import { createServiceCtx, type Full } from "../common";
+import { createServiceCtx, type DbWriteCtx, type Full } from "../common";
 import { type LogStore, logStoreManager } from "../log-store";
+
+/**
+ * Interface for any process logs repository that supports appendLogs.
+ * The first parameter must be a capability marker so Full<T> can extract the method.
+ */
+interface ProcessLogsAppender {
+	appendLogs(
+		ctx: DbWriteCtx,
+		processId: string,
+		newLogs: string,
+	): Promise<void>;
+}
 
 /**
  * Collects logs from print mode (legacy) process streams.
@@ -9,7 +20,7 @@ import { type LogStore, logStoreManager } from "../log-store";
  */
 export class LogCollector {
 	constructor(
-		private executionProcessLogsRepo: Full<ExecutionProcessLogsRepository>,
+		private processLogsRepo: Full<ProcessLogsAppender>,
 		private logger: ILogger,
 	) {}
 
@@ -57,7 +68,7 @@ export class LogCollector {
 				store.append(svcCtx, entry);
 
 				// Also persist to database (with newline for proper parsing)
-				this.executionProcessLogsRepo.appendLogs(
+				this.processLogsRepo.appendLogs(
 					processId,
 					`[${entry.timestamp.toISOString()}] [${source}] ${data}\n`,
 				);

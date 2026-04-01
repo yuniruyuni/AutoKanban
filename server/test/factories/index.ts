@@ -1,8 +1,9 @@
-import { CodingAgentTurn } from "../../src/models/coding-agent-turn";
 import {
-	ExecutionProcess,
-	type ExecutionProcessLogs,
-} from "../../src/models/execution-process";
+	CodingAgentProcess,
+	type CodingAgentProcessLogs,
+} from "../../src/models/coding-agent-process";
+import { CodingAgentTurn } from "../../src/models/coding-agent-turn";
+import { DevServerProcess } from "../../src/models/dev-server-process";
 import { Project } from "../../src/models/project";
 import { Session } from "../../src/models/session";
 import { Task } from "../../src/models/task";
@@ -10,6 +11,7 @@ import { Tool } from "../../src/models/tool";
 import { Variant } from "../../src/models/variant";
 import { Workspace } from "../../src/models/workspace";
 import { WorkspaceRepo } from "../../src/models/workspace-repo";
+import { WorkspaceScriptProcess } from "../../src/models/workspace-script-process";
 
 /**
  * Create a test Task with sensible defaults and overrides.
@@ -58,14 +60,38 @@ export function createTestWorkspace(
 }
 
 /**
- * Create a test ExecutionProcess with sensible defaults and overrides.
+ * Create a test CodingAgentProcess with sensible defaults and overrides.
  */
-export function createTestExecutionProcess(
-	overrides: Partial<ExecutionProcess> = {},
-): ExecutionProcess {
-	const base = ExecutionProcess.create({
+export function createTestCodingAgentProcess(
+	overrides: Partial<CodingAgentProcess> = {},
+): CodingAgentProcess {
+	const base = CodingAgentProcess.create({
 		sessionId: "test-session-id",
-		runReason: "codingagent",
+	});
+	return { ...base, ...overrides };
+}
+
+/**
+ * Create a test DevServerProcess with sensible defaults and overrides.
+ */
+export function createTestDevServerProcess(
+	overrides: Partial<DevServerProcess> = {},
+): DevServerProcess {
+	const base = DevServerProcess.create({
+		sessionId: "test-session-id",
+	});
+	return { ...base, ...overrides };
+}
+
+/**
+ * Create a test WorkspaceScriptProcess with sensible defaults and overrides.
+ */
+export function createTestWorkspaceScriptProcess(
+	overrides: Partial<WorkspaceScriptProcess> = {},
+): WorkspaceScriptProcess {
+	const base = WorkspaceScriptProcess.create({
+		sessionId: "test-session-id",
+		scriptType: "prepare",
 	});
 	return { ...base, ...overrides };
 }
@@ -110,13 +136,13 @@ export function createTestWorkspaceRepo(
 }
 
 /**
- * Create test ExecutionProcessLogs directly.
+ * Create test CodingAgentProcessLogs directly.
  */
-export function createTestExecutionProcessLogs(
-	overrides: Partial<ExecutionProcessLogs> = {},
-): ExecutionProcessLogs {
+export function createTestCodingAgentProcessLogs(
+	overrides: Partial<CodingAgentProcessLogs> = {},
+): CodingAgentProcessLogs {
 	return {
-		executionProcessId: "test-execution-process-id",
+		codingAgentProcessId: "test-coding-agent-process-id",
 		logs: "test log output",
 		...overrides,
 	};

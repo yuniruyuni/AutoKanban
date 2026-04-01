@@ -1,6 +1,6 @@
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
-import { ExecutionProcess } from "../../models/execution-process";
 import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
@@ -39,15 +39,15 @@ export const forkConversation = (input: ForkConversationInput) =>
 				});
 			}
 
-			// Get the latest execution process
-			const executionProcessPage = await ctx.repos.executionProcess.list(
-				ExecutionProcess.BySessionId(input.sessionId),
-				{ limit: 1, sort: ExecutionProcess.defaultSort },
+			// Get the latest coding agent process
+			const codingAgentProcessPage = await ctx.repos.codingAgentProcess.list(
+				CodingAgentProcess.BySessionId(input.sessionId),
+				{ limit: 1, sort: CodingAgentProcess.defaultSort },
 			);
-			const latestProcess = executionProcessPage.items[0];
+			const latestProcess = codingAgentProcessPage.items[0];
 
 			if (!latestProcess) {
-				return fail("NOT_FOUND", "No execution process found", {
+				return fail("NOT_FOUND", "No coding agent process found", {
 					sessionId: input.sessionId,
 				});
 			}
@@ -80,12 +80,11 @@ export const forkConversation = (input: ForkConversationInput) =>
 		},
 
 		process: (_ctx, { session, workspace, resumeInfo }) => {
-			const executionProcess = ExecutionProcess.create({
+			const codingAgentProcess = CodingAgentProcess.create({
 				sessionId: session.id,
-				runReason: "codingagent",
 			});
 			const codingAgentTurn = CodingAgentTurn.create({
-				executionProcessId: executionProcess.id,
+				executionProcessId: codingAgentProcess.id,
 				prompt: input.newPrompt,
 			});
 			return {
@@ -94,13 +93,13 @@ export const forkConversation = (input: ForkConversationInput) =>
 				agentSessionId: resumeInfo.agentSessionId,
 				messageUuid: input.messageUuid,
 				prompt: input.newPrompt,
-				executionProcess,
+				codingAgentProcess,
 				codingAgentTurn,
 			};
 		},
 
 		write: async (ctx, data) => {
-			await ctx.repos.executionProcess.upsert(data.executionProcess);
+			await ctx.repos.codingAgentProcess.upsert(data.codingAgentProcess);
 			await ctx.repos.codingAgentTurn.upsert(data.codingAgentTurn);
 			return data;
 		},
@@ -113,12 +112,12 @@ export const forkConversation = (input: ForkConversationInput) =>
 				agentSessionId,
 				messageUuid,
 				prompt,
-				executionProcess,
+				codingAgentProcess,
 			},
 		) => {
 			// Start a new execution with --resume and --resume-session-at
 			await ctx.repos.executor.startProtocol({
-				id: executionProcess.id,
+				id: codingAgentProcess.id,
 				sessionId: session.id,
 				runReason: "codingagent",
 				workingDir: workspace.worktreePath ?? ".",
@@ -129,7 +128,7 @@ export const forkConversation = (input: ForkConversationInput) =>
 
 			return {
 				success: true,
-				executionProcessId: executionProcess.id,
+				executionProcessId: codingAgentProcess.id,
 			};
 		},
 

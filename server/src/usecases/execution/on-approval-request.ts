@@ -1,6 +1,6 @@
 import { Approval } from "../../models/approval";
+import { CodingAgentProcess } from "../../models/coding-agent-process";
 import type { DriverApprovalRequest } from "../../models/driver-approval-request";
-import { ExecutionProcess } from "../../models/execution-process";
 import { Session } from "../../models/session";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
@@ -18,11 +18,11 @@ export interface ApprovalRequestInput {
 export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 	usecase({
 		read: async (ctx) => {
-			const execProcess = await ctx.repos.executionProcess.get(
-				ExecutionProcess.ById(input.processId),
+			const execProcess = await ctx.repos.codingAgentProcess.get(
+				CodingAgentProcess.ById(input.processId),
 			);
 
-			// Find task via executionProcess → session → workspace → task
+			// Find task via codingAgentProcess -> session -> workspace -> task
 			let taskId: string | null = null;
 			if (execProcess) {
 				const session = await ctx.repos.session.get(
@@ -43,9 +43,9 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 
 		write: async (ctx, { execProcess, task }) => {
 			if (execProcess) {
-				const updated = ExecutionProcess.toAwaitingApproval(execProcess);
+				const updated = CodingAgentProcess.toAwaitingApproval(execProcess);
 				if (updated) {
-					await ctx.repos.executionProcess.upsert(updated);
+					await ctx.repos.codingAgentProcess.upsert(updated);
 				}
 			}
 
@@ -94,14 +94,14 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 		},
 
 		finish: async (ctx, { taskId }) => {
-			// Restore execution process status
-			const currentProcess = await ctx.repos.executionProcess.get(
-				ExecutionProcess.ById(input.processId),
+			// Restore coding agent process status
+			const currentProcess = await ctx.repos.codingAgentProcess.get(
+				CodingAgentProcess.ById(input.processId),
 			);
 			if (currentProcess) {
-				const restored = ExecutionProcess.restoreFromApproval(currentProcess);
+				const restored = CodingAgentProcess.restoreFromApproval(currentProcess);
 				if (restored) {
-					await ctx.repos.executionProcess.upsert(restored);
+					await ctx.repos.codingAgentProcess.upsert(restored);
 				}
 			}
 
