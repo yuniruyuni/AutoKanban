@@ -17,8 +17,13 @@ const PORT_FILE = join(PORT_DIR, "auto-kanban.port");
  * - Compiled binary (`bun build --compile`): process.execPath is the binary itself.
  * - Dev mode (`bun run src/index.ts`): process.execPath is `bun`, process.argv[1] is the script.
  */
-export function getAutoKanbanCommand(): { command: string; args: string[] } {
+export function getAutoKanbanCommand(): {
+	command: string;
+	args: string[];
+	env?: Record<string, string>;
+} {
 	const scriptArg = process.argv[1];
+	const baseUrl = getBaseUrl();
 
 	// Dev mode: argv[1] is a .ts/.js file → need "bun --cwd <server/> <script> --mcp"
 	// --cwd ensures Bun finds bunfig.toml (preload plugin) regardless of caller's CWD.
@@ -28,6 +33,7 @@ export function getAutoKanbanCommand(): { command: string; args: string[] } {
 		return {
 			command: process.execPath,
 			args: ["--cwd", serverDir, absScript, "--mcp"],
+			env: { AUTO_KANBAN_URL: baseUrl },
 		};
 	}
 
@@ -35,6 +41,7 @@ export function getAutoKanbanCommand(): { command: string; args: string[] } {
 	return {
 		command: process.execPath,
 		args: ["--mcp"],
+		env: { AUTO_KANBAN_URL: baseUrl },
 	};
 }
 
