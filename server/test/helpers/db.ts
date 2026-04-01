@@ -5,21 +5,19 @@ import { EmbeddedPostgresManager } from "../../src/infra/db/postgres";
 import { schemaFiles } from "../../src/infra/db/schema-vfs";
 
 let pgManager: EmbeddedPostgresManager | null = null;
-let sharedDb: PgDatabase | null = null;
+let initPromise: Promise<PgDatabase> | null = null;
 
-async function ensureReady(): Promise<PgDatabase> {
-	if (sharedDb) return sharedDb;
+const DEFAULT_DATA_DIR = join(import.meta.dir, "../../.test-pg-data");
 
-	pgManager = new EmbeddedPostgresManager({
-		dataDir: join(import.meta.dir, "../../.test-pg-data"),
-	});
+async function doInit(dataDir: string): Promise<PgDatabase> {
+	pgManager = new EmbeddedPostgresManager({ dataDir });
 
 	await pgManager.start();
 
-	sharedDb = new PgDatabase(pgManager.poolConfig);
+	const db = new PgDatabase(pgManager.poolConfig);
 
 	// Ensure schema exists
-	const result = await sharedDb.queryGet<{ exists: boolean }>({
+	const result = await db.queryGet<{ exists: boolean }>({
 		query: `SELECT EXISTS (
 			SELECT FROM information_schema.tables
 			WHERE table_schema = 'public' AND table_name = 'projects'
@@ -34,31 +32,44 @@ async function ensureReady(): Promise<PgDatabase> {
 			.map((s) => s.trim())
 			.filter((s) => s.length > 0);
 		for (const stmt of statements) {
-			await sharedDb.queryRun({ query: stmt, params: [] });
+			await db.queryRun({ query: stmt, params: [] });
 		}
 	}
 
-	return sharedDb;
+	return db;
+}
+
+function ensureReady(dataDir: string): Promise<PgDatabase> {
+	if (!initPromise) {
+		initPromise = doInit(dataDir);
+	}
+	return initPromise;
 }
 
 // Stop PostgreSQL when the process exits so bun doesn't hang
-process.on("beforeExit", async () => {
-	if (sharedDb) {
-		await sharedDb.close();
-		sharedDb = null;
+async function cleanup() {
+	const db = await initPromise;
+	if (db) {
+		await db.close();
 	}
 	if (pgManager) {
 		await pgManager.stop();
 		pgManager = null;
 	}
-});
+	initPromise = null;
+}
+process.on("beforeExit", cleanup);
+process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
 
 /**
  * Get a PgDatabase for tests. Starts embedded-postgres on first call.
  * Truncates all tables for isolation between tests.
  */
-export async function createTestDB(): Promise<PgDatabase> {
-	const db = await ensureReady();
+export async function createTestDB(options?: {
+	dataDir?: string;
+}): Promise<PgDatabase> {
+	const db = await ensureReady(options?.dataDir ?? DEFAULT_DATA_DIR);
 
 	await db.queryRun({
 		query: `

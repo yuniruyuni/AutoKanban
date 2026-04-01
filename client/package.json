@@ -8,11 +8,14 @@
 		"start:prod": "vite preview",
 		"build": "tsc && vite build",
 		"check:lint": "biome check .",
-		"check:lint:fix": "biome check --write .",
 		"check:test": "vitest --run",
-		"check:test:watch": "vitest",
 		"check:type": "tsc --noEmit",
-		"check:arch": "depcruise src --config .dependency-cruiser.cjs --output-type err"
+		"check:arch": "depcruise src --config .dependency-cruiser.cjs --output-type err",
+		"fix:lint": "biome check --write .",
+		"watch:arch": "onchange 'src/**' --initial -- bun run check:arch",
+		"watch:lint": "onchange 'src/**' --initial -- bun run check:lint",
+		"watch:test": "vitest",
+		"watch:type": "tsc --noEmit --watch"
 	},
 	"dependencies": {
 		"@auto-kanban/server": "workspace:*",

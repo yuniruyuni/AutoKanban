@@ -3,11 +3,13 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"check:e2e": "bun test",
 		"check:lint": "biome check .",
-		"check:lint:fix": "biome check --write .",
+		"check:test": "bun test",
 		"check:type": "tsc --noEmit",
-		"check:arch": "echo 'no arch check for e2e'"
+		"fix:lint": "biome check --write .",
+		"watch:lint": "onchange '**/*.ts' --initial -- bun run check:lint",
+		"watch:test": "onchange '**/*.ts' --initial -- bun run check:test",
+		"watch:type": "onchange '**/*.ts' --initial -- bun run check:type"
 	},
 	"dependencies": {
 		"@trpc/client": "11.10.0",

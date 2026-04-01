@@ -10,16 +10,21 @@
 		"start:dev": "bun run --filter '*' --parallel start:dev",
 		"start:prod": "bun run --filter '*' --parallel start:prod",
 		"build": "bun run --filter '*' build",
+		"check": "bun run --parallel 'check:*'",
 		"check:lint": "bun run --filter '*' check:lint",
-		"check:lint:fix": "bun run --filter '*' check:lint:fix",
 		"check:test": "bun run --filter '*' check:test",
-		"check:test:watch": "bun run --filter '*' --parallel check:test:watch",
 		"check:type": "bun run --filter '*' check:type",
 		"check:arch": "bun run --filter '*' check:arch",
-		"check:e2e": "bun run --filter '@auto-kanban/e2e' check:e2e"
+		"fix:lint": "bun run --filter '*' fix:lint",
+		"watch": "bun run --parallel 'watch:*'",
+		"watch:arch": "bun run --filter '*' --parallel watch:arch",
+		"watch:lint": "bun run --filter '*' --parallel watch:lint",
+		"watch:test": "bun run --filter '*' --parallel watch:test",
+		"watch:type": "bun run --filter '*' --parallel watch:type"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.9",
+		"onchange": "^7.1.0",
 		"typescript": "^6.0.2"
 	}
 }

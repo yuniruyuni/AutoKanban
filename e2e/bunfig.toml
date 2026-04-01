@@ -1,0 +1,5 @@
+[run.watch]
+ignore = ["./.test-pg-data"]
+
+[test]
+preload = ["../server/build/schema-vfs.ts"]

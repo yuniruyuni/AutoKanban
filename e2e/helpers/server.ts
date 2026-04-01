@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -18,7 +19,9 @@ export async function setupTestServer(): Promise<{
 	port: number;
 	ctx: Context;
 }> {
-	const db = await createTestDB();
+	const db = await createTestDB({
+		dataDir: join(import.meta.dir, "../.test-pg-data"),
+	});
 	const logger = createMockLogger();
 	ctx = await createE2EContext(db, logger);
 

@@ -28,6 +28,7 @@ Thumbs.db
 
 # PostgreSQL test data
 server/.test-pg-data/
+e2e/.test-pg-data/
 
 # Logs
 *.log
