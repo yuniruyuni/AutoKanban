@@ -493,7 +493,6 @@ export class ClaudeCodeExecutor {
 			// CLIフラグでpermission制御を有効化
 			"--permission-prompt-tool=stdio",
 			`--permission-mode=${options.permissionMode ?? "default"}`,
-			"--disallowedTools=AskUserQuestion",
 		];
 
 		if (options.model) {

@@ -171,39 +171,71 @@ export class ProtocolLogCollector {
 		let buffer = "";
 		let lastAssistantContent: ClaudeAssistantMessage | null = null;
 
+		const processLine = (line: string) => {
+			if (!line.trim()) return;
+
+			const entry = {
+				timestamp: new Date(),
+				source: "stdout" as const,
+				data: line,
+			};
+
+			store.append(svcCtx, entry);
+			this.notifyLogDataCallbacks(processId, "stdout", line);
+
+			// Parse the JSON line
+			const results = parser.parse(line);
+			this.handleParsedResults(processId, results);
+
+			// Track assistant messages for summary extraction
+			for (const result of results) {
+				if (result.kind === "message" && result.data.type === "assistant") {
+					lastAssistantContent = result.data as ClaudeAssistantMessage;
+				}
+			}
+		};
+
 		try {
 			while (true) {
 				const { done, value } = await reader.read();
-				if (done) break;
 
-				buffer += decoder.decode(value, { stream: true });
+				if (value) {
+					buffer += decoder.decode(value, { stream: true });
 
-				// Process complete lines
-				const lines = buffer.split("\n");
-				buffer = lines.pop() ?? "";
+					// Process complete lines
+					let newlineIndex: number;
+					while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+						const line = buffer.substring(0, newlineIndex);
+						buffer = buffer.substring(newlineIndex + 1);
+						processLine(line);
+					}
 
-				for (const line of lines) {
-					if (!line.trim()) continue;
-
-					const entry = {
-						timestamp: new Date(),
-						source: "stdout" as const,
-						data: line,
-					};
-
-					store.append(svcCtx, entry);
-					this.notifyLogDataCallbacks(processId, "stdout", line);
-
-					// Parse the JSON line
-					const results = parser.parse(line);
-					this.handleParsedResults(processId, results);
-
-					// Track assistant messages for summary extraction
-					for (const result of results) {
-						if (result.kind === "message" && result.data.type === "assistant") {
-							lastAssistantContent = result.data as ClaudeAssistantMessage;
+					// ADVANCED: Even without a newline, if the buffer starts with '{' and ends with '}',
+					// it might be a complete JSON object from a stream that doesn't use newlines.
+					const trimmedBuffer = buffer.trim();
+					if (
+						trimmedBuffer.startsWith("{") &&
+						trimmedBuffer.endsWith("}") &&
+						trimmedBuffer.length > 2
+					) {
+						// Try parsing it as a potential complete message
+						try {
+							JSON.parse(trimmedBuffer);
+							// If it's valid JSON, process it and clear buffer
+							processLine(trimmedBuffer);
+							buffer = "";
+						} catch {
+							// Not a complete JSON yet, keep buffering
 						}
 					}
+				}
+
+				if (done) {
+					// Final flush of remaining buffer
+					if (buffer.trim()) {
+						processLine(buffer);
+					}
+					break;
 				}
 			}
 
