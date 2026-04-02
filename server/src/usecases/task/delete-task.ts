@@ -172,9 +172,11 @@ export const deleteTask = (input: DeleteTaskInput) =>
 			for (const ws of workspaces) {
 				try {
 					await ctx.repos.worktree.removeAllWorktrees(ws.id, [project], true);
-				} catch (error: any) {
+				} catch (error: unknown) {
+					const message =
+						error instanceof Error ? error.message : String(error);
 					ctx.logger.error(
-						`Failed to remove worktrees for workspace ${ws.id}: ${error?.message || error}`,
+						`Failed to remove worktrees for workspace ${ws.id}: ${message}`,
 						error,
 					);
 				}

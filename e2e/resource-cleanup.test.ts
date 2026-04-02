@@ -48,13 +48,12 @@ describe("resource cleanup", () => {
 			taskId: task.id,
 		});
 
-		console.log(`[DEBUG] Created worktree path: ${worktreePath}`);
 		expect(existsSync(worktreePath)).toBe(true);
 
-		// Delete project
-		await client.project.delete.mutate({ 
+		// Delete project with worktrees
+		await client.project.delete.mutate({
 			projectId: project.id,
-			deleteWorktrees: true
+			deleteWorktrees: true,
 		});
 
 		// Worktree should be gone
@@ -73,11 +72,11 @@ describe("resource cleanup", () => {
 		});
 
 		// Start execution to create worktree
-		const { worktreePath, executionProcessId } = await client.execution.start.mutate({
-			taskId: task.id,
-		});
+		const { worktreePath, executionProcessId } =
+			await client.execution.start.mutate({
+				taskId: task.id,
+			});
 
-		console.log(`[DEBUG] Created worktree path: ${worktreePath}`);
 		expect(existsSync(worktreePath)).toBe(true);
 
 		// Stop execution to unlock worktree
@@ -86,10 +85,10 @@ describe("resource cleanup", () => {
 		// Wait a bit to ensure process is stopped
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
-		// Delete task
-		await client.task.delete.mutate({ 
+		// Delete task with worktrees
+		await client.task.delete.mutate({
 			taskId: task.id,
-			deleteWorktrees: true
+			deleteWorktrees: true,
 		});
 
 		// Worktree should be gone
