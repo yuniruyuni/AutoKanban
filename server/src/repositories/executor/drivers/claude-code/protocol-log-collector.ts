@@ -203,8 +203,10 @@ export class ProtocolLogCollector {
 					buffer += decoder.decode(value, { stream: true });
 
 					// Process complete lines
-					let newlineIndex: number;
-					while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+					while (true) {
+						const newlineIndex = buffer.indexOf("\n");
+						if (newlineIndex === -1) break;
+
 						const line = buffer.substring(0, newlineIndex);
 						buffer = buffer.substring(newlineIndex + 1);
 						processLine(line);
@@ -235,17 +237,17 @@ export class ProtocolLogCollector {
 					if (buffer.trim()) {
 						processLine(buffer);
 					}
-					break;
-				}
-			}
 
-			// Extract summary from last assistant message
-			if (lastAssistantContent) {
-				const summary = extractSummaryFromContent(
-					lastAssistantContent.message.content,
-				);
-				if (summary) {
-					this.notifySummaryCallbacks(processId, summary);
+					// Extract summary from last assistant message
+					if (lastAssistantContent) {
+						// biome-ignore lint/suspicious/noExplicitAny: satisfy TS reachability
+						const lastMsg: any = lastAssistantContent;
+						const summary = extractSummaryFromContent(lastMsg.message.content);
+						if (summary) {
+							this.notifySummaryCallbacks(processId, summary);
+						}
+					}
+					break;
 				}
 			}
 		} catch (error) {

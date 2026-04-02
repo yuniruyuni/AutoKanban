@@ -93,9 +93,9 @@ describe("buildProtocolArgs", () => {
 		// biome-ignore lint/suspicious/noExplicitAny: testing private method
 		(executor as any).buildProtocolArgs(options) as string[];
 
-	test("includes --disallowedTools=AskUserQuestion", () => {
+	test("does NOT include --disallowedTools=AskUserQuestion", () => {
 		const args = buildArgs({ workingDir: "/tmp" });
-		expect(args).toContain("--disallowedTools=AskUserQuestion");
+		expect(args).not.toContain("--disallowedTools=AskUserQuestion");
 	});
 });
 

@@ -45,7 +45,7 @@ export const handleProcessIdle = (input: ProcessIdleInput) =>
 				return { updatedTask: null };
 			}
 
-			// No queued message — prepare task status update for finish step
+			// Turn is complete and no follow-up queued — move task to inreview
 			const updatedTask = task ? Task.toInReview(task) : null;
 
 			return { updatedTask: updatedTask ?? null };

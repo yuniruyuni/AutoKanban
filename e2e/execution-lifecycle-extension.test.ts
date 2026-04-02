@@ -6,7 +6,6 @@ import {
 	expect,
 	test,
 } from "bun:test";
-import { existsSync } from "node:fs";
 import { createTestClient, type TestClient } from "./helpers/client";
 import { cleanupTempRepos, createTempGitRepo } from "./helpers/git";
 import {
@@ -60,7 +59,7 @@ describe("execution lifecycle extensions", () => {
 			executionProcessId: startResult.executionProcessId,
 		});
 		expect(execution.executionProcess.status).toBe("running");
-		
+
 		// Wait for logs to show it's idle or has been interrupted
 		// (In real scenario, it would stop the current tool and wait for next prompt)
 	});
@@ -132,8 +131,8 @@ describe("execution lifecycle extensions", () => {
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		updatedTask = await client.task.get.query({ taskId: task.id });
-		// FEATURE: It should move to 'inreview' automatically when idle (turn complete)
-		expect(updatedTask.status).toBe("inreview");
+		// CHANGE: It should remain 'inprogress' even when idle, until it explicitly completes
+		// or the user manually moves it. This prevents early termination of the agent loop.
+		expect(updatedTask.status).toBe("inprogress");
 	});
-
 });
