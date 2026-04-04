@@ -40,6 +40,9 @@ interface ClaudeApprovalContext {
  */
 export class ClaudeCodeDriver implements ICodingAgentDriver {
 	readonly name = "claude-code";
+	readonly defaultCommand = "claude";
+	readonly displayName = "Claude Code";
+	readonly installHint = "npm install -g @anthropic-ai/claude-code";
 
 	private executor: ClaudeCodeExecutor;
 	private logger: ILogger;
@@ -58,13 +61,16 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 			(options.permissionMode as PermissionMode) ?? "default";
 		this.permissionMode = permissionMode;
 
-		const nativeProcess = this.executor.spawnProtocol({
-			workingDir: options.workingDir,
-			model: options.model,
-			permissionMode,
-			resumeSessionId: options.resumeToken ?? undefined,
-			resumeMessageId: options.messageToken ?? undefined,
-		});
+		const nativeProcess = this.executor.spawnProtocol(
+			{
+				workingDir: options.workingDir,
+				model: options.model,
+				permissionMode,
+				resumeSessionId: options.resumeToken ?? undefined,
+				resumeMessageId: options.messageToken ?? undefined,
+			},
+			options.command ?? this.defaultCommand,
+		);
 
 		return nativeProcess as DriverProcess;
 	}
@@ -219,12 +225,16 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		prompt: string;
 		schema: Record<string, unknown>;
 		model?: string;
+		command?: string;
 	}): {
 		stdout: ReadableStream<Uint8Array>;
 		stderr: ReadableStream<Uint8Array>;
 		exited: Promise<number>;
 	} {
-		return this.executor.spawnStructured(options);
+		return this.executor.spawnStructured({
+			...options,
+			command: options.command ?? this.defaultCommand,
+		});
 	}
 
 	async runStructured<T>(options: {
@@ -232,8 +242,12 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		prompt: string;
 		schema: Record<string, unknown>;
 		model?: string;
+		command?: string;
 	}): Promise<T | null> {
-		return this.executor.runStructured<T>(options);
+		return this.executor.runStructured<T>({
+			...options,
+			command: options.command ?? this.defaultCommand,
+		});
 	}
 
 	interrupt(process: DriverProcess): void {

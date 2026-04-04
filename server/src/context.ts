@@ -3,6 +3,7 @@ import type { ILogger } from "./infra/logger/types";
 import { CallbackClientImpl } from "./presentation/callback/impl";
 import { bindCtx, bindRepos, type Repos } from "./repositories";
 import { AgentConfigRepository } from "./repositories/agent-config";
+import { AgentSettingRepository } from "./repositories/agent-setting/postgres";
 import { ApprovalRepository } from "./repositories/approval/postgres";
 import { approvalStore } from "./repositories/approval-store";
 import { CodingAgentProcessRepository } from "./repositories/coding-agent-process/postgres";
@@ -23,6 +24,7 @@ import { logStoreManager } from "./repositories/log-store";
 import { messageQueueRepository } from "./repositories/message-queue";
 import { permissionStore } from "./repositories/permission-store";
 import { ProjectRepository } from "./repositories/project/postgres";
+import { ScriptRunnerRepository } from "./repositories/script-runner";
 import { SessionRepository } from "./repositories/session/postgres";
 import { TaskRepository } from "./repositories/task/postgres";
 import { TaskTemplateRepository } from "./repositories/task-template/postgres";
@@ -45,8 +47,21 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	drivers.set("claude-code", new ClaudeCodeDriver(logger));
 	drivers.set("gemini-cli", new GeminiCliDriver(logger));
 
+	// Check agent availability at startup
+	for (const driver of drivers.values()) {
+		const path = Bun.which(driver.defaultCommand);
+		if (path) {
+			logger.info(`${driver.displayName} found: ${path}`);
+		} else {
+			logger.warn(
+				`${driver.displayName} not found in PATH. Install with: ${driver.installHint}`,
+			);
+		}
+	}
+
 	// 1. Construct all raw repos
 	const rawRepos: Repos = {
+		agentSetting: new AgentSettingRepository(),
 		task: new TaskRepository(),
 		taskTemplate: new TaskTemplateRepository(),
 		project: new ProjectRepository(),
@@ -69,6 +84,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		messageQueue: messageQueueRepository,
 		agentConfig: new AgentConfigRepository(),
 		workspaceConfig: new WorkspaceConfigRepository(),
+		scriptRunner: new ScriptRunnerRepository(),
 		draft: draftRepository,
 		draftPullRequest: draftPullRequestRepository,
 		permissionStore,

@@ -24,31 +24,40 @@ describe("queueMessage", () => {
 		};
 
 		const ctx = createMockContext({
+			agentSetting: {
+				get: async () => null,
+			},
 			session: {
-				get: () => session,
-			} as never,
+				get: async () => session,
+			},
 			workspace: {
-				get: () => workspace,
-			} as never,
+				get: async () => workspace,
+			},
 			codingAgentProcess: {
-				list: () => ({ items: [process], hasMore: false }),
-			} as never,
+				list: async () => ({ items: [process], hasMore: false }),
+			},
 			codingAgentProcessLogs: {
-				getLogs: () => ({
+				getLogs: async () => ({
 					codingAgentProcessId: process.id,
 					logs: '{"type":"assistant"}',
 				}),
-			} as never,
+				appendLogs: async () => {},
+			},
+			logStoreManager: {
+				get: () => ({
+					append: () => {},
+				}),
+			},
 			workspaceRepo: {
-				list: () => ({ items: [], hasMore: false }),
-			} as never,
+				list: async () => ({ items: [], hasMore: false }),
+			},
 			codingAgentTurn: {
-				findLatestResumeInfo: () => null,
-			} as never,
+				findLatestResumeInfo: async () => null,
+			},
 			messageQueue: {
 				queue: () => queuedMessage,
-			} as never,
-		});
+			},
+		} as never);
 
 		const result = await queueMessage({
 			sessionId: session.id,
@@ -79,33 +88,44 @@ describe("queueMessage", () => {
 		let startProtocolCalled = false;
 
 		const ctx = createMockContext({
+			agentSetting: {
+				get: async () => null,
+			},
 			session: {
-				get: () => session,
-			} as never,
+				get: async () => session,
+			},
 			workspace: {
-				get: () => workspace,
-			} as never,
+				get: async () => workspace,
+			},
 			codingAgentProcess: {
-				list: () => ({ items: [], hasMore: false }),
-				upsert: () => {},
-			} as never,
+				list: async () => ({ items: [], hasMore: false }),
+				upsert: async () => {},
+			},
 			workspaceRepo: {
-				list: () => ({
+				list: async () => ({
 					items: [{ workspaceId: workspace.id, projectId: project.id }],
 					hasMore: false,
 				}),
-			} as never,
+			},
 			project: {
-				get: () => project,
-			} as never,
+				get: async () => project,
+			},
 			codingAgentTurn: {
-				findLatestResumeInfo: () => null,
-				upsert: () => {},
-			} as never,
+				findLatestResumeInfo: async () => null,
+				upsert: async () => {},
+			},
 			messageQueue: {
 				queue: () => queuedMessage,
 				consume: () => queuedMessage,
-			} as never,
+			},
+			logStoreManager: {
+				get: () => ({
+					append: () => {},
+				}),
+			},
+			codingAgentProcessLogs: {
+				appendLogs: async () => {},
+			},
 			executor: {
 				startProtocol: async () => {
 					startProtocolCalled = true;
@@ -116,8 +136,8 @@ describe("queueMessage", () => {
 						startedAt: new Date(),
 					};
 				},
-			} as never,
-		});
+			},
+		} as never);
 
 		const result = await queueMessage({
 			sessionId: session.id,
@@ -135,9 +155,9 @@ describe("queueMessage", () => {
 	test("returns NOT_FOUND when session does not exist", async () => {
 		const ctx = createMockContext({
 			session: {
-				get: () => null,
-			} as never,
-		});
+				get: async () => null,
+			},
+		} as never);
 
 		const result = await queueMessage({
 			sessionId: "non-existent",
@@ -156,12 +176,12 @@ describe("queueMessage", () => {
 
 		const ctx = createMockContext({
 			session: {
-				get: () => session,
-			} as never,
+				get: async () => session,
+			},
 			workspace: {
-				get: () => null,
-			} as never,
-		});
+				get: async () => null,
+			},
+		} as never);
 
 		const result = await queueMessage({
 			sessionId: session.id,
@@ -182,8 +202,8 @@ describe("getQueueStatus", () => {
 
 		const ctx = createMockContext({
 			session: {
-				get: () => session,
-			} as never,
+				get: async () => session,
+			},
 			messageQueue: {
 				getStatus: () => ({
 					hasMessage: true,
@@ -193,8 +213,8 @@ describe("getQueueStatus", () => {
 						queuedAt: new Date(),
 					},
 				}),
-			} as never,
-		});
+			},
+		} as never);
 
 		const result = await getQueueStatus({ sessionId: session.id }).run(ctx);
 
@@ -208,9 +228,9 @@ describe("getQueueStatus", () => {
 	test("returns NOT_FOUND when session does not exist", async () => {
 		const ctx = createMockContext({
 			session: {
-				get: () => null,
-			} as never,
-		});
+				get: async () => null,
+			},
+		} as never);
 
 		const result = await getQueueStatus({ sessionId: "non-existent" }).run(ctx);
 
@@ -225,12 +245,12 @@ describe("getQueueStatus", () => {
 
 		const ctx = createMockContext({
 			session: {
-				get: () => session,
-			} as never,
+				get: async () => session,
+			},
 			messageQueue: {
 				getStatus: () => ({ hasMessage: false }),
-			} as never,
-		});
+			},
+		} as never);
 
 		const result = await getQueueStatus({ sessionId: session.id }).run(ctx);
 
@@ -249,15 +269,15 @@ describe("cancelQueue", () => {
 
 		const ctx = createMockContext({
 			session: {
-				get: () => session,
-			} as never,
+				get: async () => session,
+			},
 			messageQueue: {
 				cancel: () => {
 					cancelCalled = true;
 					return true;
 				},
-			} as never,
-		});
+			},
+		} as never);
 
 		const result = await cancelQueue({ sessionId: session.id }).run(ctx);
 
@@ -271,9 +291,9 @@ describe("cancelQueue", () => {
 	test("returns NOT_FOUND when session does not exist", async () => {
 		const ctx = createMockContext({
 			session: {
-				get: () => null,
-			} as never,
-		});
+				get: async () => null,
+			},
+		} as never);
 
 		const result = await cancelQueue({ sessionId: "non-existent" }).run(ctx);
 
@@ -288,12 +308,12 @@ describe("cancelQueue", () => {
 
 		const ctx = createMockContext({
 			session: {
-				get: () => session,
-			} as never,
+				get: async () => session,
+			},
 			messageQueue: {
 				cancel: () => false,
-			} as never,
-		});
+			},
+		} as never);
 
 		const result = await cancelQueue({ sessionId: session.id }).run(ctx);
 

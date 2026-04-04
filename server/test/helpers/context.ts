@@ -1,5 +1,6 @@
 import type { Database } from "../../src/infra/db/database";
 import type { Repos } from "../../src/repositories";
+import { AgentSettingRepository } from "../../src/repositories/agent-setting/postgres";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
 import { CodingAgentProcessRepository } from "../../src/repositories/coding-agent-process/postgres";
 import { CodingAgentProcessLogsRepository } from "../../src/repositories/coding-agent-process-logs/postgres";
@@ -19,6 +20,7 @@ import type { Context } from "../../src/usecases/context";
 import { createMockLogger } from "./logger";
 
 const DB_REPO_KEYS = [
+	"agentSetting",
 	"task",
 	"taskTemplate",
 	"project",
@@ -85,6 +87,7 @@ function createMockRawRepos(repoOverrides: Partial<FullRepos<Repos>>): Repos {
 		"permissionStore",
 		"approvalStore",
 		"logStoreManager",
+		"scriptRunner",
 		"devServer",
 	] as const;
 
@@ -175,6 +178,7 @@ export function createMockContext(
  */
 export function createIntegrationContext(db: Database): Context {
 	const rawRepos: Repos = {
+		agentSetting: new AgentSettingRepository(),
 		task: new TaskRepository(),
 		taskTemplate: {} as Repos["taskTemplate"],
 		project: new ProjectRepository(),
@@ -197,6 +201,7 @@ export function createIntegrationContext(db: Database): Context {
 		messageQueue: {} as Repos["messageQueue"],
 		agentConfig: {} as Repos["agentConfig"],
 		workspaceConfig: {} as Repos["workspaceConfig"],
+		scriptRunner: {} as Repos["scriptRunner"],
 		draft: {} as Repos["draft"],
 		draftPullRequest: {} as Repos["draftPullRequest"],
 		permissionStore: {} as Repos["permissionStore"],
@@ -207,6 +212,7 @@ export function createIntegrationContext(db: Database): Context {
 
 	const dbCtx = createDbWriteCtx(db);
 	const repos = {
+		agentSetting: bindCtx(rawRepos.agentSetting, dbCtx),
 		task: bindCtx(rawRepos.task, dbCtx),
 		taskTemplate: {} as FullRepos<Repos>["taskTemplate"],
 		project: bindCtx(rawRepos.project, dbCtx),
@@ -232,6 +238,7 @@ export function createIntegrationContext(db: Database): Context {
 		messageQueue: {} as FullRepos<Repos>["messageQueue"],
 		agentConfig: {} as FullRepos<Repos>["agentConfig"],
 		workspaceConfig: {} as FullRepos<Repos>["workspaceConfig"],
+		scriptRunner: {} as FullRepos<Repos>["scriptRunner"],
 		draft: {} as FullRepos<Repos>["draft"],
 		permissionStore: {} as FullRepos<Repos>["permissionStore"],
 		approvalStore: {} as FullRepos<Repos>["approvalStore"],

@@ -30,11 +30,12 @@ async function doInit(dataDir: string): Promise<PgDatabase> {
 
 	const db = new PgDatabase(pgManager.poolConfig);
 
-	// Ensure schema exists
+	// Check if schema is fully applied by looking for the most recently added table.
+	// When adding a new table, update this check to reference that table.
 	const result = await db.queryGet<{ exists: boolean }>({
 		query: `SELECT EXISTS (
 			SELECT FROM information_schema.tables
-			WHERE table_schema = 'public' AND table_name = 'projects'
+			WHERE table_schema = 'public' AND table_name = 'agent_settings'
 		)`,
 		params: [],
 	});
@@ -88,6 +89,7 @@ export async function createTestDB(options?: {
 	await db.queryRun({
 		query: `
 		TRUNCATE TABLE
+			agent_settings,
 			approvals,
 			coding_agent_turns,
 			coding_agent_process_logs,

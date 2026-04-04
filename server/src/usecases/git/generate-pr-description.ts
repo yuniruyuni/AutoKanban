@@ -1,4 +1,5 @@
 import type { ILogger } from "../../infra/logger/types";
+import { AgentSetting } from "../../models/agent-setting";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
 import { Project } from "../../models/project";
@@ -97,10 +98,18 @@ export const generatePrDescription = (input: GeneratePrDescriptionInput) =>
 				}
 			}
 
-			return { conversationContext, workspace, project };
+			// Look up agent command setting for structured output
+			const agentSettingEntity = await ctx.repos.agentSetting.get(
+				AgentSetting.ById("claude-code"),
+			);
+
+			return { conversationContext, workspace, project, agentSettingEntity };
 		},
 
-		post: async (ctx, { conversationContext, workspace, project }) => {
+		post: async (
+			ctx,
+			{ conversationContext, workspace, project, agentSettingEntity },
+		) => {
 			// 1. Create DraftPullRequest in "generating" status
 			ctx.repos.draftPullRequest.create(input.workspaceId, input.projectId);
 
@@ -118,10 +127,14 @@ export const generatePrDescription = (input: GeneratePrDescriptionInput) =>
 				return fail("NOT_FOUND", "Cannot resolve working directory");
 			}
 
+			// Resolve command from agent settings (fetched in read step)
+			const command = agentSettingEntity?.command ?? undefined;
+
 			const proc = ctx.repos.executor.spawnStructured(undefined, {
 				workingDir: worktreePath,
 				prompt,
 				schema: PR_DESCRIPTION_SCHEMA,
+				command,
 			});
 
 			if (!proc) {

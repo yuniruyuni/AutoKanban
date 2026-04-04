@@ -2,6 +2,7 @@
 // DB Repository re-exports
 // ============================================
 
+export type { AgentSettingRepository } from "./agent-setting/repository";
 export type { ApprovalRepository } from "./approval/repository";
 export type { CodingAgentProcessRepository } from "./coding-agent-process/repository";
 export type { CodingAgentProcessLogsRepository } from "./coding-agent-process-logs/repository";
@@ -45,6 +46,10 @@ export type {
 	QueueStatus,
 } from "./message-queue/repository";
 export type { PermissionStoreRepository } from "./permission-store/repository";
+export type {
+	ScriptRunnerRepository,
+	ScriptRunnerResult,
+} from "./script-runner/repository";
 export type { WorkspaceConfigRepository } from "./workspace-config/repository";
 export type { WorktreeRepository } from "./worktree/repository";
 
@@ -59,6 +64,7 @@ export * from "./common";
 // ============================================
 
 import type { AgentConfigRepository } from "./agent-config/repository";
+import type { AgentSettingRepository } from "./agent-setting/repository";
 import type { ApprovalRepository } from "./approval/repository";
 import type { ApprovalStoreRepository } from "./approval-store/repository";
 import type { CodingAgentProcessRepository } from "./coding-agent-process/repository";
@@ -75,6 +81,7 @@ import type { LogStoreManager } from "./log-store/repository";
 import type { MessageQueueRepository } from "./message-queue/repository";
 import type { PermissionStoreRepository } from "./permission-store/repository";
 import type { ProjectRepository } from "./project/repository";
+import type { ScriptRunnerRepository } from "./script-runner/repository";
 import type { SessionRepository } from "./session/repository";
 import type { TaskRepository } from "./task/repository";
 import type { TaskTemplateRepository } from "./task-template/repository";
@@ -111,6 +118,7 @@ export function bindRepos<Ctx>(raw: Repos, ctx: Ctx): ExtractRepos<Ctx> {
 
 export interface Repos {
 	// DB repositories
+	agentSetting: AgentSettingRepository;
 	task: TaskRepository;
 	taskTemplate: TaskTemplateRepository;
 	project: ProjectRepository;
@@ -140,5 +148,6 @@ export interface Repos {
 	permissionStore: PermissionStoreRepository;
 	approvalStore: ApprovalStoreRepository;
 	logStoreManager: LogStoreManager;
+	scriptRunner: ScriptRunnerRepository;
 	devServer: DevServerRepository;
 }

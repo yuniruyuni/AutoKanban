@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/atoms/Button";
 import { Toggle } from "@/components/atoms/Toggle";
 import { SidebarLayout } from "@/components/project/SidebarLayout";
+import { useAgentSetting } from "@/hooks/useAgentSetting";
 import { useVariantMutations, useVariants } from "@/hooks/useVariants";
 import { paths } from "@/lib/paths";
 import { cn } from "@/lib/utils";
@@ -53,14 +54,19 @@ function VariantCard({ variant, isSelected, onEdit }: VariantCardProps) {
 	);
 }
 
-const AGENT_INFO: Record<string, { name: string; description: string }> = {
+const AGENT_INFO: Record<
+	string,
+	{ name: string; description: string; defaultCommand: string }
+> = {
 	"claude-code": {
 		name: "Claude Code",
 		description: "Configure Claude Code agent settings",
+		defaultCommand: "claude",
 	},
 	"gemini-cli": {
 		name: "Gemini CLI",
 		description: "Configure Gemini CLI agent settings",
+		defaultCommand: "gemini",
 	},
 };
 
@@ -92,6 +98,15 @@ export function AgentDetailPage() {
 	const [isCreating, setIsCreating] = useState(false);
 
 	const executor = agentId ?? "claude-code";
+	const {
+		command: savedCommand,
+		defaultCommand,
+		isAvailable,
+		isLoading: isCommandLoading,
+		updateCommand: saveCommand,
+		isUpdating: isCommandSaving,
+	} = useAgentSetting(executor);
+	const [commandInput, setCommandInput] = useState<string | null>(null);
 	const { variants, isLoading } = useVariants(executor);
 	const {
 		createVariant,
@@ -221,6 +236,60 @@ export function AgentDetailPage() {
 							<ArrowLeft className="h-4 w-4" />
 							Back to Agent
 						</Link>
+					</div>
+
+					{/* Command Section */}
+					<div className="flex flex-col gap-4">
+						<h2 className="text-base font-semibold text-primary-foreground">
+							Command
+						</h2>
+						<div className="flex items-end gap-3">
+							<div className="flex flex-col gap-2 flex-1">
+								<div className="flex items-center gap-2">
+									<div
+										className={cn(
+											"h-2.5 w-2.5 rounded-full shrink-0",
+											isCommandLoading
+												? "bg-muted"
+												: isAvailable
+													? "bg-green-500"
+													: "bg-red-500",
+										)}
+									/>
+									<span className="text-xs text-muted">
+										{isCommandLoading
+											? "Checking..."
+											: isAvailable
+												? "Available"
+												: "Not found"}
+									</span>
+								</div>
+								<input
+									type="text"
+									value={commandInput ?? savedCommand ?? ""}
+									onChange={(e) => setCommandInput(e.target.value)}
+									placeholder={defaultCommand ?? agentInfo?.defaultCommand ?? ""}
+									className="w-full px-3.5 py-3 border border-border rounded-md font-mono text-sm text-primary-foreground bg-primary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-0"
+								/>
+							</div>
+							<Button
+								onClick={async () => {
+									const value = commandInput ?? savedCommand ?? "";
+									if (value) {
+										await saveCommand(value);
+										setCommandInput(null);
+									}
+								}}
+								disabled={
+									isCommandSaving ||
+									(commandInput ?? savedCommand ?? "") === "" ||
+									(commandInput === null && savedCommand !== null) ||
+									commandInput === savedCommand
+								}
+							>
+								{isCommandSaving ? "Saving..." : "Save"}
+							</Button>
+						</div>
 					</div>
 
 					{/* Variants Section */}

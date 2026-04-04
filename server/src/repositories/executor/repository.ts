@@ -9,6 +9,8 @@ export interface ExecutorStartOptions {
 	prompt: string;
 	dangerouslySkipPermissions?: boolean;
 	model?: string;
+	/** Override the command used to spawn the agent. */
+	command?: string;
 	/** Which driver to use. Defaults to "claude-code". */
 	executor?: string;
 }
@@ -24,6 +26,8 @@ export interface ExecutorStartProtocolOptions {
 	resumeSessionId?: string;
 	resumeMessageId?: string;
 	interruptedTools?: Array<{ toolId: string; toolName: string }>;
+	/** Override the command used to spawn the agent. */
+	command?: string;
 	/** Which driver to use. Defaults to "claude-code". */
 	executor?: string;
 }
@@ -77,6 +81,7 @@ export interface ExecutorRepository {
 			prompt: string;
 			schema: Record<string, unknown>;
 			model?: string;
+			command?: string;
 		},
 	): {
 		stdout: ReadableStream<Uint8Array>;
@@ -91,6 +96,7 @@ export interface ExecutorRepository {
 			prompt: string;
 			schema: Record<string, unknown>;
 			model?: string;
+			command?: string;
 		},
 	): Promise<unknown>;
 	get(ctx: ServiceCtx, processId: string): ExecutorProcessInfo | undefined;
@@ -103,4 +109,8 @@ export interface ExecutorRepository {
 		ctx: ServiceCtx,
 		processId: string,
 	): ReadableStream<Uint8Array> | null;
+	getDriverInfo(
+		ctx: ServiceCtx,
+		executorName: string,
+	): { defaultCommand: string } | null;
 }

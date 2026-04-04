@@ -15,3 +15,4 @@
 \i tables/variants.sql
 \i tables/tools.sql
 \i tables/project_task_templates.sql
+\i tables/agent_settings.sql

@@ -2,6 +2,7 @@ import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
+import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
 export interface MergeBranchInput {
@@ -74,6 +75,9 @@ export const mergeBranch = (input: MergeBranchInput) =>
 				}
 				throw error;
 			}
+
+			// Run cleanup script before removing worktree
+			await runCleanupIfConfigured(ctx.repos, ctx.logger, worktreePath);
 
 			// Clean up worktree
 			await ctx.repos.worktree.removeWorktree(workspace.id, project);

@@ -11,6 +11,7 @@ import {
 	type Repos,
 } from "../../server/src/repositories";
 import { AgentConfigRepository } from "../../server/src/repositories/agent-config";
+import { AgentSettingRepository } from "../../server/src/repositories/agent-setting/postgres";
 import { ApprovalRepository } from "../../server/src/repositories/approval/postgres";
 import { approvalStore } from "../../server/src/repositories/approval-store";
 import { CodingAgentProcessRepository } from "../../server/src/repositories/coding-agent-process/postgres";
@@ -27,6 +28,7 @@ import { logStoreManager } from "../../server/src/repositories/log-store";
 import { messageQueueRepository } from "../../server/src/repositories/message-queue";
 import { permissionStore } from "../../server/src/repositories/permission-store";
 import { ProjectRepository } from "../../server/src/repositories/project/postgres";
+import { ScriptRunnerRepository } from "../../server/src/repositories/script-runner";
 import { SessionRepository } from "../../server/src/repositories/session/postgres";
 import { TaskRepository } from "../../server/src/repositories/task/postgres";
 import { TaskTemplateRepository } from "../../server/src/repositories/task-template/postgres";
@@ -124,6 +126,14 @@ function createMockExecutor(): Repos["executor"] {
 		getStderr() {
 			return null;
 		},
+		getDriverInfo(_ctx: unknown, executorName: string) {
+			const defaults: Record<string, string> = {
+				"claude-code": "claude",
+				"gemini-cli": "gemini",
+			};
+			const cmd = defaults[executorName];
+			return cmd ? { defaultCommand: cmd } : null;
+		},
 	} as Repos["executor"];
 }
 
@@ -151,6 +161,7 @@ export async function createE2EContext(
 	const baseDir = await getWorktreeBaseDir();
 
 	const rawRepos: Repos = {
+		agentSetting: new AgentSettingRepository(),
 		task: new TaskRepository(),
 		taskTemplate: new TaskTemplateRepository(),
 		project: new ProjectRepository(),
@@ -173,6 +184,7 @@ export async function createE2EContext(
 		messageQueue: messageQueueRepository,
 		agentConfig: new AgentConfigRepository(),
 		workspaceConfig: new WorkspaceConfigRepository(),
+		scriptRunner: new ScriptRunnerRepository(),
 		draft: draftRepository,
 		draftPullRequest: draftPullRequestRepository,
 		permissionStore,

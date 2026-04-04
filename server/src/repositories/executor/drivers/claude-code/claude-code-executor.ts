@@ -39,9 +39,6 @@ export interface ClaudeCodeResult {
 	killed: boolean;
 }
 
-// Use specific version for stability
-const CLAUDE_CODE_PACKAGE = "@anthropic-ai/claude-code@latest";
-
 // Hook callback ID for auto-approving non-ExitPlanMode tools
 export const AUTO_APPROVE_CALLBACK_ID = "AUTO_APPROVE_CALLBACK_ID";
 
@@ -102,18 +99,21 @@ export class ClaudeCodeExecutor {
 	 * Spawns a new Claude Code process in print mode (legacy one-shot).
 	 * The prompt is passed as a command line argument.
 	 */
-	spawn(options: ClaudeCodeOptions): ClaudeCodeProcess {
+	spawn(options: ClaudeCodeOptions, command?: string): ClaudeCodeProcess {
 		const args = this.buildPrintArgs(options);
-		return this.spawnProcess(options.workingDir, args);
+		return this.spawnProcess(options.workingDir, args, command);
 	}
 
 	/**
 	 * Spawns a new Claude Code process in protocol mode.
 	 * The prompt is sent via stdin after initialization.
 	 */
-	spawnProtocol(options: ClaudeCodeProtocolOptions): ClaudeCodeProcess {
+	spawnProtocol(
+		options: ClaudeCodeProtocolOptions,
+		command?: string,
+	): ClaudeCodeProcess {
 		const args = this.buildProtocolArgs(options);
-		return this.spawnProcess(options.workingDir, args);
+		return this.spawnProcess(options.workingDir, args, command);
 	}
 
 	/**
@@ -349,6 +349,7 @@ export class ClaudeCodeExecutor {
 		prompt: string;
 		schema: Record<string, unknown>;
 		model?: string;
+		command?: string;
 	}): {
 		stdout: ReadableStream<Uint8Array>;
 		stderr: ReadableStream<Uint8Array>;
@@ -368,7 +369,8 @@ export class ClaudeCodeExecutor {
 
 		args.push(options.prompt);
 
-		const cmd = ["bunx", CLAUDE_CODE_PACKAGE, ...args];
+		const command = options.command ?? "claude";
+		const cmd = [command, ...args];
 		const proc = Bun.spawn({
 			cmd,
 			cwd: options.workingDir,
@@ -378,7 +380,6 @@ export class ClaudeCodeExecutor {
 			env: {
 				...process.env,
 				CI: "true",
-				NPM_CONFIG_LOGLEVEL: "error",
 			},
 		});
 		return {
@@ -397,6 +398,7 @@ export class ClaudeCodeExecutor {
 		prompt: string;
 		schema: Record<string, unknown>;
 		model?: string;
+		command?: string;
 	}): Promise<T | null> {
 		const proc = this.spawnStructured(options);
 
@@ -420,9 +422,12 @@ export class ClaudeCodeExecutor {
 	// Private Methods
 	// ============================================
 
-	private spawnProcess(workingDir: string, args: string[]): ClaudeCodeProcess {
-		// Use bunx instead of npx for better performance and compatibility with Bun.spawn
-		const cmd = ["bunx", CLAUDE_CODE_PACKAGE, ...args];
+	private spawnProcess(
+		workingDir: string,
+		args: string[],
+		command?: string,
+	): ClaudeCodeProcess {
+		const cmd = [command ?? "claude", ...args];
 
 		const proc = Bun.spawn({
 			cmd,
@@ -432,7 +437,6 @@ export class ClaudeCodeExecutor {
 			stderr: "pipe",
 			env: {
 				...process.env,
-				NPM_CONFIG_LOGLEVEL: "error",
 			},
 		});
 

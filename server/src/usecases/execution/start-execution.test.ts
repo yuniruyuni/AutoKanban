@@ -11,6 +11,19 @@ import {
 } from "../../../test/helpers/git";
 import { startExecution } from "./start-execution";
 
+// Default mocks for workspaceConfig and scriptRunner (no prepare/cleanup configured)
+const defaultWorkspaceConfig = {
+	load: async () => ({ prepare: null, server: null, cleanup: null }),
+} as never;
+
+const defaultScriptRunner = {
+	run: async () => ({ exitCode: 0, stdout: "", stderr: "" }),
+} as never;
+
+const defaultAgentSetting = {
+	get: async () => null,
+} as never;
+
 describe("startExecution", () => {
 	// ===== Successful Cases =====
 
@@ -45,7 +58,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async () => ({
 					id: "exec-1",
@@ -92,7 +110,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async () => ({
 					id: "exec-2",
@@ -146,7 +169,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async () => ({
 					id: "exec-new",
@@ -199,7 +227,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async (opts: { prompt: string }) => {
 					capturedPrompt = opts.prompt;
@@ -244,7 +277,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async (opts: { prompt: string }) => {
 					capturedPrompt = opts.prompt;
@@ -295,7 +333,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async (opts: { resumeSessionId?: string }) => {
 					capturedResumeSessionId = opts.resumeSessionId;
@@ -340,8 +383,13 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			variant: { get: () => null } as never,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async () => ({
 					id: "exec-6",
@@ -388,6 +436,7 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			variant: {
 				get: () => ({
 					id: "variant-1",
@@ -401,6 +450,10 @@ describe("startExecution", () => {
 				}),
 			} as never,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async (opts: {
 					permissionMode?: string;
@@ -448,7 +501,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async (opts: {
 					permissionMode?: string;
@@ -491,6 +549,7 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			variant: {
 				get: () => ({
 					id: "variant-2",
@@ -504,6 +563,10 @@ describe("startExecution", () => {
 				}),
 			} as never,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async (opts: { model?: string }) => {
 					capturedModel = opts.model;
@@ -548,6 +611,7 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			variant: {
 				get: () => ({
 					id: "variant-3",
@@ -561,6 +625,10 @@ describe("startExecution", () => {
 				}),
 			} as never,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async (opts: { model?: string }) => {
 					capturedModel = opts.model;
@@ -635,7 +703,10 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepositoryCreationFails("Permission denied"),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
 		});
 
 		const result = await startExecution({ taskId: task.id }).run(ctx);
@@ -666,7 +737,10 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
 		});
 
 		const result = await startExecution({ taskId: task.id }).run(ctx);
@@ -707,7 +781,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async () => ({
 					id: "exec-7",
@@ -757,7 +836,12 @@ describe("startExecution", () => {
 				upsert: () => {},
 			} as never,
 			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
 			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: defaultScriptRunner,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
 			executor: {
 				startProtocol: async () => ({
 					id: "exec-8",
@@ -774,5 +858,187 @@ describe("startExecution", () => {
 			targetBranch?: string;
 		};
 		expect(wr2?.targetBranch).toBe("develop");
+	});
+
+	// ===== Prepare Script =====
+
+	test("runs prepare script when configured and succeeds", async () => {
+		const task = createTestTask({ title: "Test Task" });
+		const project = createTestProject({ id: task.projectId });
+
+		let executorCalled = false;
+		let prepareProcessUpserted = false;
+		let prepareLogsUpserted = false;
+
+		const ctx = createMockContext({
+			task: { get: () => task, upsert: () => {} } as never,
+			project: { get: () => project } as never,
+			workspace: {
+				get: () => null,
+				getMaxAttempt: () => 0,
+				upsert: () => {},
+			} as never,
+			workspaceRepo: { upsert: () => {} } as never,
+			session: { upsert: () => {} } as never,
+			codingAgentTurn: {
+				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
+			} as never,
+			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
+			worktree: createMockWorktreeRepository(),
+			workspaceConfig: {
+				load: async () => ({
+					prepare: "bun install",
+					server: null,
+					cleanup: null,
+				}),
+			} as never,
+			scriptRunner: {
+				run: async () => ({
+					exitCode: 0,
+					stdout: "installed",
+					stderr: "",
+				}),
+			} as never,
+			workspaceScriptProcess: {
+				upsert: () => {
+					prepareProcessUpserted = true;
+				},
+			} as never,
+			workspaceScriptProcessLogs: {
+				upsertLogs: () => {
+					prepareLogsUpserted = true;
+				},
+			} as never,
+			executor: {
+				startProtocol: async () => {
+					executorCalled = true;
+					return {
+						id: "exec-prep-1",
+						sessionId: "session-prep-1",
+						runReason: "codingagent",
+						startedAt: new Date(),
+					};
+				},
+			} as never,
+		});
+
+		const result = await startExecution({ taskId: task.id }).run(ctx);
+
+		expect(result.ok).toBe(true);
+		expect(executorCalled).toBe(true);
+		expect(prepareProcessUpserted).toBe(true);
+		expect(prepareLogsUpserted).toBe(true);
+	});
+
+	test("returns PREPARE_SCRIPT_FAILED when prepare script fails", async () => {
+		const task = createTestTask({ title: "Test Task" });
+		const project = createTestProject({ id: task.projectId });
+
+		let executorCalled = false;
+
+		const ctx = createMockContext({
+			task: { get: () => task, upsert: () => {} } as never,
+			project: { get: () => project } as never,
+			workspace: {
+				get: () => null,
+				getMaxAttempt: () => 0,
+				upsert: () => {},
+			} as never,
+			workspaceRepo: { upsert: () => {} } as never,
+			session: { upsert: () => {} } as never,
+			codingAgentTurn: {
+				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
+			} as never,
+			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
+			worktree: createMockWorktreeRepository(),
+			workspaceConfig: {
+				load: async () => ({
+					prepare: "exit 1",
+					server: null,
+					cleanup: null,
+				}),
+			} as never,
+			scriptRunner: {
+				run: async () => ({
+					exitCode: 1,
+					stdout: "",
+					stderr: "install failed",
+				}),
+			} as never,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
+			executor: {
+				startProtocol: async () => {
+					executorCalled = true;
+					return {
+						id: "exec-prep-2",
+						sessionId: "session-prep-2",
+						runReason: "codingagent",
+						startedAt: new Date(),
+					};
+				},
+			} as never,
+		});
+
+		const result = await startExecution({ taskId: task.id }).run(ctx);
+
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error.code).toBe("PREPARE_SCRIPT_FAILED");
+		}
+		// Agent should NOT have been started
+		expect(executorCalled).toBe(false);
+	});
+
+	test("skips prepare when no prepare command configured", async () => {
+		const task = createTestTask({ title: "Test Task" });
+		const project = createTestProject({ id: task.projectId });
+
+		let scriptRunnerCalled = false;
+
+		const ctx = createMockContext({
+			task: { get: () => task, upsert: () => {} } as never,
+			project: { get: () => project } as never,
+			workspace: {
+				get: () => null,
+				getMaxAttempt: () => 0,
+				upsert: () => {},
+			} as never,
+			workspaceRepo: { upsert: () => {} } as never,
+			session: { upsert: () => {} } as never,
+			codingAgentTurn: {
+				findLatestResumeInfoByWorkspaceId: () => null,
+				upsert: () => {},
+			} as never,
+			codingAgentProcess: { upsert: () => {} } as never,
+			agentSetting: defaultAgentSetting,
+			worktree: createMockWorktreeRepository(),
+			workspaceConfig: defaultWorkspaceConfig,
+			scriptRunner: {
+				run: async () => {
+					scriptRunnerCalled = true;
+					return { exitCode: 0, stdout: "", stderr: "" };
+				},
+			} as never,
+			workspaceScriptProcess: { upsert: () => {} } as never,
+			workspaceScriptProcessLogs: { upsertLogs: () => {} } as never,
+			executor: {
+				startProtocol: async () => ({
+					id: "exec-prep-3",
+					sessionId: "session-prep-3",
+					runReason: "codingagent",
+					startedAt: new Date(),
+				}),
+			} as never,
+		});
+
+		const result = await startExecution({ taskId: task.id }).run(ctx);
+
+		expect(result.ok).toBe(true);
+		expect(scriptRunnerCalled).toBe(false);
 	});
 });

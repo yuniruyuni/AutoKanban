@@ -9,6 +9,7 @@ import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
 import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
+import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
 export interface DeleteTaskInput {
@@ -171,6 +172,17 @@ export const deleteTask = (input: DeleteTaskInput) =>
 
 			for (const ws of workspaces) {
 				try {
+					const worktreePath = ctx.repos.worktree.getWorktreePath(
+						ws.id,
+						project.name,
+					);
+					const exists = await ctx.repos.worktree.worktreeExists(
+						ws.id,
+						project.name,
+					);
+					if (exists) {
+						await runCleanupIfConfigured(ctx.repos, ctx.logger, worktreePath);
+					}
 					await ctx.repos.worktree.removeAllWorktrees(ws.id, [project], true);
 				} catch (error: unknown) {
 					const message =

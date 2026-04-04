@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS agent_settings (
+  agent_id TEXT PRIMARY KEY,
+  command TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

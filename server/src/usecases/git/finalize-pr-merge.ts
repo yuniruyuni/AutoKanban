@@ -2,6 +2,7 @@ import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
+import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
 export interface FinalizePrMergeInput {
@@ -78,6 +79,13 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 
 			// Prepare task status update for finish step
 			const doneTask = Task.toDone(task);
+
+			// Run cleanup script before removing worktree
+			const worktreePath = ctx.repos.worktree.getWorktreePath(
+				data.workspace.id,
+				project.name,
+			);
+			await runCleanupIfConfigured(ctx.repos, ctx.logger, worktreePath);
 
 			// Remove worktree
 			await ctx.repos.worktree.removeWorktree(data.workspace.id, project);

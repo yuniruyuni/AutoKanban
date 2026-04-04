@@ -5,8 +5,6 @@ import type { DriverCallbacks } from "../../orchestrator/driver-callbacks";
 import type { DriverProcess } from "../../orchestrator/driver-process";
 import type { DriverSpawnOptions } from "../../orchestrator/driver-spawn-options";
 
-const GEMINI_CLI_PACKAGE = "@google/gemini-cli@latest";
-
 interface GeminiProcess extends DriverProcess {
 	proc: import("bun").Subprocess<"pipe", "pipe", "pipe">;
 }
@@ -24,6 +22,9 @@ interface GeminiProcess extends DriverProcess {
  */
 export class GeminiCliDriver implements ICodingAgentDriver {
 	readonly name = "gemini-cli";
+	readonly defaultCommand = "gemini";
+	readonly displayName = "Gemini CLI";
+	readonly installHint = "npm install -g @google/gemini-cli";
 	private logger: ILogger;
 
 	constructor(logger: ILogger) {
@@ -31,18 +32,14 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 	}
 
 	spawn(options: DriverSpawnOptions): DriverProcess {
-		const args: string[] = [
-			GEMINI_CLI_PACKAGE,
-			"-p",
-			"--output-format=stream-json",
-			"--yolo",
-		];
+		const command = options.command ?? this.defaultCommand;
+		const args: string[] = ["-p", "--output-format=stream-json", "--yolo"];
 
 		if (options.model) {
 			args.push("--model", options.model);
 		}
 
-		const cmd = ["npx", "-y", ...args];
+		const cmd = [command, ...args];
 
 		this.logger.info("Spawning Gemini CLI", {
 			cmd: cmd.join(" "),
@@ -57,7 +54,6 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 			stderr: "pipe",
 			env: {
 				...process.env,
-				NPM_CONFIG_LOGLEVEL: "error",
 				NODE_NO_WARNINGS: "1",
 			},
 		});

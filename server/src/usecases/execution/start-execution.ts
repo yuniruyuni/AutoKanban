@@ -1,3 +1,4 @@
+import { AgentSetting } from "../../models/agent-setting";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
@@ -11,6 +12,7 @@ import { Task } from "../../models/task";
 import { Variant } from "../../models/variant";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
+import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 import { usecase } from "../runner";
 
 /**
@@ -126,6 +128,11 @@ export const startExecution = (input: StartExecutionInput) =>
 					)
 				: null;
 
+			// Look up agent command setting
+			const agentSettingEntity = await ctx.repos.agentSetting.get(
+				AgentSetting.ById(executor),
+			);
+
 			return {
 				task,
 				project,
@@ -135,6 +142,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				agentSettingEntity,
 			};
 		},
 
@@ -149,6 +157,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				agentSettingEntity,
 			},
 		) => {
 			const strategy = Workspace.determineAttemptStrategy({
@@ -191,6 +200,12 @@ export const startExecution = (input: StartExecutionInput) =>
 				prompt,
 			});
 
+			// Create prepare script process entity (will be persisted in finish if used)
+			const prepareScriptProcess = WorkspaceScriptProcess.create({
+				sessionId: session.id,
+				scriptType: "prepare",
+			});
+
 			return {
 				task,
 				workspace,
@@ -203,8 +218,10 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				agentSettingEntity,
 				codingAgentProcess,
 				codingAgentTurn,
+				prepareScriptProcess,
 			};
 		},
 
@@ -222,8 +239,10 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				agentSettingEntity,
 				codingAgentProcess,
 				codingAgentTurn,
+				prepareScriptProcess,
 			},
 		) => {
 			// Archive the previous workspace if needed
@@ -267,8 +286,10 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				agentSettingEntity,
 				codingAgentProcess,
 				codingAgentTurn,
+				prepareScriptProcess,
 			};
 		},
 
@@ -284,7 +305,9 @@ export const startExecution = (input: StartExecutionInput) =>
 				resumeInfo,
 				interruptedTools,
 				variantEntity,
+				agentSettingEntity,
 				codingAgentProcess,
+				prepareScriptProcess,
 			},
 		) => {
 			// Create worktree for the project, using targetBranch as the starting point
@@ -314,6 +337,46 @@ export const startExecution = (input: StartExecutionInput) =>
 				};
 			}
 
+			// Run prepare script if configured
+			let completedPrepareProcess: WorkspaceScriptProcess | null = null;
+			let prepareProcessLogs: { stdout: string; stderr: string } | null = null;
+			const config = await ctx.repos.workspaceConfig.load(worktreePath);
+			if (config.prepare) {
+				ctx.logger.info(
+					`Running prepare script: ${config.prepare} in ${worktreePath}`,
+				);
+				const result = await ctx.repos.scriptRunner.run({
+					command: config.prepare,
+					workingDir: worktreePath,
+				});
+				prepareProcessLogs = {
+					stdout: result.stdout,
+					stderr: result.stderr,
+				};
+				if (result.exitCode !== 0) {
+					completedPrepareProcess = WorkspaceScriptProcess.complete(
+						prepareScriptProcess,
+						"failed",
+						result.exitCode,
+					);
+					ctx.logger.error(
+						`Prepare script failed with exit code ${result.exitCode}`,
+					);
+					return {
+						updatedWorkspace,
+						completedPrepareProcess,
+						prepareProcessLogs,
+						prepareFailed: true as const,
+					};
+				}
+				completedPrepareProcess = WorkspaceScriptProcess.complete(
+					prepareScriptProcess,
+					"completed",
+					result.exitCode,
+				);
+				ctx.logger.info("Prepare script completed successfully");
+			}
+
 			// Determine working directory
 			const workingDir = input.workingDir ?? worktreePath;
 
@@ -326,16 +389,20 @@ export const startExecution = (input: StartExecutionInput) =>
 				);
 			}
 
-			// Start the Claude Code process in protocol mode
+			// Resolve command from agent settings (fetched in read step)
+			const command = agentSettingEntity?.command ?? undefined;
+
+			// Start the coding agent process in protocol mode
 			// Protocol mode enables session resumption for follow-up messages
 			// If we have resume info from a previous session, use it to continue the conversation
-			ctx.logger.info("Starting Claude Code process (protocol mode):", {
+			ctx.logger.info("Starting coding agent process (protocol mode):", {
 				sessionId: session.id,
 				workingDir,
 				promptLength: prompt.length,
 				resuming: !!resumeInfo,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				interruptedTaskCount: interruptedTools.length,
+				command,
 			});
 
 			await ctx.repos.executor.startProtocol({
@@ -346,6 +413,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				prompt,
 				permissionMode: variantEntity?.permissionMode,
 				model: variantEntity?.model ?? input.model,
+				command,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
 				interruptedTools:
@@ -366,14 +434,47 @@ export const startExecution = (input: StartExecutionInput) =>
 
 			ctx.logger.info("Execution started successfully:", result);
 
-			return { ...result, updatedWorkspace };
+			return {
+				...result,
+				updatedWorkspace,
+				completedPrepareProcess,
+				prepareProcessLogs,
+				prepareFailed: false as const,
+			};
 		},
 
-		finish: async (ctx, { updatedWorkspace, ...result }) => {
+		finish: async (ctx, data) => {
 			// Persist workspace worktree path update in a new DB transaction
-			if (updatedWorkspace) {
-				await ctx.repos.workspace.upsert(updatedWorkspace);
+			if (data.updatedWorkspace) {
+				await ctx.repos.workspace.upsert(data.updatedWorkspace);
 			}
+
+			// Persist prepare script process and logs if prepare was executed
+			if (data.completedPrepareProcess) {
+				await ctx.repos.workspaceScriptProcess.upsert(
+					data.completedPrepareProcess,
+				);
+				if (data.prepareProcessLogs) {
+					await ctx.repos.workspaceScriptProcessLogs.upsertLogs({
+						workspaceScriptProcessId: data.completedPrepareProcess.id,
+						logs: `${data.prepareProcessLogs.stdout}${data.prepareProcessLogs.stderr}`,
+					});
+				}
+			}
+
+			if (data.prepareFailed) {
+				return fail(
+					"PREPARE_SCRIPT_FAILED",
+					"Prepare script failed, agent not started",
+				);
+			}
+
+			const result: StartExecutionResult = {
+				workspaceId: data.workspaceId,
+				sessionId: data.sessionId,
+				executionProcessId: data.executionProcessId,
+				worktreePath: data.worktreePath,
+			};
 			return result;
 		},
 	});

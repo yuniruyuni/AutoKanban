@@ -46,6 +46,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 
 		const driver = this.getDriver(options.executor);
 		const process = driver.spawn({
+			command: options.command,
 			workingDir: options.workingDir,
 			model: options.model,
 		});
@@ -76,6 +77,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 		const driver = this.getDriver(options.executor);
 
 		const process = driver.spawn({
+			command: options.command,
 			workingDir: options.workingDir,
 			model: options.model,
 			permissionMode: options.permissionMode,
@@ -221,6 +223,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			prompt: string;
 			schema: Record<string, unknown>;
 			model?: string;
+			command?: string;
 		},
 	): {
 		stdout: ReadableStream<Uint8Array>;
@@ -240,6 +243,7 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			prompt: string;
 			schema: Record<string, unknown>;
 			model?: string;
+			command?: string;
 		},
 	): Promise<unknown> {
 		const driver = this.getDriver(executorName);
@@ -367,6 +371,15 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 				});
 			})
 			.catch((err) => this.logger.error("Error in completion handler:", err));
+	}
+
+	getDriverInfo(
+		_ctx: ServiceCtx,
+		executorName: string,
+	): { defaultCommand: string } | null {
+		const driver = this.drivers.get(executorName);
+		if (!driver) return null;
+		return { defaultCommand: driver.defaultCommand };
 	}
 
 	private getDriver(executorName?: string): ICodingAgentDriver {

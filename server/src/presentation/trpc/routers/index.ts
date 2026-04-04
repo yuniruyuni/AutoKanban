@@ -1,4 +1,5 @@
 import { router } from "../init";
+import { agentSettingRouter } from "./agent-setting";
 import { approvalRouter } from "./approval";
 import { devServerRouter } from "./dev-server";
 import { executionRouter } from "./execution";
@@ -12,6 +13,7 @@ import { variantRouter } from "./variant";
 import { workspaceRouter } from "./workspace";
 
 export const appRouter = router({
+	agentSetting: agentSettingRouter,
 	task: taskRouter,
 	project: projectRouter,
 	execution: executionRouter,

@@ -16,6 +16,9 @@ import type { DriverSpawnOptions } from "./driver-spawn-options";
  */
 export interface ICodingAgentDriver {
 	readonly name: string;
+	readonly defaultCommand: string;
+	readonly displayName: string;
+	readonly installHint: string;
 
 	/** Spawn a new agent process. */
 	spawn(options: DriverSpawnOptions): DriverProcess;
@@ -74,6 +77,7 @@ export interface ICodingAgentDriver {
 		prompt: string;
 		schema: Record<string, unknown>;
 		model?: string;
+		command?: string;
 	}): {
 		stdout: ReadableStream<Uint8Array>;
 		stderr: ReadableStream<Uint8Array>;
@@ -89,5 +93,6 @@ export interface ICodingAgentDriver {
 		prompt: string;
 		schema: Record<string, unknown>;
 		model?: string;
+		command?: string;
 	}): Promise<T | null>;
 }

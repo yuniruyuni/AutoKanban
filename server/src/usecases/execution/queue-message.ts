@@ -1,3 +1,4 @@
+import { AgentSetting } from "../../models/agent-setting";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
@@ -32,18 +33,11 @@ export interface QueueMessageResult {
 }
 
 /**
- * Queue a message for a session.
- *
- * This is the unified message sending endpoint:
- * 1. Always adds the message to the queue
- * 2. Immediately checks if the process is idle
- * 3. If idle, consumes from queue and sends the message
- * 4. Returns the result with a flag indicating if the message was sent immediately
+ * Queue a message for a session and record it in the logs.
  */
 export const queueMessage = (input: QueueMessageInput) =>
 	usecase({
 		read: async (ctx) => {
-			// Verify session exists
 			const session = await ctx.repos.session.get(
 				Session.ById(input.sessionId),
 			);
@@ -53,7 +47,6 @@ export const queueMessage = (input: QueueMessageInput) =>
 				});
 			}
 
-			// Get the workspace
 			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(session.workspaceId),
 			);
@@ -63,14 +56,12 @@ export const queueMessage = (input: QueueMessageInput) =>
 				});
 			}
 
-			// Get the latest coding agent process for this session
 			const codingAgentProcessPage = await ctx.repos.codingAgentProcess.list(
 				CodingAgentProcess.BySessionId(input.sessionId),
 				{ limit: 1, sort: CodingAgentProcess.defaultSort },
 			);
 			const latestProcess = codingAgentProcessPage.items[0];
 
-			// Get the project for the workspace (to get worktree path)
 			const workspaceReposPage = await ctx.repos.workspaceRepo.list(
 				WorkspaceRepo.ByWorkspaceId(workspace.id),
 				{ limit: 1, sort: WorkspaceRepo.defaultSort },
@@ -80,12 +71,10 @@ export const queueMessage = (input: QueueMessageInput) =>
 				? await ctx.repos.project.get(Project.ById(workspaceRepo.projectId))
 				: null;
 
-			// Get resume info for continuing the Claude Code session
 			const resumeInfo = await ctx.repos.codingAgentTurn.findLatestResumeInfo(
 				input.sessionId,
 			);
 
-			// Look up variant entity to get permissionMode and model
 			const executor = input.executor ?? "claude-code";
 			const variantEntity = input.variant
 				? await ctx.repos.variant.get(
@@ -93,7 +82,11 @@ export const queueMessage = (input: QueueMessageInput) =>
 					)
 				: null;
 
-			// Pre-read logs for idle detection and interrupted tool detection (DB read)
+			// Look up agent command setting
+			const agentSettingEntity = await ctx.repos.agentSetting.get(
+				AgentSetting.ById(executor),
+			);
+
 			let isIdle = false;
 			let isRunning = false;
 			let interruptedTools: PendingToolUse[] = [];
@@ -125,6 +118,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 				project,
 				resumeInfo,
 				variantEntity,
+				agentSettingEntity,
 				isIdle,
 				isRunning,
 				interruptedTools,
@@ -140,14 +134,13 @@ export const queueMessage = (input: QueueMessageInput) =>
 				project,
 				resumeInfo,
 				variantEntity,
+				agentSettingEntity,
 				isIdle,
 				isRunning,
 				interruptedTools,
 			},
 		) => {
 			const workingDir = Workspace.resolveWorkingDir(workspace, project);
-
-			// Pre-generate CodingAgentProcess for potential new process start
 			const codingAgentProcess = CodingAgentProcess.create({
 				sessionId: session.id,
 			});
@@ -159,6 +152,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 				workingDir,
 				resumeInfo,
 				variantEntity,
+				agentSettingEntity,
 				codingAgentProcess,
 				isIdle,
 				isRunning,
@@ -174,6 +168,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 				workingDir,
 				resumeInfo,
 				variantEntity,
+				agentSettingEntity,
 				codingAgentProcess,
 				isIdle,
 				isRunning,
@@ -182,7 +177,6 @@ export const queueMessage = (input: QueueMessageInput) =>
 		) => {
 			const canSendImmediately = !isRunning || isIdle;
 
-			// Queue the message
 			const queuedMessage = ctx.repos.messageQueue.queue(
 				session.id,
 				input.prompt,
@@ -191,7 +185,6 @@ export const queueMessage = (input: QueueMessageInput) =>
 			);
 
 			if (!canSendImmediately) {
-				// Cannot send immediately - message stays in queue
 				return {
 					queuedMessage,
 					sentImmediately: false as const,
@@ -199,10 +192,29 @@ export const queueMessage = (input: QueueMessageInput) =>
 				};
 			}
 
-			// Consume the message from queue (we're about to send it)
 			ctx.repos.messageQueue.consume(session.id);
 
-			// Case 1: Running process is idle - send message to existing process
+			const userMsgJson = JSON.stringify({
+				type: "user",
+				message: {
+					role: "user",
+					content: [{ type: "text", text: input.prompt }],
+				},
+			});
+
+			const logTimestamp = ctx.now;
+			const logToMemory = (processId: string) => {
+				const store = ctx.repos.logStoreManager.get(processId);
+				if (store) {
+					store.append(undefined as never, {
+						timestamp: logTimestamp,
+						source: "stdin",
+						data: userMsgJson,
+					});
+				}
+			};
+
+			// Case 1: Send to existing process
 			if (isRunning && isIdle && latestProcess) {
 				const success = await ctx.repos.executor.sendMessage(
 					latestProcess.id,
@@ -210,19 +222,23 @@ export const queueMessage = (input: QueueMessageInput) =>
 				);
 
 				if (success) {
+					logToMemory(latestProcess.id);
 					return {
 						queuedMessage,
 						sentImmediately: true as const,
 						executionProcessId: latestProcess.id,
 						startedNewProcess: false as const,
+						userMsgJson,
+						logTimestamp,
 					};
 				}
-				// Process no longer exists in memory - fall through to start new process
 			}
 
-			// Case 2: No running process - start a new one
+			// Resolve command from agent settings (fetched in read step)
+			const command = agentSettingEntity?.command ?? undefined;
+
+			// Case 2: Start new process
 			if (!workingDir) {
-				// Put message back in queue if we can't start a process
 				ctx.repos.messageQueue.queue(
 					session.id,
 					queuedMessage.prompt,
@@ -244,6 +260,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 				prompt: queuedMessage.prompt,
 				permissionMode: variantEntity?.permissionMode,
 				model: variantEntity?.model ?? undefined,
+				command,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
 				interruptedTools:
@@ -255,7 +272,8 @@ export const queueMessage = (input: QueueMessageInput) =>
 						: undefined,
 			});
 
-			// Pre-create CodingAgentTurn model for DB persistence in finish step
+			logToMemory(codingAgentProcess.id);
+
 			const turn = CodingAgentTurn.create({
 				executionProcessId: codingAgentProcess.id,
 				prompt: queuedMessage.prompt,
@@ -268,16 +286,29 @@ export const queueMessage = (input: QueueMessageInput) =>
 				startedNewProcess: true as const,
 				codingAgentProcess,
 				turn,
+				userMsgJson,
+				logTimestamp,
 			};
 		},
 
 		finish: async (ctx, postResult) => {
-			// Persist CodingAgentProcess and CodingAgentTurn DB records for newly started processes
 			if (postResult.startedNewProcess) {
 				await ctx.repos.codingAgentProcess.upsert(
 					postResult.codingAgentProcess,
 				);
 				await ctx.repos.codingAgentTurn.upsert(postResult.turn);
+			}
+
+			if (
+				postResult.sentImmediately &&
+				postResult.executionProcessId &&
+				postResult.userMsgJson
+			) {
+				const timestamp = postResult.logTimestamp.toISOString();
+				await ctx.repos.codingAgentProcessLogs.appendLogs(
+					postResult.executionProcessId,
+					`[${timestamp}] [stdin] ${postResult.userMsgJson}\n`,
+				);
 			}
 
 			return {
@@ -316,7 +347,6 @@ export interface GetQueueStatusResult {
 export const getQueueStatus = (input: GetQueueStatusInput) =>
 	usecase({
 		read: async (ctx) => {
-			// Verify session exists
 			const session = await ctx.repos.session.get(
 				Session.ById(input.sessionId),
 			);
@@ -325,15 +355,12 @@ export const getQueueStatus = (input: GetQueueStatusInput) =>
 					sessionId: input.sessionId,
 				});
 			}
-
 			return { session };
 		},
-
 		post: (ctx, { session }) => {
 			const status = ctx.repos.messageQueue.getStatus(session.id);
 			return { status };
 		},
-
 		result: ({ status }): GetQueueStatusResult => ({
 			status,
 		}),
@@ -354,7 +381,6 @@ export interface CancelQueueResult {
 export const cancelQueue = (input: CancelQueueInput) =>
 	usecase({
 		read: async (ctx) => {
-			// Verify session exists
 			const session = await ctx.repos.session.get(
 				Session.ById(input.sessionId),
 			);
@@ -365,12 +391,10 @@ export const cancelQueue = (input: CancelQueueInput) =>
 			}
 			return { session };
 		},
-
 		post: (ctx, { session }) => {
 			const cancelled = ctx.repos.messageQueue.cancel(session.id);
 			return { cancelled };
 		},
-
 		result: ({ cancelled }): CancelQueueResult => ({
 			cancelled,
 		}),

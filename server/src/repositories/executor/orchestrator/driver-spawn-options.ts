@@ -1,4 +1,5 @@
 export interface DriverSpawnOptions {
+	command?: string;
 	workingDir: string;
 	model?: string;
 	permissionMode?: string;
