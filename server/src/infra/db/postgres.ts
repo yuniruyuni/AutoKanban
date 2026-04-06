@@ -28,6 +28,24 @@ function findFreePort(): Promise<number> {
 	});
 }
 
+function killPostgresByPidFile(dataDir: string): void {
+	const pidFile = join(dataDir, "postmaster.pid");
+	if (!existsSync(pidFile)) return;
+	try {
+		const pid = Number.parseInt(
+			readFileSync(pidFile, "utf-8").split("\n")[0],
+			10,
+		);
+		if (!Number.isNaN(pid)) {
+			// Use SIGQUIT for PostgreSQL "immediate shutdown" — faster than
+			// SIGTERM (smart shutdown) and synchronous enough for exit handlers.
+			process.kill(pid, "SIGQUIT");
+		}
+	} catch {
+		// Process already gone
+	}
+}
+
 export class EmbeddedPostgresManager {
 	private pg: EmbeddedPostgres | null = null;
 	private port = 0;
@@ -55,6 +73,7 @@ export class EmbeddedPostgresManager {
 		const existingPort = this.getRunningPort();
 		if (existingPort) {
 			this.port = existingPort;
+			this.registerExitHandler();
 			return;
 		}
 
@@ -95,13 +114,38 @@ export class EmbeddedPostgresManager {
 			);
 		}
 
+		this.registerExitHandler();
+
 		await this.pg.createDatabase(this.database).catch(() => {
 			// Database already exists — ignore
 		});
 	}
 
+	private exitHandlerRegistered = false;
+
+	private registerExitHandler(): void {
+		if (this.exitHandlerRegistered) return;
+		this.exitHandlerRegistered = true;
+		const dataDir = this.dataDir;
+		process.on("exit", () => {
+			killPostgresByPidFile(dataDir);
+		});
+	}
+
 	async stop(): Promise<void> {
-		await this.pg?.stop();
+		if (this.pg) {
+			await this.pg.stop();
+			return;
+		}
+		this.stopSync();
+	}
+
+	/**
+	 * Synchronously send SIGTERM to the PostgreSQL process via postmaster.pid.
+	 * Safe to call from process "exit" handlers where async is not allowed.
+	 */
+	stopSync(): void {
+		killPostgresByPidFile(this.dataDir);
 	}
 
 	get connectionString(): string {

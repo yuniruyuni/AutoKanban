@@ -61,22 +61,6 @@ function ensureReady(dataDir: string): Promise<PgDatabase> {
 	return initPromise;
 }
 
-// Stop PostgreSQL when the process exits so bun doesn't hang
-async function cleanup() {
-	const db = await initPromise;
-	if (db) {
-		await db.close();
-	}
-	if (pgManager) {
-		await pgManager.stop();
-		pgManager = null;
-	}
-	initPromise = null;
-}
-process.on("beforeExit", cleanup);
-process.on("SIGINT", cleanup);
-process.on("SIGTERM", cleanup);
-
 /**
  * Get a PgDatabase for tests. Starts embedded-postgres on first call.
  * Truncates all tables for isolation between tests.

@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"check:lint": "biome check .",
-		"check:test": "bun test",
+		"check:test": "bun test; EXIT=$?; ../server/scripts/stop-test-pg.sh; exit $EXIT",
 		"check:type": "tsc --noEmit",
 		"fix:lint": "biome check --write .",
 		"watch:lint": "onchange '**/*.ts' --initial -- bun run check:lint",

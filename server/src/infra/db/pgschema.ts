@@ -93,6 +93,19 @@ export async function ensurePgSchema(connectionParams: {
 				"--file",
 				join(schemaDir.path, "schema.sql"),
 				"--auto-approve",
+				// Use the same postgres instance for plan validation
+				// to avoid starting a second embedded postgres (which can
+				// fail on macOS due to limited SysV shared memory).
+				"--plan-host",
+				connectionParams.host,
+				"--plan-port",
+				connectionParams.port.toString(),
+				"--plan-db",
+				connectionParams.database,
+				"--plan-user",
+				connectionParams.user,
+				"--plan-password",
+				connectionParams.password,
 			],
 			{
 				env: {
