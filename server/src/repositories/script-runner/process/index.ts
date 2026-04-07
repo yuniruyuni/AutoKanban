@@ -31,12 +31,11 @@ export class ScriptRunnerRepository implements ScriptRunnerRepositoryDef {
 		const race = await Promise.race([process.exited, timeoutPromise]);
 
 		if (race === "timeout") {
-			process.kill("SIGTERM");
-			// Wait briefly for graceful shutdown
-			await Promise.race([
-				process.exited,
-				new Promise((r) => setTimeout(r, 5000)),
-			]);
+			// SIGKILL ensures the whole process tree is torn down. SIGTERM can
+			// leave orphaned children (e.g. `sleep` under `sh -c`) whose open
+			// stdout/stderr fds would block the readers below indefinitely.
+			process.kill("SIGKILL");
+			await process.exited;
 			return {
 				exitCode: 124,
 				stdout: await new Response(process.stdout).text(),
