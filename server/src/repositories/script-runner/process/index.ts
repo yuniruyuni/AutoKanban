@@ -31,15 +31,14 @@ export class ScriptRunnerRepository implements ScriptRunnerRepositoryDef {
 		const race = await Promise.race([process.exited, timeoutPromise]);
 
 		if (race === "timeout") {
-			// SIGKILL ensures the whole process tree is torn down. SIGTERM can
-			// leave orphaned children (e.g. `sleep` under `sh -c`) whose open
-			// stdout/stderr fds would block the readers below indefinitely.
+			// SIGKILL the shell wrapper. Orphaned children may keep the pipe
+			// write-ends open, so we do not attempt to drain stdout/stderr —
+			// partial output on timeout is unreliable anyway.
 			process.kill("SIGKILL");
-			await process.exited;
 			return {
 				exitCode: 124,
-				stdout: await new Response(process.stdout).text(),
-				stderr: await new Response(process.stderr).text(),
+				stdout: "",
+				stderr: "",
 			};
 		}
 
