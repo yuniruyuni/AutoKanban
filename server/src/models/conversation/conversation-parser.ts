@@ -21,6 +21,7 @@ import type {
 	ClaudeJsonMessage,
 	ClaudeUserMessage,
 } from "../claude-protocol";
+import type { LogSource } from "../log-store";
 import { computeIdleState } from "./idle-state";
 import {
 	computeDefaultPlanStatus,
@@ -64,7 +65,7 @@ export interface PendingToolUse {
  */
 interface ParsedLogLine {
 	timestamp: string;
-	source: "stdout" | "stderr";
+	source: LogSource;
 	data: string;
 }
 
@@ -76,7 +77,7 @@ const TIMESTAMP_PATTERN = /(?=\[\d{4}-\d{2}-\d{2}T[\d:.]+Z?\])/;
 
 /**
  * Log line regex pattern
- * Captures: timestamp, source (stdout/stderr), and data
+ * Captures: timestamp, source (stdout/stderr/stdin), and data
  */
 const LOG_LINE_PATTERN = /^\[([^\]]+)\]\s*\[([^\]]+)\]\s*(.*)$/s;
 
@@ -129,6 +130,7 @@ export function parseLogsToConversation(rawLogs: string): ParseResult {
 	const entries: ConversationEntry[] = [];
 	const pendingTools = new Map<string, ConversationEntry>(); // toolId -> entry
 	const completedPlanTools = new Map<string, ConversationEntry>(); // toolId -> entry (for plan status detection)
+	let lastPendingToolEntry: ConversationEntry | null = null;
 	let isIdle = false;
 
 	for (const line of lines) {
@@ -137,47 +139,72 @@ export function parseLogsToConversation(rawLogs: string): ParseResult {
 
 		const { timestamp, source, data } = parsed;
 
-		// stderr -> error entry
+		// stderr -> attach to running tool or create error entry
 		if (source === "stderr") {
 			const trimmedData = data.trim();
 			if (trimmedData) {
-				entries.push({
-					id: generateStableId("error", timestamp, trimmedData),
-					timestamp,
-					type: {
-						kind: "error",
-						message: trimmedData,
-					},
-				});
+				if (lastPendingToolEntry && lastPendingToolEntry.type.kind === "tool") {
+					const toolType = lastPendingToolEntry.type as ToolEntryType;
+					if (!toolType.result) {
+						toolType.result = { output: "", isError: false };
+					}
+					toolType.result.output = toolType.result.output
+						? `${toolType.result.output}\n${trimmedData}`
+						: trimmedData;
+				} else {
+					entries.push({
+						id: generateStableId("error", timestamp, trimmedData),
+						timestamp,
+						type: {
+							kind: "error",
+							message: trimmedData,
+						},
+					});
+				}
 			}
 			continue;
 		}
 
-		// stdout -> parse JSON
-		try {
-			const json = JSON.parse(data) as ClaudeJsonMessage;
+		// stdout or stdin -> parse JSON
+		if (source === "stdout" || source === "stdin") {
+			try {
+				const json = JSON.parse(data) as ClaudeJsonMessage;
 
-			// Track idle state based on message type
-			const controlSubtype =
-				json.type === "control_request"
-					? (json as ClaudeControlRequestMessage).request.subtype
-					: undefined;
-			const idleChange = computeIdleState(json.type, controlSubtype);
-			if (idleChange !== null) {
-				isIdle = idleChange;
-			}
+				// Track idle state based on message type (stdout only)
+				if (source === "stdout") {
+					const controlSubtype =
+						json.type === "control_request"
+							? (json as ClaudeControlRequestMessage).request.subtype
+							: undefined;
+					const idleChange = computeIdleState(json.type, controlSubtype);
+					if (idleChange !== null) {
+						isIdle = idleChange;
+					}
+				}
 
-			const result = processClaudeJson(
-				json,
-				timestamp,
-				pendingTools,
-				completedPlanTools,
-			);
-			if (result) {
-				entries.push(...result);
+				const result = processClaudeJson(
+					json,
+					timestamp,
+					pendingTools,
+					completedPlanTools,
+				);
+				if (result) {
+					entries.push(...result);
+				}
+
+				// Update lastPendingToolEntry based on current pendingTools state
+				if (pendingTools.size > 0) {
+					let last: ConversationEntry | null = null;
+					for (const [, entry] of pendingTools) {
+						last = entry;
+					}
+					lastPendingToolEntry = last;
+				} else {
+					lastPendingToolEntry = null;
+				}
+			} catch {
+				// Non-JSON output - skip silently
 			}
-		} catch {
-			// Non-JSON output - skip silently
 		}
 	}
 
@@ -563,7 +590,8 @@ export function findPendingToolUses(rawLogs: string): PendingToolUse[] {
 
 	for (const line of lines) {
 		const parsed = parseLogLine(line);
-		if (!parsed || parsed.source !== "stdout") continue;
+		if (!parsed || (parsed.source !== "stdout" && parsed.source !== "stdin"))
+			continue;
 
 		try {
 			const json = JSON.parse(parsed.data) as ClaudeJsonMessage;

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import type { LogSource } from "../log-store";
 import {
 	findInterruptedTaskTools,
 	findPendingToolUses,
@@ -10,7 +11,7 @@ import {
 // ============================================
 
 function makeLogLine(
-	source: "stdout" | "stderr",
+	source: LogSource,
 	data: string | object,
 	ts = "2025-01-15T10:00:00.000Z",
 ): string {
@@ -78,11 +79,118 @@ describe("parseLogsToConversation()", () => {
 		expect(result.entries[0].type.kind).toBe("user_message");
 	});
 
+	test("parses user message from stdin source", () => {
+		const log = makeLogLine("stdin", makeUserLog("I am typing into stdin"));
+		const result = parseLogsToConversation(log);
+		expect(result.entries).toHaveLength(1);
+		expect(result.entries[0].type.kind).toBe("user_message");
+		if (result.entries[0].type.kind === "user_message") {
+			expect(result.entries[0].type.text).toBe("I am typing into stdin");
+		}
+	});
+
 	test("parses stderr as error entry", () => {
 		const log = makeLogLine("stderr", "Something went wrong");
 		const result = parseLogsToConversation(log);
 		expect(result.entries).toHaveLength(1);
 		expect(result.entries[0].type.kind).toBe("error");
+	});
+
+	test("attaches stderr to running tool's result during tool execution", () => {
+		const toolUseLog = makeLogLine(
+			"stdout",
+			makeAssistantLog([
+				{
+					type: "tool_use",
+					id: "tool-1",
+					name: "Bash",
+					input: { command: "bun test" },
+				},
+			]),
+			"2025-01-15T10:00:00.000Z",
+		);
+		const stderrLog = makeLogLine(
+			"stderr",
+			"$ bun test\nrunning tests...",
+			"2025-01-15T10:00:01.000Z",
+		);
+
+		const result = parseLogsToConversation(toolUseLog + stderrLog);
+		const toolEntry = result.entries.find((e) => e.type.kind === "tool");
+		expect(toolEntry).toBeDefined();
+		if (toolEntry?.type.kind === "tool") {
+			expect(toolEntry.type.result).toBeDefined();
+			expect(toolEntry.type.result?.output).toBe(
+				"$ bun test\nrunning tests...",
+			);
+			expect(toolEntry.type.result?.isError).toBe(false);
+		}
+	});
+
+	test("does not create error entry for stderr during tool execution", () => {
+		const toolUseLog = makeLogLine(
+			"stdout",
+			makeAssistantLog([
+				{
+					type: "tool_use",
+					id: "tool-1",
+					name: "Bash",
+					input: { command: "bun test" },
+				},
+			]),
+			"2025-01-15T10:00:00.000Z",
+		);
+		const stderrLog = makeLogLine(
+			"stderr",
+			"some warning output",
+			"2025-01-15T10:00:01.000Z",
+		);
+
+		const result = parseLogsToConversation(toolUseLog + stderrLog);
+		const errorEntries = result.entries.filter((e) => e.type.kind === "error");
+		expect(errorEntries).toHaveLength(0);
+	});
+
+	test("tool_result overwrites accumulated stderr", () => {
+		const toolUseLog = makeLogLine(
+			"stdout",
+			makeAssistantLog([
+				{
+					type: "tool_use",
+					id: "tool-1",
+					name: "Bash",
+					input: { command: "bun test" },
+				},
+			]),
+			"2025-01-15T10:00:00.000Z",
+		);
+		const stderrLog = makeLogLine(
+			"stderr",
+			"intermediate stderr output",
+			"2025-01-15T10:00:01.000Z",
+		);
+		const toolResultLog = makeLogLine(
+			"stdout",
+			makeUserLog([
+				{
+					type: "tool_result",
+					tool_use_id: "tool-1",
+					content: "final output from tool_result",
+				},
+			]),
+			"2025-01-15T10:00:02.000Z",
+		);
+
+		const result = parseLogsToConversation(
+			toolUseLog + stderrLog + toolResultLog,
+		);
+		const toolEntry = result.entries.find((e) => e.type.kind === "tool");
+		expect(toolEntry).toBeDefined();
+		if (toolEntry?.type.kind === "tool") {
+			expect(toolEntry.type.result?.output).toBe(
+				"final output from tool_result",
+			);
+		}
 	});
 
 	test("skips empty stderr", () => {

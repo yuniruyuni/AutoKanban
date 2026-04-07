@@ -1,6 +1,7 @@
 import type { CodingAgentProcess } from "../../models/coding-agent-process";
 import type { DevServerProcess } from "../../models/dev-server-process";
 import type { DriverApprovalRequest } from "../../models/driver-approval-request";
+import type { LogSource } from "../../models/log-store";
 import type { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 
 export type ProcessType = "codingagent" | "devserver" | "workspacescript";
@@ -24,7 +25,7 @@ export interface ProcessIdleInfo {
 export interface LogDataInfo {
 	processId: string;
 	sessionId: string;
-	source: "stdout" | "stderr";
+	source: LogSource;
 	data: string;
 }
 

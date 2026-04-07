@@ -1,6 +1,8 @@
+export type LogSource = "stdout" | "stderr" | "stdin";
+
 export interface LogEntry {
 	timestamp: Date;
-	source: "stdout" | "stderr";
+	source: LogSource;
 	data: string;
 }
 
