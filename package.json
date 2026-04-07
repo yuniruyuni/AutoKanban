@@ -15,6 +15,7 @@
 		"check:test": "bun run --filter '*' check:test",
 		"check:type": "bun run --filter '*' check:type",
 		"check:arch": "bun run --filter '*' check:arch",
+		"check:e2e": "bun run --filter '@auto-kanban/e2e' check:test",
 		"fix:lint": "bun run --filter '*' fix:lint",
 		"watch": "bun run --parallel 'watch:*'",
 		"watch:arch": "bun run --filter '*' --parallel watch:arch",
