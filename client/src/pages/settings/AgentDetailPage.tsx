@@ -268,7 +268,9 @@ export function AgentDetailPage() {
 									type="text"
 									value={commandInput ?? savedCommand ?? ""}
 									onChange={(e) => setCommandInput(e.target.value)}
-									placeholder={defaultCommand ?? agentInfo?.defaultCommand ?? ""}
+									placeholder={
+										defaultCommand ?? agentInfo?.defaultCommand ?? ""
+									}
 									className="w-full px-3.5 py-3 border border-border rounded-md font-mono text-sm text-primary-foreground bg-primary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-0"
 								/>
 							</div>
