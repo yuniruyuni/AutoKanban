@@ -90,8 +90,12 @@ Repository内で `compToSQL()` によりSQL WHERE句に変換。
 Tagged template literal: `sql`, `sql.join()`, `sql.raw()`, `sql.list()`, `sql.empty()`
 定義: `server/src/repositories/sql.ts` — Repository内のみで使用。
 
-## docs参照
+## specre 参照
 
-- 詳細な実装例が必要な場合: `docs/05-backend.md` を参照
-- ワークスペース/エージェント実行フロー: `docs/07-core-features.md` を参照
-- チャットUI/承認システム: `docs/14-chat-interface.md` を参照
+- レイヤー構造と設計意図: `docs/specres/architecture/layered_architecture_separates_model_repository_usecase_presentation.md`
+- Usecase の 6 ステップ詳細: `docs/specres/architecture/usecase_is_executed_in_6_steps.md`
+- Specification Pattern: `docs/specres/architecture/specification_pattern_composes_db_filters.md`
+- Raw SQL 戦略: `docs/specres/architecture/raw_sql_is_used_instead_of_orm.md`
+- PostgreSQL (embedded-postgres): `docs/specres/architecture/postgresql_is_embedded_for_storage.md`
+- ワークスペース / エージェント実行: `docs/specres/workspace/` + `docs/specres/execution/` カード群
+- チャット UI / 承認システム: `docs/specres/approval/` + `docs/specres/permission/` + `docs/specres/ui-kanban/`

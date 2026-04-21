@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-20T17:07:13Z",
+  "generated_at": "2026-04-21T03:14:20Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -577,9 +577,96 @@
       "domain": "dev-server",
       "path": "docs/specres/dev-server/dev_server_process_is_a_worktree_scoped_server.md",
       "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXPTQ7DDCBCHZ90DK2E",
+      "name": "typescript_is_the_single_language_across_stack",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/typescript_is_the_single_language_across_stack.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXQDZ4R12Y7P3D9HGYA",
+      "name": "trpc_is_the_client_server_protocol",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/trpc_is_the_client_server_protocol.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXS4NJSCB1ZVD88TRP4",
+      "name": "raw_sql_is_used_instead_of_orm",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/raw_sql_is_used_instead_of_orm.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXTQ7W9GC1597XGM4VW",
+      "name": "layered_architecture_separates_model_repository_usecase_presentation",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/layered_architecture_separates_model_repository_usecase_presentation.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXV5WC3V732NY8CG046",
+      "name": "valtio_is_the_client_local_state",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/valtio_is_the_client_local_state.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXW033P9RPM4RVH9Q21",
+      "name": "usecase_is_executed_in_6_steps",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/usecase_is_executed_in_6_steps.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXX6SCHAHJ36VA70ZJE",
+      "name": "specification_pattern_composes_db_filters",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/specification_pattern_composes_db_filters.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXYJQ6KJBGSCWD8NMKG",
+      "name": "postgresql_is_embedded_for_storage",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/postgresql_is_embedded_for_storage.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPPZWHXZBF4J3P7QB0C67VCP",
+      "name": "workspace_config_is_auto_kanban_json",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/workspace_config_is_auto_kanban_json.md",
+      "last_verified": null
     }
   ],
   "source_refs": [
+    {
+      "specre_id": "01KPPZWHXV5WC3V732NY8CG046",
+      "file": "client/src/store/ui.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPPZWHXYJQ6KJBGSCWD8NMKG",
+      "file": "server/src/infra/db/pg-client.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPPZWHXS4NJSCB1ZVD88TRP4",
+      "file": "server/src/infra/db/sql.ts",
+      "line": 1
+    },
     {
       "specre_id": "01KPNX4PAJ6BSRVSN6GCP1ZSXG",
       "file": "server/src/models/agent-setting/index.ts",
@@ -598,6 +685,11 @@
     {
       "specre_id": "01KPNX4PAAXA6FR10PJY9C1DF1",
       "file": "server/src/models/coding-agent-turn/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPPZWHXX6SCHAHJ36VA70ZJE",
+      "file": "server/src/models/common/spec.ts",
       "line": 1
     },
     {
@@ -641,6 +733,11 @@
       "line": 1
     },
     {
+      "specre_id": "01KPPZWHXZBF4J3P7QB0C67VCP",
+      "file": "server/src/models/workspace-config/index.ts",
+      "line": 1
+    },
+    {
       "specre_id": "01KPNX4PA6R6NBTA73WJ9EFRRV",
       "file": "server/src/models/workspace/index.ts",
       "line": 1
@@ -656,8 +753,18 @@
       "line": 1
     },
     {
+      "specre_id": "01KPPZWHXQDZ4R12Y7P3D9HGYA",
+      "file": "server/src/presentation/trpc/init.ts",
+      "line": 1
+    },
+    {
       "specre_id": "01KPNSJ3R6ZE147WHQKD0ASB9A",
       "file": "server/src/usecases/approval/respond-to-approval.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPPZWHXTQ7W9GC1597XGM4VW",
+      "file": "server/src/usecases/context.ts",
       "line": 1
     },
     {
@@ -798,6 +905,11 @@
     {
       "specre_id": "01KPNSJ3QDCVVJXS9QES8YWY99",
       "file": "server/src/usecases/run-cleanup-before-removal.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPPZWHXW033P9RPM4RVH9Q21",
+      "file": "server/src/usecases/runner.ts",
       "line": 1
     },
     {

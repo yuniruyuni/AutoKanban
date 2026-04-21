@@ -1,3 +1,4 @@
+// @specre 01KPPZWHXX6SCHAHJ36VA70ZJE
 export interface CompMethods<T> {
 	and(other: Comp<T>): Comp<T>;
 	or(other: Comp<T>): Comp<T>;

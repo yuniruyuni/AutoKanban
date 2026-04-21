@@ -1,3 +1,4 @@
+// @specre 01KPPZWHXYJQ6KJBGSCWD8NMKG
 import pg, { type PoolClient, type QueryResultRow } from "pg";
 import type { Database } from "./database";
 import type { SQLFragment } from "./sql";

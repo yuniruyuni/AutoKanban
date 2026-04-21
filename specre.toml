@@ -5,11 +5,13 @@ specre_dir = "docs/specres"
 # Phase 2 で client/src/pages と client/src/components を足す。
 source_dirs = [
   "server/src/usecases",
-  "server/src/presentation/trpc/routers",
+  "server/src/presentation/trpc",
   "server/src/presentation/callback/routers",
   "server/src/presentation/sse/routers",
   "server/src/presentation/mcp",
   "server/src/models",
+  "server/src/infra/db",
+  "client/src/store",
 ]
 
 target_extensions = ["ts"]
@@ -27,9 +29,10 @@ language = "ja"
 
 [health_check]
 coverage = 0.15         # Phase 1 スタート値。Phase 3 以降で引き上げる。
-# 20 本許容: 1 ファイルに複数 usecase が入るケース（queue-message.ts の cancelQueue/resume、
-# update-task.ts 内の 4 つの遷移）と、UI/settings 系は意図的にマーカー非対象のため。
-orphans = 20
+# 25 本許容: 1 ファイルに複数 usecase が入るケース（queue-message.ts の cancelQueue/resume、
+# update-task.ts 内の 4 つの遷移）、UI/settings 系、および architecture/ の
+# "typescript is the single language" など特定ソースに紐付けられないメタカードのため。
+orphans = 25
 index_age_hours = 336   # 2 週間（月1 verify 運用前提）
 drifts = 10
 

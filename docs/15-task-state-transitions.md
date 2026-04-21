@@ -245,7 +245,8 @@ const transitions: Record<Status, Status[]> = {
 
 ## 関連ドキュメント
 
-- [07-core-features.md](./07-core-features.md) — ワークスペース管理、エージェント実行、プロセス管理
-- [03-database.md](./03-database.md) — tasksテーブルのスキーマ定義
-- [14-chat-interface.md](./14-chat-interface.md) — チャットインターフェース
+- specre `workspace/` + `execution/` + `callback/` カード群 — ワークスペース管理、エージェント実行、プロセス管理
+- `server/schema.sql` — tasks テーブルのスキーマ定義
+- specre `approval/` + `permission/` + `ui-kanban/` カード群 — チャットインターフェース
+- specre [`task_is_a_unit_of_work_delegated_to_ai`](./specres/task/task_is_a_unit_of_work_delegated_to_ai.md) — Task 概念と遷移の設計意図
 - デザインファイル: `docs/auto-kanban.pen` — 各状態の画面デザイン
