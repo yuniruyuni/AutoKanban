@@ -8,3 +8,4 @@
 | [log_data_is_persisted_and_broadcast](log_data_is_persisted_and_broadcast.md) | draft | - |
 | [summary_is_recorded_on_turn_end](summary_is_recorded_on_turn_end.md) | draft | - |
 | [approval_request_is_detected_and_persisted](approval_request_is_detected_and_persisted.md) | draft | - |
+| [orphan_processes_are_recovered_on_startup](orphan_processes_are_recovered_on_startup.md) | draft | - |

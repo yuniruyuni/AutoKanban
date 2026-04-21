@@ -1,3 +1,4 @@
+// @specre 01KPNTBSG4HEKJYAW9Q9SM25R8
 import { z } from "zod";
 import { getAutoKanbanCommand, readPortFile } from "../../../infra/port-file";
 import { getPreconfiguredServers } from "../../../models/agent-config-defaults";

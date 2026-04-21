@@ -1,3 +1,4 @@
+// @specre 01KPNSJ3RP8WYFHMFQ4QW3MGQZ
 /**
  * Parse ANSI escape codes in text and return an array of styled spans.
  * Supports standard 8-color and bright color codes (SGR 30-37, 40-47, 90-97, 100-107),

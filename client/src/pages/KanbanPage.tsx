@@ -1,3 +1,4 @@
+// @specre 01KPNTBSG7R884Y412A422AVPE
 import { type MouseEvent, useCallback, useEffect } from "react";
 import { useSnapshot } from "valtio";
 import { ConfirmDialog } from "@/components/atoms/ConfirmDialog";

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-21T05:25:45Z",
+  "generated_at": "2026-04-21T06:32:00Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -689,9 +689,47 @@
       "domain": "architecture",
       "path": "docs/specres/architecture/mcp_server_starts_from_mcp_flag.md",
       "last_verified": null
+    },
+    {
+      "id": "01KPQBJQ1973HTVE0R7YWN26M9",
+      "name": "orphan_processes_are_recovered_on_startup",
+      "status": "draft",
+      "domain": "callback",
+      "path": "docs/specres/callback/orphan_processes_are_recovered_on_startup.md",
+      "last_verified": null
     }
   ],
   "source_refs": [
+    {
+      "specre_id": "01KPQ6W85XM05B7HEHAH6AEJKG",
+      "file": "client/src/components/project/KanbanBoard.tsx",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSG89TW2BEMSHJBG0C96",
+      "file": "client/src/components/task/TaskDetailPanel.tsx",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RP8WYFHMFQ4QW3MGQZ",
+      "file": "client/src/lib/ansi-to-spans.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSG7R884Y412A422AVPE",
+      "file": "client/src/pages/KanbanPage.tsx",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSG96YB0X1BGW2WN6K9Q",
+      "file": "client/src/pages/TaskFullscreenPage.tsx",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSGA7XMKDE21TYM00R7Y",
+      "file": "client/src/pages/settings/AgentPage.tsx",
+      "line": 1
+    },
     {
       "specre_id": "01KPPZWHXV5WC3V732NY8CG046",
       "file": "client/src/store/ui.ts",
@@ -758,14 +796,24 @@
       "line": 1
     },
     {
+      "specre_id": "01KPNTBSGFXEWD4TKRHYDT856F",
+      "file": "server/src/models/task-template/index.ts",
+      "line": 1
+    },
+    {
       "specre_id": "01KPNX4PAFDPFGKQKSWRHPM2XV",
       "file": "server/src/models/task-template/index.ts",
+      "line": 2
+    },
+    {
+      "specre_id": "01KPNSHJWFA8DAP0KD9FW19H4Q",
+      "file": "server/src/models/task/index.ts",
       "line": 1
     },
     {
       "specre_id": "01KPNX4PA2SQRARM986Y6YDYBV",
       "file": "server/src/models/task/index.ts",
-      "line": 1
+      "line": 2
     },
     {
       "specre_id": "01KPNX4PAESWKFK5KJ0N1S7M9Q",
@@ -793,13 +841,48 @@
       "line": 2
     },
     {
-      "specre_id": "01KPNX4PAKZFYMM4A6PYTRH0S0",
+      "specre_id": "01KPNTBSG5R2DQ15S2NJ893VNE",
       "file": "server/src/presentation/mcp/stdio.ts",
       "line": 1
     },
     {
+      "specre_id": "01KPNX4PAKZFYMM4A6PYTRH0S0",
+      "file": "server/src/presentation/mcp/stdio.ts",
+      "line": 2
+    },
+    {
       "specre_id": "01KPPZWHXQDZ4R12Y7P3D9HGYA",
       "file": "server/src/presentation/trpc/init.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSG330HN6YBQ2AHJZDW4",
+      "file": "server/src/presentation/trpc/routers/agent-setting.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3R75HS06WT3HS01ZHAZ",
+      "file": "server/src/presentation/trpc/routers/approval.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSG4HEKJYAW9Q9SM25R8",
+      "file": "server/src/presentation/trpc/routers/mcp-config.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSG00XN1PFDMY201CH8A",
+      "file": "server/src/presentation/trpc/routers/task-template.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSG1VTZH0VGAVST7EX29",
+      "file": "server/src/presentation/trpc/routers/variant.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QAMNPEM9FR0G5MZ26F",
+      "file": "server/src/repositories/worktree/repository.ts",
       "line": 1
     },
     {
@@ -838,9 +921,14 @@
       "line": 1
     },
     {
-      "specre_id": "01KPNSJ3R2G1397A2C25KH9821",
+      "specre_id": "01KPNSHJWC2NZQA92FWDK177XH",
       "file": "server/src/usecases/execution/on-approval-request.ts",
       "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3R2G1397A2C25KH9821",
+      "file": "server/src/usecases/execution/on-approval-request.ts",
+      "line": 2
     },
     {
       "specre_id": "01KPNSJ3QZ71EP5YF9C7JYYGZA",
@@ -868,9 +956,19 @@
       "line": 1
     },
     {
-      "specre_id": "01KPNSJ3QH0F7EGESDD7AV06F6",
+      "specre_id": "01KPNSJ3QJN5VFJ21ZRYGPQPCF",
       "file": "server/src/usecases/execution/queue-message.ts",
       "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QP8DF0PYD2E00BG91E",
+      "file": "server/src/usecases/execution/queue-message.ts",
+      "line": 2
+    },
+    {
+      "specre_id": "01KPNSJ3QH0F7EGESDD7AV06F6",
+      "file": "server/src/usecases/execution/queue-message.ts",
+      "line": 3
     },
     {
       "specre_id": "01KPNSJ3R9YG1J1XFNB5CPZJR3",
@@ -883,9 +981,14 @@
       "line": 1
     },
     {
-      "specre_id": "01KPNSJ3QGNXV9410M3DFH802A",
+      "specre_id": "01KPNSJ3Q8W98006R0TNQGFAE8",
       "file": "server/src/usecases/execution/start-execution.ts",
       "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QGNXV9410M3DFH802A",
+      "file": "server/src/usecases/execution/start-execution.ts",
+      "line": 2
     },
     {
       "specre_id": "01KPNSJ3QMPBNZVNKVC97HZB52",
@@ -958,6 +1061,11 @@
       "line": 1
     },
     {
+      "specre_id": "01KPQBJQ1973HTVE0R7YWN26M9",
+      "file": "server/src/usecases/setup/recovery.ts",
+      "line": 1
+    },
+    {
       "specre_id": "01KPNSHJW0CXD6X1YSAFEWHKXP",
       "file": "server/src/usecases/task/create-task.ts",
       "line": 1
@@ -978,9 +1086,19 @@
       "line": 1
     },
     {
-      "specre_id": "01KPNSHJW5PQ99GFB1W694PSZ6",
+      "specre_id": "01KPNSHJWEV82CG0H0BXSJ9T8G",
       "file": "server/src/usecases/task/update-task.ts",
       "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJWAYW0CGTZ3AZ2HD42F",
+      "file": "server/src/usecases/task/update-task.ts",
+      "line": 2
+    },
+    {
+      "specre_id": "01KPNSHJW5PQ99GFB1W694PSZ6",
+      "file": "server/src/usecases/task/update-task.ts",
+      "line": 3
     },
     {
       "specre_id": "01KPNSJ3RX9X81V6FS6GB9G86R",

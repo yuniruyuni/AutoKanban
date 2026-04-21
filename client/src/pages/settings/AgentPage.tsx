@@ -1,3 +1,4 @@
+// @specre 01KPNTBSGA7XMKDE21TYM00R7Y
 import { Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SidebarLayout } from "@/components/project/SidebarLayout";

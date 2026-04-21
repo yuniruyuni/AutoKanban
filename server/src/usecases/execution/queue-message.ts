@@ -1,3 +1,5 @@
+// @specre 01KPNSJ3QJN5VFJ21ZRYGPQPCF
+// @specre 01KPNSJ3QP8DF0PYD2E00BG91E
 // @specre 01KPNSJ3QH0F7EGESDD7AV06F6
 import { AgentSetting } from "../../models/agent-setting";
 import { CodingAgentProcess } from "../../models/coding-agent-process";

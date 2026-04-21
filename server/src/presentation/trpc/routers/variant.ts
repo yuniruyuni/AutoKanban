@@ -1,3 +1,4 @@
+// @specre 01KPNTBSG1VTZH0VGAVST7EX29
 import { z } from "zod";
 import { createVariant } from "../../../usecases/variant/create-variant";
 import { deleteVariant } from "../../../usecases/variant/delete-variant";

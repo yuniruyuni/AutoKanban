@@ -11,14 +11,19 @@ source_dirs = [
   "server/src/presentation/mcp",
   "server/src/models",
   "server/src/infra/db",
+  "server/src/repositories/worktree",
   "client/src/store",
+  "client/src/pages",
+  "client/src/components",
+  "client/src/lib",
 ]
 
-target_extensions = ["ts"]
+target_extensions = ["ts", "tsx"]
 # Model の index.ts には概念カードのマーカーを貼るので除外しない。
 # tRPC / SSE / Callback の routers/index.ts は re-export のみで個別除外。
 exclude_patterns = [
   "**/*.test.ts",
+  "**/*.test.tsx",
   "**/*.stories.tsx",
   "**/dist/**",
   "**/routers/index.ts",
@@ -28,11 +33,12 @@ exclude_patterns = [
 language = "ja"
 
 [health_check]
-coverage = 0.15         # Phase 1 スタート値。Phase 3 以降で引き上げる。
-# 25 本許容: 1 ファイルに複数 usecase が入るケース（queue-message.ts の cancelQueue/resume、
-# update-task.ts 内の 4 つの遷移）、UI/settings 系、および architecture/ の
-# "typescript is the single language" など特定ソースに紐付けられないメタカードのため。
-orphans = 25
+# 実績は ~27%。margin を取り 0.20 に設定。引き上げは client/src/components/atoms や
+# client/src/lib の末端ユーティリティを除外するなどで対応する。
+coverage = 0.20
+# architecture/ のメタカード 4 本（typescript / local_security / tests / mcp_flag(は tag 済) 等）は
+# 特定ソースに紐付けられないため orphans に留まる。10 で十分。
+orphans = 10
 index_age_hours = 336   # 2 週間（月1 verify 運用前提）
 drifts = 10
 

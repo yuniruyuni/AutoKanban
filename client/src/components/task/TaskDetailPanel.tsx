@@ -1,3 +1,4 @@
+// @specre 01KPNTBSG89TW2BEMSHJBG0C96
 import { Maximize2, Play, Trash2, X } from "lucide-react";
 import { useCallback } from "react";
 import { useSnapshot } from "valtio";
