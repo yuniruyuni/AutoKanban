@@ -13,6 +13,7 @@ paths:
 - 確認ダイアログ: 破壊的操作時のみ表示
 - マージは fast-forward only
 
-## docs参照
+## specre 参照
 
-- 詳細: `docs/15-task-state-transitions.md` を参照
+- 遷移マトリクスと UI ダイアログ規約: `docs/specres/ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md`
+- Task 概念: `docs/specres/task/task_is_a_unit_of_work_delegated_to_ai.md`

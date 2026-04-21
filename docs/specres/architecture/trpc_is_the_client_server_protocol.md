@@ -22,10 +22,12 @@ REST / GraphQL は採用していない。Query / Mutation / Subscription の 3 
 
 型の流れ:
 
-```
-server/src/presentation/trpc/routers/task.ts  (router 定義)
-  └─ 型推論 ─▶  client/src/lib/trpc.ts  (AppRouter 型)
-               └─ trpc.task.list.useQuery({...})  (入出力型が自動付与)
+```mermaid
+flowchart LR
+    R["server/src/presentation/trpc/routers/task.ts<br/>(router 定義 + Zod input)"]
+    A["client/src/lib/trpc.ts<br/>(AppRouter 型)"]
+    C["trpc.task.list.useQuery({...})<br/>(入出力型が自動付与)"]
+    R -->|型推論| A --> C
 ```
 
 ## 設計意図

@@ -14,6 +14,6 @@ paths:
 - Repository テストでは `DbReadCtx`/`DbWriteCtx` を `createDbReadCtx(db)`/`createDbWriteCtx(db)` で生成して使用
 - E2Eテスト（実際のclaude-code CLIを起動するもの）は `describe.skip` にしておく（手動実行時のみ `.skip` を外す）
 
-## docs参照
+## specre 参照
 
-- 詳細: `docs/09-testing.md` を参照
+- 詳細な戦略と設計意図: `docs/specres/architecture/tests_are_layered_per_responsibility.md`

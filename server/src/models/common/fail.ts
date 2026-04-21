@@ -1,3 +1,4 @@
+// @specre 01KPQ6W85WC3WMHX9ZKHAACSJ6
 export const FAIL_BRAND = Symbol.for("auto-kanban.Fail");
 
 export interface Fail {

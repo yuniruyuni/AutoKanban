@@ -127,6 +127,10 @@ Usecase は `pre → read → process → write → post → result` の 6 ス�
 | Specification Pattern | [specification_pattern_composes_db_filters](./architecture/specification_pattern_composes_db_filters.md) |
 | embedded-postgres | [postgresql_is_embedded_for_storage](./architecture/postgresql_is_embedded_for_storage.md) |
 | auto-kanban.json | [workspace_config_is_auto_kanban_json](./architecture/workspace_config_is_auto_kanban_json.md) |
+| テスト戦略 | [tests_are_layered_per_responsibility](./architecture/tests_are_layered_per_responsibility.md) |
+| セキュリティモデル | [local_only_security_model](./architecture/local_only_security_model.md) |
+| エラーハンドリング (Fail 型) | [fail_type_replaces_exceptions](./architecture/fail_type_replaces_exceptions.md) |
+| MCP モード起動 | [mcp_server_starts_from_mcp_flag](./architecture/mcp_server_starts_from_mcp_flag.md) |
 
 ---
 

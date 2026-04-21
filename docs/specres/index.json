@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-21T03:14:20Z",
+  "generated_at": "2026-04-21T05:25:45Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -649,6 +649,46 @@
       "domain": "architecture",
       "path": "docs/specres/architecture/workspace_config_is_auto_kanban_json.md",
       "last_verified": null
+    },
+    {
+      "id": "01KPQ6W85ST432T45FW553KDDE",
+      "name": "tests_are_layered_per_responsibility",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/tests_are_layered_per_responsibility.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPQ6W85T6VTJEQWKM3BNVPMC",
+      "name": "local_only_security_model",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/local_only_security_model.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPQ6W85WC3WMHX9ZKHAACSJ6",
+      "name": "fail_type_replaces_exceptions",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/fail_type_replaces_exceptions.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPQ6W85XM05B7HEHAH6AEJKG",
+      "name": "task_kanban_dnd_transitions_trigger_side_effects",
+      "status": "draft",
+      "domain": "ui-kanban",
+      "path": "docs/specres/ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPQ6W85XYZ1YWFZMV5SAS7G2",
+      "name": "mcp_server_starts_from_mcp_flag",
+      "status": "draft",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/mcp_server_starts_from_mcp_flag.md",
+      "last_verified": null
     }
   ],
   "source_refs": [
@@ -685,6 +725,11 @@
     {
       "specre_id": "01KPNX4PAAXA6FR10PJY9C1DF1",
       "file": "server/src/models/coding-agent-turn/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPQ6W85WC3WMHX9ZKHAACSJ6",
+      "file": "server/src/models/common/fail.ts",
       "line": 1
     },
     {

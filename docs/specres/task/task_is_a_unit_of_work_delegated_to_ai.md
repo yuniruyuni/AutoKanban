@@ -9,7 +9,7 @@ status: "draft"
 - `server/src/models/task/index.ts`
 - `server/schema/tables/tasks.sql`
 - `server/src/repositories/task/`
-- `docs/15-task-state-transitions.md`
+- `docs/specres/ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md` (遷移マトリクス)
 
 ## 機能概要
 

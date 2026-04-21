@@ -11,3 +11,7 @@
 | [specification_pattern_composes_db_filters](specification_pattern_composes_db_filters.md) | draft | - |
 | [postgresql_is_embedded_for_storage](postgresql_is_embedded_for_storage.md) | draft | - |
 | [workspace_config_is_auto_kanban_json](workspace_config_is_auto_kanban_json.md) | draft | - |
+| [tests_are_layered_per_responsibility](tests_are_layered_per_responsibility.md) | draft | - |
+| [local_only_security_model](local_only_security_model.md) | draft | - |
+| [fail_type_replaces_exceptions](fail_type_replaces_exceptions.md) | draft | - |
+| [mcp_server_starts_from_mcp_flag](mcp_server_starts_from_mcp_flag.md) | draft | - |

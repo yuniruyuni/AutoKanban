@@ -25,7 +25,7 @@ status: "draft"
 (3) クライアント側で agent 起動 / stop のトリガー（UI 層の責務）。
 このうち (1)(2) がこのユースケースの範囲。(3) は UI の `task_transitions_to_inprogress_and_starts_agent` を参照。
 
-詳細な遷移ルールは [`docs/15-task-state-transitions.md`](../../15-task-state-transitions.md) に集約。
+詳細な遷移ルールは [`task_kanban_dnd_transitions_trigger_side_effects`](../ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md) に集約。
 
 ## 主要メンバー
 

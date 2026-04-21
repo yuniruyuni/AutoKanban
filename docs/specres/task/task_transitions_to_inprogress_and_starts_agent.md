@@ -11,7 +11,7 @@ status: "draft"
 - `server/src/usecases/execution/start-execution.ts`
 - `client/src/components/project/KanbanCard.tsx`
 - `client/src/components/chat/StartAgentDialog.tsx`
-- `docs/15-task-state-transitions.md`
+- `docs/specres/ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md` (遷移マトリクス)
 
 ## 機能概要
 

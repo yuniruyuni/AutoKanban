@@ -16,16 +16,16 @@ status: "draft"
 
 サーバー側は **4 層のレイヤードアーキテクチャ**で分割される:
 
-```
-┌─────────────────────────────────────┐
-│  Presentation Layer                 │  受動的 — 外部からのリクエスト / callback 受信
-├─────────────────────────────────────┤
-│  Usecase Layer                      │  ビジネスロジック。1 usecase = 1 トランザクション
-├─────────────────────────────────────┤
-│  Repository Layer                   │  能動的 — DB / Git / Executor / MCP への I/O
-├─────────────────────────────────────┤
-│  Model Layer                        │  ドメイン型 + Specification。全層で共有
-└─────────────────────────────────────┘
+```mermaid
+flowchart TB
+    P["<b>Presentation Layer</b><br/>(受動的) 外部からのリクエスト / callback 受信"]
+    U["<b>Usecase Layer</b><br/>ビジネスロジック / 1 usecase = 1 transaction"]
+    R["<b>Repository Layer</b><br/>(能動的) DB / Git / Executor / MCP への I/O"]
+    M["<b>Model Layer</b><br/>ドメイン型 + Specification / 全層で共有"]
+    P --> U --> R
+    P -.Model 型のみ.-> M
+    U -.Model 型のみ.-> M
+    R -.Model 型のみ.-> M
 ```
 
 **層間データは Model 型のみで流し、独自 DTO は禁止**。これが認知負荷を最小化する最大の規約。
