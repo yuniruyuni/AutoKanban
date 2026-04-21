@@ -1,4 +1,3 @@
-// @specre 01KPQ6W85XYZ1YWFZMV5SAS7G2
 export type { AppRouter } from "./presentation";
 
 async function main() {
