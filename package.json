@@ -15,7 +15,6 @@
 		"check:test": "bun run --filter '*' check:test",
 		"check:type": "bun run --filter '*' check:type",
 		"check:arch": "bun run --filter '*' check:arch",
-		"check:e2e": "bun run --filter '@auto-kanban/e2e' check:test",
 		"check:specre": "if command -v specre >/dev/null 2>&1; then specre health-check --json; else echo '(specre CLI not installed; install with `cargo install specre` to enable spec drift detection)'; fi",
 		"fix:lint": "bun run --filter '*' fix:lint",
 		"specre:index": "specre index",

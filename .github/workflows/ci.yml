@@ -27,6 +27,3 @@ jobs:
 
       - name: Architecture check
         run: bun run check:arch
-
-      - name: E2E tests
-        run: bun run check:e2e
