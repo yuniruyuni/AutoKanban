@@ -1,3 +1,4 @@
+// @specre 01KPNSJ3RNADFZ6C4H1H2VF44S
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
 import { parseLogsToConversation } from "../../models/conversation/conversation-parser";

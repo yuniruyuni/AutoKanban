@@ -1,3 +1,4 @@
+// @specre 01KPNSJ3QDCVVJXS9QES8YWY99
 import type { ILogger } from "../infra/logger/types";
 import type { Repos } from "../repositories";
 import type { ServiceRepos } from "../repositories/common";

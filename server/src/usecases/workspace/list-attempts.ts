@@ -1,3 +1,4 @@
+// @specre 01KPNSJ3QEEC6KYB370PM3CRT8
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";

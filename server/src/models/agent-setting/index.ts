@@ -1,3 +1,4 @@
+// @specre 01KPNX4PAJ6BSRVSN6GCP1ZSXG
 import { type Comp, defineSpecs, type SpecsOf } from "../common";
 
 // ============================================

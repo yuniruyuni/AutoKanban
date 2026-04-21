@@ -1,0 +1,37 @@
+specre_dir = "docs/specres"
+
+# AutoKanban は AI コーディングエージェントとカンバンを束ねるローカル専用アプリで、
+# 仕様の主戦場はサーバー側 Usecase と tRPC/Callback ルーター。
+# Phase 2 で client/src/pages と client/src/components を足す。
+source_dirs = [
+  "server/src/usecases",
+  "server/src/presentation/trpc/routers",
+  "server/src/presentation/callback/routers",
+  "server/src/presentation/sse/routers",
+  "server/src/presentation/mcp",
+  "server/src/models",
+]
+
+target_extensions = ["ts"]
+# Model の index.ts には概念カードのマーカーを貼るので除外しない。
+# tRPC / SSE / Callback の routers/index.ts は re-export のみで個別除外。
+exclude_patterns = [
+  "**/*.test.ts",
+  "**/*.stories.tsx",
+  "**/dist/**",
+  "**/routers/index.ts",
+]
+
+# カードのセクション見出しは日本語テンプレート（関連ファイル / 機能概要 / シナリオ ...）
+language = "ja"
+
+[health_check]
+coverage = 0.15         # Phase 1 スタート値。Phase 3 以降で引き上げる。
+# 20 本許容: 1 ファイルに複数 usecase が入るケース（queue-message.ts の cancelQueue/resume、
+# update-task.ts 内の 4 つの遷移）と、UI/settings 系は意図的にマーカー非対象のため。
+orphans = 20
+index_age_hours = 336   # 2 週間（月1 verify 運用前提）
+drifts = 10
+
+[drift]
+grace_days = 7

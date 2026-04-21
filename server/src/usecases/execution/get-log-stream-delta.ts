@@ -1,3 +1,4 @@
+// @specre 01KPNSJ3RA08KSRZFYJ61HG2AB
 import type { SSEDeltaResult } from "../../models/sse";
 import { usecase } from "../runner";
 

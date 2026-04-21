@@ -1,0 +1,844 @@
+{
+  "version": 1,
+  "generated_at": "2026-04-20T17:07:13Z",
+  "specres": [
+    {
+      "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
+      "name": "project_is_created_with_repo_path",
+      "status": "draft",
+      "domain": "project",
+      "path": "docs/specres/project/project_is_created_with_repo_path.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJVQX8V0AQX7PYA0HPWG",
+      "name": "projects_are_listed",
+      "status": "draft",
+      "domain": "project",
+      "path": "docs/specres/project/projects_are_listed.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJVSHA5H1SKKQ154SW5Z",
+      "name": "project_is_fetched_by_id",
+      "status": "draft",
+      "domain": "project",
+      "path": "docs/specres/project/project_is_fetched_by_id.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJVW2C6CC3W5CGH8BT3X",
+      "name": "project_is_updated",
+      "status": "draft",
+      "domain": "project",
+      "path": "docs/specres/project/project_is_updated.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJVXRAQGH9C3HBFX3X2F",
+      "name": "project_is_deleted_with_optional_worktrees",
+      "status": "draft",
+      "domain": "project",
+      "path": "docs/specres/project/project_is_deleted_with_optional_worktrees.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJW0CXD6X1YSAFEWHKXP",
+      "name": "task_is_created_in_todo",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_is_created_in_todo.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJW2EPGT866WRE7H4MM4",
+      "name": "tasks_are_listed_for_project",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/tasks_are_listed_for_project.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJW3JZ7Y5SF7TBX5HTYC",
+      "name": "task_detail_is_fetched",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_detail_is_fetched.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJW5PQ99GFB1W694PSZ6",
+      "name": "task_is_updated",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_is_updated.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJW89KPCWYXKE4E261H9",
+      "name": "task_is_deleted_with_optional_worktree_cleanup",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_is_deleted_with_optional_worktree_cleanup.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJWAYW0CGTZ3AZ2HD42F",
+      "name": "task_transitions_to_inprogress_and_starts_agent",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_transitions_to_inprogress_and_starts_agent.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJWC2NZQA92FWDK177XH",
+      "name": "task_transitions_to_inreview_on_approval_request",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_transitions_to_inreview_on_approval_request.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJWEV82CG0H0BXSJ9T8G",
+      "name": "task_transitions_to_todo_resets_chat",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_transitions_to_todo_resets_chat.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSHJWFA8DAP0KD9FW19H4Q",
+      "name": "task_transitions_to_done_or_cancelled",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_transitions_to_done_or_cancelled.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3Q8W98006R0TNQGFAE8",
+      "name": "workspace_is_created_for_task_attempt",
+      "status": "draft",
+      "domain": "workspace",
+      "path": "docs/specres/workspace/workspace_is_created_for_task_attempt.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QAMNPEM9FR0G5MZ26F",
+      "name": "worktree_is_created_with_branch",
+      "status": "draft",
+      "domain": "workspace",
+      "path": "docs/specres/workspace/worktree_is_created_with_branch.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QC5W9HVHPA3PGSMZRF",
+      "name": "workspace_prepare_script_is_run",
+      "status": "draft",
+      "domain": "workspace",
+      "path": "docs/specres/workspace/workspace_prepare_script_is_run.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QDCVVJXS9QES8YWY99",
+      "name": "workspace_cleanup_script_is_run_before_removal",
+      "status": "draft",
+      "domain": "workspace",
+      "path": "docs/specres/workspace/workspace_cleanup_script_is_run_before_removal.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QEEC6KYB370PM3CRT8",
+      "name": "workspace_attempts_are_listed_and_archived",
+      "status": "draft",
+      "domain": "workspace",
+      "path": "docs/specres/workspace/workspace_attempts_are_listed_and_archived.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QGNXV9410M3DFH802A",
+      "name": "execution_is_started_for_task",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/execution_is_started_for_task.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QH0F7EGESDD7AV06F6",
+      "name": "follow_up_message_is_sent_or_queued",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/follow_up_message_is_sent_or_queued.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QJN5VFJ21ZRYGPQPCF",
+      "name": "queued_message_is_cancelled",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/queued_message_is_cancelled.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QMPBNZVNKVC97HZB52",
+      "name": "execution_is_stopped_by_user",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/execution_is_stopped_by_user.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QP8DF0PYD2E00BG91E",
+      "name": "execution_resumes_from_killed_session",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/execution_resumes_from_killed_session.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QQHP6GHD2JHE1RK26C",
+      "name": "conversation_is_forked_at_message",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/conversation_is_forked_at_message.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QRGJ28TH90269FY74A",
+      "name": "follow_up_draft_is_saved_and_restored",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/follow_up_draft_is_saved_and_restored.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QT901FC4PHSRS0SPKV",
+      "name": "execution_or_latest_is_fetched",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/execution_or_latest_is_fetched.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QVDJYEG9E5GBS6DDN2",
+      "name": "process_completion_updates_task_status",
+      "status": "draft",
+      "domain": "callback",
+      "path": "docs/specres/callback/process_completion_updates_task_status.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QW3FQPJ7535FCQAXY7",
+      "name": "process_idle_triggers_next_queued_message",
+      "status": "draft",
+      "domain": "callback",
+      "path": "docs/specres/callback/process_idle_triggers_next_queued_message.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QYE2ZFFYFFQ19JD3AH",
+      "name": "session_info_is_recorded_for_resume",
+      "status": "draft",
+      "domain": "callback",
+      "path": "docs/specres/callback/session_info_is_recorded_for_resume.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3QZ71EP5YF9C7JYYGZA",
+      "name": "log_data_is_persisted_and_broadcast",
+      "status": "draft",
+      "domain": "callback",
+      "path": "docs/specres/callback/log_data_is_persisted_and_broadcast.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3R0HQW7R1ZZQDS33ZNA",
+      "name": "summary_is_recorded_on_turn_end",
+      "status": "draft",
+      "domain": "callback",
+      "path": "docs/specres/callback/summary_is_recorded_on_turn_end.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3R2G1397A2C25KH9821",
+      "name": "approval_request_is_detected_and_persisted",
+      "status": "draft",
+      "domain": "callback",
+      "path": "docs/specres/callback/approval_request_is_detected_and_persisted.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3R6ZE147WHQKD0ASB9A",
+      "name": "approval_is_responded_from_approval_card",
+      "status": "draft",
+      "domain": "approval",
+      "path": "docs/specres/approval/approval_is_responded_from_approval_card.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3R75HS06WT3HS01ZHAZ",
+      "name": "pending_approvals_are_fetched_for_execution",
+      "status": "draft",
+      "domain": "approval",
+      "path": "docs/specres/approval/pending_approvals_are_fetched_for_execution.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3R9YG1J1XFNB5CPZJR3",
+      "name": "permission_request_is_approved_or_denied",
+      "status": "draft",
+      "domain": "permission",
+      "path": "docs/specres/permission/permission_request_is_approved_or_denied.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RA08KSRZFYJ61HG2AB",
+      "name": "log_stream_is_subscribed_via_sse",
+      "status": "draft",
+      "domain": "log-stream",
+      "path": "docs/specres/log-stream/log_stream_is_subscribed_via_sse.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RNADFZ6C4H1H2VF44S",
+      "name": "structured_log_stream_yields_parsed_messages",
+      "status": "draft",
+      "domain": "log-stream",
+      "path": "docs/specres/log-stream/structured_log_stream_yields_parsed_messages.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RP8WYFHMFQ4QW3MGQZ",
+      "name": "ansi_escapes_are_parsed_for_display",
+      "status": "draft",
+      "domain": "log-stream",
+      "path": "docs/specres/log-stream/ansi_escapes_are_parsed_for_display.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RR53PPC1KAWR4HB2PP",
+      "name": "branches_and_diffs_are_fetched",
+      "status": "draft",
+      "domain": "git",
+      "path": "docs/specres/git/branches_and_diffs_are_fetched.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RRYH45YHGMS83W76H0",
+      "name": "dev_server_lifecycle_is_managed",
+      "status": "draft",
+      "domain": "dev-server",
+      "path": "docs/specres/dev-server/dev_server_lifecycle_is_managed.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RSQGHS2F76VKN16QZM",
+      "name": "branch_is_rebased_merged_or_pushed",
+      "status": "draft",
+      "domain": "git",
+      "path": "docs/specres/git/branch_is_rebased_merged_or_pushed.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RVKCWCSPCAJTEKT2QZ",
+      "name": "pull_request_is_created_and_finalized",
+      "status": "draft",
+      "domain": "git",
+      "path": "docs/specres/git/pull_request_is_created_and_finalized.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RW522THM9SJXK6HYN3",
+      "name": "pr_description_is_generated_and_streamed",
+      "status": "draft",
+      "domain": "git",
+      "path": "docs/specres/git/pr_description_is_generated_and_streamed.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNSJ3RX9X81V6FS6GB9G86R",
+      "name": "tool_is_managed_and_executed",
+      "status": "draft",
+      "domain": "tool",
+      "path": "docs/specres/tool/tool_is_managed_and_executed.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSG00XN1PFDMY201CH8A",
+      "name": "templates_are_listed_and_created",
+      "status": "draft",
+      "domain": "task-template",
+      "path": "docs/specres/task-template/templates_are_listed_and_created.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSG1VTZH0VGAVST7EX29",
+      "name": "variants_are_managed_per_executor",
+      "status": "draft",
+      "domain": "variant",
+      "path": "docs/specres/variant/variants_are_managed_per_executor.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSG330HN6YBQ2AHJZDW4",
+      "name": "agent_command_is_configured_and_checked",
+      "status": "draft",
+      "domain": "agent-setting",
+      "path": "docs/specres/agent-setting/agent_command_is_configured_and_checked.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSG4HEKJYAW9Q9SM25R8",
+      "name": "mcp_servers_are_configured_per_agent",
+      "status": "draft",
+      "domain": "mcp-config",
+      "path": "docs/specres/mcp-config/mcp_servers_are_configured_per_agent.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSG5R2DQ15S2NJ893VNE",
+      "name": "auto_kanban_is_injected_as_mcp_server",
+      "status": "draft",
+      "domain": "mcp-config",
+      "path": "docs/specres/mcp-config/auto_kanban_is_injected_as_mcp_server.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSG7R884Y412A422AVPE",
+      "name": "kanban_board_renders_tasks_by_status",
+      "status": "draft",
+      "domain": "ui-kanban",
+      "path": "docs/specres/ui-kanban/kanban_board_renders_tasks_by_status.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSG89TW2BEMSHJBG0C96",
+      "name": "task_detail_panel_shows_conversation_and_diff",
+      "status": "draft",
+      "domain": "ui-kanban",
+      "path": "docs/specres/ui-kanban/task_detail_panel_shows_conversation_and_diff.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSG96YB0X1BGW2WN6K9Q",
+      "name": "task_fullscreen_view_shows_execution_and_workspace",
+      "status": "draft",
+      "domain": "ui-kanban",
+      "path": "docs/specres/ui-kanban/task_fullscreen_view_shows_execution_and_workspace.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSGA7XMKDE21TYM00R7Y",
+      "name": "settings_pages_provide_crud_for_configuration",
+      "status": "draft",
+      "domain": "ui-settings",
+      "path": "docs/specres/ui-settings/settings_pages_provide_crud_for_configuration.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSGCW3S2Y5XMN9CK1MDG",
+      "name": "directory_is_browsed_for_repo_path_selection",
+      "status": "draft",
+      "domain": "project",
+      "path": "docs/specres/project/directory_is_browsed_for_repo_path_selection.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSGDD1B05FV65HVPERRT",
+      "name": "git_repo_is_initialized_for_new_directory",
+      "status": "draft",
+      "domain": "project",
+      "path": "docs/specres/project/git_repo_is_initialized_for_new_directory.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNTBSGFXEWD4TKRHYDT856F",
+      "name": "template_condition_filters_applicability",
+      "status": "draft",
+      "domain": "task-template",
+      "path": "docs/specres/task-template/template_condition_filters_applicability.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PA1X0NY458AYEPRTDPM",
+      "name": "project_is_a_git_repository_under_management",
+      "status": "draft",
+      "domain": "project",
+      "path": "docs/specres/project/project_is_a_git_repository_under_management.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PA2SQRARM986Y6YDYBV",
+      "name": "task_is_a_unit_of_work_delegated_to_ai",
+      "status": "draft",
+      "domain": "task",
+      "path": "docs/specres/task/task_is_a_unit_of_work_delegated_to_ai.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PA4SS8SKP7XWJG3KGVF",
+      "name": "workspace_is_the_isolated_environment_of_an_attempt",
+      "status": "draft",
+      "domain": "workspace",
+      "path": "docs/specres/workspace/workspace_is_the_isolated_environment_of_an_attempt.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PA6R6NBTA73WJ9EFRRV",
+      "name": "attempt_is_the_retry_unit_preserving_history",
+      "status": "draft",
+      "domain": "workspace",
+      "path": "docs/specres/workspace/attempt_is_the_retry_unit_preserving_history.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PA7ZMF3SQC17QXMF7PC",
+      "name": "session_is_the_bundle_of_agent_runs",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/session_is_the_bundle_of_agent_runs.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PA8CV9HVRA6SADJ0WSZ",
+      "name": "coding_agent_process_is_one_executor_invocation",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/coding_agent_process_is_one_executor_invocation.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PAAXA6FR10PJY9C1DF1",
+      "name": "coding_agent_turn_is_the_resume_identity",
+      "status": "draft",
+      "domain": "execution",
+      "path": "docs/specres/execution/coding_agent_turn_is_the_resume_identity.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PABBTT3HZ1GWK4VRR7M",
+      "name": "approval_is_the_persistent_tool_confirmation",
+      "status": "draft",
+      "domain": "approval",
+      "path": "docs/specres/approval/approval_is_the_persistent_tool_confirmation.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PACA9S29SQDJ441E6V7",
+      "name": "permission_is_the_ephemeral_control_request",
+      "status": "draft",
+      "domain": "permission",
+      "path": "docs/specres/permission/permission_is_the_ephemeral_control_request.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PAESWKFK5KJ0N1S7M9Q",
+      "name": "tool_is_a_user_defined_shell_launcher",
+      "status": "draft",
+      "domain": "tool",
+      "path": "docs/specres/tool/tool_is_a_user_defined_shell_launcher.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PAFDPFGKQKSWRHPM2XV",
+      "name": "task_template_is_an_initial_task_preset",
+      "status": "draft",
+      "domain": "task-template",
+      "path": "docs/specres/task-template/task_template_is_an_initial_task_preset.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PAGF5SEPD75ZYWRMEDH",
+      "name": "variant_is_an_executor_launch_preset",
+      "status": "draft",
+      "domain": "variant",
+      "path": "docs/specres/variant/variant_is_an_executor_launch_preset.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PAJ6BSRVSN6GCP1ZSXG",
+      "name": "agent_setting_is_the_executor_command_configuration",
+      "status": "draft",
+      "domain": "agent-setting",
+      "path": "docs/specres/agent-setting/agent_setting_is_the_executor_command_configuration.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PAKZFYMM4A6PYTRH0S0",
+      "name": "mcp_injection_is_the_agent_context_bridge",
+      "status": "draft",
+      "domain": "mcp-config",
+      "path": "docs/specres/mcp-config/mcp_injection_is_the_agent_context_bridge.md",
+      "last_verified": null
+    },
+    {
+      "id": "01KPNX4PAMNEDDBVS0883HYRCG",
+      "name": "dev_server_process_is_a_worktree_scoped_server",
+      "status": "draft",
+      "domain": "dev-server",
+      "path": "docs/specres/dev-server/dev_server_process_is_a_worktree_scoped_server.md",
+      "last_verified": null
+    }
+  ],
+  "source_refs": [
+    {
+      "specre_id": "01KPNX4PAJ6BSRVSN6GCP1ZSXG",
+      "file": "server/src/models/agent-setting/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PABBTT3HZ1GWK4VRR7M",
+      "file": "server/src/models/approval/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PA8CV9HVRA6SADJ0WSZ",
+      "file": "server/src/models/coding-agent-process/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PAAXA6FR10PJY9C1DF1",
+      "file": "server/src/models/coding-agent-turn/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PAMNEDDBVS0883HYRCG",
+      "file": "server/src/models/dev-server-process/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PACA9S29SQDJ441E6V7",
+      "file": "server/src/models/permission/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PA1X0NY458AYEPRTDPM",
+      "file": "server/src/models/project/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PA7ZMF3SQC17QXMF7PC",
+      "file": "server/src/models/session/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PAFDPFGKQKSWRHPM2XV",
+      "file": "server/src/models/task-template/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PA2SQRARM986Y6YDYBV",
+      "file": "server/src/models/task/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PAESWKFK5KJ0N1S7M9Q",
+      "file": "server/src/models/tool/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PAGF5SEPD75ZYWRMEDH",
+      "file": "server/src/models/variant/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PA6R6NBTA73WJ9EFRRV",
+      "file": "server/src/models/workspace/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNX4PA4SS8SKP7XWJG3KGVF",
+      "file": "server/src/models/workspace/index.ts",
+      "line": 2
+    },
+    {
+      "specre_id": "01KPNX4PAKZFYMM4A6PYTRH0S0",
+      "file": "server/src/presentation/mcp/stdio.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3R6ZE147WHQKD0ASB9A",
+      "file": "server/src/usecases/approval/respond-to-approval.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RRYH45YHGMS83W76H0",
+      "file": "server/src/usecases/dev-server/start-dev-server.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QQHP6GHD2JHE1RK26C",
+      "file": "server/src/usecases/execution/fork-conversation.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QT901FC4PHSRS0SPKV",
+      "file": "server/src/usecases/execution/get-execution.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RA08KSRZFYJ61HG2AB",
+      "file": "server/src/usecases/execution/get-log-stream-delta.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RNADFZ6C4H1H2VF44S",
+      "file": "server/src/usecases/execution/get-structured-logs.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3R2G1397A2C25KH9821",
+      "file": "server/src/usecases/execution/on-approval-request.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QZ71EP5YF9C7JYYGZA",
+      "file": "server/src/usecases/execution/on-log-data.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QVDJYEG9E5GBS6DDN2",
+      "file": "server/src/usecases/execution/on-process-complete.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QW3FQPJ7535FCQAXY7",
+      "file": "server/src/usecases/execution/on-process-idle.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QYE2ZFFYFFQ19JD3AH",
+      "file": "server/src/usecases/execution/on-session-info.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3R0HQW7R1ZZQDS33ZNA",
+      "file": "server/src/usecases/execution/on-summary.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QH0F7EGESDD7AV06F6",
+      "file": "server/src/usecases/execution/queue-message.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3R9YG1J1XFNB5CPZJR3",
+      "file": "server/src/usecases/execution/respond-to-permission.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QRGJ28TH90269FY74A",
+      "file": "server/src/usecases/execution/save-draft.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QGNXV9410M3DFH802A",
+      "file": "server/src/usecases/execution/start-execution.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QMPBNZVNKVC97HZB52",
+      "file": "server/src/usecases/execution/stop-execution.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RVKCWCSPCAJTEKT2QZ",
+      "file": "server/src/usecases/git/create-pull-request.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RW522THM9SJXK6HYN3",
+      "file": "server/src/usecases/git/generate-pr-description.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RR53PPC1KAWR4HB2PP",
+      "file": "server/src/usecases/git/list-branches.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RSQGHS2F76VKN16QZM",
+      "file": "server/src/usecases/git/rebase-branch.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSGCW3S2Y5XMN9CK1MDG",
+      "file": "server/src/usecases/project/browse-directory.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
+      "file": "server/src/usecases/project/create-project.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJVXRAQGH9C3HBFX3X2F",
+      "file": "server/src/usecases/project/delete-project.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJVSHA5H1SKKQ154SW5Z",
+      "file": "server/src/usecases/project/get-project.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNTBSGDD1B05FV65HVPERRT",
+      "file": "server/src/usecases/project/init-git-repo.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJVQX8V0AQX7PYA0HPWG",
+      "file": "server/src/usecases/project/list-projects.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJVW2C6CC3W5CGH8BT3X",
+      "file": "server/src/usecases/project/update-project.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QDCVVJXS9QES8YWY99",
+      "file": "server/src/usecases/run-cleanup-before-removal.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJW0CXD6X1YSAFEWHKXP",
+      "file": "server/src/usecases/task/create-task.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJW89KPCWYXKE4E261H9",
+      "file": "server/src/usecases/task/delete-task.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJW3JZ7Y5SF7TBX5HTYC",
+      "file": "server/src/usecases/task/get-task.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJW2EPGT866WRE7H4MM4",
+      "file": "server/src/usecases/task/list-tasks.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSHJW5PQ99GFB1W694PSZ6",
+      "file": "server/src/usecases/task/update-task.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3RX9X81V6FS6GB9G86R",
+      "file": "server/src/usecases/tool/execute-tool.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QEEC6KYB370PM3CRT8",
+      "file": "server/src/usecases/workspace/list-attempts.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPNSJ3QC5W9HVHPA3PGSMZRF",
+      "file": "server/src/usecases/workspace/run-workspace-script.ts",
+      "line": 1
+    }
+  ]
+}

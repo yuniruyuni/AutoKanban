@@ -1,3 +1,4 @@
+// @specre 01KPNSJ3QVDJYEG9E5GBS6DDN2
 import type { ProcessType } from "../../infra/callback/client";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";

@@ -1,3 +1,4 @@
+// @specre 01KPNTBSGCW3S2Y5XMN9CK1MDG
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";

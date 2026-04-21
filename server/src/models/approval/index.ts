@@ -1,3 +1,4 @@
+// @specre 01KPNX4PABBTT3HZ1GWK4VRR7M
 import {
 	type Comp,
 	defineSpecs,

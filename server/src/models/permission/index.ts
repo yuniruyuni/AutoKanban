@@ -1,3 +1,4 @@
+// @specre 01KPNX4PACA9S29SQDJ441E6V7
 export interface PendingPermission {
 	requestId: string;
 	processId: string;

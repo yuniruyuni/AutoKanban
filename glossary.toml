@@ -1,0 +1,82 @@
+# AutoKanban specre glossary — search hint vocabulary.
+# `specre search` uses these terms to suggest query refinements.
+# Add domain nouns, operation verbs, and concept names — NOT generic words
+# like "task" or "status" that appear in every card (pure noise).
+
+terms = [
+  # --- Domain entities (high-signal) ---
+  "project",
+  "workspace",
+  "session",
+  "attempt",
+  "worktree",
+  "executor",
+  "variant",
+  "template",
+  "approval",
+  "permission",
+  "turn",
+  "draft",
+  "pull-request",
+  "dev-server",
+
+  # --- Kanban statuses ---
+  "todo",
+  "inprogress",
+  "inreview",
+  "done",
+  "cancelled",
+
+  # --- Process statuses ---
+  "running",
+  "completed",
+  "failed",
+  "killed",
+  "awaiting_approval",
+
+  # --- Operations / verbs ---
+  "start",
+  "stop",
+  "resume",
+  "kill",
+  "queue",
+  "cancel",
+  "fork",
+  "rebase",
+  "merge",
+  "push",
+  "archive",
+  "injection",
+  "subscribe",
+
+  # --- Git / VCS ---
+  "branch",
+  "diff",
+  "fast-forward",
+  "pr-description",
+
+  # --- Infrastructure / protocol ---
+  "trpc",
+  "sse",
+  "mcp",
+  "stdio",
+  "callback",
+  "hono",
+  "pgschema",
+  "embedded-postgres",
+  "valtio",
+
+  # --- Conversation / agent internals ---
+  "claude-code",
+  "gemini",
+  "stdin",
+  "stdout",
+  "stderr",
+  "log-store",
+  "message-queue",
+  "ansi",
+  "todo-card",
+  "plan",
+  "tool-use",
+  "summary",
+]
