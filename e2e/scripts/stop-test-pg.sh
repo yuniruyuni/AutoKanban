@@ -1,7 +1,7 @@
 #!/bin/sh
-# Stop the test PostgreSQL instance after server test runs.
+# Stop the test PostgreSQL instance after e2e test runs.
 # bun test does not fire process "exit" events, so this must be called externally.
-# Resolves to server/.test-pg-data regardless of caller CWD.
+# Resolves to e2e/.test-pg-data regardless of caller CWD.
 #
 # Uses SIGINT (PostgreSQL "fast shutdown") which aborts active transactions
 # but writes a checkpoint before exiting. This leaves WAL in a consistent
