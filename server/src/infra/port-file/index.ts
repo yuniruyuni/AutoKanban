@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
 	existsSync,
 	mkdirSync,
@@ -8,8 +9,18 @@ import {
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
-const PORT_DIR = join(homedir(), ".auto-kanban");
-const PORT_FILE = join(PORT_DIR, "auto-kanban.port");
+const PORT_DIR = join(homedir(), ".auto-kanban", "ports");
+
+// Worktree-unique filename: hash of process.cwd() so parallel worktrees running
+// `start:dev` don't clobber each other's port. The HTTP server, its MCP config
+// router, and the getBaseUrl() fallback all run in the same process (same cwd),
+// so they agree on the file. Spawned MCP subprocesses receive AUTO_KANBAN_URL
+// via env from getAutoKanbanCommand(), so they don't rely on the file.
+const CWD_HASH = createHash("sha1")
+	.update(process.cwd())
+	.digest("hex")
+	.slice(0, 8);
+const PORT_FILE = join(PORT_DIR, `${CWD_HASH}.port`);
 
 /**
  * Determine the full command + args to launch `auto-kanban --mcp`.

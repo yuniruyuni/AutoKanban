@@ -37,9 +37,11 @@ function killPostgresByPidFile(dataDir: string): void {
 			10,
 		);
 		if (!Number.isNaN(pid)) {
-			// Use SIGQUIT for PostgreSQL "immediate shutdown" — faster than
-			// SIGTERM (smart shutdown) and synchronous enough for exit handlers.
-			process.kill(pid, "SIGQUIT");
+			// SIGINT = PostgreSQL "fast shutdown". Aborts active transactions but
+			// writes a checkpoint before exit, so the next startup skips crash
+			// recovery. SIGQUIT would skip the checkpoint and force recovery on
+			// next boot, which oscillates test/dev startups between fast/slow.
+			process.kill(pid, "SIGINT");
 		}
 	} catch {
 		// Process already gone
@@ -141,7 +143,7 @@ export class EmbeddedPostgresManager {
 	}
 
 	/**
-	 * Synchronously send SIGTERM to the PostgreSQL process via postmaster.pid.
+	 * Synchronously signal the PostgreSQL process via postmaster.pid.
 	 * Safe to call from process "exit" handlers where async is not allowed.
 	 */
 	stopSync(): void {

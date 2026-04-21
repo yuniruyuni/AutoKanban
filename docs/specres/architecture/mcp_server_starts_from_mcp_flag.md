@@ -49,11 +49,15 @@ flowchart LR
 `server/src/infra/port-file/index.ts` の `getBaseUrl()` が以下の優先順位で決定する:
 
 1. 環境変数 `AUTO_KANBAN_URL`
-2. port file `~/.auto-kanban/auto-kanban.port`（HTTP サーバー起動時に書き込み）
+2. port file `~/.auto-kanban/ports/<cwd-hash>.port`（HTTP サーバー起動時に書き込み）
 3. フォールバック `http://localhost:3000`
 
 HTTP サーバー → MCP サーバー起動の順で立ち上がる。Claude Code が MCP server を spawn する
-タイミングで port file は既に存在している。
+タイミングで port file は既に存在しており、かつ `getAutoKanbanCommand()` が
+`AUTO_KANBAN_URL` を子プロセスの env に注入するので、MCP 子プロセスは port file を
+読まずに URL を解決できる。port file 名を **cwd 単位でハッシュ化**しているのは、
+複数の worktree から `start:dev` を同時に走らせたときに互いの port file を
+上書きさせないため。
 
 ### 提供される MCP ツール (`presentation/mcp/routers/tools.ts`)
 
