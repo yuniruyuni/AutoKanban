@@ -57,8 +57,7 @@ export function useLogStream(options: UseLogStreamOptions) {
 			eventSourceRef.current.close();
 		}
 
-		const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
-		const url = `${baseUrl}/sse/logs/${options.executionProcessId}`;
+		const url = `/sse/logs/${options.executionProcessId}`;
 
 		const eventSource = new EventSource(url);
 		eventSourceRef.current = eventSource;

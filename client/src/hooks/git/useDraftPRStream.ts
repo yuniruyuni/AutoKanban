@@ -29,8 +29,7 @@ export function useDraftPRStream(
 		setBody(null);
 		setLogs("");
 
-		const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
-		const url = `${baseUrl}/sse/draft-pr/${workspaceId}/${projectId}`;
+		const url = `/sse/draft-pr/${workspaceId}/${projectId}`;
 
 		const es = new EventSource(url);
 		eventSourceRef.current = es;

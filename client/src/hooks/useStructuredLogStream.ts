@@ -31,8 +31,7 @@ export function useStructuredLogStream(
 			return;
 		}
 
-		const baseUrl = import.meta.env.VITE_API_URL ?? "";
-		const url = `${baseUrl}/sse/structured-logs/${executionProcessId}`;
+		const url = `/sse/structured-logs/${executionProcessId}`;
 
 		const es = new EventSource(url);
 		eventSourceRef.current = es;
