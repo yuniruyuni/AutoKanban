@@ -27,14 +27,14 @@ PR 説明は [`pr_description_is_generated_and_streamed`](./pr_description_is_ge
 
 ## シナリオ
 
-### Create PR
+### PR 作成
 
 1. タスク完了後、ユーザーが「Create PR」ボタンを押す
 2. `trpc.git.createPullRequest({ workspaceId, title, body?, draft? })`
 3. `gh pr create` 相当を実行、PR URL を取得
 4. `workspaceRepo` の `prUrl` を更新
 
-### Finalize after merge
+### マージ後の finalize
 
 1. PR が GitHub 側で merge された後、ユーザーが「Finalize」を押す
 2. `trpc.git.finalizePrMerge({ workspaceId })`

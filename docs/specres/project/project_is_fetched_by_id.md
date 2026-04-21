@@ -19,13 +19,13 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Successful fetch
+### 取得成功
 
 1. クライアントが `trpc.project.get({ projectId })` を呼ぶ
 2. `read` で `ctx.repos.project.getWithStats(projectId)` を実行
 3. 見つかれば `ProjectWithStats` をそのまま返却
 
-### Not found
+### 見つからない
 
 1. 存在しない `projectId` を指定
 2. `fail("NOT_FOUND", "Project not found", { projectId })` を返す

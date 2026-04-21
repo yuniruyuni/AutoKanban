@@ -24,11 +24,11 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Condition = null
+### condition = null
 
 1. 全プロジェクトで初期タスクとして作成される
 
-### Condition = "no_dev_server"
+### condition = "no_dev_server"
 
 1. `createProject` の write ステップで `tmpl.condition === "no_dev_server"` のテンプレートはスキップ
 2. （将来的に）`auto-kanban.json` の解析結果と紐付けて判定する設計に拡張余地

@@ -66,19 +66,19 @@ AutoKanban が agent を spawn する直前に agent の設定ファイルに `a
 
 ## シナリオ
 
-### Inject on agent start
+### agent 起動時の inject
 
 1. `startExecution` の post で executor プロセスを起動する前に
    `agentConfig` Repository が `auto_kanban` の MCP 設定を書き込む
 2. MCP サーバー URL は `http://localhost:<port>/mcp` のような形
 3. agent プロセスが起動して MCP handshake を行うと tools が露出する
 
-### Handle stdio transport
+### stdio transport 処理
 
 1. `/mcp/stdio` エンドポイントで stdio トランスポートも受け付ける
 2. Claude Code の stdio モードからも接続できる
 
-### MCP tool listing
+### MCP tool 一覧
 
 1. `presentation/mcp/routers/tools.ts` が `find_workspace_by_path`, `get_task_context`,
    `list_sibling_tasks` などのツールを提供

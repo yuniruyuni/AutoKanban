@@ -1,702 +1,702 @@
 {
   "version": 1,
-  "generated_at": "2026-04-21T06:32:00Z",
+  "generated_at": "2026-04-21T14:24:26Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
       "name": "project_is_created_with_repo_path",
-      "status": "draft",
+      "status": "stable",
       "domain": "project",
       "path": "docs/specres/project/project_is_created_with_repo_path.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJVQX8V0AQX7PYA0HPWG",
       "name": "projects_are_listed",
-      "status": "draft",
+      "status": "stable",
       "domain": "project",
       "path": "docs/specres/project/projects_are_listed.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJVSHA5H1SKKQ154SW5Z",
       "name": "project_is_fetched_by_id",
-      "status": "draft",
+      "status": "stable",
       "domain": "project",
       "path": "docs/specres/project/project_is_fetched_by_id.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJVW2C6CC3W5CGH8BT3X",
       "name": "project_is_updated",
-      "status": "draft",
+      "status": "stable",
       "domain": "project",
       "path": "docs/specres/project/project_is_updated.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJVXRAQGH9C3HBFX3X2F",
       "name": "project_is_deleted_with_optional_worktrees",
-      "status": "draft",
+      "status": "stable",
       "domain": "project",
       "path": "docs/specres/project/project_is_deleted_with_optional_worktrees.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJW0CXD6X1YSAFEWHKXP",
       "name": "task_is_created_in_todo",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_is_created_in_todo.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJW2EPGT866WRE7H4MM4",
       "name": "tasks_are_listed_for_project",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/tasks_are_listed_for_project.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJW3JZ7Y5SF7TBX5HTYC",
       "name": "task_detail_is_fetched",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_detail_is_fetched.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJW5PQ99GFB1W694PSZ6",
       "name": "task_is_updated",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_is_updated.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJW89KPCWYXKE4E261H9",
       "name": "task_is_deleted_with_optional_worktree_cleanup",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_is_deleted_with_optional_worktree_cleanup.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJWAYW0CGTZ3AZ2HD42F",
       "name": "task_transitions_to_inprogress_and_starts_agent",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_transitions_to_inprogress_and_starts_agent.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJWC2NZQA92FWDK177XH",
       "name": "task_transitions_to_inreview_on_approval_request",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_transitions_to_inreview_on_approval_request.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJWEV82CG0H0BXSJ9T8G",
       "name": "task_transitions_to_todo_resets_chat",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_transitions_to_todo_resets_chat.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSHJWFA8DAP0KD9FW19H4Q",
       "name": "task_transitions_to_done_or_cancelled",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_transitions_to_done_or_cancelled.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3Q8W98006R0TNQGFAE8",
       "name": "workspace_is_created_for_task_attempt",
-      "status": "draft",
+      "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/workspace_is_created_for_task_attempt.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QAMNPEM9FR0G5MZ26F",
       "name": "worktree_is_created_with_branch",
-      "status": "draft",
+      "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/worktree_is_created_with_branch.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QC5W9HVHPA3PGSMZRF",
       "name": "workspace_prepare_script_is_run",
-      "status": "draft",
+      "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/workspace_prepare_script_is_run.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QDCVVJXS9QES8YWY99",
       "name": "workspace_cleanup_script_is_run_before_removal",
-      "status": "draft",
+      "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/workspace_cleanup_script_is_run_before_removal.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QEEC6KYB370PM3CRT8",
       "name": "workspace_attempts_are_listed_and_archived",
-      "status": "draft",
+      "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/workspace_attempts_are_listed_and_archived.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QGNXV9410M3DFH802A",
       "name": "execution_is_started_for_task",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/execution_is_started_for_task.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QH0F7EGESDD7AV06F6",
       "name": "follow_up_message_is_sent_or_queued",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/follow_up_message_is_sent_or_queued.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QJN5VFJ21ZRYGPQPCF",
       "name": "queued_message_is_cancelled",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/queued_message_is_cancelled.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QMPBNZVNKVC97HZB52",
       "name": "execution_is_stopped_by_user",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/execution_is_stopped_by_user.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QP8DF0PYD2E00BG91E",
       "name": "execution_resumes_from_killed_session",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/execution_resumes_from_killed_session.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QQHP6GHD2JHE1RK26C",
       "name": "conversation_is_forked_at_message",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/conversation_is_forked_at_message.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QRGJ28TH90269FY74A",
       "name": "follow_up_draft_is_saved_and_restored",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/follow_up_draft_is_saved_and_restored.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QT901FC4PHSRS0SPKV",
       "name": "execution_or_latest_is_fetched",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/execution_or_latest_is_fetched.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QVDJYEG9E5GBS6DDN2",
       "name": "process_completion_updates_task_status",
-      "status": "draft",
+      "status": "stable",
       "domain": "callback",
       "path": "docs/specres/callback/process_completion_updates_task_status.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QW3FQPJ7535FCQAXY7",
       "name": "process_idle_triggers_next_queued_message",
-      "status": "draft",
+      "status": "stable",
       "domain": "callback",
       "path": "docs/specres/callback/process_idle_triggers_next_queued_message.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QYE2ZFFYFFQ19JD3AH",
       "name": "session_info_is_recorded_for_resume",
-      "status": "draft",
+      "status": "stable",
       "domain": "callback",
       "path": "docs/specres/callback/session_info_is_recorded_for_resume.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3QZ71EP5YF9C7JYYGZA",
       "name": "log_data_is_persisted_and_broadcast",
-      "status": "draft",
+      "status": "stable",
       "domain": "callback",
       "path": "docs/specres/callback/log_data_is_persisted_and_broadcast.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3R0HQW7R1ZZQDS33ZNA",
       "name": "summary_is_recorded_on_turn_end",
-      "status": "draft",
+      "status": "stable",
       "domain": "callback",
       "path": "docs/specres/callback/summary_is_recorded_on_turn_end.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3R2G1397A2C25KH9821",
       "name": "approval_request_is_detected_and_persisted",
-      "status": "draft",
+      "status": "stable",
       "domain": "callback",
       "path": "docs/specres/callback/approval_request_is_detected_and_persisted.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3R6ZE147WHQKD0ASB9A",
       "name": "approval_is_responded_from_approval_card",
-      "status": "draft",
+      "status": "stable",
       "domain": "approval",
       "path": "docs/specres/approval/approval_is_responded_from_approval_card.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3R75HS06WT3HS01ZHAZ",
       "name": "pending_approvals_are_fetched_for_execution",
-      "status": "draft",
+      "status": "stable",
       "domain": "approval",
       "path": "docs/specres/approval/pending_approvals_are_fetched_for_execution.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3R9YG1J1XFNB5CPZJR3",
       "name": "permission_request_is_approved_or_denied",
-      "status": "draft",
+      "status": "stable",
       "domain": "permission",
       "path": "docs/specres/permission/permission_request_is_approved_or_denied.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RA08KSRZFYJ61HG2AB",
       "name": "log_stream_is_subscribed_via_sse",
-      "status": "draft",
+      "status": "stable",
       "domain": "log-stream",
       "path": "docs/specres/log-stream/log_stream_is_subscribed_via_sse.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RNADFZ6C4H1H2VF44S",
       "name": "structured_log_stream_yields_parsed_messages",
-      "status": "draft",
+      "status": "stable",
       "domain": "log-stream",
       "path": "docs/specres/log-stream/structured_log_stream_yields_parsed_messages.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RP8WYFHMFQ4QW3MGQZ",
       "name": "ansi_escapes_are_parsed_for_display",
-      "status": "draft",
+      "status": "stable",
       "domain": "log-stream",
       "path": "docs/specres/log-stream/ansi_escapes_are_parsed_for_display.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RR53PPC1KAWR4HB2PP",
       "name": "branches_and_diffs_are_fetched",
-      "status": "draft",
+      "status": "stable",
       "domain": "git",
       "path": "docs/specres/git/branches_and_diffs_are_fetched.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RRYH45YHGMS83W76H0",
       "name": "dev_server_lifecycle_is_managed",
-      "status": "draft",
+      "status": "stable",
       "domain": "dev-server",
       "path": "docs/specres/dev-server/dev_server_lifecycle_is_managed.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RSQGHS2F76VKN16QZM",
       "name": "branch_is_rebased_merged_or_pushed",
-      "status": "draft",
+      "status": "stable",
       "domain": "git",
       "path": "docs/specres/git/branch_is_rebased_merged_or_pushed.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RVKCWCSPCAJTEKT2QZ",
       "name": "pull_request_is_created_and_finalized",
-      "status": "draft",
+      "status": "stable",
       "domain": "git",
       "path": "docs/specres/git/pull_request_is_created_and_finalized.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RW522THM9SJXK6HYN3",
       "name": "pr_description_is_generated_and_streamed",
-      "status": "draft",
+      "status": "stable",
       "domain": "git",
       "path": "docs/specres/git/pr_description_is_generated_and_streamed.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNSJ3RX9X81V6FS6GB9G86R",
       "name": "tool_is_managed_and_executed",
-      "status": "draft",
+      "status": "stable",
       "domain": "tool",
       "path": "docs/specres/tool/tool_is_managed_and_executed.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSG00XN1PFDMY201CH8A",
       "name": "templates_are_listed_and_created",
-      "status": "draft",
+      "status": "stable",
       "domain": "task-template",
       "path": "docs/specres/task-template/templates_are_listed_and_created.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSG1VTZH0VGAVST7EX29",
       "name": "variants_are_managed_per_executor",
-      "status": "draft",
+      "status": "stable",
       "domain": "variant",
       "path": "docs/specres/variant/variants_are_managed_per_executor.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSG330HN6YBQ2AHJZDW4",
       "name": "agent_command_is_configured_and_checked",
-      "status": "draft",
+      "status": "stable",
       "domain": "agent-setting",
       "path": "docs/specres/agent-setting/agent_command_is_configured_and_checked.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSG4HEKJYAW9Q9SM25R8",
       "name": "mcp_servers_are_configured_per_agent",
-      "status": "draft",
+      "status": "stable",
       "domain": "mcp-config",
       "path": "docs/specres/mcp-config/mcp_servers_are_configured_per_agent.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSG5R2DQ15S2NJ893VNE",
       "name": "auto_kanban_is_injected_as_mcp_server",
-      "status": "draft",
+      "status": "stable",
       "domain": "mcp-config",
       "path": "docs/specres/mcp-config/auto_kanban_is_injected_as_mcp_server.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSG7R884Y412A422AVPE",
       "name": "kanban_board_renders_tasks_by_status",
-      "status": "draft",
+      "status": "stable",
       "domain": "ui-kanban",
       "path": "docs/specres/ui-kanban/kanban_board_renders_tasks_by_status.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSG89TW2BEMSHJBG0C96",
       "name": "task_detail_panel_shows_conversation_and_diff",
-      "status": "draft",
+      "status": "stable",
       "domain": "ui-kanban",
       "path": "docs/specres/ui-kanban/task_detail_panel_shows_conversation_and_diff.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSG96YB0X1BGW2WN6K9Q",
       "name": "task_fullscreen_view_shows_execution_and_workspace",
-      "status": "draft",
+      "status": "stable",
       "domain": "ui-kanban",
       "path": "docs/specres/ui-kanban/task_fullscreen_view_shows_execution_and_workspace.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSGA7XMKDE21TYM00R7Y",
       "name": "settings_pages_provide_crud_for_configuration",
-      "status": "draft",
+      "status": "stable",
       "domain": "ui-settings",
       "path": "docs/specres/ui-settings/settings_pages_provide_crud_for_configuration.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSGCW3S2Y5XMN9CK1MDG",
       "name": "directory_is_browsed_for_repo_path_selection",
-      "status": "draft",
+      "status": "stable",
       "domain": "project",
       "path": "docs/specres/project/directory_is_browsed_for_repo_path_selection.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSGDD1B05FV65HVPERRT",
       "name": "git_repo_is_initialized_for_new_directory",
-      "status": "draft",
+      "status": "stable",
       "domain": "project",
       "path": "docs/specres/project/git_repo_is_initialized_for_new_directory.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNTBSGFXEWD4TKRHYDT856F",
       "name": "template_condition_filters_applicability",
-      "status": "draft",
+      "status": "stable",
       "domain": "task-template",
       "path": "docs/specres/task-template/template_condition_filters_applicability.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PA1X0NY458AYEPRTDPM",
       "name": "project_is_a_git_repository_under_management",
-      "status": "draft",
+      "status": "stable",
       "domain": "project",
       "path": "docs/specres/project/project_is_a_git_repository_under_management.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PA2SQRARM986Y6YDYBV",
       "name": "task_is_a_unit_of_work_delegated_to_ai",
-      "status": "draft",
+      "status": "stable",
       "domain": "task",
       "path": "docs/specres/task/task_is_a_unit_of_work_delegated_to_ai.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PA4SS8SKP7XWJG3KGVF",
       "name": "workspace_is_the_isolated_environment_of_an_attempt",
-      "status": "draft",
+      "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/workspace_is_the_isolated_environment_of_an_attempt.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PA6R6NBTA73WJ9EFRRV",
       "name": "attempt_is_the_retry_unit_preserving_history",
-      "status": "draft",
+      "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/attempt_is_the_retry_unit_preserving_history.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PA7ZMF3SQC17QXMF7PC",
       "name": "session_is_the_bundle_of_agent_runs",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/session_is_the_bundle_of_agent_runs.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PA8CV9HVRA6SADJ0WSZ",
       "name": "coding_agent_process_is_one_executor_invocation",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/coding_agent_process_is_one_executor_invocation.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PAAXA6FR10PJY9C1DF1",
       "name": "coding_agent_turn_is_the_resume_identity",
-      "status": "draft",
+      "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/coding_agent_turn_is_the_resume_identity.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PABBTT3HZ1GWK4VRR7M",
       "name": "approval_is_the_persistent_tool_confirmation",
-      "status": "draft",
+      "status": "stable",
       "domain": "approval",
       "path": "docs/specres/approval/approval_is_the_persistent_tool_confirmation.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PACA9S29SQDJ441E6V7",
       "name": "permission_is_the_ephemeral_control_request",
-      "status": "draft",
+      "status": "stable",
       "domain": "permission",
       "path": "docs/specres/permission/permission_is_the_ephemeral_control_request.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PAESWKFK5KJ0N1S7M9Q",
       "name": "tool_is_a_user_defined_shell_launcher",
-      "status": "draft",
+      "status": "stable",
       "domain": "tool",
       "path": "docs/specres/tool/tool_is_a_user_defined_shell_launcher.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PAFDPFGKQKSWRHPM2XV",
       "name": "task_template_is_an_initial_task_preset",
-      "status": "draft",
+      "status": "stable",
       "domain": "task-template",
       "path": "docs/specres/task-template/task_template_is_an_initial_task_preset.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PAGF5SEPD75ZYWRMEDH",
       "name": "variant_is_an_executor_launch_preset",
-      "status": "draft",
+      "status": "stable",
       "domain": "variant",
       "path": "docs/specres/variant/variant_is_an_executor_launch_preset.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PAJ6BSRVSN6GCP1ZSXG",
       "name": "agent_setting_is_the_executor_command_configuration",
-      "status": "draft",
+      "status": "stable",
       "domain": "agent-setting",
       "path": "docs/specres/agent-setting/agent_setting_is_the_executor_command_configuration.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PAKZFYMM4A6PYTRH0S0",
       "name": "mcp_injection_is_the_agent_context_bridge",
-      "status": "draft",
+      "status": "stable",
       "domain": "mcp-config",
       "path": "docs/specres/mcp-config/mcp_injection_is_the_agent_context_bridge.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPNX4PAMNEDDBVS0883HYRCG",
       "name": "dev_server_process_is_a_worktree_scoped_server",
-      "status": "draft",
+      "status": "stable",
       "domain": "dev-server",
       "path": "docs/specres/dev-server/dev_server_process_is_a_worktree_scoped_server.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXPTQ7DDCBCHZ90DK2E",
       "name": "typescript_is_the_single_language_across_stack",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/typescript_is_the_single_language_across_stack.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXQDZ4R12Y7P3D9HGYA",
       "name": "trpc_is_the_client_server_protocol",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/trpc_is_the_client_server_protocol.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXS4NJSCB1ZVD88TRP4",
       "name": "raw_sql_is_used_instead_of_orm",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/raw_sql_is_used_instead_of_orm.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXTQ7W9GC1597XGM4VW",
       "name": "layered_architecture_separates_model_repository_usecase_presentation",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/layered_architecture_separates_model_repository_usecase_presentation.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXV5WC3V732NY8CG046",
       "name": "valtio_is_the_client_local_state",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/valtio_is_the_client_local_state.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXW033P9RPM4RVH9Q21",
       "name": "usecase_is_executed_in_6_steps",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/usecase_is_executed_in_6_steps.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXX6SCHAHJ36VA70ZJE",
       "name": "specification_pattern_composes_db_filters",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/specification_pattern_composes_db_filters.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXYJQ6KJBGSCWD8NMKG",
       "name": "postgresql_is_embedded_for_storage",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/postgresql_is_embedded_for_storage.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPPZWHXZBF4J3P7QB0C67VCP",
       "name": "workspace_config_is_auto_kanban_json",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/workspace_config_is_auto_kanban_json.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPQ6W85ST432T45FW553KDDE",
       "name": "tests_are_layered_per_responsibility",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/tests_are_layered_per_responsibility.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPQ6W85T6VTJEQWKM3BNVPMC",
       "name": "local_only_security_model",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/local_only_security_model.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPQ6W85WC3WMHX9ZKHAACSJ6",
       "name": "fail_type_replaces_exceptions",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/fail_type_replaces_exceptions.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPQ6W85XM05B7HEHAH6AEJKG",
       "name": "task_kanban_dnd_transitions_trigger_side_effects",
-      "status": "draft",
+      "status": "stable",
       "domain": "ui-kanban",
       "path": "docs/specres/ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPQ6W85XYZ1YWFZMV5SAS7G2",
       "name": "mcp_server_starts_from_mcp_flag",
-      "status": "draft",
+      "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/mcp_server_starts_from_mcp_flag.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     },
     {
       "id": "01KPQBJQ1973HTVE0R7YWN26M9",
       "name": "orphan_processes_are_recovered_on_startup",
-      "status": "draft",
+      "status": "stable",
       "domain": "callback",
       "path": "docs/specres/callback/orphan_processes_are_recovered_on_startup.md",
-      "last_verified": null
+      "last_verified": "2026-04-21"
     }
   ],
   "source_refs": [

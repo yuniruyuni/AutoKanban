@@ -202,7 +202,11 @@ stateDiagram-v2
 ## 関連する動作
 
 - 概念: [task_is_a_unit_of_work_delegated_to_ai](../task/task_is_a_unit_of_work_delegated_to_ai.md)
-- 遷移 4 種: `task_transitions_to_*` カード群
+- 遷移の意味論 (4 種):
+  - → inprogress: [task_transitions_to_inprogress_and_starts_agent](../task/task_transitions_to_inprogress_and_starts_agent.md)
+  - → todo (Chat Reset): [task_transitions_to_todo_resets_chat](../task/task_transitions_to_todo_resets_chat.md)
+  - → inreview (approval 経由): [task_transitions_to_inreview_on_approval_request](../task/task_transitions_to_inreview_on_approval_request.md)
+  - → done / cancelled: [task_transitions_to_done_or_cancelled](../task/task_transitions_to_done_or_cancelled.md)
 - UI: [kanban_board_renders_tasks_by_status](./kanban_board_renders_tasks_by_status.md)
 - Rebase / Merge: [branch_is_rebased_merged_or_pushed](../git/branch_is_rebased_merged_or_pushed.md)
 - Approval: [approval_request_is_detected_and_persisted](../callback/approval_request_is_detected_and_persisted.md)

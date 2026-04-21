@@ -44,7 +44,7 @@ AutoKanban の Task は一般的なタスク管理アプリの「やること」
 
 ## シナリオ
 
-### Successful creation
+### 作成成功
 
 1. クライアントが `trpc.task.create({ projectId, title, description? })` を呼ぶ
 2. `read` で `Project.ById(projectId)` の存在を確認
@@ -52,7 +52,7 @@ AutoKanban の Task は一般的なタスク管理アプリの「やること」
 4. `write` で `tasks` に upsert
 5. 作成された `Task` を返却
 
-### Parent project missing
+### 親プロジェクト不在
 
 1. `projectId` に対応する Project が無い
 2. `fail("NOT_FOUND", "Project not found", { projectId })`

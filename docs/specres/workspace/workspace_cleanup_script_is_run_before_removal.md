@@ -29,7 +29,7 @@ exit code 非 0 でも warning ログだけ残して続行する。
 
 ## シナリオ
 
-### Cleanup on project deletion
+### プロジェクト削除時のクリーンアップ
 
 1. `deleteProject({ deleteWorktrees: true })` の post ステップ
 2. 各 workspace について `worktree.worktreeExists` を確認
@@ -38,13 +38,13 @@ exit code 非 0 でも warning ログだけ残して続行する。
 5. 結果は logger に書くのみ
 6. 続けて `worktree.removeAllWorktrees(..., deleteBranch: true)` で worktree を消す
 
-### Cleanup on chat reset (todo transition)
+### Chat Reset 時のクリーンアップ（todo 遷移）
 
 1. `updateTask({ status: "todo" })` の post ステップ
 2. 各 archive 対象 workspace について同じ流れ
 3. ただし `removeAllWorktrees(..., deleteBranch: false)` でブランチは残す
 
-### Cleanup not configured
+### クリーンアップ未設定
 
 1. `auto-kanban.json` が無い or `cleanup` キーが無い
 2. `runCleanupIfConfigured` は silently return、warning ログも出さない

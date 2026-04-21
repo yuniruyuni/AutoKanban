@@ -30,7 +30,7 @@ in-memory Promise により「ApprovalCard のクリックで即座に agent を
 
 ## シナリオ
 
-### Approve
+### 承認
 
 1. ユーザーが ApprovalCard で "Approve" を押す
 2. `trpc.approval.respond({ approvalId, executionProcessId, status: "approved", reason? })`
@@ -39,7 +39,7 @@ in-memory Promise により「ApprovalCard のクリックで即座に agent を
 5. `finish` で `Approval.respond(approval, "approved", reason)` をして upsert
 6. 対応する callback 側（`handleApprovalRequest`）の post が続行し、executor に permission_response 送信
 
-### Deny
+### 拒否
 
 1. 同じ流れで `status: "denied"` を送る
 2. `reason` は拒否理由（Claude Code に伝わる）

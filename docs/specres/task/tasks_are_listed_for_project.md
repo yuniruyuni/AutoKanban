@@ -27,13 +27,13 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### List all tasks of a project
+### project の全 task 一覧
 
 1. クライアントが `trpc.task.list({ projectId, limit: 50 })` を呼ぶ
 2. `Task.ByProject(projectId)` を spec として `ctx.repos.task.list` を実行
 3. `Page<Task>` (items + nextCursor + hasMore) を返却
 
-### List by status
+### status でフィルタ一覧
 
 1. `trpc.task.list({ projectId, status: ["todo", "inprogress"] })`
 2. spec を `and(Task.ByProject, Task.ByStatuses("todo", "inprogress"))` で合成

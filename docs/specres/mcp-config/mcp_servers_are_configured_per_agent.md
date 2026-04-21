@@ -26,12 +26,12 @@ Executor 毎に設定フォーマットが微妙に違うため、`agent-config`
 
 ## シナリオ
 
-### View & edit MCP server list
+### MCP サーバー一覧の閲覧と編集
 
 1. `/settings/mcp-server` で `trpc.mcpConfig.list({ executor })`
 2. JSON エディタで編集、`trpc.mcpConfig.update({ executor, config })` で保存
 
-### Apply to new agent runs
+### 新規 agent 実行への適用
 
 1. 保存された設定は次回 agent 起動時に自動で使われる
 2. 変更後に再起動は不要（executor が起動時に最新設定を読む）

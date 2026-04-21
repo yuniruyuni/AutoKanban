@@ -35,7 +35,7 @@ DB の外部キー制約に頼らず、usecase 内で明示的にカスケード
 
 ## シナリオ
 
-### Successful delete (DB only)
+### 削除成功（DB のみ）
 
 1. `trpc.project.delete({ projectId, deleteWorktrees: false })`
 2. `read` で project の存在確認と関連 entity の ID を集約
@@ -43,7 +43,7 @@ DB の外部キー制約に頼らず、usecase 内で明示的にカスケード
 4. post では何もしない
 5. `{ deleted: true, projectId }` を返却
 
-### Delete with worktrees
+### worktree 付き削除
 
 1. `deleteWorktrees: true`
 2. write までは通常と同じ

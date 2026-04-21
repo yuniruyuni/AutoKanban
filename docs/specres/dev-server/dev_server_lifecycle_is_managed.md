@@ -59,7 +59,7 @@ dev server 関連のテンプレートタスクを出さない、という連携
 
 ## シナリオ
 
-### Start (first time)
+### 起動（初回）
 
 1. ユーザーが `trpc.devServer.start({ taskId })`
 2. `read` で task / project / active workspace / latest session を取得、既存 running を確認
@@ -68,13 +68,13 @@ dev server 関連のテンプレートタスクを出さない、という連携
 5. finish で DevServerProcess を upsert
 6. `{ executionProcessId }` を返却
 
-### Stop
+### 停止
 
 1. `trpc.devServer.stop({ executionProcessId })`
 2. `devServer.stop(processId)` が SIGTERM → SIGKILL を送る
 3. `on-process-complete` callback が status を更新
 
-### Get state and logs
+### state とログ取得
 
 1. `trpc.devServer.get({ taskId })` で現在のプロセスと port、直近ログを返す
 2. UI は「dev server running http://localhost:3000 / 最終ログ 10 行」を表示

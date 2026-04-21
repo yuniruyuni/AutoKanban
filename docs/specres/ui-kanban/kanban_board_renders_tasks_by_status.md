@@ -28,13 +28,13 @@ pending approval badge }` を表示。
 
 ## シナリオ
 
-### Render tasks grouped by status
+### status 別に task を表示
 
 1. ページ初期化で `trpc.task.list({ projectId })` + `trpc.project.get({ projectId })`
 2. `KanbanBoard` が tasks を status で groupBy し、`KanbanColumn` に配る
 3. 各 `KanbanCard` に最新 status バッジを表示
 
-### Drag to change status
+### ドラッグで status 変更
 
 1. ユーザーが `todo` のカードを `inprogress` 列にドロップ
 2. 楽観的更新で UI を即反映

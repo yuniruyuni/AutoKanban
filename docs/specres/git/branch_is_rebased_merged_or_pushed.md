@@ -30,25 +30,25 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Rebase onto main
+### main への rebase
 
 1. `trpc.git.rebase({ workspaceId, targetBranch: "main" })`
 2. `rebase-branch` が `git rebase origin/main` を実行
 3. 成功なら new HEAD を返す
 4. 競合時は `{ conflicted: true, files: [...] }` を返す
 
-### Abort / continue rebase
+### rebase を abort / continue
 
 1. 競合状態で `trpc.git.abortRebase({ workspaceId })` → `git rebase --abort`
 2. または `trpc.git.continueRebase({ workspaceId })` → ユーザーが手動解消後に呼び出し
 
-### Merge to main (fast-forward only)
+### main への merge（fast-forward のみ）
 
 1. `trpc.git.merge({ workspaceId })`
 2. target ブランチに切り替え `git merge --ff-only <sourceBranch>`
 3. 非 FF 可能だったら `fail("NOT_FAST_FORWARDABLE")`
 
-### Push to remote
+### remote に push
 
 1. `trpc.git.push({ workspaceId })`
 2. `git push origin <branch>` を実行

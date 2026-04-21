@@ -21,13 +21,13 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Open fullscreen
+### フルスクリーン表示
 
 1. タスクサイドパネルの「拡大」ボタンで遷移
 2. 同じ会話 / diff / approval 機能をフル画面で利用
 3. WorkspacePanel が Git 情報 + dev server 状態 + worktree パスを表示
 
-### Open PR dialog
+### PR ダイアログを開く
 
 1. WorkspacePanel の「Create PR」を押す
 2. `CreatePullRequestDialog` が開き、AI description 生成の選択肢がある

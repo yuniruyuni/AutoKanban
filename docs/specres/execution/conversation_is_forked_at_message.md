@@ -58,7 +58,7 @@ Claude Code 側の状態管理が壊れるリスクがある。Stop → fork の
 
 ## シナリオ
 
-### Successful fork
+### フォーク成功
 
 1. ユーザーがメッセージの「ここから分岐」メニューを選ぶ
 2. `trpc.execution.forkConversation({ sessionId, messageUuid, newPrompt })`
@@ -67,7 +67,7 @@ Claude Code 側の状態管理が壊れるリスクがある。Stop → fork の
 5. `write` で両方を upsert
 6. `post` で `executor.startProtocol({ resumeSessionId, resumeMessageId: messageUuid, prompt })` 起動
 
-### Cannot fork while running
+### 実行中はフォーク不可
 
 1. `latestProcess.status === "running"`
 2. `fail("INVALID_STATE", "Cannot fork while process is running")`

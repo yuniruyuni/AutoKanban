@@ -62,19 +62,19 @@ conversation として再構築するためにも重要（stdin log を欠くと
 
 ## シナリオ
 
-### Stdout chunk
+### Stdout チャンク
 
 1. Executor が PTY stdout チャンクを `/callback/on-log-data` で POST
 2. `appendExecutionLog({ processId, source: "stdout", data })`
 3. write で `coding_agent_process_logs.appendLogs(processId, formattedLine)`
 4. 並行して Executor / log-store が in-memory ストアに push（別経路）→ SSE 購読側にブロードキャスト
 
-### Stdin chunk
+### Stdin チャンク
 
 1. `queueMessage` の logToMemory からサーバー側で stdin log を記録
 2. または Executor が user メッセージを再送した場合の記録
 
-### Stderr chunk
+### Stderr チャンク
 
 1. stderr もログに入るが conversation-parser は通常無視する（UI の Raw Logs ビューでのみ表示）
 

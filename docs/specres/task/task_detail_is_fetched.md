@@ -18,13 +18,13 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Successful fetch
+### 取得成功
 
 1. クライアントが `trpc.task.get({ taskId })` を呼ぶ
 2. `read` で `Task.ById(taskId)` を取得
 3. `Task` をそのまま返却
 
-### Not found
+### 見つからない
 
 1. 存在しない `taskId`
 2. `fail("NOT_FOUND", "Task not found", { taskId })`

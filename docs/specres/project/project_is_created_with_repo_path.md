@@ -36,7 +36,7 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Successful creation
+### 作成成功
 
 1. クライアントが `trpc.project.create({ name, repoPath, branch?, description? })` を呼ぶ
 2. `pre` で `name` / `repoPath` の空欄を弾く
@@ -47,7 +47,7 @@ last_verified: "2026-04-21"
 6. `post` で `git.isGitRepo(repoPath)` と `git.listBranches(repoPath).length > 0` を確認
 7. 作成された `Project` をクライアントへ返却
 
-### Empty repository (no commits)
+### 空のリポジトリ（コミット無し）
 
 1. `repoPath` は git リポジトリだが初回コミットがない
 2. `post` の `listBranches` が空配列を返す

@@ -26,13 +26,13 @@ ANSI をそのまま表示すると読めなくなるため、クライアント
 
 ## シナリオ
 
-### Render raw logs with colors
+### 色付き raw ログ表示
 
 1. LogViewer が SSE で raw ログを受信
 2. `ansi.parse(chunk)` で span tree に変換
 3. React で描画（赤い error、青い info、などが色付きで表示される）
 
-### Skip ANSI in structured view
+### structured view で ANSI をスキップ
 
 1. ConversationPanel は structured ログを使うため、ANSI のパースは不要
 2. Claude のテキスト本文は ANSI を含まない JSON 文字列として来る

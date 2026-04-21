@@ -32,19 +32,19 @@ CodingAgentProcess 時）。
 
 ## シナリオ
 
-### Get by process id (coding agent)
+### process id で取得（coding agent）
 
 1. `trpc.execution.get({ executionProcessId, includeLogs: true })`
 2. `read` で `CodingAgentProcess.ById` を順に試す → 見つかればそれを返す、logs も同梱
 3. `{ executionProcess, logs }` を返却
 
-### Get by process id (dev server or script)
+### process id で取得（dev server / script）
 
 1. CodingAgentProcess で見つからなければ DevServerProcess → WorkspaceScriptProcess の順に試す
 2. どこかで見つかればそれを返す（logs は含まない）
 3. どこでも見つからなければ `fail("NOT_FOUND")`
 
-### Get latest execution for task
+### task の最新 execution 取得
 
 1. `trpc.execution.getLatest({ taskId })`
 2. `Workspace.ByTaskIdActive(taskId)` で現在 active の workspace を取得

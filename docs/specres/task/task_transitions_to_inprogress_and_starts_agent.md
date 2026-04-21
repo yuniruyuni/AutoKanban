@@ -14,6 +14,13 @@ last_verified: "2026-04-21"
 - `client/src/components/chat/StartAgentDialog.tsx`
 - `docs/specres/ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md` (遷移マトリクス)
 
+## このカードの役割
+
+**「`inprogress` への遷移がなぜ 2 つの tRPC 呼び出しに分かれているか」**という意味論を扱う。
+D&D でどのセルからどのダイアログが出るかといった UI ルール一覧は
+[`task_kanban_dnd_transitions_trigger_side_effects`](../ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md)
+を参照。
+
 ## 機能概要
 
 タスクを `todo | inreview | done | cancelled` から `inprogress` に動かすと、
@@ -34,7 +41,7 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### User-driven start
+### ユーザー操作による起動
 
 1. ユーザーがカンバンカードをドラッグで `inprogress` 列に移動、あるいは「Start Agent」ボタンを押す
 2. クライアントが `StartAgentDialog` を開いて executor / variant / prompt を確定
@@ -43,7 +50,7 @@ last_verified: "2026-04-21"
 5. サーバー側で workspace / session / coding_agent_process が新規作成され、
    executor サブプロセスが spawn される（[`execution_is_started_for_task`](../execution/execution_is_started_for_task.md) 参照）
 
-### Transition without agent start
+### agent を起動しない遷移
 
 1. タスクの状態だけを変えたい場合、UI 側で Agent 起動をスキップできる設定もある
 2. `trpc.task.update` だけが呼ばれ、`inprogress` にはなるが agent は動かない

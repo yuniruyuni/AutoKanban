@@ -26,7 +26,7 @@ pagination は現状なし（個人利用の前提で、プロジェクト数は
 
 ## シナリオ
 
-### Successful list
+### 一覧取得成功
 
 1. クライアントが `trpc.project.list()` を呼ぶ
 2. `read` ステップで `ctx.repos.project.listAllWithStats()` が `ProjectWithStats[]` を返す

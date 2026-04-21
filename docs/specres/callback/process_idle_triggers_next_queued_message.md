@@ -28,14 +28,14 @@ Coding Agent が「ユーザー入力待ち（idle）」に入ったタイミン
 
 ## シナリオ
 
-### Drain queue on idle
+### idle 時のキュー drain
 
 1. Executor が HTTP `/callback/on-process-idle` を POST（`processId`, `sessionId`）
 2. `handleProcessIdle({ processId, sessionId })` の post で `messageQueue.consume(sessionId)`
 3. queuedMessage があれば `executor.sendMessage(processId, prompt)`
 4. 送信失敗なら再キューイング、成功なら return
 
-### Move task to inreview (no queue)
+### task を inreview に遷移（キュー無し）
 
 1. queuedMessage が `null`
 2. task を `Task.toInReview` で変換

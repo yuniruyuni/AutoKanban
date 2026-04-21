@@ -25,17 +25,17 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### List & create via settings page
+### 設定ページから一覧・作成
 
 1. `/settings/task-templates` で `trpc.taskTemplate.list` / `create` / `update` / `delete`
 2. UI で title / description / condition / sortOrder を入力・並び替え
 
-### Seed on first startup
+### 初回起動時の seed
 
 1. アプリ初回起動時に `setup/seed-templates.ts` がデフォルトテンプレートを挿入
 2. ユーザーが削除した後に再 seed はされない（冪等性は初回のみ）
 
-### Apply at project creation
+### project 作成時の適用
 
 1. `createProject` の write ステップで `taskTemplate.listAll` → condition を評価
 2. 条件に合うテンプレートだけから初期タスクを `Task.create` で生成

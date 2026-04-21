@@ -20,7 +20,7 @@ DB 上のステータス更新は `on-process-complete` callback 経由で後か
 
 ## シナリオ
 
-### Successful stop
+### 停止成功
 
 1. ユーザーが「Stop Agent」ボタンを押す
 2. `trpc.execution.stop({ executionProcessId })`
@@ -28,7 +28,7 @@ DB 上のステータス更新は `on-process-complete` callback 経由で後か
 4. `post` で `executor.stop(processId)` が成功すると `{ stopped: true, executionProcessId }` を返す
 5. Executor が死ぬと `on-process-complete` callback が `killed` で status を更新する
 
-### Already terminal
+### すでに終了状態
 
 1. status が `completed` / `failed` / `killed` のどれかだった
 2. `fail("INVALID_STATE", "Coding agent process is not active", { status })`

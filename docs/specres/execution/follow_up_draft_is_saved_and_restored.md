@@ -22,7 +22,7 @@ FollowUpInput に打ちかけのテキストが残ったまま画面遷移した
 
 ## シナリオ
 
-### Save draft
+### draft を保存
 
 1. ユーザーが FollowUpInput に入力（onChange で数百ミリ秒デバウンス）
 2. `trpc.execution.saveDraft({ sessionId, text })`
@@ -30,7 +30,7 @@ FollowUpInput に打ちかけのテキストが残ったまま画面遷移した
 4. `post` で `draft.save(sessionId, text)` — メモリ上の Map に書き込み
 5. `{ success: true }` を返す
 
-### Restore draft
+### draft を復元
 
 1. 画面マウント時に `trpc.execution.getDraft({ sessionId })` を呼ぶ
 2. `post` で `draft.get(sessionId)` を読み、`{ text, savedAt }` を返す

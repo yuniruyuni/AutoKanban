@@ -28,12 +28,12 @@ sortOrder のドラッグ並び替えは UI 共通コンポーネントで実装
 
 ## シナリオ
 
-### Tools page
+### Tools ページ
 
 1. `/settings/tools` で `trpc.tool.list` → カード並びで表示
 2. 追加 / 編集 / 削除 / 並び替えをそのページ内で完結
 
-### Task Templates / Variants / MCP Servers
+### Task Templates / Variants / MCP Servers ページ
 
 1. 同じパターン: list → form → mutate
 

@@ -24,7 +24,7 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Successful update
+### 更新成功
 
 1. `trpc.project.update({ projectId, name?, description? })` を呼ぶ
 2. `read` で `Project.ById(projectId)` の存在を確認
@@ -32,7 +32,7 @@ last_verified: "2026-04-21"
 4. `write` で upsert
 5. 更新後の `Project` を返却
 
-### Not found
+### 見つからない
 
 1. 存在しない `projectId`
 2. `fail("NOT_FOUND", "Project not found", { projectId })`

@@ -30,7 +30,7 @@ Executor 側から HTTP callback を受けることで、Server は `child_proce
 
 ## シナリオ
 
-### Normal completion (coding agent)
+### 正常完了（coding agent）
 
 1. Executor が exit code 0 で終了、HTTP `/callback/on-process-complete` を POST
 2. Router が `completeExecutionProcess({ processId, sessionId, processType: "codingagent", status: "completed", exitCode: 0 })`
@@ -40,7 +40,7 @@ Executor 側から HTTP callback を受けることで、Server は `child_proce
 5. router が続けて `processQueuedFollowUp({ sessionId, prompt })`（キューに残ってる場合）か
    `moveTaskToInReview({ sessionId })`（ターン完了 & キュー空）を呼ぶ
 
-### Killed process
+### killed プロセス
 
 1. `status: "killed"` で callback
 2. process 更新 + logStore close

@@ -26,7 +26,7 @@ UI の AttemptSwitcher で履歴を切り替えられるようにする。
 
 ## シナリオ
 
-### List attempts for UI
+### UI 向け attempt 一覧
 
 1. `trpc.workspace.listAttempts({ taskId })`
 2. `read` で全 workspace を `createdAt asc` で取り、各 workspace について最新 session と
@@ -34,13 +34,13 @@ UI の AttemptSwitcher で履歴を切り替えられるようにする。
 3. `activeAttempt` は `archived !== true` の workspace の `attempt`（最大 1 件）
 4. UI は `attempts[]` を古い順に並べて表示、`activeAttempt` を強調
 
-### Get execution for attempt
+### attempt の execution 取得
 
 1. `trpc.workspace.getAttemptExecution({ workspaceId })`
 2. 最新 session → 最新 coding agent process の ID を返す
 3. session がなければ `sessionId: null, executionProcessId: null`
 
-### Find workspace by path (MCP)
+### path から workspace 検索（MCP）
 
 1. MCP ツール経由で worktree パスから問い合わせ
 2. `Workspace.findByWorktreePath` → Task → Project を辿って返す

@@ -57,7 +57,7 @@ tool use を検出し、新プロセスに **synthetic な error result** を注
 
 ## シナリオ
 
-### Resume from killed with interrupted tools
+### tool 中断付き killed からの再開
 
 1. 前プロセスが `killed` 状態で残っている
 2. ユーザーが follow-up メッセージを送る → `queueMessage`
@@ -66,7 +66,7 @@ tool use を検出し、新プロセスに **synthetic な error result** を注
 4. `post` で `executor.startProtocol({ resumeSessionId, resumeMessageId, interruptedTools })` を呼ぶ
 5. 新プロセスが resume で立ち上がり、synthetic error 注入後に follow-up prompt を処理
 
-### No resume info available
+### resume 情報が無い
 
 1. `findLatestResumeInfo` が `null`
 2. `queueMessage` は通常の新規起動経路（resume なし）で続ける

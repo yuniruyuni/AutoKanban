@@ -66,7 +66,7 @@ permission response は後者でないと hooked されない。
 
 ## シナリオ
 
-### Approval request arrives
+### approval request 到着
 
 1. Executor が `/callback/on-approval-request` に `DriverApprovalRequest` を POST
 2. `handleApprovalRequest` の read で process → session → workspace → task を辿る
@@ -76,7 +76,7 @@ permission response は後者でないと hooked されない。
 5. 応答を受けたら `executor.sendPermissionResponse(processId, requestId, approved, ...)` で返す
 6. finish で `CodingAgentProcess.restoreFromApproval` と `Task.restoreFromInReview` で状態復元
 
-### Process / task missing
+### process / task が欠如
 
 1. callback が来たタイミングで process が既に消えている等のエッジケース
 2. 該当する status 更新はスキップされ、Approval レコードだけ残る（`taskId: null`）

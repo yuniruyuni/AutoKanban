@@ -35,7 +35,7 @@ worktree を物理削除する（ブランチも削除される）。
 
 ## シナリオ
 
-### DB-only delete
+### DB のみ削除
 
 1. `trpc.task.delete({ taskId, deleteWorktrees: false })`
 2. `read` で task / project / 関連 ID 一式を集約
@@ -43,7 +43,7 @@ worktree を物理削除する（ブランチも削除される）。
 4. `post` は何もしない
 5. `{ deleted: true, taskId }` を返却
 
-### Delete with worktree cleanup
+### worktree クリーンアップ付き削除
 
 1. `deleteWorktrees: true`
 2. write までは通常と同じ

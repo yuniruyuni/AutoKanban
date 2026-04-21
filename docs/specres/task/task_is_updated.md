@@ -37,7 +37,7 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Pure field update (no status change)
+### 純粋なフィールド更新（status 変更なし）
 
 1. `trpc.task.update({ taskId, title })` のように status を含めずに呼ぶ
 2. `read` で task を取得、`needsChatReset: false`
@@ -45,7 +45,7 @@ last_verified: "2026-04-21"
 4. `write` で upsert、post はスキップ
 5. 更新後の `Task` を返却
 
-### Status change to `todo` (chat reset)
+### `todo` への status 変更（chat reset）
 
 1. 現在 `inprogress` のタスクを `todo` に更新
 2. `read` で `needsChatReset: true`、project と全 workspace を取得

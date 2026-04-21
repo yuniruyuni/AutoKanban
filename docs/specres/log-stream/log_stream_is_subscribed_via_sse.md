@@ -54,14 +54,14 @@ delta を返すだけ）、サーバー側の状態は `state` を介して clie
 
 ## シナリオ
 
-### Initial subscribe (snapshot)
+### 初回購読（snapshot）
 
 1. クライアントが `GET /sse/logs/<processId>` を open
 2. `sseRoute` が `getLogStreamSnapshot(params)` を呼ぶ
 3. `codingAgentProcessLogs.getLogs(processId)` で全ログ取得
 4. `{ events: [{ type: "log", data: content }], state: { offset: content.length } }` を送信
 
-### Continuous delta
+### 継続的な delta
 
 1. 200ms ごとに `getLogStreamDelta(params, state)` を呼ぶ
 2. 新しいログがあれば `content.slice(state.offset)` を返し、state を更新

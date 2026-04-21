@@ -27,19 +27,19 @@ Claude Code プロセスが初期化中に発行する `session_id` / `message_i
 
 ## シナリオ
 
-### Initial session id arrives
+### 初回 session id 到着
 
 1. Executor 起動直後に `/callback/on-session-info` が POST される（`processId`, `agentSessionId`）
 2. `updateSessionInfo({ processId, agentSessionId, agentMessageId: null })`
 3. `codingAgentTurn.updateAgentSessionId(processId, agentSessionId)` で DB 更新
 
-### Message id arrives
+### message id 到着
 
 1. 会話の進行に伴って `agentMessageId` が更新される
 2. `updateSessionInfo({ processId, agentSessionId: null, agentMessageId })`
 3. `codingAgentTurn.updateAgentMessageId(...)` で DB 更新
 
-### Both present
+### 両方 present
 
 1. 両方一度に渡された場合は両方とも更新
 

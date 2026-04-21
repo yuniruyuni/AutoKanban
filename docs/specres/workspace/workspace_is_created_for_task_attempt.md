@@ -57,19 +57,19 @@ Workspace エンティティで、**1 attempt = 1 Workspace = 1 Git worktree = 1
 
 ## シナリオ
 
-### First attempt
+### 初回 attempt
 
 1. taskId の workspace が 1 件も存在しない
 2. `determineAttemptStrategy` が `action: "new"`、`attempt: 1` を返す
 3. Workspace / WorkspaceRepo / Session を全て create し、write ステップで upsert
 
-### Additional attempt (after previous run)
+### 追加 attempt（前回実行後）
 
 1. `activeWorkspace` あり、`activeHasSessions: true`
 2. `action: "new"`、`workspaceToArchive: activeWorkspace`、`attempt: maxAttempt + 1`
 3. write で前の workspace を `archived: true` に更新し、新 workspace を upsert
 
-### Reuse existing attempt (resume)
+### 既存 attempt の再利用（resume）
 
 1. `activeWorkspace` あり、`activeHasSessions: false`（セッション未着手）
 2. `action: "reuse"`

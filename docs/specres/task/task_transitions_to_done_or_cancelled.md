@@ -12,6 +12,13 @@ last_verified: "2026-04-21"
 - `server/src/usecases/execution/on-process-complete.ts`
 - `client/src/components/project/KanbanBoard.tsx`
 
+## このカードの役割
+
+**「なぜ終了状態を `done` と `cancelled` の 2 つに分けたか」**の意味論と、自動 `done` 遷移の
+実装ポイントを扱う。D&D 各セルの副作用・ダイアログ文言は
+[`task_kanban_dnd_transitions_trigger_side_effects`](../ui-kanban/task_kanban_dnd_transitions_trigger_side_effects.md)
+を参照。
+
 ## 機能概要
 
 タスクの終了状態への遷移。`done` / `cancelled` のどちらも他のすべての状態から遷移可能。
@@ -33,20 +40,20 @@ last_verified: "2026-04-21"
 
 ## シナリオ
 
-### Manual done
+### 手動で done
 
 1. ユーザーが `inprogress` のタスクを `done` にドラッグ
 2. `trpc.task.update({ taskId, status: "done" })`
 3. `needsChatReset: false`（chat reset は `todo` への遷移のみ）
 4. task を upsert、workspace には触らない
 
-### Manual cancel
+### 手動で cancel
 
 1. ユーザーが任意の状態から `cancelled` に遷移
 2. workspace は archive されない（`cancelled` は `needsChatReset` の対象外）
 3. 再開したい場合は別の状態に戻すだけでよい
 
-### Automatic done from agent completion
+### agent 完了による自動 done
 
 1. Executor プロセスが exit code 0 で終了
 2. `on-process-complete` callback が発火
