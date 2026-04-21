@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJVXRAQGH9C3HBFX3X2F"
 name: "project_is_deleted_with_optional_worktrees"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

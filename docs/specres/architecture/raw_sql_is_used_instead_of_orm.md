@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXS4NJSCB1ZVD88TRP4"
 name: "raw_sql_is_used_instead_of_orm"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

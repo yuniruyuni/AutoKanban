@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3Q8W98006R0TNQGFAE8"
 name: "workspace_is_created_for_task_attempt"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

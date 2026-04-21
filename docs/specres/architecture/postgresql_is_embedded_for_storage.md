@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXYJQ6KJBGSCWD8NMKG"
 name: "postgresql_is_embedded_for_storage"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

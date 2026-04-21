@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PAFDPFGKQKSWRHPM2XV"
 name: "task_template_is_an_initial_task_preset"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

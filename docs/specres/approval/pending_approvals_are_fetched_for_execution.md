@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3R75HS06WT3HS01ZHAZ"
 name: "pending_approvals_are_fetched_for_execution"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

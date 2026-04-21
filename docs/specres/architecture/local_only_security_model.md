@@ -1,7 +1,8 @@
 ---
 id: "01KPQ6W85T6VTJEQWKM3BNVPMC"
 name: "local_only_security_model"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

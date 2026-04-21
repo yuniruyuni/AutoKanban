@@ -1,7 +1,8 @@
 ---
 id: "01KPNSEAVR0V2FXNAGASW9P9FJ"
 name: "project_is_created_with_repo_path"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QQHP6GHD2JHE1RK26C"
 name: "conversation_is_forked_at_message"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

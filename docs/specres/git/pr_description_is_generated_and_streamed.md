@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RW522THM9SJXK6HYN3"
 name: "pr_description_is_generated_and_streamed"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

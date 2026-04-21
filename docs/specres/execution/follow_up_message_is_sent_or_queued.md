@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QH0F7EGESDD7AV06F6"
 name: "follow_up_message_is_sent_or_queued"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

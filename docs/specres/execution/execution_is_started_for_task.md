@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QGNXV9410M3DFH802A"
 name: "execution_is_started_for_task"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

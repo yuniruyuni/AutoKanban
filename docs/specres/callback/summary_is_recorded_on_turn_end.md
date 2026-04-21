@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3R0HQW7R1ZZQDS33ZNA"
 name: "summary_is_recorded_on_turn_end"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

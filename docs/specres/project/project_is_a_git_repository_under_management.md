@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PA1X0NY458AYEPRTDPM"
 name: "project_is_a_git_repository_under_management"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

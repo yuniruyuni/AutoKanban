@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJW0CXD6X1YSAFEWHKXP"
 name: "task_is_created_in_todo"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

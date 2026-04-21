@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PAKZFYMM4A6PYTRH0S0"
 name: "mcp_injection_is_the_agent_context_bridge"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

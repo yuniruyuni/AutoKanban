@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSG00XN1PFDMY201CH8A"
 name: "templates_are_listed_and_created"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

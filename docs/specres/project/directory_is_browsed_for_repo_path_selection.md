@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSGCW3S2Y5XMN9CK1MDG"
 name: "directory_is_browsed_for_repo_path_selection"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

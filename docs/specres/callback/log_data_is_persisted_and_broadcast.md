@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QZ71EP5YF9C7JYYGZA"
 name: "log_data_is_persisted_and_broadcast"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

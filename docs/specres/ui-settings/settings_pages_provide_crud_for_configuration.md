@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSGA7XMKDE21TYM00R7Y"
 name: "settings_pages_provide_crud_for_configuration"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

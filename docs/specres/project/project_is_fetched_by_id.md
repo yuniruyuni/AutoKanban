@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJVSHA5H1SKKQ154SW5Z"
 name: "project_is_fetched_by_id"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

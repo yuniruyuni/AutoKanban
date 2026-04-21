@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXW033P9RPM4RVH9Q21"
 name: "usecase_is_executed_in_6_steps"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

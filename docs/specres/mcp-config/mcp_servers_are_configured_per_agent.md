@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSG4HEKJYAW9Q9SM25R8"
 name: "mcp_servers_are_configured_per_agent"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

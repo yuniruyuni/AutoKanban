@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PAGF5SEPD75ZYWRMEDH"
 name: "variant_is_an_executor_launch_preset"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

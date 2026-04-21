@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXX6SCHAHJ36VA70ZJE"
 name: "specification_pattern_composes_db_filters"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

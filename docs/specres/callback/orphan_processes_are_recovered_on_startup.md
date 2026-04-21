@@ -1,7 +1,8 @@
 ---
 id: "01KPQBJQ1973HTVE0R7YWN26M9"
 name: "orphan_processes_are_recovered_on_startup"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

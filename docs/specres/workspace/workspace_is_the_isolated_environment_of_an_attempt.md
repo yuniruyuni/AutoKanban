@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PA4SS8SKP7XWJG3KGVF"
 name: "workspace_is_the_isolated_environment_of_an_attempt"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

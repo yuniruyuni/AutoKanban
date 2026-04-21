@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RNADFZ6C4H1H2VF44S"
 name: "structured_log_stream_yields_parsed_messages"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

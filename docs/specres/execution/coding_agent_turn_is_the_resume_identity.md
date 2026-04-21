@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PAAXA6FR10PJY9C1DF1"
 name: "coding_agent_turn_is_the_resume_identity"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

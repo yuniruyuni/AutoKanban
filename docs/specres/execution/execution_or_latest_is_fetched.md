@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QT901FC4PHSRS0SPKV"
 name: "execution_or_latest_is_fetched"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

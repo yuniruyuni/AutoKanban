@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXZBF4J3P7QB0C67VCP"
 name: "workspace_config_is_auto_kanban_json"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

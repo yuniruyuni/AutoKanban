@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PAMNEDDBVS0883HYRCG"
 name: "dev_server_process_is_a_worktree_scoped_server"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

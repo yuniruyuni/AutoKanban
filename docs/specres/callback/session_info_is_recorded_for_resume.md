@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QYE2ZFFYFFQ19JD3AH"
 name: "session_info_is_recorded_for_resume"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

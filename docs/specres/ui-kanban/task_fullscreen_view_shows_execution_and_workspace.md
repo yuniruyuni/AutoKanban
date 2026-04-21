@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSG96YB0X1BGW2WN6K9Q"
 name: "task_fullscreen_view_shows_execution_and_workspace"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

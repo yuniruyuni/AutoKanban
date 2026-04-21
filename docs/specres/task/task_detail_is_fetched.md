@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJW3JZ7Y5SF7TBX5HTYC"
 name: "task_detail_is_fetched"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

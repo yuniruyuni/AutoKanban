@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RVKCWCSPCAJTEKT2QZ"
 name: "pull_request_is_created_and_finalized"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

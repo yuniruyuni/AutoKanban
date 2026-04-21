@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJW5PQ99GFB1W694PSZ6"
 name: "task_is_updated"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QMPBNZVNKVC97HZB52"
 name: "execution_is_stopped_by_user"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSG89TW2BEMSHJBG0C96"
 name: "task_detail_panel_shows_conversation_and_diff"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

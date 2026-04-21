@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PA7ZMF3SQC17QXMF7PC"
 name: "session_is_the_bundle_of_agent_runs"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

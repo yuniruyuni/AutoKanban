@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RX9X81V6FS6GB9G86R"
 name: "tool_is_managed_and_executed"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

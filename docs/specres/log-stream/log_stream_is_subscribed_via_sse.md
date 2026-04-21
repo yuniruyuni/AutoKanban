@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RA08KSRZFYJ61HG2AB"
 name: "log_stream_is_subscribed_via_sse"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

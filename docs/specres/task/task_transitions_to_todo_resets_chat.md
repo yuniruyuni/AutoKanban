@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJWEV82CG0H0BXSJ9T8G"
 name: "task_transitions_to_todo_resets_chat"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

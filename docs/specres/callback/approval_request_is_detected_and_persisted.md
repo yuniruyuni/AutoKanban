@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3R2G1397A2C25KH9821"
 name: "approval_request_is_detected_and_persisted"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

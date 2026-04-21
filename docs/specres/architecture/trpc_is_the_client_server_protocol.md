@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXQDZ4R12Y7P3D9HGYA"
 name: "trpc_is_the_client_server_protocol"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

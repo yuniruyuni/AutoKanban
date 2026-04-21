@@ -1,7 +1,8 @@
 ---
 id: "01KPQ6W85ST432T45FW553KDDE"
 name: "tests_are_layered_per_responsibility"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

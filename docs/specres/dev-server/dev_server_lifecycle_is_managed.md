@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RRYH45YHGMS83W76H0"
 name: "dev_server_lifecycle_is_managed"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

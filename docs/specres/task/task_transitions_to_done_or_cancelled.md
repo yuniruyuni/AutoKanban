@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJWFA8DAP0KD9FW19H4Q"
 name: "task_transitions_to_done_or_cancelled"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

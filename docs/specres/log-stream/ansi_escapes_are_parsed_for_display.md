@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RP8WYFHMFQ4QW3MGQZ"
 name: "ansi_escapes_are_parsed_for_display"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

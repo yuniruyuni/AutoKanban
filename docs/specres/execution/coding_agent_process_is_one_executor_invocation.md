@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PA8CV9HVRA6SADJ0WSZ"
 name: "coding_agent_process_is_one_executor_invocation"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

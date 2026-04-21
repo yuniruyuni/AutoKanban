@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3R6ZE147WHQKD0ASB9A"
 name: "approval_is_responded_from_approval_card"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

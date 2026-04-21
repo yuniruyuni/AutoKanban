@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSGFXEWD4TKRHYDT856F"
 name: "template_condition_filters_applicability"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

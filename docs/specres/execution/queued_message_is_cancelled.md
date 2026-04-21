@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QJN5VFJ21ZRYGPQPCF"
 name: "queued_message_is_cancelled"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

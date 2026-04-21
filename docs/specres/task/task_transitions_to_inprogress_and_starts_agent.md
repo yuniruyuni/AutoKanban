@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJWAYW0CGTZ3AZ2HD42F"
 name: "task_transitions_to_inprogress_and_starts_agent"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

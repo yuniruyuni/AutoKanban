@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXV5WC3V732NY8CG046"
 name: "valtio_is_the_client_local_state"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

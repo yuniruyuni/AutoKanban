@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSG5R2DQ15S2NJ893VNE"
 name: "auto_kanban_is_injected_as_mcp_server"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

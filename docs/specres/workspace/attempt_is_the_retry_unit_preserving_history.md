@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PA6R6NBTA73WJ9EFRRV"
 name: "attempt_is_the_retry_unit_preserving_history"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

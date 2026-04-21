@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PA2SQRARM986Y6YDYBV"
 name: "task_is_a_unit_of_work_delegated_to_ai"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

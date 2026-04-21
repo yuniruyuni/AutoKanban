@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXPTQ7DDCBCHZ90DK2E"
 name: "typescript_is_the_single_language_across_stack"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

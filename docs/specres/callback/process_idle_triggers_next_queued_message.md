@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QW3FQPJ7535FCQAXY7"
 name: "process_idle_triggers_next_queued_message"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

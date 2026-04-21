@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QDCVVJXS9QES8YWY99"
 name: "workspace_cleanup_script_is_run_before_removal"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

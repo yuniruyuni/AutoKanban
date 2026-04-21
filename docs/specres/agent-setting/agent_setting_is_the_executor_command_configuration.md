@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PAJ6BSRVSN6GCP1ZSXG"
 name: "agent_setting_is_the_executor_command_configuration"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

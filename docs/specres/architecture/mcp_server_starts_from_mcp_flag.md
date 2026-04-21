@@ -1,7 +1,8 @@
 ---
 id: "01KPQ6W85XYZ1YWFZMV5SAS7G2"
 name: "mcp_server_starts_from_mcp_flag"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

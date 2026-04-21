@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSG330HN6YBQ2AHJZDW4"
 name: "agent_command_is_configured_and_checked"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

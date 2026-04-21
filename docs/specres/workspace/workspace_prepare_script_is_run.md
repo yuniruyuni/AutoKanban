@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QC5W9HVHPA3PGSMZRF"
 name: "workspace_prepare_script_is_run"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSGDD1B05FV65HVPERRT"
 name: "git_repo_is_initialized_for_new_directory"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

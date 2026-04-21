@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QEEC6KYB370PM3CRT8"
 name: "workspace_attempts_are_listed_and_archived"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

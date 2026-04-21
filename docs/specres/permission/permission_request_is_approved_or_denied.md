@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3R9YG1J1XFNB5CPZJR3"
 name: "permission_request_is_approved_or_denied"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

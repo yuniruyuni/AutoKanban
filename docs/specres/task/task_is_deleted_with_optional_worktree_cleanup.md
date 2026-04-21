@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJW89KPCWYXKE4E261H9"
 name: "task_is_deleted_with_optional_worktree_cleanup"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

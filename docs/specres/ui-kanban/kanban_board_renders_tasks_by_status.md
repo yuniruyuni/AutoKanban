@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSG7R884Y412A422AVPE"
 name: "kanban_board_renders_tasks_by_status"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

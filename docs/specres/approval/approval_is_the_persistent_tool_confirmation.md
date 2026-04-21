@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PABBTT3HZ1GWK4VRR7M"
 name: "approval_is_the_persistent_tool_confirmation"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

@@ -1,7 +1,8 @@
 ---
 id: "01KPNTBSG1VTZH0VGAVST7EX29"
 name: "variants_are_managed_per_executor"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

@@ -1,7 +1,8 @@
 ---
 id: "01KPNSHJWC2NZQA92FWDK177XH"
 name: "task_transitions_to_inreview_on_approval_request"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

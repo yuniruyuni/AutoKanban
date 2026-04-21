@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QRGJ28TH90269FY74A"
 name: "follow_up_draft_is_saved_and_restored"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QP8DF0PYD2E00BG91E"
 name: "execution_resumes_from_killed_session"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

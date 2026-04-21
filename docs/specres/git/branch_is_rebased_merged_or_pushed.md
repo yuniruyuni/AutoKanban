@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RSQGHS2F76VKN16QZM"
 name: "branch_is_rebased_merged_or_pushed"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

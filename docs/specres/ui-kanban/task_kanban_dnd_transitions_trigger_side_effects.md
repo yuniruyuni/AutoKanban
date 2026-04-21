@@ -1,7 +1,8 @@
 ---
 id: "01KPQ6W85XM05B7HEHAH6AEJKG"
 name: "task_kanban_dnd_transitions_trigger_side_effects"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

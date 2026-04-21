@@ -1,7 +1,8 @@
 ---
 id: "01KPPZWHXTQ7W9GC1597XGM4VW"
 name: "layered_architecture_separates_model_repository_usecase_presentation"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

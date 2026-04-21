@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3RR53PPC1KAWR4HB2PP"
 name: "branches_and_diffs_are_fetched"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

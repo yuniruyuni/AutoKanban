@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QAMNPEM9FR0G5MZ26F"
 name: "worktree_is_created_with_branch"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

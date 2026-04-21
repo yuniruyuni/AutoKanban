@@ -1,7 +1,8 @@
 ---
 id: "01KPNSJ3QVDJYEG9E5GBS6DDN2"
 name: "process_completion_updates_task_status"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

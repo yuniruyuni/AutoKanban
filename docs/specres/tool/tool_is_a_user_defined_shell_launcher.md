@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PAESWKFK5KJ0N1S7M9Q"
 name: "tool_is_a_user_defined_shell_launcher"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

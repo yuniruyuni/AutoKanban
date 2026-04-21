@@ -1,7 +1,8 @@
 ---
 id: "01KPNX4PACA9S29SQDJ441E6V7"
 name: "permission_is_the_ephemeral_control_request"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル

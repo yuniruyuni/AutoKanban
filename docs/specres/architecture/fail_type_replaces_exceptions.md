@@ -1,7 +1,8 @@
 ---
 id: "01KPQ6W85WC3WMHX9ZKHAACSJ6"
 name: "fail_type_replaces_exceptions"
-status: "draft"
+status: "stable"
+last_verified: "2026-04-21"
 ---
 
 ## 関連ファイル
