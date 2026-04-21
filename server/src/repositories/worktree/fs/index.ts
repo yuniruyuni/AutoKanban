@@ -1,3 +1,4 @@
+// @specre 01KPQ6W85T6VTJEQWKM3BNVPMC
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -41,7 +42,19 @@ export class WorktreeRepository implements WorktreeRepositoryDef {
 		workspaceId: string,
 		projectName: string,
 	): string {
-		return path.join(this.getWorkspaceDir(_ctx, workspaceId), projectName);
+		const workspaceDir = this.getWorkspaceDir(_ctx, workspaceId);
+		const joined = path.join(workspaceDir, projectName);
+		const resolvedBase = path.resolve(workspaceDir);
+		const resolved = path.resolve(joined);
+		if (
+			resolved !== resolvedBase &&
+			!resolved.startsWith(resolvedBase + path.sep)
+		) {
+			throw new Error(
+				`Invalid project name: "${projectName}" escapes worktree base directory`,
+			);
+		}
+		return joined;
 	}
 
 	async createWorktree(

@@ -30,6 +30,11 @@ export async function startServer(params: StartServerParams) {
 
 	// HTTP server
 	const PORT = Number(process.env.PORT ?? 3000);
+	// Default to loopback: AutoKanban has no auth and trusts the OS user boundary.
+	// Binding 0.0.0.0 exposes the full API to any device on the LAN.
+	// AUTO_KANBAN_HOST escape hatch is for WSL/container users who intentionally
+	// forward from an outer host and accept the trust implications themselves.
+	const HOST = process.env.AUTO_KANBAN_HOST ?? "127.0.0.1";
 	const app = new Hono();
 
 	app.use("/*", cors());
@@ -62,10 +67,10 @@ export async function startServer(params: StartServerParams) {
 	process.on("SIGINT", shutdown);
 	process.on("SIGTERM", shutdown);
 
-	ctx.logger.info(`Server running on http://localhost:${PORT}`);
+	ctx.logger.info(`Server running on http://${HOST}:${PORT}`);
 
 	return {
-		hostname: "0.0.0.0",
+		hostname: HOST,
 		port: PORT,
 		fetch: app.fetch,
 		idleTimeout: 120,

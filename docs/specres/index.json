@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-21T14:24:48Z",
+  "generated_at": "2026-04-21T17:51:22Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -664,7 +664,7 @@
       "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/local_only_security_model.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-22"
     },
     {
       "id": "01KPQ6W85WC3WMHX9ZKHAACSJ6",
@@ -851,6 +851,11 @@
       "line": 2
     },
     {
+      "specre_id": "01KPQ6W85XYZ1YWFZMV5SAS7G2",
+      "file": "server/src/presentation/mcp/stdio.ts",
+      "line": 3
+    },
+    {
       "specre_id": "01KPPZWHXQDZ4R12Y7P3D9HGYA",
       "file": "server/src/presentation/trpc/init.ts",
       "line": 1
@@ -878,6 +883,11 @@
     {
       "specre_id": "01KPNTBSG1VTZH0VGAVST7EX29",
       "file": "server/src/presentation/trpc/routers/variant.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPQ6W85T6VTJEQWKM3BNVPMC",
+      "file": "server/src/repositories/worktree/fs/index.ts",
       "line": 1
     },
     {

@@ -12,6 +12,6 @@
 | [postgresql_is_embedded_for_storage](postgresql_is_embedded_for_storage.md) | stable | 2026-04-21 |
 | [workspace_config_is_auto_kanban_json](workspace_config_is_auto_kanban_json.md) | stable | 2026-04-21 |
 | [tests_are_layered_per_responsibility](tests_are_layered_per_responsibility.md) | stable | 2026-04-21 |
-| [local_only_security_model](local_only_security_model.md) | stable | 2026-04-21 |
+| [local_only_security_model](local_only_security_model.md) | stable | 2026-04-22 |
 | [fail_type_replaces_exceptions](fail_type_replaces_exceptions.md) | stable | 2026-04-21 |
 | [mcp_server_starts_from_mcp_flag](mcp_server_starts_from_mcp_flag.md) | stable | 2026-04-21 |

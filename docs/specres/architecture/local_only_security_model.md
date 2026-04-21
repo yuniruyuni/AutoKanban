@@ -2,15 +2,14 @@
 id: "01KPQ6W85T6VTJEQWKM3BNVPMC"
 name: "local_only_security_model"
 status: "stable"
-last_verified: "2026-04-21"
+last_verified: "2026-04-22"
 ---
 
 ## 関連ファイル
 
-- `server/src/index.ts` (ホスト名 bind)
+- `server/src/presentation/index.ts` (`HOST` = `AUTO_KANBAN_HOST ?? "127.0.0.1"` で bind)
 - `server/src/presentation/trpc/routers/*.ts` (Zod によるバリデーション)
-- `server/src/repositories/worktree/` (パス検証)
-- `server/src/repositories/script-runner/` (コマンド実行)
+- `server/src/repositories/worktree/fs/index.ts` (`getWorktreePath` でのパストラバーサル検証)
 - `~/.auto-kanban/` (データディレクトリ)
 
 ## 機能概要
@@ -54,8 +53,9 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
   ([`raw_sql_is_used_instead_of_orm`](./raw_sql_is_used_instead_of_orm.md))
 - **コマンド実行**: `Bun.spawn(['git', 'commit', '-m', message])` のように**配列形式で引数を渡す**。
   `exec(\`git commit -m "${message}"\`)` のようなシェル経由は禁止
-- **パス検証**: worktree を作る前に `path.resolve(repoPath).startsWith(base + sep)` で
-  ベースパス外を拒否
+- **パス検証**: `WorktreeRepository.getWorktreePath` が `path.resolve(joined).startsWith(base + sep)`
+  を全 worktree 操作の唯一の入口で強制。`projectName` に `../` が混ざると throw。
+  これが worktree 関連 5 メソッド（create / remove / exists / ensure / getInfo）の共通バックストップ
 - **入力バリデーション**: tRPC の `z.object({...}).input(...)` で全入力を検証。
   Presentation 層の責務（[`trpc_is_the_client_server_protocol`](./trpc_is_the_client_server_protocol.md)）
 - **エラーメッセージ**: 外向きには汎用メッセージ、詳細は `Fail.details` に入れてログ・UI で
@@ -63,9 +63,11 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 
 ### ネットワーク設定
 
-- HTTP サーバーは `127.0.0.1` に bind（`0.0.0.0` で外部公開しない）
+- HTTP サーバーは **`127.0.0.1` に bind**（`server/src/presentation/index.ts` の `HOST` 定数）
+- 外部公開が必要な特殊ケース（WSL の Windows 側から繋ぐ等）は `AUTO_KANBAN_HOST=0.0.0.0`
+  env で上書きできるが、**ユーザーが意図して trust を拡張した**という扱い
 - tRPC Subscription (WebSocket) も同じ host
-- データディレクトリ `~/.auto-kanban/` は所有者のみアクセス可（`0o700`）
+- データディレクトリ `~/.auto-kanban/` は所有者のみアクセス可
 
 ## 検討された代替案
 
@@ -76,9 +78,9 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 
 ## 主要メンバー
 
-- `Bun.serve({ hostname: "127.0.0.1" })` — 外部公開を構造的に防ぐ
+- `process.env.AUTO_KANBAN_HOST ?? "127.0.0.1"` — 外部公開を既定で防ぐ
 - `Bun.spawn([...])` — シェル非経由のコマンド実行
-- `path.resolve(p).startsWith(base + sep)` — パストラバーサル検証
+- `WorktreeRepository.getWorktreePath` — `path.resolve().startsWith(base + sep)` でパストラバーサル拒否
 - `z.object({...})` — Zod 入力スキーマ
 - `bun audit` — 依存脆弱性チェック
 
