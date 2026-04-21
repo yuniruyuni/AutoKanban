@@ -7,6 +7,8 @@
 		"e2e"
 	],
 	"scripts": {
+		"prepare": "git config --local core.hooksPath .githooks 2>/dev/null || true",
+		"setup:hooks": "git config --local core.hooksPath .githooks",
 		"start:dev": "bun run --filter '*' --parallel start:dev",
 		"start:prod": "bun run --filter '*' --parallel start:prod",
 		"build": "bun run --filter '*' build",

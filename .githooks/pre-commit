@@ -1,0 +1,36 @@
+#!/bin/sh
+# AutoKanban pre-commit hook
+#
+# If any specre card under docs/specres/**/*.md was modified, re-generate
+# index.json and _INDEX.md so they never drift out of sync with the cards.
+# Staged specre changes pick up the regenerated index automatically.
+#
+# Gracefully skip if specre CLI is not installed.
+
+set -e
+
+# Detect specre .md changes (added/modified/deleted), excluding auto-gen files.
+SPECRE_CHANGED=$(
+  git diff --cached --name-only --diff-filter=AMD -- 'docs/specres/**/*.md' \
+    | grep -v '/_INDEX\.md$' \
+    | grep -v '^docs/specres/README\.md$' \
+    || true
+)
+
+if [ -z "$SPECRE_CHANGED" ]; then
+  exit 0
+fi
+
+if ! command -v specre >/dev/null 2>&1; then
+  echo "[specre pre-commit] CLI not installed, skipping index regeneration."
+  echo "[specre pre-commit] Install with: cargo install specre"
+  exit 0
+fi
+
+echo "[specre pre-commit] specre card changes detected — regenerating index..."
+specre index
+
+# Re-stage the auto-generated files so the commit includes them atomically.
+git add docs/specres/index.json 'docs/specres/**/_INDEX.md' 2>/dev/null || true
+
+exit 0

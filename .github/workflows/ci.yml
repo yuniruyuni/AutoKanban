@@ -16,6 +16,13 @@ jobs:
 
       - run: bun install
 
+      - name: Install specre CLI
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf \
+            https://github.com/yoshiakist/specre/releases/latest/download/specre-installer.sh \
+            | sh
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
       - name: Lint
         run: bun run check:lint
 
@@ -27,3 +34,6 @@ jobs:
 
       - name: Architecture check
         run: bun run check:arch
+
+      - name: specre health check
+        run: bun run check:specre
