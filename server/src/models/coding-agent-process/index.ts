@@ -1,4 +1,6 @@
 // @specre 01KPNX4PA8CV9HVRA6SADJ0WSZ
+
+import { CodingAgentTurn } from "../coding-agent-turn";
 import {
 	type Comp,
 	defineSpecs,
@@ -116,6 +118,24 @@ export namespace CodingAgentProcess {
 	): CodingAgentProcess | null {
 		if (process.status !== "awaiting_approval") return null;
 		return { ...process, status: "running", updatedAt: new Date() };
+	}
+
+	// Factory: Process + Turn pair
+	export interface ProcessWithTurn {
+		process: CodingAgentProcess;
+		turn: CodingAgentTurn;
+	}
+
+	export function createWithTurn(params: {
+		sessionId: string;
+		prompt: string;
+	}): ProcessWithTurn {
+		const process = create({ sessionId: params.sessionId });
+		const turn = CodingAgentTurn.create({
+			executionProcessId: process.id,
+			prompt: params.prompt,
+		});
+		return { process, turn };
 	}
 
 	// Message receive eligibility

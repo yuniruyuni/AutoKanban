@@ -1,6 +1,5 @@
 // @specre 01KPNSJ3QQHP6GHD2JHE1RK26C
 import { CodingAgentProcess } from "../../models/coding-agent-process";
-import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";
@@ -70,13 +69,11 @@ export const forkConversation = (
 		},
 
 		process: (_ctx, { session, workspace, resumeInfo }) => {
-			const codingAgentProcess = CodingAgentProcess.create({
-				sessionId: session.id,
-			});
-			const codingAgentTurn = CodingAgentTurn.create({
-				executionProcessId: codingAgentProcess.id,
-				prompt: newPrompt,
-			});
+			const { process: codingAgentProcess, turn: codingAgentTurn } =
+				CodingAgentProcess.createWithTurn({
+					sessionId: session.id,
+					prompt: newPrompt,
+				});
 			return {
 				session,
 				workspace,

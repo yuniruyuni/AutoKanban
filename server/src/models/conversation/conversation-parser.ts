@@ -52,6 +52,25 @@ export interface ParseResult {
 }
 
 /**
+ * Minimal tool reference for executor.startProtocol()
+ */
+export interface ProtocolToolRef {
+	toolId: string;
+	toolName: string;
+}
+
+/**
+ * Convert pending tool uses to the format expected by executor.startProtocol().
+ * Returns undefined when no tools are pending (protocol expects undefined, not []).
+ */
+export function pendingToolUsesToProtocolFormat(
+	tools: PendingToolUse[],
+): ProtocolToolRef[] | undefined {
+	if (tools.length === 0) return undefined;
+	return tools.map((t) => ({ toolId: t.toolId, toolName: t.toolName }));
+}
+
+/**
  * Information about a pending (interrupted) tool use
  */
 export interface PendingToolUse {

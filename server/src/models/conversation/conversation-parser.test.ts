@@ -4,6 +4,7 @@ import {
 	findInterruptedTaskTools,
 	findPendingToolUses,
 	parseLogsToConversation,
+	pendingToolUsesToProtocolFormat,
 } from "./conversation-parser";
 
 // ============================================
@@ -895,5 +896,35 @@ describe("control_response handling", () => {
 		if (toolEntry?.type.kind === "tool") {
 			expect(toolEntry.type.status).toBe("denied");
 		}
+	});
+});
+
+// ============================================
+// pendingToolUsesToProtocolFormat()
+// ============================================
+
+describe("pendingToolUsesToProtocolFormat()", () => {
+	test("returns undefined for empty array", () => {
+		expect(pendingToolUsesToProtocolFormat([])).toBeUndefined();
+	});
+
+	test("maps non-empty array to {toolId, toolName}[]", () => {
+		const tools = [
+			{ toolId: "t1", toolName: "Bash", input: { command: "ls" } },
+			{ toolId: "t2", toolName: "Read", input: { path: "/a" } },
+		];
+		expect(pendingToolUsesToProtocolFormat(tools)).toEqual([
+			{ toolId: "t1", toolName: "Bash" },
+			{ toolId: "t2", toolName: "Read" },
+		]);
+	});
+
+	test("strips input field from result", () => {
+		const tools = [
+			{ toolId: "t1", toolName: "Bash", input: { command: "ls" } },
+		];
+		const result = pendingToolUsesToProtocolFormat(tools);
+		expect(result).toBeDefined();
+		expect(result?.[0]).not.toHaveProperty("input");
 	});
 });

@@ -2,11 +2,11 @@
 // @specre 01KPNSJ3QGNXV9410M3DFH802A
 import { AgentSetting } from "../../models/agent-setting";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
-import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import {
 	findPendingToolUses,
 	type PendingToolUse,
+	pendingToolUsesToProtocolFormat,
 } from "../../models/conversation/conversation-parser";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
@@ -105,7 +105,7 @@ export const startExecution = (
 			}
 
 			// Look up variant entity if specified
-			const executor = options?.executor ?? "claude-code";
+			const executor = options?.executor ?? Session.DEFAULT_EXECUTOR;
 			const variantEntity = options?.variant
 				? await ctx.repos.variant.get(
 						Variant.ByExecutorAndName(executor, options?.variant),
@@ -167,7 +167,7 @@ export const startExecution = (
 			// Create new session
 			const session = Session.create({
 				workspaceId: workspace.id,
-				executor: options?.executor ?? "claude-code",
+				executor: options?.executor ?? Session.DEFAULT_EXECUTOR,
 				variant: options?.variant,
 			});
 
@@ -176,13 +176,11 @@ export const startExecution = (
 			const prompt = Task.toPrompt(task);
 
 			// Create CodingAgentProcess and CodingAgentTurn in process step (pure)
-			const codingAgentProcess = CodingAgentProcess.create({
-				sessionId: session.id,
-			});
-			const codingAgentTurn = CodingAgentTurn.create({
-				executionProcessId: codingAgentProcess.id,
-				prompt,
-			});
+			const { process: codingAgentProcess, turn: codingAgentTurn } =
+				CodingAgentProcess.createWithTurn({
+					sessionId: session.id,
+					prompt,
+				});
 
 			// Create prepare script process entity (will be persisted in finish if used)
 			const prepareScriptProcess = WorkspaceScriptProcess.create({
@@ -392,13 +390,7 @@ export const startExecution = (
 				command,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
-				interruptedTools:
-					interruptedTools.length > 0
-						? interruptedTools.map((t) => ({
-								toolId: t.toolId,
-								toolName: t.toolName,
-							}))
-						: undefined,
+				interruptedTools: pendingToolUsesToProtocolFormat(interruptedTools),
 			});
 
 			const result = {

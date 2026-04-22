@@ -1,10 +1,10 @@
 // @specre 01KPNSJ3QVDJYEG9E5GBS6DDN2
 import type { ProcessType } from "../../infra/callback/client";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
-import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import {
 	findPendingToolUses,
 	type PendingToolUse,
+	pendingToolUsesToProtocolFormat,
 } from "../../models/conversation/conversation-parser";
 import { DevServerProcess } from "../../models/dev-server-process";
 import { Project } from "../../models/project";
@@ -182,13 +182,11 @@ export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 					resumeInfo,
 					interruptedTools,
 				};
-			const codingAgentProcess = CodingAgentProcess.create({
-				sessionId,
-			});
-			const turn = CodingAgentTurn.create({
-				executionProcessId: codingAgentProcess.id,
-				prompt,
-			});
+			const { process: codingAgentProcess, turn } =
+				CodingAgentProcess.createWithTurn({
+					sessionId,
+					prompt,
+				});
 			return {
 				workingDir,
 				codingAgentProcess,
@@ -222,13 +220,7 @@ export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 				prompt,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
-				interruptedTools:
-					interruptedTools.length > 0
-						? interruptedTools.map((t) => ({
-								toolId: t.toolId,
-								toolName: t.toolName,
-							}))
-						: undefined,
+				interruptedTools: pendingToolUsesToProtocolFormat(interruptedTools),
 			});
 
 			return {};

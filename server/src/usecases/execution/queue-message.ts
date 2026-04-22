@@ -9,6 +9,7 @@ import {
 	findPendingToolUses,
 	type PendingToolUse,
 	parseLogsToConversation,
+	pendingToolUsesToProtocolFormat,
 } from "../../models/conversation/conversation-parser";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
@@ -65,7 +66,7 @@ export const queueMessage = (
 			const resumeInfo =
 				await ctx.repos.codingAgentTurn.findLatestResumeInfo(sessionId);
 
-			const executor = options?.executor ?? "claude-code";
+			const executor = options?.executor ?? Session.DEFAULT_EXECUTOR;
 			const variantEntity = options?.variant
 				? await ctx.repos.variant.get(
 						Variant.ByExecutorAndName(executor, options.variant),
@@ -256,13 +257,7 @@ export const queueMessage = (
 				command,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
-				interruptedTools:
-					interruptedTools.length > 0
-						? interruptedTools.map((t) => ({
-								toolId: t.toolId,
-								toolName: t.toolName,
-							}))
-						: undefined,
+				interruptedTools: pendingToolUsesToProtocolFormat(interruptedTools),
 			});
 
 			logToMemory(codingAgentProcess.id);

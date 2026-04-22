@@ -1,5 +1,51 @@
 import { describe, expect, test } from "bun:test";
+import { isFail } from "../common";
 import { Approval } from ".";
+
+// ============================================
+// Approval.validateForResponse()
+// ============================================
+
+describe("Approval.validateForResponse()", () => {
+	test("returns null when pending and process matches", () => {
+		const a = Approval.create({
+			executionProcessId: "ep-1",
+			toolName: "bash",
+			toolCallId: "tc-1",
+		});
+		expect(Approval.validateForResponse(a, "ep-1")).toBeNull();
+	});
+
+	test("returns Fail when approval is already responded", () => {
+		const a = Approval.respond(
+			Approval.create({
+				executionProcessId: "ep-1",
+				toolName: "bash",
+				toolCallId: "tc-1",
+			}),
+			"approved",
+			null,
+		);
+		const result = Approval.validateForResponse(a, "ep-1");
+		expect(result).not.toBeNull();
+		expect(isFail(result)).toBe(true);
+		expect(result?.code).toBe("INVALID_STATE");
+		expect(result?.message).toBe("Approval already responded");
+	});
+
+	test("returns Fail when executionProcessId does not match", () => {
+		const a = Approval.create({
+			executionProcessId: "ep-1",
+			toolName: "bash",
+			toolCallId: "tc-1",
+		});
+		const result = Approval.validateForResponse(a, "ep-OTHER");
+		expect(result).not.toBeNull();
+		expect(isFail(result)).toBe(true);
+		expect(result?.code).toBe("INVALID_STATE");
+		expect(result?.message).toBe("Approval does not belong to this process");
+	});
+});
 
 // ============================================
 // Approval.create()

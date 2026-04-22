@@ -39,6 +39,8 @@ export namespace Session {
 	export type Spec = Comp<SpecsOf<typeof _specs>>;
 
 	// Constants
+	export const DEFAULT_EXECUTOR = "claude-code" as const;
+
 	export const defaultSort: Sort<SortKey> = {
 		keys: ["createdAt", "id"] as const,
 		order: "desc",

@@ -27,23 +27,11 @@ export const respondToApproval = (
 				});
 			}
 
-			if (approval.status !== "pending") {
-				return fail("INVALID_STATE", "Approval already responded", {
-					approvalId,
-					status: approval.status,
-				});
-			}
-
-			if (approval.executionProcessId !== executionProcessId) {
-				return fail(
-					"INVALID_STATE",
-					"Approval does not belong to this process",
-					{
-						approvalId,
-						executionProcessId,
-					},
-				);
-			}
+			const validationError = Approval.validateForResponse(
+				approval,
+				executionProcessId,
+			);
+			if (validationError) return validationError;
 
 			return { approval };
 		},

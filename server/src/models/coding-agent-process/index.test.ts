@@ -2,6 +2,44 @@ import { describe, expect, test } from "bun:test";
 import { CodingAgentProcess } from ".";
 
 // ============================================
+// CodingAgentProcess.createWithTurn()
+// ============================================
+
+describe("CodingAgentProcess.createWithTurn()", () => {
+	test("returns process and turn with matching executionProcessId", () => {
+		const { process, turn } = CodingAgentProcess.createWithTurn({
+			sessionId: "s1",
+			prompt: "hello",
+		});
+		expect(turn.executionProcessId).toBe(process.id);
+	});
+
+	test("sets sessionId on the process", () => {
+		const { process } = CodingAgentProcess.createWithTurn({
+			sessionId: "s1",
+			prompt: "hello",
+		});
+		expect(process.sessionId).toBe("s1");
+	});
+
+	test("sets prompt on the turn", () => {
+		const { turn } = CodingAgentProcess.createWithTurn({
+			sessionId: "s1",
+			prompt: "do the thing",
+		});
+		expect(turn.prompt).toBe("do the thing");
+	});
+
+	test("process starts with running status", () => {
+		const { process } = CodingAgentProcess.createWithTurn({
+			sessionId: "s1",
+			prompt: "hello",
+		});
+		expect(process.status).toBe("running");
+	});
+});
+
+// ============================================
 // CodingAgentProcess.canReceiveMessage()
 // ============================================
 

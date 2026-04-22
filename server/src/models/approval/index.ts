@@ -2,6 +2,8 @@
 import {
 	type Comp,
 	defineSpecs,
+	type Fail,
+	fail,
 	generateId,
 	type Sort,
 	type SpecsOf,
@@ -76,6 +78,26 @@ export namespace Approval {
 			respondedAt: null,
 			updatedAt: now,
 		};
+	}
+
+	// Validation
+	export function validateForResponse(
+		approval: Approval,
+		executionProcessId: string,
+	): Fail | null {
+		if (approval.status !== "pending") {
+			return fail("INVALID_STATE", "Approval already responded", {
+				approvalId: approval.id,
+				status: approval.status,
+			});
+		}
+		if (approval.executionProcessId !== executionProcessId) {
+			return fail("INVALID_STATE", "Approval does not belong to this process", {
+				approvalId: approval.id,
+				executionProcessId,
+			});
+		}
+		return null;
 	}
 
 	// Respond helper
