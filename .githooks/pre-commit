@@ -28,7 +28,7 @@ if ! command -v specre >/dev/null 2>&1; then
 fi
 
 echo "[specre pre-commit] specre card changes detected — regenerating index..."
-specre index
+scripts/specre-quiet.sh index
 
 # Re-stage the auto-generated files so the commit includes them atomically.
 git add docs/specres/index.json 'docs/specres/**/_INDEX.md' 2>/dev/null || true
