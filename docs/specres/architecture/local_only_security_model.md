@@ -45,7 +45,7 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 | SQL インジェクション | 高 | Raw SQL + パラメータバインディング |
 | コマンドインジェクション | 高 | `spawn([...])` 配列形式、shell 経由禁止 |
 | パストラバーサル | 中 | 入口: Zod で `projectName` から `/` `\` `..` 等を拒否 / 出口: worktree 作成時にベースパス内か検証 |
-| 依存関係の脆弱性 | 中 | `bun audit` 定期実行、最小依存主義 |
+| 依存関係の脆弱性 | 中 | `bun audit` 定期実行、最小依存主義。runtime-exposed な脆弱性は即修正、dev-tool 系は localhost-only threat model で許容 |
 
 ### 実装規約（single source of truth）
 
@@ -89,6 +89,21 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 - `WorktreeRepository.getWorktreePath` — `path.resolve().startsWith(base + sep)` でパストラバーサル出口防御
 - `z.object({...})` — Zod 入力スキーマ
 - `bun audit` — 依存脆弱性チェック
+
+## 依存関係の運用
+
+- `bun audit` で定期チェック。**runtime / ユーザーデータ経路にある脆弱性** は即修正:
+  - `hono` (HTTP / SSE routing): SSE writeSSE の CR/LF injection 等 → `^4.12.14` で解消済
+  - `@modelcontextprotocol/sdk` (MCP stdio): ReDoS 等 → `^1.29.0` で解消済
+- 次のカテゴリは **localhost-only threat model で許容** する前提（都度 trace をつけて audit を追う）:
+  - `undici` (client 側 `jsdom` 経由 devDep) — test-only、runtime 露出なし
+  - `vite` / `esbuild` / `picomatch` (client / server の build・lint・watch) — `start:dev` 稼働中のみ window、
+    ローカル trust 境界内。ブラウザ経由の rebinding 攻撃を受けるには利用者が悪意あるサイトを
+    開いている必要があり、その前提下では他の被害が先に出る
+  - `path-to-regexp` (MCP SDK の transitive) — MCP は stdio-only で Internet 経路なし
+
+→ 新たに脆弱性が出たら、まず「runtime / ユーザーデータに届くか」を判定し、届くなら即修正、
+届かなければ上のリストに理由付きで追加する。
 
 ## 関連する動作
 

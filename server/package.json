@@ -20,10 +20,10 @@
 	},
 	"dependencies": {
 		"@hono/trpc-server": "^0.3.2",
-		"@modelcontextprotocol/sdk": "1.12.1",
+		"@modelcontextprotocol/sdk": "^1.29.0",
 		"@trpc/server": "11.10.0",
 		"embedded-postgres": "^18.3.0-beta.16",
-		"hono": "^4.4.0",
+		"hono": "^4.12.14",
 		"jsonc-parser": "^3.3.1",
 		"pg": "^8.20.0",
 		"zod": "^3.23.8"

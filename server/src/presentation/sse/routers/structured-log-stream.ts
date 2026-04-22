@@ -11,7 +11,7 @@ export const structuredLogStreamRoute = sseRoute<
 	StructuredLogState
 >(
 	"/structured-logs/:executionProcessId",
-	(c) => ({ executionProcessId: c.req.param("executionProcessId") }),
+	(c) => ({ executionProcessId: c.req.param("executionProcessId")! }),
 	{
 		snapshot: (params) => getStructuredLogSnapshot(params),
 		delta: (params, state) => getStructuredLogDelta(params, state),

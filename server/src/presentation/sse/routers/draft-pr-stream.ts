@@ -9,8 +9,8 @@ import { sseRoute } from "../stream";
 export const draftPrStreamRoute = sseRoute<DraftPrParams, DraftPrState>(
 	"/draft-pr/:workspaceId/:projectId",
 	(c) => ({
-		workspaceId: c.req.param("workspaceId"),
-		projectId: c.req.param("projectId"),
+		workspaceId: c.req.param("workspaceId")!,
+		projectId: c.req.param("projectId")!,
 	}),
 	{
 		snapshot: (params) => getDraftPrSnapshot(params),
