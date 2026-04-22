@@ -1,7 +1,7 @@
 // @specre 01KPNSHJWEV82CG0H0BXSJ9T8G
 // @specre 01KPNSHJWAYW0CGTZ3AZ2HD42F
 // @specre 01KPNSHJW5PQ99GFB1W694PSZ6
-import { fail } from "../../models/common";
+import { fail, isFail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
@@ -23,15 +23,15 @@ export const updateTask = (input: UpdateTaskInput) =>
 				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
 			}
 
-			// Chat Reset: collect related entity IDs when transitioning to "todo"
-			const needsChatReset = input.status
-				? Task.needsChatReset(task.status, input.status)
-				: false;
+			// Determine transition effects (model declares what's needed)
+			const effects = input.status
+				? Task.transitionEffects(task.status, input.status)
+				: { shouldArchiveWorkspaces: false };
 
 			let workspaces: Workspace[] = [];
 			let project: Project | null = null;
 
-			if (needsChatReset) {
+			if (effects.shouldArchiveWorkspaces) {
 				project = await ctx.repos.project.get(Project.ById(task.projectId));
 
 				const workspacesPage = await ctx.repos.workspace.list(
@@ -43,7 +43,7 @@ export const updateTask = (input: UpdateTaskInput) =>
 
 			return {
 				task,
-				needsChatReset,
+				effects,
 				workspaces,
 				project,
 			};
@@ -51,47 +51,24 @@ export const updateTask = (input: UpdateTaskInput) =>
 
 		process: (ctx, { task, ...rest }) => {
 			// Validate status transition if status is being changed
-			if (input.status && input.status !== task.status) {
-				if (!Task.canTransition(task.status, input.status)) {
-					return fail(
-						"INVALID_TRANSITION",
-						`Cannot transition from ${task.status} to ${input.status}`,
-						{
-							from: task.status,
-							to: input.status,
-							allowed: Task.getAllowedTransitions(task.status),
-						},
-					);
-				}
+			if (input.status) {
+				const transition = Task.validateTransition(task.status, input.status);
+				if (isFail(transition)) return transition;
 			}
 
-			const updated: Task = {
-				...task,
-				title: input.title ?? task.title,
-				description:
-					input.description !== undefined
-						? input.description
-						: task.description,
-				status: input.status ?? task.status,
-				updatedAt: ctx.now,
-			};
+			const updated = Task.applyUpdate(task, input, ctx.now);
 
 			return { task: updated, ...rest };
 		},
 
-		write: async (ctx, { task, needsChatReset, workspaces, project }) => {
+		write: async (ctx, { task, effects, workspaces, project }) => {
 			await ctx.repos.task.upsert(task);
 
-			if (needsChatReset) {
+			if (effects.shouldArchiveWorkspaces) {
 				// Archive active workspaces instead of deleting them (preserve history)
 				for (const ws of workspaces) {
-					if (!ws.archived) {
-						await ctx.repos.workspace.upsert({
-							...ws,
-							archived: true,
-							updatedAt: ctx.now,
-						});
-					}
+					const archived = Workspace.archive(ws);
+					if (archived) await ctx.repos.workspace.upsert(archived);
 				}
 			}
 

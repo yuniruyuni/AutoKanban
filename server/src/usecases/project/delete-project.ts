@@ -1,7 +1,5 @@
 // @specre 01KPNSHJVXRAQGH9C3HBFX3X2F
-import { Approval } from "../../models/approval";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
-import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import { DevServerProcess } from "../../models/dev-server-process";
 import { Project } from "../../models/project";
@@ -10,6 +8,7 @@ import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
 import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
+import { executeCascadeDeletion } from "../cascade-deletion";
 import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
@@ -109,62 +108,29 @@ export const deleteProject = (input: DeleteProjectInput) =>
 				workspaceScriptProcessIds,
 			},
 		) => {
-			// Delete in reverse dependency order
+			// Delete dependent entities in reverse dependency order
+			await executeCascadeDeletion(ctx, {
+				codingAgentProcessIds,
+				devServerProcessIds,
+				workspaceScriptProcessIds,
+				sessionIds,
+				workspaceIds,
+			});
 
-			// 1. approvals & coding_agent_turns & coding_agent_process_logs
-			for (const epId of codingAgentProcessIds) {
-				await ctx.repos.approval.delete(Approval.ByExecutionProcessId(epId));
-				await ctx.repos.codingAgentTurn.delete(
-					CodingAgentTurn.ByExecutionProcessId(epId),
-				);
-				await ctx.repos.codingAgentProcessLogs.deleteLogs(epId);
-			}
-
-			// 1b. dev server process logs
-			for (const epId of devServerProcessIds) {
-				await ctx.repos.devServerProcessLogs.deleteLogs(epId);
-			}
-
-			// 1c. workspace script process logs
-			for (const epId of workspaceScriptProcessIds) {
-				await ctx.repos.workspaceScriptProcessLogs.deleteLogs(epId);
-			}
-
-			// 2. processes (depend on sessions)
-			for (const sessionId of sessionIds) {
-				await ctx.repos.codingAgentProcess.delete(
-					CodingAgentProcess.BySessionId(sessionId),
-				);
-				await ctx.repos.devServerProcess.delete(
-					DevServerProcess.BySessionId(sessionId),
-				);
-				await ctx.repos.workspaceScriptProcess.delete(
-					WorkspaceScriptProcess.BySessionId(sessionId),
-				);
-			}
-
-			// 3. sessions (depend on workspaces)
-			for (const wsId of workspaceIds) {
-				await ctx.repos.session.delete(Session.ByWorkspaceId(wsId));
-			}
-
-			// 4. workspace_repos (depend on workspaces and projects)
-			for (const wsId of workspaceIds) {
-				await ctx.repos.workspaceRepo.delete(WorkspaceRepo.ByWorkspaceId(wsId));
-			}
+			// 5. workspace_repos by project (project-specific cleanup)
 			await ctx.repos.workspaceRepo.delete(
 				WorkspaceRepo.ByProjectId(project.id),
 			);
 
-			// 5. workspaces (depend on tasks)
+			// 6. workspaces (depend on tasks)
 			for (const taskId of taskIds) {
 				await ctx.repos.workspace.delete(Workspace.ByTaskId(taskId));
 			}
 
-			// 6. tasks (depend on project)
+			// 7. tasks (depend on project)
 			await ctx.repos.task.delete(Task.ByProject(project.id));
 
-			// 7. project
+			// 8. project
 			await ctx.repos.project.delete(Project.ById(project.id));
 
 			return { deleted: true, projectId: project.id, workspaceIds, project };

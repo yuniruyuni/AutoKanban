@@ -178,7 +178,10 @@ export const queueMessage = (input: QueueMessageInput) =>
 				interruptedTools,
 			},
 		) => {
-			const canSendImmediately = !isRunning || isIdle;
+			const canSendImmediately = CodingAgentProcess.canReceiveMessage(
+				latestProcess,
+				isIdle,
+			);
 
 			const queuedMessage = ctx.repos.messageQueue.queue(
 				session.id,

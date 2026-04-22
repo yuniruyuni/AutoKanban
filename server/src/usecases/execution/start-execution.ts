@@ -17,17 +17,6 @@ import { WorkspaceRepo } from "../../models/workspace-repo";
 import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 import { usecase } from "../runner";
 
-/**
- * Generate prompt from task.
- * Combines task title and description into a single prompt string.
- */
-function taskToPrompt(task: Task): string {
-	if (task.description?.trim()) {
-		return `${task.title}\n\n${task.description}`;
-	}
-	return task.title;
-}
-
 export interface StartExecutionInput {
 	taskId: string;
 	prompt?: string; // If not provided, uses task.description
@@ -191,7 +180,7 @@ export const startExecution = (input: StartExecutionInput) =>
 
 			// Always use task.title + task.description as prompt
 			// Ignore input.prompt - initial prompt should come from task
-			const prompt = taskToPrompt(task);
+			const prompt = Task.toPrompt(task);
 
 			// Create CodingAgentProcess and CodingAgentTurn in process step (pure)
 			const codingAgentProcess = CodingAgentProcess.create({
@@ -249,11 +238,8 @@ export const startExecution = (input: StartExecutionInput) =>
 		) => {
 			// Archive the previous workspace if needed
 			if (workspaceToArchive) {
-				await ctx.repos.workspace.upsert({
-					...workspaceToArchive,
-					archived: true,
-					updatedAt: ctx.now,
-				});
+				const archived = Workspace.archive(workspaceToArchive);
+				if (archived) await ctx.repos.workspace.upsert(archived);
 			}
 
 			// Save workspace if new
@@ -266,13 +252,8 @@ export const startExecution = (input: StartExecutionInput) =>
 			await ctx.repos.session.upsert(session);
 
 			// Move task to inprogress atomically with the execution start
-			if (task.status !== "inprogress") {
-				await ctx.repos.task.upsert({
-					...task,
-					status: "inprogress",
-					updatedAt: ctx.now,
-				});
-			}
+			const inProgress = Task.toInProgress(task);
+			if (inProgress) await ctx.repos.task.upsert(inProgress);
 
 			// Persist CodingAgentProcess and CodingAgentTurn
 			await ctx.repos.codingAgentProcess.upsert(codingAgentProcess);

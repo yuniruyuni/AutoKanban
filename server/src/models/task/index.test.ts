@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { isCompLogical } from "../common";
+import { isCompLogical, isFail } from "../common";
 import { Task } from ".";
 
 // ============================================
@@ -337,24 +337,204 @@ describe("Task.toDone()", () => {
 });
 
 // ============================================
-// Task.needsChatReset()
+// Task.applyUpdate()
 // ============================================
 
-describe("Task.needsChatReset()", () => {
-	test("returns true when transitioning to todo from other status", () => {
-		expect(Task.needsChatReset("inprogress", "todo")).toBe(true);
-		expect(Task.needsChatReset("done", "todo")).toBe(true);
-		expect(Task.needsChatReset("inreview", "todo")).toBe(true);
-		expect(Task.needsChatReset("cancelled", "todo")).toBe(true);
+describe("Task.applyUpdate()", () => {
+	const now = new Date("2025-01-15T10:00:00.000Z");
+	const base: Task = {
+		id: "task-1",
+		projectId: "p1",
+		title: "Original",
+		description: "Desc",
+		status: "todo",
+		createdAt: new Date("2025-01-01T00:00:00.000Z"),
+		updatedAt: new Date("2025-01-01T00:00:00.000Z"),
+	};
+
+	test("updates title when provided", () => {
+		const result = Task.applyUpdate(base, { title: "New Title" }, now);
+		expect(result.title).toBe("New Title");
+		expect(result.description).toBe("Desc");
+		expect(result.status).toBe("todo");
+		expect(result.updatedAt).toEqual(now);
 	});
 
-	test("returns false when already todo", () => {
-		expect(Task.needsChatReset("todo", "todo")).toBe(false);
+	test("updates description when provided", () => {
+		const result = Task.applyUpdate(base, { description: "New Desc" }, now);
+		expect(result.description).toBe("New Desc");
 	});
 
-	test("returns false when transitioning to non-todo", () => {
-		expect(Task.needsChatReset("todo", "inprogress")).toBe(false);
-		expect(Task.needsChatReset("inprogress", "done")).toBe(false);
+	test("sets description to null when explicitly null", () => {
+		const result = Task.applyUpdate(base, { description: null }, now);
+		expect(result.description).toBeNull();
+	});
+
+	test("preserves description when undefined", () => {
+		const result = Task.applyUpdate(base, { title: "X" }, now);
+		expect(result.description).toBe("Desc");
+	});
+
+	test("updates status when provided", () => {
+		const result = Task.applyUpdate(base, { status: "inprogress" }, now);
+		expect(result.status).toBe("inprogress");
+	});
+
+	test("preserves all fields when empty update", () => {
+		const result = Task.applyUpdate(base, {}, now);
+		expect(result.title).toBe("Original");
+		expect(result.description).toBe("Desc");
+		expect(result.status).toBe("todo");
+		expect(result.updatedAt).toEqual(now);
+	});
+});
+
+// ============================================
+// Task.toPrompt()
+// ============================================
+
+describe("Task.toPrompt()", () => {
+	test("returns title and description when description exists", () => {
+		const task: Task = {
+			id: "t1",
+			projectId: "p1",
+			title: "Fix bug",
+			description: "Details here",
+			status: "todo",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+		expect(Task.toPrompt(task)).toBe("Fix bug\n\nDetails here");
+	});
+
+	test("returns only title when description is null", () => {
+		const task: Task = {
+			id: "t1",
+			projectId: "p1",
+			title: "Fix bug",
+			description: null,
+			status: "todo",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+		expect(Task.toPrompt(task)).toBe("Fix bug");
+	});
+
+	test("returns only title when description is whitespace", () => {
+		const task: Task = {
+			id: "t1",
+			projectId: "p1",
+			title: "Fix bug",
+			description: "   ",
+			status: "todo",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+		expect(Task.toPrompt(task)).toBe("Fix bug");
+	});
+
+	test("returns only title when description is empty string", () => {
+		const task: Task = {
+			id: "t1",
+			projectId: "p1",
+			title: "Fix bug",
+			description: "",
+			status: "todo",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+		expect(Task.toPrompt(task)).toBe("Fix bug");
+	});
+});
+
+// ============================================
+// Task.toInProgress()
+// ============================================
+
+describe("Task.toInProgress()", () => {
+	test("transitions non-inprogress task to inprogress", () => {
+		const task = Task.create({ projectId: "p1", title: "T" });
+		const result = Task.toInProgress(task);
+		expect(result).not.toBeNull();
+		expect(result?.status).toBe("inprogress");
+		expect(result?.updatedAt).toBeInstanceOf(Date);
+	});
+
+	test("returns null for already-inprogress task", () => {
+		const task = {
+			...Task.create({ projectId: "p1", title: "T" }),
+			status: "inprogress" as Task.Status,
+		};
+		expect(Task.toInProgress(task)).toBeNull();
+	});
+});
+
+// ============================================
+// Task.transitionEffects()
+// ============================================
+
+describe("Task.transitionEffects()", () => {
+	test("shouldArchiveWorkspaces is true when transitioning to todo from other", () => {
+		expect(
+			Task.transitionEffects("inprogress", "todo").shouldArchiveWorkspaces,
+		).toBe(true);
+		expect(Task.transitionEffects("done", "todo").shouldArchiveWorkspaces).toBe(
+			true,
+		);
+		expect(
+			Task.transitionEffects("inreview", "todo").shouldArchiveWorkspaces,
+		).toBe(true);
+		expect(
+			Task.transitionEffects("cancelled", "todo").shouldArchiveWorkspaces,
+		).toBe(true);
+	});
+
+	test("shouldArchiveWorkspaces is false when already todo", () => {
+		expect(Task.transitionEffects("todo", "todo").shouldArchiveWorkspaces).toBe(
+			false,
+		);
+	});
+
+	test("shouldArchiveWorkspaces is false for non-todo transitions", () => {
+		expect(
+			Task.transitionEffects("todo", "inprogress").shouldArchiveWorkspaces,
+		).toBe(false);
+		expect(
+			Task.transitionEffects("inprogress", "done").shouldArchiveWorkspaces,
+		).toBe(false);
+	});
+});
+
+// ============================================
+// Task.validateTransition()
+// ============================================
+
+describe("Task.validateTransition()", () => {
+	test("returns valid result for allowed transition", () => {
+		const result = Task.validateTransition("todo", "inprogress");
+		expect(isFail(result)).toBe(false);
+		if (!isFail(result)) {
+			expect(result.valid).toBe(true);
+			expect(result.effects.shouldArchiveWorkspaces).toBe(false);
+		}
+	});
+
+	test("returns valid with shouldArchiveWorkspaces for transition to todo", () => {
+		const result = Task.validateTransition("inprogress", "todo");
+		expect(isFail(result)).toBe(false);
+		if (!isFail(result)) {
+			expect(result.valid).toBe(true);
+			expect(result.effects.shouldArchiveWorkspaces).toBe(true);
+		}
+	});
+
+	test("returns valid for same status transition", () => {
+		const result = Task.validateTransition("todo", "todo");
+		expect(isFail(result)).toBe(false);
+		if (!isFail(result)) {
+			expect(result.valid).toBe(true);
+			expect(result.effects.shouldArchiveWorkspaces).toBe(false);
+		}
 	});
 });
 

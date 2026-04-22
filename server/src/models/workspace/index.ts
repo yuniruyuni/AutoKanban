@@ -82,6 +82,12 @@ export namespace Workspace {
 		};
 	}
 
+	// Archive
+	export function archive(workspace: Workspace): Workspace | null {
+		if (workspace.archived) return null;
+		return { ...workspace, archived: true, updatedAt: new Date() };
+	}
+
 	// Working directory resolution
 	export function resolveWorkingDir(
 		workspace: Workspace,

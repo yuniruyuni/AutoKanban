@@ -3,6 +3,8 @@
 import {
 	type Comp,
 	defineSpecs,
+	type Fail,
+	fail,
 	generateId,
 	type Sort,
 	type SpecsOf,
@@ -117,9 +119,83 @@ export namespace Task {
 		return { ...task, status: "done" as Status, updatedAt: new Date() };
 	}
 
-	// Chat reset detection
-	export function needsChatReset(from: Status, to: Status): boolean {
-		return to === "todo" && from !== "todo";
+	// Partial update application
+	export interface UpdateFields {
+		title?: string;
+		description?: string | null;
+		status?: Status;
+	}
+
+	export function applyUpdate(
+		task: Task,
+		fields: UpdateFields,
+		now: Date,
+	): Task {
+		return {
+			...task,
+			title: fields.title ?? task.title,
+			description:
+				fields.description !== undefined
+					? fields.description
+					: task.description,
+			status: fields.status ?? task.status,
+			updatedAt: now,
+		};
+	}
+
+	// Prompt generation
+	export function toPrompt(task: Task): string {
+		if (task.description?.trim()) {
+			return `${task.title}\n\n${task.description}`;
+		}
+		return task.title;
+	}
+
+	// InProgress transition
+	export function toInProgress(task: Task): Task | null {
+		if (task.status === "inprogress") return null;
+		return { ...task, status: "inprogress" as Status, updatedAt: new Date() };
+	}
+
+	// Transition effects declaration
+	export interface TransitionEffects {
+		shouldArchiveWorkspaces: boolean;
+	}
+
+	export function transitionEffects(
+		from: Status,
+		to: Status,
+	): TransitionEffects {
+		return {
+			shouldArchiveWorkspaces: to === "todo" && from !== "todo",
+		};
+	}
+
+	// Transition validation + effects
+	export interface TransitionResult {
+		valid: true;
+		effects: TransitionEffects;
+	}
+
+	export function validateTransition(
+		from: Status,
+		to: Status,
+	): TransitionResult | Fail {
+		if (from === to) {
+			return { valid: true, effects: { shouldArchiveWorkspaces: false } };
+		}
+		if (!canTransition(from, to)) {
+			return fail(
+				"INVALID_TRANSITION",
+				`Cannot transition from ${from} to ${to}`,
+				{
+					from,
+					to,
+					allowed: getAllowedTransitions(from),
+				},
+			);
+		}
+		return { valid: true, effects: transitionEffects(from, to) };
 	}
 
 	// Cursor

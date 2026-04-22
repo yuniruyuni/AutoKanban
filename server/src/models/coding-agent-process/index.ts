@@ -118,6 +118,15 @@ export namespace CodingAgentProcess {
 		return { ...process, status: "running", updatedAt: new Date() };
 	}
 
+	// Message receive eligibility
+	export function canReceiveMessage(
+		process: CodingAgentProcess | null,
+		isIdle: boolean,
+	): boolean {
+		if (!process || process.status !== "running") return true;
+		return isIdle;
+	}
+
 	// Cursor
 	export function cursor(
 		process: CodingAgentProcess,

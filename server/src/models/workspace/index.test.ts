@@ -111,6 +111,31 @@ describe("Workspace.generateBranchName()", () => {
 });
 
 // ============================================
+// Workspace.archive()
+// ============================================
+
+describe("Workspace.archive()", () => {
+	test("archives a non-archived workspace", () => {
+		const ws = Workspace.create({ taskId: "task-1" });
+		const result = Workspace.archive(ws);
+		expect(result).not.toBeNull();
+		expect(result?.archived).toBe(true);
+		expect(result?.updatedAt).toBeInstanceOf(Date);
+	});
+
+	test("returns null for already archived workspace", () => {
+		const ws = { ...Workspace.create({ taskId: "task-1" }), archived: true };
+		expect(Workspace.archive(ws)).toBeNull();
+	});
+
+	test("does not mutate original workspace", () => {
+		const ws = Workspace.create({ taskId: "task-1" });
+		Workspace.archive(ws);
+		expect(ws.archived).toBe(false);
+	});
+});
+
+// ============================================
 // Workspace.resolveWorkingDir()
 // ============================================
 
