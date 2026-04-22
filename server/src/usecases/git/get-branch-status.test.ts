@@ -30,10 +30,7 @@ describe("getBranchStatus", () => {
 			}),
 		});
 
-		const result = await getBranchStatus({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await getBranchStatus(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -65,10 +62,7 @@ describe("getBranchStatus", () => {
 			}),
 		});
 
-		await getBranchStatus({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		await getBranchStatus(workspace.id, project.id).run(ctx);
 
 		expect(capturedTargetBranch).toBe("feature/custom");
 	});
@@ -92,10 +86,7 @@ describe("getBranchStatus", () => {
 			}),
 		});
 
-		await getBranchStatus({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		await getBranchStatus(workspace.id, project.id).run(ctx);
 
 		expect(capturedTargetBranch).toBe("develop");
 	});
@@ -105,10 +96,7 @@ describe("getBranchStatus", () => {
 			workspace: { get: () => null } as never,
 		});
 
-		const result = await getBranchStatus({
-			workspaceId: "non-existent",
-			projectId: "proj-1",
-		}).run(ctx);
+		const result = await getBranchStatus("non-existent", "proj-1").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -125,10 +113,7 @@ describe("getBranchStatus", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await getBranchStatus({
-			workspaceId: workspace.id,
-			projectId: "non-existent",
-		}).run(ctx);
+		const result = await getBranchStatus(workspace.id, "non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -150,10 +135,7 @@ describe("getBranchStatus", () => {
 			}),
 		});
 
-		const result = await getBranchStatus({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await getBranchStatus(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {

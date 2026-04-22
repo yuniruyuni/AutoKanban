@@ -17,31 +17,24 @@ import { WorkspaceRepo } from "../../models/workspace-repo";
 import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 import { usecase } from "../runner";
 
-export interface StartExecutionInput {
-	taskId: string;
-	prompt?: string; // If not provided, uses task.description
-	executor?: string;
-	variant?: string; // Configuration variant (e.g., 'default', 'plan')
-	workingDir?: string; // If not provided, uses project worktree
-	dangerouslySkipPermissions?: boolean;
-	model?: string;
-	targetBranch?: string; // Target branch for the worktree
-}
-
-export interface StartExecutionResult {
-	workspaceId: string;
-	sessionId: string;
-	executionProcessId: string;
-	worktreePath: string;
-}
-
-export const startExecution = (input: StartExecutionInput) =>
+export const startExecution = (
+	taskId: string,
+	options?: {
+		prompt?: string;
+		executor?: string;
+		variant?: string;
+		workingDir?: string;
+		dangerouslySkipPermissions?: boolean;
+		model?: string;
+		targetBranch?: string;
+	},
+) =>
 	usecase({
 		read: async (ctx) => {
 			// Verify task exists
-			const task = await ctx.repos.task.get(Task.ById(input.taskId));
+			const task = await ctx.repos.task.get(Task.ById(taskId));
 			if (!task) {
-				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
+				return fail("NOT_FOUND", "Task not found", { taskId: taskId });
 			}
 
 			// Get the project (Project = 1 Repo)
@@ -54,7 +47,7 @@ export const startExecution = (input: StartExecutionInput) =>
 
 			// Check if there's already an active workspace for this task
 			const activeWorkspace = await ctx.repos.workspace.get(
-				Workspace.ByTaskIdActive(input.taskId),
+				Workspace.ByTaskIdActive(taskId),
 			);
 
 			// Check if active workspace has sessions (i.e., has been executed before)
@@ -70,7 +63,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			}
 
 			// Get max attempt for this task
-			const maxAttempt = await ctx.repos.workspace.getMaxAttempt(input.taskId);
+			const maxAttempt = await ctx.repos.workspace.getMaxAttempt(taskId);
 
 			// Determine resume info only when reusing the same workspace (no new attempt)
 			const resumeInfo =
@@ -112,10 +105,10 @@ export const startExecution = (input: StartExecutionInput) =>
 			}
 
 			// Look up variant entity if specified
-			const executor = input.executor ?? "claude-code";
-			const variantEntity = input.variant
+			const executor = options?.executor ?? "claude-code";
+			const variantEntity = options?.variant
 				? await ctx.repos.variant.get(
-						Variant.ByExecutorAndName(executor, input.variant),
+						Variant.ByExecutorAndName(executor, options?.variant),
 					)
 				: null;
 
@@ -168,18 +161,18 @@ export const startExecution = (input: StartExecutionInput) =>
 			const workspaceRepo = WorkspaceRepo.create({
 				workspaceId: workspace.id,
 				projectId: project.id,
-				targetBranch: input.targetBranch ?? project.branch,
+				targetBranch: options?.targetBranch ?? project.branch,
 			});
 
 			// Create new session
 			const session = Session.create({
 				workspaceId: workspace.id,
-				executor: input.executor ?? "claude-code",
-				variant: input.variant,
+				executor: options?.executor ?? "claude-code",
+				variant: options?.variant,
 			});
 
 			// Always use task.title + task.description as prompt
-			// Ignore input.prompt - initial prompt should come from task
+			// Ignore options.prompt - initial prompt should come from task
 			const prompt = Task.toPrompt(task);
 
 			// Create CodingAgentProcess and CodingAgentTurn in process step (pure)
@@ -361,7 +354,7 @@ export const startExecution = (input: StartExecutionInput) =>
 			}
 
 			// Determine working directory
-			const workingDir = input.workingDir ?? worktreePath;
+			const workingDir = options?.workingDir ?? worktreePath;
 
 			// Prompt is always generated from task.title, so it should never be empty
 			// (unless the task has no title, which should be caught earlier)
@@ -395,7 +388,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				workingDir,
 				prompt,
 				permissionMode: variantEntity?.permissionMode,
-				model: variantEntity?.model ?? input.model,
+				model: variantEntity?.model ?? options?.model,
 				command,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
@@ -408,7 +401,7 @@ export const startExecution = (input: StartExecutionInput) =>
 						: undefined,
 			});
 
-			const result: StartExecutionResult = {
+			const result = {
 				workspaceId: workspace.id,
 				sessionId: session.id,
 				executionProcessId: codingAgentProcess.id,
@@ -452,7 +445,7 @@ export const startExecution = (input: StartExecutionInput) =>
 				);
 			}
 
-			const result: StartExecutionResult = {
+			const result = {
 				workspaceId: data.workspaceId,
 				sessionId: data.sessionId,
 				executionProcessId: data.executionProcessId,

@@ -11,17 +11,15 @@ import { executeCascadeDeletion } from "../cascade-deletion";
 import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
-export interface DeleteTaskInput {
-	taskId: string;
-	deleteWorktrees?: boolean;
-}
-
-export const deleteTask = (input: DeleteTaskInput) =>
+export const deleteTask = (
+	taskId: string,
+	options?: { deleteWorktrees?: boolean },
+) =>
 	usecase({
 		read: async (ctx) => {
-			const task = await ctx.repos.task.get(Task.ById(input.taskId));
+			const task = await ctx.repos.task.get(Task.ById(taskId));
 			if (!task) {
-				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
+				return fail("NOT_FOUND", "Task not found", { taskId });
 			}
 
 			const project = await ctx.repos.project.get(Project.ById(task.projectId));
@@ -130,8 +128,8 @@ export const deleteTask = (input: DeleteTaskInput) =>
 		},
 
 		post: async (ctx, { workspaces, project }) => {
-			if (!input.deleteWorktrees) {
-				return { deleted: true, taskId: input.taskId };
+			if (!options?.deleteWorktrees) {
+				return { deleted: true, taskId };
 			}
 
 			for (const ws of workspaces) {
@@ -158,6 +156,6 @@ export const deleteTask = (input: DeleteTaskInput) =>
 				}
 			}
 
-			return { deleted: true, taskId: input.taskId };
+			return { deleted: true, taskId };
 		},
 	});

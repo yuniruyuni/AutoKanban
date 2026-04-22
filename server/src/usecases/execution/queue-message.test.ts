@@ -59,10 +59,7 @@ describe("queueMessage", () => {
 			},
 		} as never);
 
-		const result = await queueMessage({
-			sessionId: session.id,
-			prompt: "Test prompt",
-		}).run(ctx);
+		const result = await queueMessage(session.id, "Test prompt").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -139,10 +136,7 @@ describe("queueMessage", () => {
 			},
 		} as never);
 
-		const result = await queueMessage({
-			sessionId: session.id,
-			prompt: "Test prompt",
-		}).run(ctx);
+		const result = await queueMessage(session.id, "Test prompt").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -159,10 +153,7 @@ describe("queueMessage", () => {
 			},
 		} as never);
 
-		const result = await queueMessage({
-			sessionId: "non-existent",
-			prompt: "Test",
-		}).run(ctx);
+		const result = await queueMessage("non-existent", "Test").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -183,10 +174,7 @@ describe("queueMessage", () => {
 			},
 		} as never);
 
-		const result = await queueMessage({
-			sessionId: session.id,
-			prompt: "Test",
-		}).run(ctx);
+		const result = await queueMessage(session.id, "Test").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -216,7 +204,7 @@ describe("getQueueStatus", () => {
 			},
 		} as never);
 
-		const result = await getQueueStatus({ sessionId: session.id }).run(ctx);
+		const result = await getQueueStatus(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -232,7 +220,7 @@ describe("getQueueStatus", () => {
 			},
 		} as never);
 
-		const result = await getQueueStatus({ sessionId: "non-existent" }).run(ctx);
+		const result = await getQueueStatus("non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -252,7 +240,7 @@ describe("getQueueStatus", () => {
 			},
 		} as never);
 
-		const result = await getQueueStatus({ sessionId: session.id }).run(ctx);
+		const result = await getQueueStatus(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -279,7 +267,7 @@ describe("cancelQueue", () => {
 			},
 		} as never);
 
-		const result = await cancelQueue({ sessionId: session.id }).run(ctx);
+		const result = await cancelQueue(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -295,7 +283,7 @@ describe("cancelQueue", () => {
 			},
 		} as never);
 
-		const result = await cancelQueue({ sessionId: "non-existent" }).run(ctx);
+		const result = await cancelQueue("non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -315,7 +303,7 @@ describe("cancelQueue", () => {
 			},
 		} as never);
 
-		const result = await cancelQueue({ sessionId: session.id }).run(ctx);
+		const result = await cancelQueue(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

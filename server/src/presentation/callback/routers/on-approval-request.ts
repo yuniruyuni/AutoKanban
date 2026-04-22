@@ -7,5 +7,5 @@ export async function handleApprovalRequest(
 	processId: string,
 	request: DriverApprovalRequest,
 ): Promise<void> {
-	await handleApprovalRequestUsecase({ processId, request }).run(ctx);
+	await handleApprovalRequestUsecase(processId, request).run(ctx);
 }

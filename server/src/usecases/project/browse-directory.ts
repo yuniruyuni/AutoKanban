@@ -13,17 +13,6 @@ export interface DirectoryEntry {
 	size?: number;
 }
 
-export interface BrowseDirectoryInput {
-	path?: string;
-	includeFiles?: boolean;
-}
-
-export interface BrowseDirectoryOutput {
-	currentPath: string;
-	parentPath: string | null;
-	entries: DirectoryEntry[];
-}
-
 async function isGitRepository(dirPath: string): Promise<boolean> {
 	try {
 		const gitPath = path.join(dirPath, ".git");
@@ -34,11 +23,11 @@ async function isGitRepository(dirPath: string): Promise<boolean> {
 	}
 }
 
-export const browseDirectory = (input: BrowseDirectoryInput) =>
+export const browseDirectory = (browsePath?: string, includeFiles?: boolean) =>
 	usecase({
 		pre: async () => {
 			// Default to home directory if no path provided
-			const targetPath = input.path || os.homedir();
+			const targetPath = browsePath || os.homedir();
 
 			// Resolve and normalize the path
 			const resolvedPath = path.resolve(targetPath);
@@ -55,7 +44,7 @@ export const browseDirectory = (input: BrowseDirectoryInput) =>
 
 			return {
 				targetPath: resolvedPath,
-				includeFiles: input.includeFiles ?? false,
+				includeFiles: includeFiles ?? false,
 			};
 		},
 
@@ -117,5 +106,5 @@ export const browseDirectory = (input: BrowseDirectoryInput) =>
 			}
 		},
 
-		result: (state) => state as BrowseDirectoryOutput,
+		result: (state) => state,
 	});

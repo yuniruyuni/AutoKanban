@@ -74,7 +74,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -126,7 +126,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -185,7 +185,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -246,7 +246,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({ taskId: task.id }).run(ctx);
+		await startExecution(task.id).run(ctx);
 
 		expect(capturedPrompt).toBe(
 			"Implement feature X\n\nDetailed requirements here",
@@ -296,7 +296,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({ taskId: task.id }).run(ctx);
+		await startExecution(task.id).run(ctx);
 
 		expect(capturedPrompt).toBe("Simple task");
 	});
@@ -352,7 +352,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({ taskId: task.id }).run(ctx);
+		await startExecution(task.id).run(ctx);
 
 		// Should NOT pass resume info because new attempt = clean start
 		expect(capturedResumeSessionId).toBeUndefined();
@@ -400,8 +400,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({
-			taskId: task.id,
+		await startExecution(task.id, {
 			executor: "custom-executor",
 			variant: "plan-mode",
 		}).run(ctx);
@@ -471,8 +470,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({
-			taskId: task.id,
+		await startExecution(task.id, {
 			variant: "PLAN",
 		}).run(ctx);
 
@@ -523,7 +521,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({ taskId: task.id }).run(ctx);
+		await startExecution(task.id).run(ctx);
 
 		expect(capturedPermissionMode).toBeUndefined();
 	});
@@ -580,8 +578,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({
-			taskId: task.id,
+		await startExecution(task.id, {
 			variant: "DEFAULT",
 			model: "sonnet",
 		}).run(ctx);
@@ -642,8 +639,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({
-			taskId: task.id,
+		await startExecution(task.id, {
 			variant: "OPUS",
 			model: "sonnet", // should be overridden by variant
 		}).run(ctx);
@@ -658,7 +654,7 @@ describe("startExecution", () => {
 			task: { get: () => null } as never,
 		});
 
-		const result = await startExecution({ taskId: "non-existent" }).run(ctx);
+		const result = await startExecution("non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -675,7 +671,7 @@ describe("startExecution", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -709,7 +705,7 @@ describe("startExecution", () => {
 			scriptRunner: defaultScriptRunner,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -743,7 +739,7 @@ describe("startExecution", () => {
 			scriptRunner: defaultScriptRunner,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -797,8 +793,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({
-			taskId: task.id,
+		await startExecution(task.id, {
 			targetBranch: "feature/custom-branch",
 		}).run(ctx);
 
@@ -852,7 +847,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		await startExecution({ taskId: task.id }).run(ctx);
+		await startExecution(task.id).run(ctx);
 
 		const wr2 = upsertedWorkspaceRepo as unknown as {
 			targetBranch?: string;
@@ -924,7 +919,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		expect(executorCalled).toBe(true);
@@ -984,7 +979,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -1036,7 +1031,7 @@ describe("startExecution", () => {
 			} as never,
 		});
 
-		const result = await startExecution({ taskId: task.id }).run(ctx);
+		const result = await startExecution(task.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		expect(scriptRunnerCalled).toBe(false);

@@ -36,11 +36,7 @@ describe("mergeBranch", () => {
 			git: createMockGitRepository(),
 		});
 
-		const result = await mergeBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			targetBranch: "main",
-		}).run(ctx);
+		const result = await mergeBranch(workspace.id, project.id, "main").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -70,11 +66,7 @@ describe("mergeBranch", () => {
 			}),
 		});
 
-		const result = await mergeBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			targetBranch: "main",
-		}).run(ctx);
+		const result = await mergeBranch(workspace.id, project.id, "main").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -87,11 +79,7 @@ describe("mergeBranch", () => {
 			workspace: { get: () => null } as never,
 		});
 
-		const result = await mergeBranch({
-			workspaceId: "non-existent",
-			projectId: "proj-1",
-			targetBranch: "main",
-		}).run(ctx);
+		const result = await mergeBranch("non-existent", "proj-1", "main").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -107,11 +95,9 @@ describe("mergeBranch", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await mergeBranch({
-			workspaceId: workspace.id,
-			projectId: "non-existent",
-			targetBranch: "main",
-		}).run(ctx);
+		const result = await mergeBranch(workspace.id, "non-existent", "main").run(
+			ctx,
+		);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -132,11 +118,7 @@ describe("mergeBranch", () => {
 			}),
 		});
 
-		const result = await mergeBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			targetBranch: "main",
-		}).run(ctx);
+		const result = await mergeBranch(workspace.id, project.id, "main").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -163,11 +145,7 @@ describe("mergeBranch", () => {
 			git: createMockGitRepository(),
 		});
 
-		const result = await mergeBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			targetBranch: "main",
-		}).run(ctx);
+		const result = await mergeBranch(workspace.id, project.id, "main").run(ctx);
 
 		expect(result.ok).toBe(true);
 		expect(upsertCalled).toBe(false);
@@ -196,11 +174,7 @@ describe("mergeBranch", () => {
 			git: createMockGitRepository(),
 		});
 
-		const result = await mergeBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			targetBranch: "main",
-		}).run(ctx);
+		const result = await mergeBranch(workspace.id, project.id, "main").run(ctx);
 
 		expect(result.ok).toBe(true);
 		expect(upsertCalled).toBe(false);

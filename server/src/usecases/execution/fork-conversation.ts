@@ -10,46 +10,36 @@ import { usecase } from "../runner";
 // Fork Conversation
 // ============================================
 
-export interface ForkConversationInput {
-	sessionId: string;
-	messageUuid: string;
-	newPrompt: string;
-	executor?: string;
-	variant?: string;
-}
-
-export interface ForkConversationResult {
-	success: boolean;
-	executionProcessId?: string;
-}
-
 /**
  * Fork a conversation at a specific message point and restart with a new prompt.
  * Uses Claude Code's --resume and --resume-session-at flags to rewind to the
  * specified message and continue from there.
  */
-export const forkConversation = (input: ForkConversationInput) =>
+export const forkConversation = (
+	sessionId: string,
+	messageUuid: string,
+	newPrompt: string,
+	_options?: { executor?: string; variant?: string },
+) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 
 			// Get the latest coding agent process
 			const codingAgentProcessPage = await ctx.repos.codingAgentProcess.list(
-				CodingAgentProcess.BySessionId(input.sessionId),
+				CodingAgentProcess.BySessionId(sessionId),
 				{ limit: 1, sort: CodingAgentProcess.defaultSort },
 			);
 			const latestProcess = codingAgentProcessPage.items[0];
 
 			if (!latestProcess) {
 				return fail("NOT_FOUND", "No coding agent process found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 
@@ -60,9 +50,8 @@ export const forkConversation = (input: ForkConversationInput) =>
 			}
 
 			// Get resume info from CodingAgentTurn
-			const resumeInfo = await ctx.repos.codingAgentTurn?.findLatestResumeInfo(
-				input.sessionId,
-			);
+			const resumeInfo =
+				await ctx.repos.codingAgentTurn?.findLatestResumeInfo(sessionId);
 			if (!resumeInfo?.agentSessionId) {
 				return fail(
 					"INVALID_STATE",
@@ -86,14 +75,14 @@ export const forkConversation = (input: ForkConversationInput) =>
 			});
 			const codingAgentTurn = CodingAgentTurn.create({
 				executionProcessId: codingAgentProcess.id,
-				prompt: input.newPrompt,
+				prompt: newPrompt,
 			});
 			return {
 				session,
 				workspace,
 				agentSessionId: resumeInfo.agentSessionId,
-				messageUuid: input.messageUuid,
-				prompt: input.newPrompt,
+				messageUuid,
+				prompt: newPrompt,
 				codingAgentProcess,
 				codingAgentTurn,
 			};
@@ -133,7 +122,7 @@ export const forkConversation = (input: ForkConversationInput) =>
 			};
 		},
 
-		result: ({ success, executionProcessId }): ForkConversationResult => ({
+		result: ({ success, executionProcessId }) => ({
 			success,
 			executionProcessId,
 		}),

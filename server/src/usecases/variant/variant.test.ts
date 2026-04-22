@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createTestVariant } from "../../../test/factories";
 import { createMockContext } from "../../../test/helpers/context";
-import type { Variant } from "../../models/variant";
+import { Variant } from "../../models/variant";
 import { createVariant } from "./create-variant";
 import { deleteVariant } from "./delete-variant";
 import { listVariants } from "./list-variants";
@@ -27,7 +27,7 @@ describe("listVariants", () => {
 			} as never,
 		});
 
-		const result = await listVariants({ executor: "claude-code" }).run(ctx);
+		const result = await listVariants("claude-code").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -44,7 +44,7 @@ describe("listVariants", () => {
 			} as never,
 		});
 
-		const result = await listVariants({ executor: "unknown" }).run(ctx);
+		const result = await listVariants("unknown").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -69,13 +69,14 @@ describe("createVariant", () => {
 			} as never,
 		});
 
-		const result = await createVariant({
+		const variant = Variant.create({
 			executor: "claude-code",
 			name: "CUSTOM",
 			permissionMode: "plan",
 			model: "opus",
 			appendPrompt: "Be brief",
-		}).run(ctx);
+		});
+		const result = await createVariant(variant).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -95,10 +96,11 @@ describe("createVariant", () => {
 			variant: { upsert: () => {} } as never,
 		});
 
-		const result = await createVariant({
+		const variant = Variant.create({
 			executor: "claude-code",
 			name: "BASIC",
-		}).run(ctx);
+		});
+		const result = await createVariant(variant).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -135,8 +137,7 @@ describe("updateVariant", () => {
 			} as never,
 		});
 
-		const result = await updateVariant({
-			variantId: existing.id,
+		const result = await updateVariant(existing.id, {
 			name: "NEW",
 			permissionMode: "plan",
 			model: "opus",
@@ -167,8 +168,7 @@ describe("updateVariant", () => {
 			} as never,
 		});
 
-		const result = await updateVariant({
-			variantId: existing.id,
+		const result = await updateVariant(existing.id, {
 			// Only update name
 			name: "RENAMED",
 		}).run(ctx);
@@ -192,8 +192,7 @@ describe("updateVariant", () => {
 			} as never,
 		});
 
-		const result = await updateVariant({
-			variantId: existing.id,
+		const result = await updateVariant(existing.id, {
 			model: null,
 		}).run(ctx);
 
@@ -208,8 +207,7 @@ describe("updateVariant", () => {
 			variant: { get: () => null } as never,
 		});
 
-		const result = await updateVariant({
-			variantId: "non-existent",
+		const result = await updateVariant("non-existent", {
 			name: "X",
 		}).run(ctx);
 
@@ -240,7 +238,7 @@ describe("deleteVariant", () => {
 			} as never,
 		});
 
-		const result = await deleteVariant({ variantId: existing.id }).run(ctx);
+		const result = await deleteVariant(existing.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -255,7 +253,7 @@ describe("deleteVariant", () => {
 			variant: { get: () => null } as never,
 		});
 
-		const result = await deleteVariant({ variantId: "non-existent" }).run(ctx);
+		const result = await deleteVariant("non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {

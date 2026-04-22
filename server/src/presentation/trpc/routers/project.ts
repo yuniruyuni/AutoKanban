@@ -1,5 +1,6 @@
 // @specre 01KPQ6W85T6VTJEQWKM3BNVPMC
 import { z } from "zod";
+import { Project } from "../../../models/project";
 import { browseDirectory } from "../../../usecases/project/browse-directory";
 import { createProject } from "../../../usecases/project/create-project";
 import { deleteProject } from "../../../usecases/project/delete-project";
@@ -39,14 +40,20 @@ export const projectRouter = router({
 				branch: z.string().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await createProject(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const project = Project.create({
+				name: input.name.trim(),
+				description: input.description?.trim() || null,
+				repoPath: input.repoPath,
+				branch: input.branch || "main",
+			});
+			return handleResult(await createProject(project).run(ctx));
+		}),
 
 	get: publicProcedure
 		.input(z.object({ projectId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getProject(input).run(ctx)),
+			handleResult(await getProject(input.projectId).run(ctx)),
 		),
 
 	list: publicProcedure.query(async ({ ctx }) =>
@@ -61,9 +68,10 @@ export const projectRouter = router({
 				description: z.string().optional().nullable(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await updateProject(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { projectId, ...fields } = input;
+			return handleResult(await updateProject(projectId, fields).run(ctx));
+		}),
 
 	delete: publicProcedure
 		.input(
@@ -72,9 +80,10 @@ export const projectRouter = router({
 				deleteWorktrees: z.boolean().optional().default(false),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await deleteProject(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { projectId, ...options } = input;
+			return handleResult(await deleteProject(projectId, options).run(ctx));
+		}),
 
 	browseDirectory: publicProcedure
 		.input(
@@ -84,13 +93,15 @@ export const projectRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) =>
-			handleResult(await browseDirectory(input).run(ctx)),
+			handleResult(
+				await browseDirectory(input.path, input.includeFiles).run(ctx),
+			),
 		),
 
 	getGitInfo: publicProcedure
 		.input(z.object({ path: z.string() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getGitInfo(input).run(ctx)),
+			handleResult(await getGitInfo(input.path).run(ctx)),
 		),
 
 	initGitRepo: publicProcedure
@@ -101,12 +112,12 @@ export const projectRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await initGitRepo(input).run(ctx)),
+			handleResult(await initGitRepo(input.path, input.defaultBranch).run(ctx)),
 		),
 
 	initCommit: publicProcedure
 		.input(z.object({ path: z.string() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await initCommit(input).run(ctx)),
+			handleResult(await initCommit(input.path).run(ctx)),
 		),
 });

@@ -1,5 +1,6 @@
 // @specre 01KPNTBSG1VTZH0VGAVST7EX29
 import { z } from "zod";
+import { Variant } from "../../../models/variant";
 import { createVariant } from "../../../usecases/variant/create-variant";
 import { deleteVariant } from "../../../usecases/variant/delete-variant";
 import { listVariants } from "../../../usecases/variant/list-variants";
@@ -11,7 +12,7 @@ export const variantRouter = router({
 	list: publicProcedure
 		.input(z.object({ executor: z.string().min(1) }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await listVariants(input).run(ctx)),
+			handleResult(await listVariants(input.executor).run(ctx)),
 		),
 
 	create: publicProcedure
@@ -24,9 +25,10 @@ export const variantRouter = router({
 				appendPrompt: z.string().nullable().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await createVariant(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const variant = Variant.create(input);
+			return handleResult(await createVariant(variant).run(ctx));
+		}),
 
 	update: publicProcedure
 		.input(
@@ -38,13 +40,14 @@ export const variantRouter = router({
 				appendPrompt: z.string().nullable().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await updateVariant(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { variantId, ...fields } = input;
+			return handleResult(await updateVariant(variantId, fields).run(ctx));
+		}),
 
 	delete: publicProcedure
 		.input(z.object({ variantId: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await deleteVariant(input).run(ctx)),
+			handleResult(await deleteVariant(input.variantId).run(ctx)),
 		),
 });

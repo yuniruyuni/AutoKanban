@@ -5,27 +5,23 @@ import { Workspace } from "../../models/workspace";
 import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
-export interface MergeBranchInput {
-	workspaceId: string;
-	projectId: string;
-	targetBranch: string;
-}
-
-export const mergeBranch = (input: MergeBranchInput) =>
+export const mergeBranch = (
+	workspaceId: string,
+	projectId: string,
+	targetBranch: string,
+) =>
 	usecase({
 		read: async (ctx) => {
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			const task = await ctx.repos.task.get(Task.ById(workspace.taskId));
@@ -62,7 +58,7 @@ export const mergeBranch = (input: MergeBranchInput) =>
 
 			// Fast-forward merge
 			try {
-				await ctx.repos.git.fastForwardMerge(worktreePath, input.targetBranch);
+				await ctx.repos.git.fastForwardMerge(worktreePath, targetBranch);
 			} catch (error) {
 				if (
 					error instanceof Error &&

@@ -9,18 +9,18 @@ export const workspaceRouter = router({
 	findByPath: publicProcedure
 		.input(z.object({ worktreePath: z.string() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await findWorkspaceByPath(input).run(ctx)),
+			handleResult(await findWorkspaceByPath(input.worktreePath).run(ctx)),
 		),
 
 	listAttempts: publicProcedure
 		.input(z.object({ taskId: z.string() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await listAttempts(input).run(ctx)),
+			handleResult(await listAttempts(input.taskId).run(ctx)),
 		),
 
 	getAttemptExecution: publicProcedure
 		.input(z.object({ workspaceId: z.string() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getAttemptExecution(input).run(ctx)),
+			handleResult(await getAttemptExecution(input.workspaceId).run(ctx)),
 		),
 });

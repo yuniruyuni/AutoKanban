@@ -1,51 +1,40 @@
 import { fail } from "../../models/common";
-import type { GitDiff } from "../../models/git-diff";
 import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface GetDiffsInput {
-	workspaceId: string;
-	projectId: string;
-	baseCommit?: string; // Defaults to target branch
-}
-
-export interface GetDiffsResult {
-	diffs: GitDiff[];
-	totalAdditions: number;
-	totalDeletions: number;
-}
-
-export const getDiffs = (input: GetDiffsInput) =>
+export const getDiffs = (
+	workspaceId: string,
+	projectId: string,
+	baseCommit?: string,
+) =>
 	usecase({
 		read: async (ctx) => {
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			// Get target branch for base commit if not specified
-			let baseCommit = input.baseCommit;
-			if (!baseCommit) {
+			let resolvedBaseCommit = baseCommit;
+			if (!resolvedBaseCommit) {
 				const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
 					workspace.id,
 				);
 				const workspaceRepo = workspaceRepos.find(
-					(wr) => wr.projectId === input.projectId,
+					(wr) => wr.projectId === projectId,
 				);
-				baseCommit = workspaceRepo?.targetBranch ?? project.branch;
+				resolvedBaseCommit = workspaceRepo?.targetBranch ?? project.branch;
 			}
 
-			return { workspace, project, baseCommit };
+			return { workspace, project, baseCommit: resolvedBaseCommit };
 		},
 
 		post: async (ctx, { workspace, project, baseCommit }) => {

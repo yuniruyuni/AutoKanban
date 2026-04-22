@@ -12,25 +12,19 @@ import { executeCascadeDeletion } from "../cascade-deletion";
 import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
-export interface DeleteProjectInput {
-	projectId: string;
-	deleteWorktrees?: boolean;
-}
-
-export const deleteProject = (input: DeleteProjectInput) =>
+export const deleteProject = (
+	projectId: string,
+	options?: { deleteWorktrees?: boolean },
+) =>
 	usecase({
 		read: async (ctx) => {
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", "Project not found", {
-					projectId: input.projectId,
-				});
+				return fail("NOT_FOUND", "Project not found", { projectId });
 			}
 
 			// Collect all related entity IDs for cascade deletion
-			const tasks = await ctx.repos.task.list(Task.ByProject(input.projectId), {
+			const tasks = await ctx.repos.task.list(Task.ByProject(projectId), {
 				limit: 10000,
 			});
 			const taskIds = tasks.items.map((t) => t.id);
@@ -137,7 +131,7 @@ export const deleteProject = (input: DeleteProjectInput) =>
 		},
 
 		post: async (ctx, { workspaceIds, project }) => {
-			if (!input.deleteWorktrees) {
+			if (!options?.deleteWorktrees) {
 				return { deleted: true, projectId: project.id };
 			}
 

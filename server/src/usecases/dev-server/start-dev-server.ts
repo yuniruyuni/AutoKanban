@@ -7,18 +7,14 @@ import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface StartDevServerInput {
-	taskId: string;
-}
-
-export const startDevServer = (input: StartDevServerInput) =>
+export const startDevServer = (taskId: string) =>
 	usecase({
 		read: async (ctx) => {
 			// Get task
-			const task = await ctx.repos.task.get(Task.ById(input.taskId));
+			const task = await ctx.repos.task.get(Task.ById(taskId));
 			if (!task) {
 				return fail("NOT_FOUND", "Task not found", {
-					taskId: input.taskId,
+					taskId,
 				});
 			}
 
@@ -32,7 +28,7 @@ export const startDevServer = (input: StartDevServerInput) =>
 
 			// Find active workspace
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ByTaskIdActive(input.taskId),
+				Workspace.ByTaskIdActive(taskId),
 			);
 			if (!workspace) {
 				return fail("NOT_FOUND", "No active workspace for task");

@@ -7,48 +7,40 @@ import { usecase } from "../runner";
 // Respond to Approval
 // ============================================
 
-export interface RespondToApprovalInput {
-	approvalId: string;
-	executionProcessId: string;
-	status: "approved" | "denied";
-	reason?: string | null;
-}
-
-export interface RespondToApprovalResult {
-	success: boolean;
-}
-
 /**
  * Respond to a pending approval (plan or permission).
  * Updates DB via ApprovalStore and resolves the waiting Promise.
  */
-export const respondToApproval = (input: RespondToApprovalInput) =>
+export const respondToApproval = (
+	approvalId: string,
+	executionProcessId: string,
+	status: "approved" | "denied",
+	reason?: string | null,
+) =>
 	usecase({
 		read: async (ctx) => {
 			// Verify approval exists
-			const approval = await ctx.repos.approval.get(
-				Approval.ById(input.approvalId),
-			);
+			const approval = await ctx.repos.approval.get(Approval.ById(approvalId));
 			if (!approval) {
 				return fail("NOT_FOUND", "Approval not found", {
-					approvalId: input.approvalId,
+					approvalId,
 				});
 			}
 
 			if (approval.status !== "pending") {
 				return fail("INVALID_STATE", "Approval already responded", {
-					approvalId: input.approvalId,
+					approvalId,
 					status: approval.status,
 				});
 			}
 
-			if (approval.executionProcessId !== input.executionProcessId) {
+			if (approval.executionProcessId !== executionProcessId) {
 				return fail(
 					"INVALID_STATE",
 					"Approval does not belong to this process",
 					{
-						approvalId: input.approvalId,
-						executionProcessId: input.executionProcessId,
+						approvalId,
+						executionProcessId,
 					},
 				);
 			}
@@ -59,8 +51,8 @@ export const respondToApproval = (input: RespondToApprovalInput) =>
 		post: async (ctx, { approval }) => {
 			const success = await ctx.repos.approvalStore.respond(
 				approval.id,
-				input.status,
-				input.reason ?? null,
+				status,
+				reason ?? null,
 			);
 
 			return { success, approval };
@@ -68,35 +60,27 @@ export const respondToApproval = (input: RespondToApprovalInput) =>
 
 		finish: async (ctx, { success, approval }) => {
 			if (success) {
-				const updated = Approval.respond(
-					approval,
-					input.status,
-					input.reason ?? null,
-				);
+				const updated = Approval.respond(approval, status, reason ?? null);
 				await ctx.repos.approval.upsert(updated);
 			}
 			return { success };
 		},
 
-		result: ({ success }): RespondToApprovalResult => ({ success }),
+		result: ({ success }) => ({ success }),
 	});
 
 // ============================================
 // Get Pending Approvals
 // ============================================
 
-export interface GetPendingApprovalsInput {
-	executionProcessId: string;
-}
-
 /**
  * Get pending approvals for an execution process.
  */
-export const getPendingApprovals = (input: GetPendingApprovalsInput) =>
+export const getPendingApprovals = (executionProcessId: string) =>
 	usecase({
 		read: async (ctx) => {
 			// Fallback to DB for pending approvals (server restart recovery)
-			const spec = Approval.ByExecutionProcessId(input.executionProcessId).and(
+			const spec = Approval.ByExecutionProcessId(executionProcessId).and(
 				Approval.ByStatus("pending"),
 			);
 			const page = await ctx.repos.approval.list(spec, { limit: 100 });
@@ -105,9 +89,7 @@ export const getPendingApprovals = (input: GetPendingApprovalsInput) =>
 
 		post: (ctx, { dbApprovals }) => {
 			// First check in-memory store (normal flow)
-			const inMemory = ctx.repos.approvalStore.listPending(
-				input.executionProcessId,
-			);
+			const inMemory = ctx.repos.approvalStore.listPending(executionProcessId);
 			if (inMemory.length > 0) {
 				return { approvals: inMemory };
 			}

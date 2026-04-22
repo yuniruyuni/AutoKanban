@@ -29,10 +29,7 @@ describe("pushBranch", () => {
 			}),
 		});
 
-		const result = await pushBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await pushBranch(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -60,10 +57,7 @@ describe("pushBranch", () => {
 			}),
 		});
 
-		await pushBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		await pushBranch(workspace.id, project.id).run(ctx);
 
 		expect(capturedRemote).toBe("origin");
 	});
@@ -86,11 +80,7 @@ describe("pushBranch", () => {
 			}),
 		});
 
-		await pushBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			remote: "upstream",
-		}).run(ctx);
+		await pushBranch(workspace.id, project.id, "upstream").run(ctx);
 
 		expect(capturedRemote).toBe("upstream");
 	});
@@ -118,11 +108,7 @@ describe("pushBranch", () => {
 			}),
 		});
 
-		await pushBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			force: true,
-		}).run(ctx);
+		await pushBranch(workspace.id, project.id, undefined, true).run(ctx);
 
 		expect(capturedForce).toBe(true);
 	});
@@ -132,10 +118,7 @@ describe("pushBranch", () => {
 			workspace: { get: () => null } as never,
 		});
 
-		const result = await pushBranch({
-			workspaceId: "non-existent",
-			projectId: "proj-1",
-		}).run(ctx);
+		const result = await pushBranch("non-existent", "proj-1").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -151,10 +134,7 @@ describe("pushBranch", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await pushBranch({
-			workspaceId: workspace.id,
-			projectId: "non-existent",
-		}).run(ctx);
+		const result = await pushBranch(workspace.id, "non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -174,10 +154,7 @@ describe("pushBranch", () => {
 			}),
 		});
 
-		const result = await pushBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await pushBranch(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -201,10 +178,7 @@ describe("pushBranch", () => {
 			}),
 		});
 
-		const result = await pushBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await pushBranch(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {

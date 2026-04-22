@@ -19,9 +19,7 @@ describe("getExecution", () => {
 			} as never,
 		});
 
-		const result = await getExecution({
-			executionProcessId: process.id,
-		}).run(ctx);
+		const result = await getExecution(process.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -53,10 +51,7 @@ describe("getExecution", () => {
 			} as never,
 		});
 
-		const result = await getExecution({
-			executionProcessId: process.id,
-			includeLogs: true,
-		}).run(ctx);
+		const result = await getExecution(process.id, true).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -79,9 +74,7 @@ describe("getExecution", () => {
 			} as never,
 		});
 
-		const result = await getExecution({
-			executionProcessId: "non-existent",
-		}).run(ctx);
+		const result = await getExecution("non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -108,10 +101,7 @@ describe("getExecution", () => {
 			} as never,
 		});
 
-		const result = await getExecution({
-			executionProcessId: process.id,
-			includeLogs: true,
-		}).run(ctx);
+		const result = await getExecution(process.id, true).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -143,9 +133,7 @@ describe("getExecution", () => {
 				} as never,
 			});
 
-			const result = await getExecution({
-				executionProcessId: process.id,
-			}).run(ctx);
+			const result = await getExecution(process.id).run(ctx);
 
 			expect(result.ok).toBe(true);
 			if (result.ok) {

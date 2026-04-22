@@ -2,26 +2,20 @@ import { spawn } from "bun";
 import { fail } from "../../models/common";
 import { usecase } from "../runner";
 
-export interface InitCommitInput {
-	path: string;
-}
-
-export const initCommit = (input: InitCommitInput) =>
+export const initCommit = (path: string) =>
 	usecase({
 		post: async (ctx) => {
 			const { git } = ctx.repos;
 
-			const isRepo = await git.isGitRepo(input.path);
+			const isRepo = await git.isGitRepo(path);
 			if (!isRepo) {
 				return fail("INVALID_INPUT", "Path is not a git repository");
 			}
 
-			const branches = await git.listBranches(input.path);
+			const branches = await git.listBranches(path);
 			if (branches.length > 0) {
 				return fail("ALREADY_HAS_COMMITS", "Repository already has commits");
 			}
-
-			const path = input.path;
 			// Create an empty initial commit
 			const commitProc = spawn(
 				["git", "commit", "--allow-empty", "-m", "initial commit"],

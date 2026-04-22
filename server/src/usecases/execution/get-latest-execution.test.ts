@@ -15,7 +15,7 @@ describe("getLatestExecution", () => {
 			} as never,
 		});
 
-		const result = await getLatestExecution({ taskId: "task-1" }).run(ctx);
+		const result = await getLatestExecution("task-1").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -37,9 +37,7 @@ describe("getLatestExecution", () => {
 			} as never,
 		});
 
-		const result = await getLatestExecution({
-			taskId: workspace.taskId,
-		}).run(ctx);
+		const result = await getLatestExecution(workspace.taskId).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -65,9 +63,7 @@ describe("getLatestExecution", () => {
 			} as never,
 		});
 
-		const result = await getLatestExecution({
-			taskId: workspace.taskId,
-		}).run(ctx);
+		const result = await getLatestExecution(workspace.taskId).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -97,9 +93,7 @@ describe("getLatestExecution", () => {
 			} as never,
 		});
 
-		const result = await getLatestExecution({
-			taskId: workspace.taskId,
-		}).run(ctx);
+		const result = await getLatestExecution(workspace.taskId).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -134,10 +128,7 @@ describe("getLatestExecution", () => {
 			} as never,
 		});
 
-		const result = await getLatestExecution({
-			taskId: workspace.taskId,
-			includeLogs: true,
-		}).run(ctx);
+		const result = await getLatestExecution(workspace.taskId, true).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -165,10 +156,7 @@ describe("getLatestExecution", () => {
 			} as never,
 		});
 
-		const result = await getLatestExecution({
-			taskId: workspace.taskId,
-			includeLogs: true,
-		}).run(ctx);
+		const result = await getLatestExecution(workspace.taskId, true).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -195,9 +183,7 @@ describe("getLatestExecution", () => {
 			} as never,
 		});
 
-		const result = await getLatestExecution({
-			taskId: workspace.taskId,
-		}).run(ctx);
+		const result = await getLatestExecution(workspace.taskId).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -231,9 +217,7 @@ describe("getLatestExecution", () => {
 			} as never,
 		});
 
-		const result = await getLatestExecution({
-			taskId: workspace.taskId,
-		}).run(ctx);
+		const result = await getLatestExecution(workspace.taskId).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

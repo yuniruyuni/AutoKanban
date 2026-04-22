@@ -3,28 +3,26 @@ import { and } from "../../models/common";
 import { Task } from "../../models/task";
 import { usecase } from "../runner";
 
-export interface ListTasksInput {
-	projectId: string;
-	status?: Task.Status | Task.Status[];
-	limit?: number;
-}
-
-export const listTasks = (input: ListTasksInput) =>
+export const listTasks = (
+	projectId: string,
+	filter?: { status?: Task.Status | Task.Status[] },
+	pagination?: { limit?: number },
+) =>
 	usecase({
 		read: async (ctx) => {
-			const specs: Task.Spec[] = [Task.ByProject(input.projectId)];
+			const specs: Task.Spec[] = [Task.ByProject(projectId)];
 
-			if (input.status) {
-				const statuses = Array.isArray(input.status)
-					? input.status
-					: [input.status];
+			if (filter?.status) {
+				const statuses = Array.isArray(filter.status)
+					? filter.status
+					: [filter.status];
 				specs.push(Task.ByStatuses(...statuses));
 			}
 
 			const spec = specs.length === 1 ? specs[0] : (and(...specs) as Task.Spec);
 
 			const cursor = {
-				limit: input.limit ?? 50,
+				limit: pagination?.limit ?? 50,
 				sort: Task.defaultSort,
 			};
 

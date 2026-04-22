@@ -1,21 +1,17 @@
 import { AgentSetting } from "../../models/agent-setting";
 import { usecase } from "../runner";
 
-export interface GetAgentSettingInput {
-	agentId: string;
-}
-
-export const getAgentSetting = (input: GetAgentSettingInput) =>
+export const getAgentSetting = (agentId: string) =>
 	usecase({
 		read: async (ctx) => {
 			const setting = await ctx.repos.agentSetting.get(
-				AgentSetting.ById(input.agentId),
+				AgentSetting.ById(agentId),
 			);
 			return { setting };
 		},
 
 		post: (ctx, { setting }) => {
-			const driverInfo = ctx.repos.executor.getDriverInfo(input.agentId);
+			const driverInfo = ctx.repos.executor.getDriverInfo(agentId);
 			return {
 				command: setting?.command ?? null,
 				defaultCommand: driverInfo?.defaultCommand ?? null,

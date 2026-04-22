@@ -3,28 +3,24 @@ import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface PushBranchInput {
-	workspaceId: string;
-	projectId: string;
-	remote?: string;
-	force?: boolean;
-}
-
-export const pushBranch = (input: PushBranchInput) =>
+export const pushBranch = (
+	workspaceId: string,
+	projectId: string,
+	remote?: string,
+	force?: boolean,
+) =>
 	usecase({
 		read: async (ctx) => {
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			return { workspace, project };
@@ -52,9 +48,9 @@ export const pushBranch = (input: PushBranchInput) =>
 			// Push
 			await ctx.repos.git.push(
 				worktreePath,
-				input.remote ?? "origin",
+				remote ?? "origin",
 				branch,
-				input.force ?? false,
+				force ?? false,
 			);
 
 			return { success: true, branch };

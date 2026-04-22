@@ -3,21 +3,17 @@ import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
 import { usecase } from "../runner";
 
-export interface StopExecutionInput {
-	executionProcessId: string;
-}
-
-export const stopExecution = (input: StopExecutionInput) =>
+export const stopExecution = (executionProcessId: string) =>
 	usecase({
 		read: async (ctx) => {
 			// Verify coding agent process exists
 			const codingAgentProcess = await ctx.repos.codingAgentProcess.get(
-				CodingAgentProcess.ById(input.executionProcessId),
+				CodingAgentProcess.ById(executionProcessId),
 			);
 
 			if (!codingAgentProcess) {
 				return fail("NOT_FOUND", "Coding agent process not found", {
-					executionProcessId: input.executionProcessId,
+					executionProcessId,
 				});
 			}
 

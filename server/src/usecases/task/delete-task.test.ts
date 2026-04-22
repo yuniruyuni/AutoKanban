@@ -25,7 +25,7 @@ describe("deleteTask", () => {
 		const ctx = createIntegrationContext(db);
 		await ctx.repos.task.upsert(standaloneTask);
 
-		const result = await deleteTask({ taskId: standaloneTask.id }).run(ctx);
+		const result = await deleteTask(standaloneTask.id).run(ctx);
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.value.deleted).toBe(true);
@@ -58,7 +58,7 @@ describe("deleteTask", () => {
 		await ctx.repos.approval.upsert(approval);
 
 		// Delete task
-		const result = await deleteTask({ taskId: task.id }).run(ctx);
+		const result = await deleteTask(task.id).run(ctx);
 		expect(result.ok).toBe(true);
 
 		// Verify all entities are gone
@@ -81,7 +81,7 @@ describe("deleteTask", () => {
 		const db = await createTestDB();
 		const ctx = createIntegrationContext(db);
 
-		const result = await deleteTask({ taskId: "non-existent" }).run(ctx);
+		const result = await deleteTask("non-existent").run(ctx);
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
 			expect(result.error.code).toBe("NOT_FOUND");

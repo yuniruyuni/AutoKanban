@@ -3,44 +3,31 @@ import { fail } from "../../models/common";
 import { Session } from "../../models/session";
 import { usecase } from "../runner";
 
-export interface SaveDraftInput {
-	sessionId: string;
-	text: string;
-}
-
-export const saveDraft = (input: SaveDraftInput) =>
+export const saveDraft = (sessionId: string, text: string) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 			return { session };
 		},
 
 		post: (ctx) => {
-			ctx.repos.draft.save(input.sessionId, input.text);
+			ctx.repos.draft.save(sessionId, text);
 			return { success: true };
 		},
 	});
 
-export interface GetDraftInput {
-	sessionId: string;
-}
-
-export const getDraft = (input: GetDraftInput) =>
+export const getDraft = (sessionId: string) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 
@@ -48,7 +35,7 @@ export const getDraft = (input: GetDraftInput) =>
 		},
 
 		post: (ctx) => {
-			const draft = ctx.repos.draft.get(input.sessionId);
+			const draft = ctx.repos.draft.get(sessionId);
 			return {
 				text: draft?.text ?? "",
 				savedAt: draft?.savedAt?.toISOString() ?? null,

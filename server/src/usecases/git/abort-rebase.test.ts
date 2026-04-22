@@ -29,10 +29,7 @@ describe("abortRebase", () => {
 			}),
 		});
 
-		const result = await abortRebase({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await abortRebase(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -54,10 +51,7 @@ describe("abortRebase", () => {
 			}),
 		});
 
-		const result = await abortRebase({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await abortRebase(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -71,10 +65,7 @@ describe("abortRebase", () => {
 			workspace: { get: () => null } as never,
 		});
 
-		const result = await abortRebase({
-			workspaceId: "non-existent",
-			projectId: "proj-1",
-		}).run(ctx);
+		const result = await abortRebase("non-existent", "proj-1").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -90,10 +81,7 @@ describe("abortRebase", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await abortRebase({
-			workspaceId: workspace.id,
-			projectId: "non-existent",
-		}).run(ctx);
+		const result = await abortRebase(workspace.id, "non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -117,10 +105,7 @@ describe("abortRebase", () => {
 			}),
 		});
 
-		const result = await abortRebase({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await abortRebase(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {

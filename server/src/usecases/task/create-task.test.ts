@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createTestProject } from "../../../test/factories";
 import { createMockContext } from "../../../test/helpers/context";
+import { Task } from "../../models/task";
 import { createTask } from "./create-task";
 
 describe("createTask", () => {
@@ -15,10 +16,8 @@ describe("createTask", () => {
 			} as never,
 		});
 
-		const result = await createTask({
-			projectId: project.id,
-			title: "New Task",
-		}).run(ctx);
+		const task = Task.create({ projectId: project.id, title: "New Task" });
+		const result = await createTask(task).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -35,10 +34,8 @@ describe("createTask", () => {
 			} as never,
 		});
 
-		const result = await createTask({
-			projectId: "non-existent",
-			title: "New Task",
-		}).run(ctx);
+		const task = Task.create({ projectId: "non-existent", title: "New Task" });
+		const result = await createTask(task).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -53,11 +50,12 @@ describe("createTask", () => {
 			task: { upsert: () => {} } as never,
 		});
 
-		const result = await createTask({
+		const task = Task.create({
 			projectId: project.id,
 			title: "Task with desc",
 			description: "Some details",
-		}).run(ctx);
+		});
+		const result = await createTask(task).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -72,10 +70,8 @@ describe("createTask", () => {
 			task: { upsert: () => {} } as never,
 		});
 
-		const result = await createTask({
-			projectId: project.id,
-			title: "Task",
-		}).run(ctx);
+		const task = Task.create({ projectId: project.id, title: "Task" });
+		const result = await createTask(task).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -95,7 +91,8 @@ describe("createTask", () => {
 			} as never,
 		});
 
-		await createTask({ projectId: project.id, title: "Test" }).run(ctx);
+		const task = Task.create({ projectId: project.id, title: "Test" });
+		await createTask(task).run(ctx);
 		expect(upsertedTask).not.toBeNull();
 	});
 });

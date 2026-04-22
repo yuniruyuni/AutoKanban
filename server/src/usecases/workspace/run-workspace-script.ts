@@ -9,17 +9,15 @@ import { usecase } from "../runner";
 
 export type WorkspaceScriptType = "prepare" | "cleanup";
 
-export interface RunWorkspaceScriptInput {
-	taskId: string;
-	scriptType: WorkspaceScriptType;
-}
-
-export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
+export const runWorkspaceScript = (
+	taskId: string,
+	scriptType: WorkspaceScriptType,
+) =>
 	usecase({
 		read: async (ctx) => {
-			const task = await ctx.repos.task.get(Task.ById(input.taskId));
+			const task = await ctx.repos.task.get(Task.ById(taskId));
 			if (!task) {
-				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
+				return fail("NOT_FOUND", "Task not found", { taskId });
 			}
 
 			const project = await ctx.repos.project.get(Project.ById(task.projectId));
@@ -30,7 +28,7 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 			}
 
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ByTaskIdActive(input.taskId),
+				Workspace.ByTaskIdActive(taskId),
 			);
 			if (!workspace) {
 				return fail("NOT_FOUND", "No active workspace for task");
@@ -70,7 +68,7 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 		process: (_ctx, data) => {
 			const workspaceScriptProcess = WorkspaceScriptProcess.create({
 				sessionId: data.session.id,
-				scriptType: input.scriptType,
+				scriptType,
 			});
 			return { ...data, workspaceScriptProcess };
 		},
@@ -83,11 +81,11 @@ export const runWorkspaceScript = (input: RunWorkspaceScriptInput) =>
 			);
 
 			const config = await ctx.repos.workspaceConfig.load(worktreePath);
-			const command = config[input.scriptType];
+			const command = config[scriptType];
 			if (!command) {
 				return fail(
 					"INVALID_STATE",
-					`No ${input.scriptType} script in auto-kanban.json`,
+					`No ${scriptType} script in auto-kanban.json`,
 				);
 			}
 

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createTestProject } from "../../../test/factories";
 import { createMockContext } from "../../../test/helpers/context";
+import { Project } from "../../models/project";
 import { createProject } from "./create-project";
 
 const validGitMock = {
@@ -24,10 +25,11 @@ describe("createProject", () => {
 			...templateAndTaskMock,
 		});
 
-		const result = await createProject({
+		const project = Project.create({
 			name: "My Project",
 			repoPath: "/tmp/repo",
-		}).run(ctx);
+		});
+		const result = await createProject(project).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -39,9 +41,8 @@ describe("createProject", () => {
 
 	test("fails when name is empty", async () => {
 		const ctx = createMockContext();
-		const result = await createProject({ name: "", repoPath: "/tmp/repo" }).run(
-			ctx,
-		);
+		const project = Project.create({ name: "", repoPath: "/tmp/repo" });
+		const result = await createProject(project).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -51,10 +52,8 @@ describe("createProject", () => {
 
 	test("fails when name is whitespace only", async () => {
 		const ctx = createMockContext();
-		const result = await createProject({
-			name: "   ",
-			repoPath: "/tmp/repo",
-		}).run(ctx);
+		const project = Project.create({ name: "   ", repoPath: "/tmp/repo" });
+		const result = await createProject(project).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -64,7 +63,8 @@ describe("createProject", () => {
 
 	test("fails when repoPath is empty", async () => {
 		const ctx = createMockContext();
-		const result = await createProject({ name: "Test", repoPath: "" }).run(ctx);
+		const project = Project.create({ name: "Test", repoPath: "" });
+		const result = await createProject(project).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -84,10 +84,11 @@ describe("createProject", () => {
 			} as never,
 		});
 
-		const result = await createProject({
+		const project = Project.create({
 			name: "Test",
 			repoPath: "/tmp/not-a-repo",
-		}).run(ctx);
+		});
+		const result = await createProject(project).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -109,10 +110,11 @@ describe("createProject", () => {
 			} as never,
 		});
 
-		const result = await createProject({
+		const project = Project.create({
 			name: "Test",
 			repoPath: "/tmp/empty-repo",
-		}).run(ctx);
+		});
+		const result = await createProject(project).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -131,10 +133,8 @@ describe("createProject", () => {
 			git: validGitMock,
 		});
 
-		const result = await createProject({
-			name: "New",
-			repoPath: "/tmp/existing",
-		}).run(ctx);
+		const project = Project.create({ name: "New", repoPath: "/tmp/existing" });
+		const result = await createProject(project).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -152,11 +152,12 @@ describe("createProject", () => {
 			...templateAndTaskMock,
 		});
 
-		const result = await createProject({
-			name: "  Trimmed  ",
-			description: "  desc  ",
+		const project = Project.create({
+			name: "  Trimmed  ".trim(),
+			description: "  desc  ".trim(),
 			repoPath: "/tmp/repo",
-		}).run(ctx);
+		});
+		const result = await createProject(project).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

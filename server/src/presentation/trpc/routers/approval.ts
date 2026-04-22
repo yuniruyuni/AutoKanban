@@ -18,12 +18,21 @@ export const approvalRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await respondToApproval(input).run(ctx)),
+			handleResult(
+				await respondToApproval(
+					input.approvalId,
+					input.executionProcessId,
+					input.status,
+					input.reason,
+				).run(ctx),
+			),
 		),
 
 	getPending: publicProcedure
 		.input(z.object({ executionProcessId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getPendingApprovals(input).run(ctx)),
+			handleResult(
+				await getPendingApprovals(input.executionProcessId).run(ctx),
+			),
 		),
 });

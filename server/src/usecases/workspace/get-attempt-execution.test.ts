@@ -14,9 +14,7 @@ describe("getAttemptExecution", () => {
 			} as never,
 		});
 
-		const result = await getAttemptExecution({
-			workspaceId: "ws-1",
-		}).run(ctx);
+		const result = await getAttemptExecution("ws-1").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -41,9 +39,7 @@ describe("getAttemptExecution", () => {
 			} as never,
 		});
 
-		const result = await getAttemptExecution({
-			workspaceId: "ws-1",
-		}).run(ctx);
+		const result = await getAttemptExecution("ws-1").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -73,9 +69,7 @@ describe("getAttemptExecution", () => {
 			} as never,
 		});
 
-		const result = await getAttemptExecution({
-			workspaceId: "ws-1",
-		}).run(ctx);
+		const result = await getAttemptExecution("ws-1").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

@@ -8,43 +8,35 @@ import { usecase } from "../runner";
 // Respond to Permission Request
 // ============================================
 
-export interface RespondToPermissionInput {
-	sessionId: string;
-	requestId: string;
-	approved: boolean;
-	reason?: string;
-}
-
-export interface RespondToPermissionResult {
-	success: boolean;
-}
-
 /**
  * Respond to a pending permission request from Claude Code.
  * Sends a control_response to the running process.
  */
-export const respondToPermission = (input: RespondToPermissionInput) =>
+export const respondToPermission = (
+	sessionId: string,
+	requestId: string,
+	approved: boolean,
+	reason?: string,
+) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 
 			// Get the coding agent process
 			const codingAgentProcessPage = await ctx.repos.codingAgentProcess.list(
-				CodingAgentProcess.BySessionId(input.sessionId),
+				CodingAgentProcess.BySessionId(sessionId),
 				{ limit: 1, sort: CodingAgentProcess.defaultSort },
 			);
 			const latestProcess = codingAgentProcessPage.items[0];
 
 			if (!latestProcess || latestProcess.status !== "running") {
 				return fail("INVALID_STATE", "No running coding agent process", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 
@@ -52,28 +44,28 @@ export const respondToPermission = (input: RespondToPermissionInput) =>
 		},
 
 		post: async (ctx, { latestProcess }) => {
-			const permission = ctx.repos.permissionStore.get(input.requestId);
+			const permission = ctx.repos.permissionStore.get(requestId);
 			if (!permission) {
 				return fail("NOT_FOUND", "Permission request not found", {
-					requestId: input.requestId,
+					requestId,
 				});
 			}
 
 			const success = await ctx.repos.executor.sendPermissionResponse(
 				latestProcess.id,
-				input.requestId,
-				input.approved,
+				requestId,
+				approved,
 				undefined,
-				input.reason,
+				reason,
 			);
 
 			// Remove from store
-			ctx.repos.permissionStore.remove(input.requestId);
+			ctx.repos.permissionStore.remove(requestId);
 
 			return { success };
 		},
 
-		result: ({ success }): RespondToPermissionResult => ({ success }),
+		result: ({ success }) => ({ success }),
 	});
 
 /**

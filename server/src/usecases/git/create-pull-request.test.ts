@@ -48,11 +48,11 @@ describe("createPullRequest", () => {
 			}),
 		});
 
-		const result = await createPullRequest({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			taskTitle: "My Task",
-		}).run(ctx);
+		const result = await createPullRequest(
+			workspace.id,
+			project.id,
+			"My Task",
+		).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -98,11 +98,7 @@ describe("createPullRequest", () => {
 			}),
 		});
 
-		await createPullRequest({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			taskTitle: "My Task",
-		}).run(ctx);
+		await createPullRequest(workspace.id, project.id, "My Task").run(ctx);
 
 		expect(capturedBase).toBe("develop");
 	});
@@ -112,11 +108,11 @@ describe("createPullRequest", () => {
 			workspace: { get: () => null } as never,
 		});
 
-		const result = await createPullRequest({
-			workspaceId: "non-existent",
-			projectId: "proj-1",
-			taskTitle: "Task",
-		}).run(ctx);
+		const result = await createPullRequest(
+			"non-existent",
+			"proj-1",
+			"Task",
+		).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -132,11 +128,11 @@ describe("createPullRequest", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await createPullRequest({
-			workspaceId: workspace.id,
-			projectId: "non-existent",
-			taskTitle: "Task",
-		}).run(ctx);
+		const result = await createPullRequest(
+			workspace.id,
+			"non-existent",
+			"Task",
+		).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -157,11 +153,11 @@ describe("createPullRequest", () => {
 			}),
 		});
 
-		const result = await createPullRequest({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			taskTitle: "Task",
-		}).run(ctx);
+		const result = await createPullRequest(
+			workspace.id,
+			project.id,
+			"Task",
+		).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -186,11 +182,11 @@ describe("createPullRequest", () => {
 			}),
 		});
 
-		const result = await createPullRequest({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			taskTitle: "Task",
-		}).run(ctx);
+		const result = await createPullRequest(
+			workspace.id,
+			project.id,
+			"Task",
+		).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -215,11 +211,11 @@ describe("createPullRequest", () => {
 			}),
 		});
 
-		const result = await createPullRequest({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			taskTitle: "Task",
-		}).run(ctx);
+		const result = await createPullRequest(
+			workspace.id,
+			project.id,
+			"Task",
+		).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {

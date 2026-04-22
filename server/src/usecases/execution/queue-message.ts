@@ -10,7 +10,6 @@ import {
 	type PendingToolUse,
 	parseLogsToConversation,
 } from "../../models/conversation/conversation-parser";
-import type { QueuedMessage, QueueStatus } from "../../models/message-queue";
 import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Variant } from "../../models/variant";
@@ -22,31 +21,20 @@ import { usecase } from "../runner";
 // Queue Message
 // ============================================
 
-export interface QueueMessageInput {
-	sessionId: string;
-	prompt: string;
-	executor?: string;
-	variant?: string;
-}
-
-export interface QueueMessageResult {
-	queuedMessage: QueuedMessage;
-	sentImmediately: boolean;
-	executionProcessId?: string;
-}
-
 /**
  * Queue a message for a session and record it in the logs.
  */
-export const queueMessage = (input: QueueMessageInput) =>
+export const queueMessage = (
+	sessionId: string,
+	prompt: string,
+	options?: { executor?: string; variant?: string },
+) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 
@@ -60,7 +48,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 			}
 
 			const codingAgentProcessPage = await ctx.repos.codingAgentProcess.list(
-				CodingAgentProcess.BySessionId(input.sessionId),
+				CodingAgentProcess.BySessionId(sessionId),
 				{ limit: 1, sort: CodingAgentProcess.defaultSort },
 			);
 			const latestProcess = codingAgentProcessPage.items[0];
@@ -74,14 +62,13 @@ export const queueMessage = (input: QueueMessageInput) =>
 				? await ctx.repos.project.get(Project.ById(workspaceRepo.projectId))
 				: null;
 
-			const resumeInfo = await ctx.repos.codingAgentTurn.findLatestResumeInfo(
-				input.sessionId,
-			);
+			const resumeInfo =
+				await ctx.repos.codingAgentTurn.findLatestResumeInfo(sessionId);
 
-			const executor = input.executor ?? "claude-code";
-			const variantEntity = input.variant
+			const executor = options?.executor ?? "claude-code";
+			const variantEntity = options?.variant
 				? await ctx.repos.variant.get(
-						Variant.ByExecutorAndName(executor, input.variant),
+						Variant.ByExecutorAndName(executor, options.variant),
 					)
 				: null;
 
@@ -185,9 +172,9 @@ export const queueMessage = (input: QueueMessageInput) =>
 
 			const queuedMessage = ctx.repos.messageQueue.queue(
 				session.id,
-				input.prompt,
-				input.executor,
-				input.variant,
+				prompt,
+				options?.executor,
+				options?.variant,
 			);
 
 			if (!canSendImmediately) {
@@ -204,7 +191,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 				type: "user",
 				message: {
 					role: "user",
-					content: [{ type: "text", text: input.prompt }],
+					content: [{ type: "text", text: prompt }],
 				},
 			});
 
@@ -327,11 +314,7 @@ export const queueMessage = (input: QueueMessageInput) =>
 			};
 		},
 
-		result: ({
-			queuedMessage,
-			sentImmediately,
-			executionProcessId,
-		}): QueueMessageResult => ({
+		result: ({ queuedMessage, sentImmediately, executionProcessId }) => ({
 			queuedMessage,
 			sentImmediately,
 			executionProcessId,
@@ -342,23 +325,13 @@ export const queueMessage = (input: QueueMessageInput) =>
 // Get Queue Status
 // ============================================
 
-export interface GetQueueStatusInput {
-	sessionId: string;
-}
-
-export interface GetQueueStatusResult {
-	status: QueueStatus;
-}
-
-export const getQueueStatus = (input: GetQueueStatusInput) =>
+export const getQueueStatus = (sessionId: string) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 			return { session };
@@ -367,32 +340,19 @@ export const getQueueStatus = (input: GetQueueStatusInput) =>
 			const status = ctx.repos.messageQueue.getStatus(session.id);
 			return { status };
 		},
-		result: ({ status }): GetQueueStatusResult => ({
-			status,
-		}),
 	});
 
 // ============================================
 // Cancel Queue
 // ============================================
 
-export interface CancelQueueInput {
-	sessionId: string;
-}
-
-export interface CancelQueueResult {
-	cancelled: boolean;
-}
-
-export const cancelQueue = (input: CancelQueueInput) =>
+export const cancelQueue = (sessionId: string) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 			return { session };
@@ -401,7 +361,4 @@ export const cancelQueue = (input: CancelQueueInput) =>
 			const cancelled = ctx.repos.messageQueue.cancel(session.id);
 			return { cancelled };
 		},
-		result: ({ cancelled }): CancelQueueResult => ({
-			cancelled,
-		}),
 	});

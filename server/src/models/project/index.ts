@@ -76,6 +76,28 @@ export namespace Project {
 		};
 	}
 
+	// Partial update application
+	export interface UpdateFields {
+		name?: string;
+		description?: string | null;
+	}
+
+	export function applyUpdate(
+		project: Project,
+		fields: UpdateFields,
+		now: Date,
+	): Project {
+		return {
+			...project,
+			name: fields.name ?? project.name,
+			description:
+				fields.description !== undefined
+					? fields.description
+					: project.description,
+			updatedAt: now,
+		};
+	}
+
 	// Cursor
 	export function cursor(
 		project: Project,

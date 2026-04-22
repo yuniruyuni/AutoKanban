@@ -8,24 +8,17 @@ import { Workspace } from "../../models/workspace";
 import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
-export interface UpdateTaskInput {
-	taskId: string;
-	title?: string;
-	description?: string | null;
-	status?: Task.Status;
-}
-
-export const updateTask = (input: UpdateTaskInput) =>
+export const updateTask = (taskId: string, fields: Task.UpdateFields) =>
 	usecase({
 		read: async (ctx) => {
-			const task = await ctx.repos.task.get(Task.ById(input.taskId));
+			const task = await ctx.repos.task.get(Task.ById(taskId));
 			if (!task) {
-				return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
+				return fail("NOT_FOUND", "Task not found", { taskId });
 			}
 
 			// Determine transition effects (model declares what's needed)
-			const effects = input.status
-				? Task.transitionEffects(task.status, input.status)
+			const effects = fields.status
+				? Task.transitionEffects(task.status, fields.status)
 				: { shouldArchiveWorkspaces: false };
 
 			let workspaces: Workspace[] = [];
@@ -51,12 +44,12 @@ export const updateTask = (input: UpdateTaskInput) =>
 
 		process: (ctx, { task, ...rest }) => {
 			// Validate status transition if status is being changed
-			if (input.status) {
-				const transition = Task.validateTransition(task.status, input.status);
+			if (fields.status) {
+				const transition = Task.validateTransition(task.status, fields.status);
 				if (isFail(transition)) return transition;
 			}
 
-			const updated = Task.applyUpdate(task, input, ctx.now);
+			const updated = Task.applyUpdate(task, fields, ctx.now);
 
 			return { task: updated, ...rest };
 		},

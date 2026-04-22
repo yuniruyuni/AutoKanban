@@ -3,33 +3,26 @@ import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface GetBranchStatusInput {
-	workspaceId: string;
-	projectId: string;
-}
-
-export const getBranchStatus = (input: GetBranchStatusInput) =>
+export const getBranchStatus = (workspaceId: string, projectId: string) =>
 	usecase({
 		read: async (ctx) => {
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
 				workspace.id,
 			);
 			const workspaceRepo = workspaceRepos.find(
-				(wr) => wr.projectId === input.projectId,
+				(wr) => wr.projectId === projectId,
 			);
 
 			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;

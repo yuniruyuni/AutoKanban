@@ -4,25 +4,20 @@ import { Task } from "../../models/task";
 import type { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface FindWorkspaceByPathInput {
-	worktreePath: string;
-}
-
 export interface WorkspaceContext {
 	workspace: Workspace;
 	task: Task;
 	project: Project;
 }
 
-export const findWorkspaceByPath = (input: FindWorkspaceByPathInput) =>
+export const findWorkspaceByPath = (worktreePath: string) =>
 	usecase({
 		read: async (ctx): Promise<WorkspaceContext | Fail> => {
-			const workspace = await ctx.repos.workspace.findByWorktreePath(
-				input.worktreePath,
-			);
+			const workspace =
+				await ctx.repos.workspace.findByWorktreePath(worktreePath);
 			if (!workspace) {
 				return fail("NOT_FOUND", "No workspace found for this path", {
-					worktreePath: input.worktreePath,
+					worktreePath,
 				});
 			}
 

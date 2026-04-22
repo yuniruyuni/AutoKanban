@@ -67,6 +67,33 @@ export namespace TaskTemplate {
 		};
 	}
 
+	// Partial update application
+	export interface UpdateFields {
+		title?: string;
+		description?: string | null;
+		condition?: Condition;
+		sortOrder?: number;
+	}
+
+	export function applyUpdate(
+		template: TaskTemplate,
+		fields: UpdateFields,
+		now: Date,
+	): TaskTemplate {
+		return {
+			...template,
+			title: fields.title ?? template.title,
+			description:
+				fields.description !== undefined
+					? fields.description
+					: template.description,
+			condition:
+				fields.condition !== undefined ? fields.condition : template.condition,
+			sortOrder: fields.sortOrder ?? template.sortOrder,
+			updatedAt: now,
+		};
+	}
+
 	export function cursor(
 		template: TaskTemplate,
 		keys: readonly SortKey[],

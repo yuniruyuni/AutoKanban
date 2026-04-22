@@ -9,7 +9,7 @@ export const agentSettingRouter = router({
 	get: publicProcedure
 		.input(z.object({ agentId: z.string().min(1) }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getAgentSetting(input).run(ctx)),
+			handleResult(await getAgentSetting(input.agentId).run(ctx)),
 		),
 
 	update: publicProcedure
@@ -20,7 +20,9 @@ export const agentSettingRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await updateAgentSetting(input).run(ctx)),
+			handleResult(
+				await updateAgentSetting(input.agentId, input.command).run(ctx),
+			),
 		),
 
 	checkAvailability: publicProcedure

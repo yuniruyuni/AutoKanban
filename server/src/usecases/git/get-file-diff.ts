@@ -3,46 +3,45 @@ import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface GetFileDiffInput {
-	workspaceId: string;
-	projectId: string;
-	filePath: string;
-	baseCommit?: string;
-}
-
-export const getFileDiff = (input: GetFileDiffInput) =>
+export const getFileDiff = (
+	workspaceId: string,
+	projectId: string,
+	filePath: string,
+	baseCommit?: string,
+) =>
 	usecase({
 		read: async (ctx) => {
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			// Get base commit
-			let baseCommit = input.baseCommit;
-			if (!baseCommit) {
+			let resolvedBaseCommit = baseCommit;
+			if (!resolvedBaseCommit) {
 				const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
 					workspace.id,
 				);
 				const workspaceRepo = workspaceRepos.find(
-					(wr) => wr.projectId === input.projectId,
+					(wr) => wr.projectId === projectId,
 				);
-				baseCommit = workspaceRepo?.targetBranch ?? project.branch;
+				resolvedBaseCommit = workspaceRepo?.targetBranch ?? project.branch;
 			}
 
-			return { workspace, project, baseCommit };
+			return { workspace, project, baseCommit: resolvedBaseCommit };
 		},
 
-		post: async (ctx, { workspace, project, baseCommit }) => {
+		post: async (
+			ctx,
+			{ workspace, project, baseCommit: resolvedBaseCommit },
+		) => {
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
 				workspace.id,
 				project.name,
@@ -61,8 +60,8 @@ export const getFileDiff = (input: GetFileDiffInput) =>
 			// Get file diff
 			const diff = await ctx.repos.git.getFileDiff(
 				worktreePath,
-				baseCommit,
-				input.filePath,
+				resolvedBaseCommit,
+				filePath,
 			);
 
 			return { diff };

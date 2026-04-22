@@ -2,16 +2,10 @@ import { fail } from "../../models/common";
 import { TaskTemplate } from "../../models/task-template";
 import { usecase } from "../runner";
 
-export interface DeleteTaskTemplateInput {
-	id: string;
-}
-
-export const deleteTaskTemplate = (input: DeleteTaskTemplateInput) =>
+export const deleteTaskTemplate = (id: string) =>
 	usecase({
 		read: async (ctx) => {
-			const template = await ctx.repos.taskTemplate.get(
-				TaskTemplate.ById(input.id),
-			);
+			const template = await ctx.repos.taskTemplate.get(TaskTemplate.ById(id));
 			if (!template) {
 				return fail("NOT_FOUND", "Task template not found");
 			}

@@ -67,6 +67,31 @@ export namespace Tool {
 		};
 	}
 
+	// Partial update application
+	export interface UpdateFields {
+		name?: string;
+		icon?: string;
+		iconColor?: string;
+		command?: string;
+		sortOrder?: number;
+	}
+
+	export function applyUpdate(
+		tool: Tool,
+		fields: UpdateFields,
+		now: Date,
+	): Tool {
+		return {
+			...tool,
+			name: fields.name ?? tool.name,
+			icon: fields.icon ?? tool.icon,
+			iconColor: fields.iconColor ?? tool.iconColor,
+			command: fields.command ?? tool.command,
+			sortOrder: fields.sortOrder ?? tool.sortOrder,
+			updatedAt: now,
+		};
+	}
+
 	// Cursor
 	export function cursor(
 		tool: Tool,

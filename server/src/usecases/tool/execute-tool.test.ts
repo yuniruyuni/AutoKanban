@@ -29,7 +29,7 @@ describe("executeTool", () => {
 		test("fails when neither taskId nor projectId is provided", async () => {
 			const ctx = createMockContext();
 
-			const result = await executeTool({ toolId: "tool-1" }).run(ctx);
+			const result = await executeTool("tool-1").run(ctx);
 
 			expect(result.ok).toBe(false);
 			if (!result.ok) {
@@ -42,10 +42,9 @@ describe("executeTool", () => {
 				tool: createToolRepoMock(null),
 			});
 
-			const result = await executeTool({
-				toolId: "nonexistent",
-				projectId: "p1",
-			}).run(ctx);
+			const result = await executeTool("nonexistent", { projectId: "p1" }).run(
+				ctx,
+			);
 
 			expect(result.ok).toBe(false);
 			if (!result.ok) {
@@ -60,8 +59,7 @@ describe("executeTool", () => {
 				task: { get: () => null } as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
+			const result = await executeTool(tool.id, {
 				taskId: "nonexistent",
 			}).run(ctx);
 
@@ -80,10 +78,7 @@ describe("executeTool", () => {
 				project: { get: () => null } as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
-				taskId: task.id,
-			}).run(ctx);
+			const result = await executeTool(tool.id, { taskId: task.id }).run(ctx);
 
 			expect(result.ok).toBe(false);
 			if (!result.ok) {
@@ -98,8 +93,7 @@ describe("executeTool", () => {
 				project: { get: () => null } as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
+			const result = await executeTool(tool.id, {
 				projectId: "nonexistent",
 			}).run(ctx);
 
@@ -131,10 +125,7 @@ describe("executeTool", () => {
 				} as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
-				taskId: task.id,
-			}).run(ctx);
+			const result = await executeTool(tool.id, { taskId: task.id }).run(ctx);
 
 			expect(result.ok).toBe(true);
 			if (result.ok) {
@@ -164,10 +155,7 @@ describe("executeTool", () => {
 				workspace: { get: () => null } as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
-				taskId: task.id,
-			}).run(ctx);
+			const result = await executeTool(tool.id, { taskId: task.id }).run(ctx);
 
 			// Must succeed even without workspace — this was a bug where it used to
 			// leave targetPath as null, resulting in {path} becoming empty string
@@ -194,8 +182,7 @@ describe("executeTool", () => {
 				project: { get: () => project } as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
+			const result = await executeTool(tool.id, {
 				projectId: project.id,
 			}).run(ctx);
 
@@ -218,8 +205,7 @@ describe("executeTool", () => {
 				project: { get: () => project } as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
+			const result = await executeTool(tool.id, {
 				projectId: project.id,
 			}).run(ctx);
 
@@ -238,8 +224,7 @@ describe("executeTool", () => {
 				project: { get: () => project } as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
+			const result = await executeTool(tool.id, {
 				projectId: project.id,
 			}).run(ctx);
 
@@ -260,8 +245,7 @@ describe("executeTool", () => {
 				project: { get: () => project } as never,
 			});
 
-			const result = await executeTool({
-				toolId: tool.id,
+			const result = await executeTool(tool.id, {
 				projectId: project.id,
 			}).run(ctx);
 

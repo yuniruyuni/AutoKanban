@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Tool } from "../../../models/tool";
 import { createTool } from "../../../usecases/tool/create-tool";
 import { deleteTool } from "../../../usecases/tool/delete-tool";
 import { executeTool } from "../../../usecases/tool/execute-tool";
@@ -22,9 +23,10 @@ export const toolRouter = router({
 				sortOrder: z.number().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await createTool(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const tool = Tool.create(input);
+			return handleResult(await createTool(tool).run(ctx));
+		}),
 
 	update: publicProcedure
 		.input(
@@ -37,14 +39,15 @@ export const toolRouter = router({
 				sortOrder: z.number().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await updateTool(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { toolId, ...fields } = input;
+			return handleResult(await updateTool(toolId, fields).run(ctx));
+		}),
 
 	delete: publicProcedure
 		.input(z.object({ toolId: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await deleteTool(input).run(ctx)),
+			handleResult(await deleteTool(input.toolId).run(ctx)),
 		),
 
 	execute: publicProcedure
@@ -59,7 +62,8 @@ export const toolRouter = router({
 					message: "Either taskId or projectId must be provided",
 				}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await executeTool(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { toolId, ...rest } = input;
+			return handleResult(await executeTool(toolId, rest).run(ctx));
+		}),
 });

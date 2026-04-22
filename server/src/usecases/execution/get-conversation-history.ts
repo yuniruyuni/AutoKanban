@@ -4,10 +4,6 @@ import { fail } from "../../models/common";
 import { Session } from "../../models/session";
 import { usecase } from "../runner";
 
-export interface GetConversationHistoryInput {
-	sessionId: string;
-}
-
 export interface ConversationTurn {
 	id: string;
 	executionProcessId: string;
@@ -17,25 +13,18 @@ export interface ConversationTurn {
 	createdAt: Date;
 }
 
-export interface GetConversationHistoryResult {
-	sessionId: string;
-	turns: ConversationTurn[];
-}
-
 /**
  * Gets the conversation history for a session.
  * Returns a list of turns with prompts and summaries.
  */
-export const getConversationHistory = (input: GetConversationHistoryInput) =>
+export const getConversationHistory = (sessionId: string) =>
 	usecase({
 		read: async (ctx) => {
 			// Verify session exists
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) {
 				return fail("NOT_FOUND", "Session not found", {
-					sessionId: input.sessionId,
+					sessionId,
 				});
 			}
 
@@ -47,7 +36,7 @@ export const getConversationHistory = (input: GetConversationHistoryInput) =>
 
 			while (hasMore) {
 				const page = await ctx.repos.codingAgentProcess.list(
-					CodingAgentProcess.BySessionId(input.sessionId),
+					CodingAgentProcess.BySessionId(sessionId),
 					{
 						limit: 100,
 						after: cursor,
@@ -78,6 +67,6 @@ export const getConversationHistory = (input: GetConversationHistoryInput) =>
 				});
 			}
 
-			return { sessionId: input.sessionId, turns };
+			return { sessionId, turns };
 		},
 	});

@@ -9,15 +9,6 @@ import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
 // ============================================
-// Input
-// ============================================
-
-export interface GeneratePrDescriptionInput {
-	workspaceId: string;
-	projectId: string;
-}
-
-// ============================================
 // Constants
 // ============================================
 
@@ -54,28 +45,26 @@ const PR_DESCRIPTION_SCHEMA = {
 // Usecase
 // ============================================
 
-export const generatePrDescription = (input: GeneratePrDescriptionInput) =>
+export const generatePrDescription = (workspaceId: string, projectId: string) =>
 	usecase({
 		read: async (ctx) => {
 			// 1. Get workspace, verify it exists
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
 			// 2. Get project for worktree path resolution
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			// 3. Get latest session for workspace
 			const sessionsPage = await ctx.repos.session.list(
-				Session.ByWorkspaceId(input.workspaceId),
+				Session.ByWorkspaceId(workspaceId),
 				{ limit: 1, sort: Session.defaultSort },
 			);
 			const latestSession = sessionsPage.items[0];
@@ -112,7 +101,7 @@ export const generatePrDescription = (input: GeneratePrDescriptionInput) =>
 			{ conversationContext, workspace, project, agentSettingEntity },
 		) => {
 			// 1. Create DraftPullRequest in "generating" status
-			ctx.repos.draftPullRequest.create(input.workspaceId, input.projectId);
+			ctx.repos.draftPullRequest.create(workspaceId, projectId);
 
 			// 2. Build prompt with conversation context
 			const prompt = PR_DESCRIPTION_PROMPT_TEMPLATE(conversationContext);
@@ -124,7 +113,7 @@ export const generatePrDescription = (input: GeneratePrDescriptionInput) =>
 			);
 
 			if (!worktreePath) {
-				ctx.repos.draftPullRequest.fail(input.workspaceId, input.projectId);
+				ctx.repos.draftPullRequest.fail(workspaceId, projectId);
 				return fail("NOT_FOUND", "Cannot resolve working directory");
 			}
 
@@ -142,7 +131,7 @@ export const generatePrDescription = (input: GeneratePrDescriptionInput) =>
 				ctx.logger.error(
 					"[generatePrDescription] spawnStructured returned null",
 				);
-				ctx.repos.draftPullRequest.fail(input.workspaceId, input.projectId);
+				ctx.repos.draftPullRequest.fail(workspaceId, projectId);
 				return fail(
 					"INTERNAL",
 					"Failed to spawn structured process for PR description generation",
@@ -153,8 +142,8 @@ export const generatePrDescription = (input: GeneratePrDescriptionInput) =>
 			consumeStructuredProcess(
 				{ draftPullRequest: ctx.repos.draftPullRequest },
 				ctx.logger,
-				input.workspaceId,
-				input.projectId,
+				workspaceId,
+				projectId,
 				proc,
 			).catch(() => {
 				// Error already handled inside consumeStructuredProcess

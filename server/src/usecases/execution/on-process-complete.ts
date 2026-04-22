@@ -15,58 +15,53 @@ import { WorkspaceRepo } from "../../models/workspace-repo";
 import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
 import { usecase } from "../runner";
 
-export interface ProcessCompletionInput {
-	processId: string;
-	sessionId: string;
-	processType: ProcessType;
-	status:
-		| CodingAgentProcess.Status
-		| DevServerProcess.Status
-		| WorkspaceScriptProcess.Status;
-	exitCode: number | null;
-}
-
 /**
  * Update process status on completion.
  * Routes to the correct typed repository based on processType.
  */
-export const completeExecutionProcess = (input: ProcessCompletionInput) =>
+export const completeExecutionProcess = (
+	processId: string,
+	_sessionId: string,
+	processType: ProcessType,
+	status:
+		| CodingAgentProcess.Status
+		| DevServerProcess.Status
+		| WorkspaceScriptProcess.Status,
+	exitCode: number | null,
+) =>
 	usecase({
 		read: async (ctx) => {
-			switch (input.processType) {
+			switch (processType) {
 				case "codingagent": {
 					const existing = await ctx.repos.codingAgentProcess.get(
-						CodingAgentProcess.ById(input.processId),
+						CodingAgentProcess.ById(processId),
 					);
-					return { existing, processType: input.processType };
+					return { existing, processType };
 				}
 				case "devserver": {
 					const existing = await ctx.repos.devServerProcess.get(
-						DevServerProcess.ById(input.processId),
+						DevServerProcess.ById(processId),
 					);
-					return { existing, processType: input.processType };
+					return { existing, processType };
 				}
 				case "workspacescript": {
 					const existing = await ctx.repos.workspaceScriptProcess.get(
-						WorkspaceScriptProcess.ById(input.processId),
+						WorkspaceScriptProcess.ById(processId),
 					);
-					return { existing, processType: input.processType };
+					return { existing, processType };
 				}
 			}
 		},
 
 		process: (_ctx, { existing, processType }) => {
 			if (!existing) return { completed: null, processType };
-			const completionStatus = input.status as
-				| "completed"
-				| "failed"
-				| "killed";
+			const completionStatus = status as "completed" | "failed" | "killed";
 			switch (processType) {
 				case "codingagent": {
 					const completed = CodingAgentProcess.complete(
 						existing as CodingAgentProcess,
 						completionStatus,
-						input.exitCode,
+						exitCode,
 					);
 					return { completed, processType };
 				}
@@ -74,7 +69,7 @@ export const completeExecutionProcess = (input: ProcessCompletionInput) =>
 					const completed = DevServerProcess.complete(
 						existing as DevServerProcess,
 						completionStatus,
-						input.exitCode,
+						exitCode,
 					);
 					return { completed, processType };
 				}
@@ -82,7 +77,7 @@ export const completeExecutionProcess = (input: ProcessCompletionInput) =>
 					const completed = WorkspaceScriptProcess.complete(
 						existing as WorkspaceScriptProcess,
 						completionStatus,
-						input.exitCode,
+						exitCode,
 					);
 					return { completed, processType };
 				}
@@ -112,7 +107,7 @@ export const completeExecutionProcess = (input: ProcessCompletionInput) =>
 		},
 
 		post: async (ctx) => {
-			ctx.repos.logStoreManager.close(input.processId);
+			ctx.repos.logStoreManager.close(processId);
 			return {};
 		},
 	});
@@ -121,15 +116,10 @@ export const completeExecutionProcess = (input: ProcessCompletionInput) =>
  * Process queued follow-up message after process completion.
  * Uses protocol mode with session resume to continue the Claude Code conversation.
  */
-export const processQueuedFollowUp = (input: {
-	sessionId: string;
-	prompt: string;
-}) =>
+export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session)
 				return {
 					workingDir: null as string | null,
@@ -159,15 +149,14 @@ export const processQueuedFollowUp = (input: {
 			const workingDir = Workspace.resolveWorkingDir(workspace, project);
 
 			// Get resume info for continuing the Claude Code session
-			const resumeInfo = await ctx.repos.codingAgentTurn.findLatestResumeInfo(
-				input.sessionId,
-			);
+			const resumeInfo =
+				await ctx.repos.codingAgentTurn.findLatestResumeInfo(sessionId);
 
 			// Detect interrupted tools from the latest coding agent process logs
 			let interruptedTools: PendingToolUse[] = [];
 			if (resumeInfo) {
 				const latestProcessPage = await ctx.repos.codingAgentProcess.list(
-					CodingAgentProcess.BySessionId(input.sessionId),
+					CodingAgentProcess.BySessionId(sessionId),
 					{ limit: 1, sort: CodingAgentProcess.defaultSort },
 				);
 				const latestProcess = latestProcessPage.items[0];
@@ -194,11 +183,11 @@ export const processQueuedFollowUp = (input: {
 					interruptedTools,
 				};
 			const codingAgentProcess = CodingAgentProcess.create({
-				sessionId: input.sessionId,
+				sessionId,
 			});
 			const turn = CodingAgentTurn.create({
 				executionProcessId: codingAgentProcess.id,
-				prompt: input.prompt,
+				prompt,
 			});
 			return {
 				workingDir,
@@ -227,10 +216,10 @@ export const processQueuedFollowUp = (input: {
 
 			await ctx.repos.executor.startProtocol({
 				id: codingAgentProcess.id,
-				sessionId: input.sessionId,
+				sessionId,
 				runReason: "codingagent",
 				workingDir,
-				prompt: input.prompt,
+				prompt,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
 				interruptedTools:
@@ -249,12 +238,10 @@ export const processQueuedFollowUp = (input: {
 /**
  * Move a task associated with a session to inreview status.
  */
-export const moveTaskToInReview = (input: { sessionId: string }) =>
+export const moveTaskToInReview = (sessionId: string) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			if (!session) return { task: null as Task | null };
 
 			const workspace = await ctx.repos.workspace.get(

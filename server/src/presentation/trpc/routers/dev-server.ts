@@ -9,18 +9,18 @@ export const devServerRouter = router({
 	start: publicProcedure
 		.input(z.object({ taskId: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await startDevServer(input).run(ctx)),
+			handleResult(await startDevServer(input.taskId).run(ctx)),
 		),
 
 	stop: publicProcedure
 		.input(z.object({ executionProcessId: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await stopDevServer(input).run(ctx)),
+			handleResult(await stopDevServer(input.executionProcessId).run(ctx)),
 		),
 
 	get: publicProcedure
 		.input(z.object({ sessionId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getDevServer(input).run(ctx)),
+			handleResult(await getDevServer(input.sessionId).run(ctx)),
 		),
 });

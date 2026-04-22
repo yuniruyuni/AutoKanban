@@ -23,9 +23,7 @@ describe("stopExecution", () => {
 			} as never,
 		});
 
-		const result = await stopExecution({
-			executionProcessId: process.id,
-		}).run(ctx);
+		const result = await stopExecution(process.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -43,9 +41,7 @@ describe("stopExecution", () => {
 			} as never,
 		});
 
-		const result = await stopExecution({
-			executionProcessId: "non-existent",
-		}).run(ctx);
+		const result = await stopExecution("non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -72,9 +68,7 @@ describe("stopExecution", () => {
 			} as never,
 		});
 
-		const result = await stopExecution({
-			executionProcessId: process.id,
-		}).run(ctx);
+		const result = await stopExecution(process.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		expect(stopCalled).toBe(true);
@@ -91,9 +85,7 @@ describe("stopExecution", () => {
 			} as never,
 		});
 
-		const result = await stopExecution({
-			executionProcessId: completedProcess.id,
-		}).run(ctx);
+		const result = await stopExecution(completedProcess.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -111,9 +103,7 @@ describe("stopExecution", () => {
 			} as never,
 		});
 
-		const result = await stopExecution({
-			executionProcessId: failedProcess.id,
-		}).run(ctx);
+		const result = await stopExecution(failedProcess.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -130,9 +120,7 @@ describe("stopExecution", () => {
 			} as never,
 		});
 
-		const result = await stopExecution({
-			executionProcessId: killedProcess.id,
-		}).run(ctx);
+		const result = await stopExecution(killedProcess.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -152,9 +140,7 @@ describe("stopExecution", () => {
 			} as never,
 		});
 
-		const result = await stopExecution({
-			executionProcessId: process.id,
-		}).run(ctx);
+		const result = await stopExecution(process.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

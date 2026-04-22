@@ -4,20 +4,13 @@ import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface ProcessIdleInput {
-	processId: string;
-	sessionId: string;
-}
-
 /**
  * Handle process idle: send queued message or move task to inreview.
  */
-export const handleProcessIdle = (input: ProcessIdleInput) =>
+export const handleProcessIdle = (processId: string, sessionId: string) =>
 	usecase({
 		read: async (ctx) => {
-			const session = await ctx.repos.session.get(
-				Session.ById(input.sessionId),
-			);
+			const session = await ctx.repos.session.get(Session.ById(sessionId));
 			const workspace = session
 				? await ctx.repos.workspace.get(Workspace.ById(session.workspaceId))
 				: null;
@@ -29,15 +22,15 @@ export const handleProcessIdle = (input: ProcessIdleInput) =>
 		},
 
 		post: async (ctx, { task }) => {
-			const queuedMessage = ctx.repos.messageQueue.consume(input.sessionId);
+			const queuedMessage = ctx.repos.messageQueue.consume(sessionId);
 			if (queuedMessage) {
 				const success = await ctx.repos.executor.sendMessage(
-					input.processId,
+					processId,
 					queuedMessage.prompt,
 				);
 				if (!success) {
 					ctx.repos.messageQueue.queue(
-						input.sessionId,
+						sessionId,
 						queuedMessage.prompt,
 						queuedMessage.executor,
 						queuedMessage.variant,

@@ -6,5 +6,5 @@ export async function handleProcessIdle(
 	ctx: Context,
 	info: ProcessIdleInfo,
 ): Promise<void> {
-	await handleProcessIdleUsecase(info).run(ctx);
+	await handleProcessIdleUsecase(info.processId, info.sessionId).run(ctx);
 }

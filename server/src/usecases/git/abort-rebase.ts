@@ -3,26 +3,19 @@ import { Project } from "../../models/project";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface AbortRebaseInput {
-	workspaceId: string;
-	projectId: string;
-}
-
-export const abortRebase = (input: AbortRebaseInput) =>
+export const abortRebase = (workspaceId: string, projectId: string) =>
 	usecase({
 		read: async (ctx) => {
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			return { workspace, project };

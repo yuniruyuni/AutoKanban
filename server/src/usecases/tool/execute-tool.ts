@@ -6,16 +6,13 @@ import { Tool } from "../../models/tool";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface ExecuteToolInput {
-	toolId: string;
-	taskId?: string; // Task level: uses worktree path (workspace/{projectName})
-	projectId?: string; // Project level: uses project.repoPath
-}
-
-export const executeTool = (input: ExecuteToolInput) =>
+export const executeTool = (
+	toolId: string,
+	context?: { taskId?: string; projectId?: string },
+) =>
 	usecase({
 		pre: async () => {
-			if (!input.taskId && !input.projectId) {
+			if (!context?.taskId && !context?.projectId) {
 				return fail(
 					"INVALID_INPUT",
 					"Either taskId or projectId must be provided",
@@ -25,9 +22,9 @@ export const executeTool = (input: ExecuteToolInput) =>
 		},
 
 		read: async (ctx) => {
-			const tool = await ctx.repos.tool.get(Tool.ById(input.toolId));
+			const tool = await ctx.repos.tool.get(Tool.ById(toolId));
 			if (!tool) {
-				return fail("NOT_FOUND", "Tool not found", { toolId: input.toolId });
+				return fail("NOT_FOUND", "Tool not found", { toolId });
 			}
 
 			// Gather DB data needed to determine the path
@@ -35,10 +32,12 @@ export const executeTool = (input: ExecuteToolInput) =>
 			let workspaceId: string | null = null;
 			let targetPath: string | null = null;
 
-			if (input.taskId) {
-				const task = await ctx.repos.task.get(Task.ById(input.taskId));
+			if (context?.taskId) {
+				const task = await ctx.repos.task.get(Task.ById(context.taskId));
 				if (!task) {
-					return fail("NOT_FOUND", "Task not found", { taskId: input.taskId });
+					return fail("NOT_FOUND", "Task not found", {
+						taskId: context.taskId,
+					});
 				}
 
 				project = await ctx.repos.project.get(Project.ById(task.projectId));
@@ -49,18 +48,18 @@ export const executeTool = (input: ExecuteToolInput) =>
 				}
 
 				const workspace = await ctx.repos.workspace.get(
-					Workspace.ByTaskIdActive(input.taskId),
+					Workspace.ByTaskIdActive(context.taskId),
 				);
 				if (workspace) {
 					workspaceId = workspace.id;
 				} else {
 					targetPath = project.repoPath;
 				}
-			} else if (input.projectId) {
-				project = await ctx.repos.project.get(Project.ById(input.projectId));
+			} else if (context?.projectId) {
+				project = await ctx.repos.project.get(Project.ById(context.projectId));
 				if (!project) {
 					return fail("NOT_FOUND", "Project not found", {
-						projectId: input.projectId,
+						projectId: context.projectId,
 					});
 				}
 				targetPath = project.repoPath;

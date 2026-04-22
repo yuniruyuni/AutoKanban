@@ -4,10 +4,6 @@ import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface ListAttemptsInput {
-	taskId: string;
-}
-
 export interface AttemptSummary {
 	workspaceId: string;
 	attempt: number;
@@ -18,17 +14,12 @@ export interface AttemptSummary {
 	createdAt: Date;
 }
 
-export interface ListAttemptsResult {
-	attempts: AttemptSummary[];
-	activeAttempt: number | null;
-}
-
-export const listAttempts = (input: ListAttemptsInput) =>
+export const listAttempts = (taskId: string) =>
 	usecase({
-		read: async (ctx): Promise<ListAttemptsResult> => {
+		read: async (ctx) => {
 			// Get all workspaces for this task (including archived)
 			const workspacePage = await ctx.repos.workspace.list(
-				Workspace.ByTaskId(input.taskId),
+				Workspace.ByTaskId(taskId),
 				{ limit: 100, sort: { keys: ["createdAt", "id"], order: "asc" } },
 			);
 

@@ -15,7 +15,7 @@ describe("listAttempts", () => {
 			} as never,
 		});
 
-		const result = await listAttempts({ taskId: "task-1" }).run(ctx);
+		const result = await listAttempts("task-1").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -54,7 +54,7 @@ describe("listAttempts", () => {
 			} as never,
 		});
 
-		const result = await listAttempts({ taskId: "task-1" }).run(ctx);
+		const result = await listAttempts("task-1").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -122,7 +122,7 @@ describe("listAttempts", () => {
 			} as never,
 		});
 
-		const result = await listAttempts({ taskId: "task-1" }).run(ctx);
+		const result = await listAttempts("task-1").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -152,7 +152,7 @@ describe("listAttempts", () => {
 			} as never,
 		});
 
-		const result = await listAttempts({ taskId: "task-1" }).run(ctx);
+		const result = await listAttempts("task-1").run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

@@ -1,5 +1,6 @@
 // @specre 01KPNTBSG00XN1PFDMY201CH8A
 import { z } from "zod";
+import { TaskTemplate } from "../../../models/task-template";
 import { createTaskTemplate } from "../../../usecases/task-template/create-task-template";
 import { deleteTaskTemplate } from "../../../usecases/task-template/delete-task-template";
 import { listTaskTemplates } from "../../../usecases/task-template/list-task-templates";
@@ -23,9 +24,15 @@ export const taskTemplateRouter = router({
 				sortOrder: z.number().int().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await createTaskTemplate(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const template = TaskTemplate.create({
+				title: input.title.trim(),
+				description: input.description?.trim() || null,
+				condition: input.condition ?? undefined,
+				sortOrder: input.sortOrder,
+			});
+			return handleResult(await createTaskTemplate(template).run(ctx));
+		}),
 
 	update: publicProcedure
 		.input(
@@ -37,13 +44,24 @@ export const taskTemplateRouter = router({
 				sortOrder: z.number().int().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await updateTaskTemplate(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { id, ...fields } = input;
+			return handleResult(
+				await updateTaskTemplate(id, {
+					title: fields.title?.trim(),
+					description:
+						fields.description !== undefined
+							? fields.description?.trim() || null
+							: undefined,
+					condition: fields.condition ?? undefined,
+					sortOrder: fields.sortOrder,
+				}).run(ctx),
+			);
+		}),
 
 	delete: publicProcedure
 		.input(z.object({ id: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await deleteTaskTemplate(input).run(ctx)),
+			handleResult(await deleteTaskTemplate(input.id).run(ctx)),
 		),
 });

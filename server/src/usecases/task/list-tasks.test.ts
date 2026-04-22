@@ -18,7 +18,7 @@ describe("listTasks", () => {
 			} as never,
 		});
 
-		const result = await listTasks({ projectId: "p1" }).run(ctx);
+		const result = await listTasks("p1").run(ctx);
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.value.items).toHaveLength(2);
@@ -36,7 +36,7 @@ describe("listTasks", () => {
 			} as never,
 		});
 
-		await listTasks({ projectId: "p1", status: "todo" }).run(ctx);
+		await listTasks("p1", { status: "todo" }).run(ctx);
 		expect(receivedSpec).not.toBeNull();
 	});
 
@@ -51,9 +51,7 @@ describe("listTasks", () => {
 			} as never,
 		});
 
-		await listTasks({ projectId: "p1", status: ["todo", "inprogress"] }).run(
-			ctx,
-		);
+		await listTasks("p1", { status: ["todo", "inprogress"] }).run(ctx);
 		expect(receivedSpec).not.toBeNull();
 	});
 
@@ -68,7 +66,7 @@ describe("listTasks", () => {
 			} as never,
 		});
 
-		await listTasks({ projectId: "p1" }).run(ctx);
+		await listTasks("p1").run(ctx);
 		const cursor1 = receivedCursor as unknown as { limit: number };
 		expect(cursor1?.limit).toBe(50);
 	});
@@ -84,7 +82,7 @@ describe("listTasks", () => {
 			} as never,
 		});
 
-		await listTasks({ projectId: "p1", limit: 10 }).run(ctx);
+		await listTasks("p1", undefined, { limit: 10 }).run(ctx);
 		const cursor2 = receivedCursor as unknown as { limit: number };
 		expect(cursor2?.limit).toBe(10);
 	});
@@ -100,7 +98,7 @@ describe("listTasks", () => {
 			} as never,
 		});
 
-		const result = await listTasks({ projectId: "p1" }).run(ctx);
+		const result = await listTasks("p1").run(ctx);
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.value.hasMore).toBe(true);

@@ -67,10 +67,7 @@ describe("browseDirectory", () => {
 		writeFileSync(join(testDir, "file.txt"), "test");
 
 		// Execute
-		const result = await browseDirectory({
-			path: testDir,
-			includeFiles: false,
-		}).run(mockContext);
+		const result = await browseDirectory(testDir, false).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(true);
@@ -86,10 +83,7 @@ describe("browseDirectory", () => {
 		writeFileSync(join(testDir, "file.txt"), "test content");
 
 		// Execute
-		const result = await browseDirectory({
-			path: testDir,
-			includeFiles: true,
-		}).run(mockContext);
+		const result = await browseDirectory(testDir, true).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(true);
@@ -110,10 +104,7 @@ describe("browseDirectory", () => {
 		writeFileSync(join(testDir, "visible.txt"), "public");
 
 		// Execute
-		const result = await browseDirectory({
-			path: testDir,
-			includeFiles: true,
-		}).run(mockContext);
+		const result = await browseDirectory(testDir, true).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(true);
@@ -130,10 +121,7 @@ describe("browseDirectory", () => {
 		writeFileSync(join(testDir, "apple.txt"), "");
 
 		// Execute
-		const result = await browseDirectory({
-			path: testDir,
-			includeFiles: true,
-		}).run(mockContext);
+		const result = await browseDirectory(testDir, true).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(true);
@@ -144,10 +132,7 @@ describe("browseDirectory", () => {
 
 	test("returns empty array for empty directory", async () => {
 		// Execute
-		const result = await browseDirectory({
-			path: testDir,
-			includeFiles: true,
-		}).run(mockContext);
+		const result = await browseDirectory(testDir, true).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(true);
@@ -161,7 +146,7 @@ describe("browseDirectory", () => {
 		writeFileSync(join(testDir, "file.txt"), "test");
 
 		// Execute
-		const result = await browseDirectory({ path: testDir }).run(mockContext);
+		const result = await browseDirectory(testDir).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(true);
@@ -180,7 +165,7 @@ describe("browseDirectory", () => {
 		mkdirSync(normalDir);
 
 		// Execute
-		const result = await browseDirectory({ path: testDir }).run(mockContext);
+		const result = await browseDirectory(testDir).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(true);
@@ -198,9 +183,7 @@ describe("browseDirectory", () => {
 
 	test("returns error for non-existent path", async () => {
 		// Execute
-		const result = await browseDirectory({ path: "/nonexistent/path" }).run(
-			mockContext,
-		);
+		const result = await browseDirectory("/nonexistent/path").run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(false);
@@ -214,7 +197,7 @@ describe("browseDirectory", () => {
 		writeFileSync(filePath, "content");
 
 		// Execute
-		const result = await browseDirectory({ path: filePath }).run(mockContext);
+		const result = await browseDirectory(filePath).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(false);
@@ -228,7 +211,7 @@ describe("browseDirectory", () => {
 		mkdirSync(subDir);
 
 		// Execute
-		const result = await browseDirectory({ path: subDir }).run(mockContext);
+		const result = await browseDirectory(subDir).run(mockContext);
 
 		// Verify
 		expect(result.ok).toBe(true);

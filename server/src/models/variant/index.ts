@@ -72,6 +72,32 @@ export namespace Variant {
 		};
 	}
 
+	// Partial update application
+	export interface UpdateFields {
+		name?: string;
+		permissionMode?: string;
+		model?: string | null;
+		appendPrompt?: string | null;
+	}
+
+	export function applyUpdate(
+		variant: Variant,
+		fields: UpdateFields,
+		now: Date,
+	): Variant {
+		return {
+			...variant,
+			name: fields.name ?? variant.name,
+			permissionMode: fields.permissionMode ?? variant.permissionMode,
+			model: fields.model !== undefined ? fields.model : variant.model,
+			appendPrompt:
+				fields.appendPrompt !== undefined
+					? fields.appendPrompt
+					: variant.appendPrompt,
+			updatedAt: now,
+		};
+	}
+
 	// Cursor
 	export function cursor(
 		variant: Variant,

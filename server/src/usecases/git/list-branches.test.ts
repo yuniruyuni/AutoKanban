@@ -20,9 +20,7 @@ describe("listBranches", () => {
 			}),
 		});
 
-		const result = await listBranches({
-			projectId: project.id,
-		}).run(ctx);
+		const result = await listBranches(project.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -42,9 +40,7 @@ describe("listBranches", () => {
 			}),
 		});
 
-		const result = await listBranches({
-			projectId: project.id,
-		}).run(ctx);
+		const result = await listBranches(project.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -57,9 +53,7 @@ describe("listBranches", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await listBranches({
-			projectId: "non-existent",
-		}).run(ctx);
+		const result = await listBranches("non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -83,7 +77,7 @@ describe("listBranches", () => {
 			}),
 		});
 
-		await listBranches({ projectId: project.id }).run(ctx);
+		await listBranches(project.id).run(ctx);
 
 		expect(capturedPath).toBe("/custom/repo/path");
 	});

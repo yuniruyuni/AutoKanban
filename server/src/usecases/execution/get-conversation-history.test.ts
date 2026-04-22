@@ -19,9 +19,7 @@ describe("getConversationHistory", () => {
 			} as never,
 		});
 
-		const result = await getConversationHistory({
-			sessionId: session.id,
-		}).run(ctx);
+		const result = await getConversationHistory(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -37,9 +35,7 @@ describe("getConversationHistory", () => {
 			} as never,
 		});
 
-		const result = await getConversationHistory({
-			sessionId: "non-existent",
-		}).run(ctx);
+		const result = await getConversationHistory("non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -88,9 +84,7 @@ describe("getConversationHistory", () => {
 			} as never,
 		});
 
-		const result = await getConversationHistory({
-			sessionId: session.id,
-		}).run(ctx);
+		const result = await getConversationHistory(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -131,9 +125,7 @@ describe("getConversationHistory", () => {
 			} as never,
 		});
 
-		const result = await getConversationHistory({
-			sessionId: session.id,
-		}).run(ctx);
+		const result = await getConversationHistory(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -162,9 +154,7 @@ describe("getConversationHistory", () => {
 			} as never,
 		});
 
-		const result = await getConversationHistory({
-			sessionId: session.id,
-		}).run(ctx);
+		const result = await getConversationHistory(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -212,9 +202,7 @@ describe("getConversationHistory", () => {
 			} as never,
 		});
 
-		const result = await getConversationHistory({
-			sessionId: session.id,
-		}).run(ctx);
+		const result = await getConversationHistory(session.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

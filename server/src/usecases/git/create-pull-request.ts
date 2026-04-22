@@ -5,37 +5,33 @@ import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
 import { usecase } from "../runner";
 
-export interface CreatePullRequestInput {
-	workspaceId: string;
-	projectId: string;
-	taskTitle: string;
-	remote?: string;
-	force?: boolean;
-	draft?: boolean;
-}
-
-export const createPullRequest = (input: CreatePullRequestInput) =>
+export const createPullRequest = (
+	workspaceId: string,
+	projectId: string,
+	taskTitle: string,
+	remote?: string,
+	force?: boolean,
+	draft?: boolean,
+) =>
 	usecase({
 		read: async (ctx) => {
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			const workspaceRepos = await ctx.repos.workspaceRepo.listByWorkspace(
 				workspace.id,
 			);
 			const workspaceRepo = workspaceRepos.find(
-				(wr) => wr.projectId === input.projectId,
+				(wr) => wr.projectId === projectId,
 			);
 
 			const targetBranch = workspaceRepo?.targetBranch ?? project.branch;
@@ -76,25 +72,22 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 				if (ahead === 0) {
 					// All changes are uncommitted — commit them
 					await ctx.repos.git.stageAll(worktreePath);
-					await ctx.repos.git.commit(worktreePath, input.taskTitle);
+					await ctx.repos.git.commit(worktreePath, taskTitle);
 				}
 			}
 
 			// Push
 			await ctx.repos.git.push(
 				worktreePath,
-				input.remote ?? "origin",
+				remote ?? "origin",
 				branch,
-				input.force ?? false,
+				force ?? false,
 			);
 
 			// Read DraftPullRequest from in-memory store for title/body
-			const draft = ctx.repos.draftPullRequest.get(
-				input.workspaceId,
-				input.projectId,
-			);
-			const prTitle = draft?.title ?? input.taskTitle;
-			const prBody = draft?.body ?? "";
+			const prDraft = ctx.repos.draftPullRequest.get(workspaceId, projectId);
+			const prTitle = prDraft?.title ?? taskTitle;
+			const prBody = prDraft?.body ?? "";
 
 			// Create PR with draft (or fallback) title and body
 			const { url } = await ctx.repos.git.createPullRequest(
@@ -102,11 +95,11 @@ export const createPullRequest = (input: CreatePullRequestInput) =>
 				prTitle,
 				prBody,
 				targetBranch,
-				input.draft,
+				draft,
 			);
 
 			// Clean up the draft pull request from in-memory store
-			ctx.repos.draftPullRequest.delete(input.workspaceId, input.projectId);
+			ctx.repos.draftPullRequest.delete(workspaceId, projectId);
 
 			// Prepare workspace repo update for finish step
 			const workspaceRepoToUpdate =

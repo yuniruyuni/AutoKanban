@@ -13,8 +13,7 @@ describe("updateTask", () => {
 			} as never,
 		});
 
-		const result = await updateTask({
-			taskId: task.id,
+		const result = await updateTask(task.id, {
 			title: "New Title",
 		}).run(ctx);
 
@@ -33,8 +32,7 @@ describe("updateTask", () => {
 			} as never,
 		});
 
-		const result = await updateTask({
-			taskId: task.id,
+		const result = await updateTask(task.id, {
 			description: "Updated description",
 		}).run(ctx);
 
@@ -53,8 +51,7 @@ describe("updateTask", () => {
 			} as never,
 		});
 
-		const result = await updateTask({
-			taskId: task.id,
+		const result = await updateTask(task.id, {
 			status: "inprogress",
 		}).run(ctx);
 
@@ -69,8 +66,7 @@ describe("updateTask", () => {
 			task: { get: () => null } as never,
 		});
 
-		const result = await updateTask({
-			taskId: "non-existent",
+		const result = await updateTask("non-existent", {
 			title: "X",
 		}).run(ctx);
 
@@ -90,8 +86,7 @@ describe("updateTask", () => {
 		});
 
 		// Passing the same status should not fail
-		const result = await updateTask({
-			taskId: task.id,
+		const result = await updateTask(task.id, {
 			status: "todo",
 		}).run(ctx);
 
@@ -107,8 +102,7 @@ describe("updateTask", () => {
 			} as never,
 		});
 
-		const result = await updateTask({
-			taskId: task.id,
+		const result = await updateTask(task.id, {
 			title: "New Title",
 		}).run(ctx);
 
@@ -128,8 +122,7 @@ describe("updateTask", () => {
 			} as never,
 		});
 
-		const result = await updateTask({
-			taskId: task.id,
+		const result = await updateTask(task.id, {
 			description: null,
 		}).run(ctx);
 

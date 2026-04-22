@@ -26,11 +26,9 @@ describe("rebaseBranch", () => {
 			}),
 		});
 
-		const result = await rebaseBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			newBaseBranch: "main",
-		}).run(ctx);
+		const result = await rebaseBranch(workspace.id, project.id, "main").run(
+			ctx,
+		);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -51,11 +49,9 @@ describe("rebaseBranch", () => {
 			git: createMockGitRepositoryWithRebaseConflict(conflictedFiles),
 		});
 
-		const result = await rebaseBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			newBaseBranch: "main",
-		}).run(ctx);
+		const result = await rebaseBranch(workspace.id, project.id, "main").run(
+			ctx,
+		);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -90,11 +86,7 @@ describe("rebaseBranch", () => {
 			}),
 		});
 
-		await rebaseBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			newBaseBranch: "main",
-		}).run(ctx);
+		await rebaseBranch(workspace.id, project.id, "main").run(ctx);
 
 		expect(fetchCalled).toBe(true);
 		expect(rebaseCalled).toBe(true);
@@ -106,11 +98,9 @@ describe("rebaseBranch", () => {
 			workspace: { get: () => null } as never,
 		});
 
-		const result = await rebaseBranch({
-			workspaceId: "non-existent",
-			projectId: "proj-1",
-			newBaseBranch: "main",
-		}).run(ctx);
+		const result = await rebaseBranch("non-existent", "proj-1", "main").run(
+			ctx,
+		);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -126,11 +116,9 @@ describe("rebaseBranch", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await rebaseBranch({
-			workspaceId: workspace.id,
-			projectId: "non-existent",
-			newBaseBranch: "main",
-		}).run(ctx);
+		const result = await rebaseBranch(workspace.id, "non-existent", "main").run(
+			ctx,
+		);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -150,11 +138,9 @@ describe("rebaseBranch", () => {
 			}),
 		});
 
-		const result = await rebaseBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			newBaseBranch: "main",
-		}).run(ctx);
+		const result = await rebaseBranch(workspace.id, project.id, "main").run(
+			ctx,
+		);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -178,11 +164,9 @@ describe("rebaseBranch", () => {
 			}),
 		});
 
-		const result = await rebaseBranch({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			newBaseBranch: "main",
-		}).run(ctx);
+		const result = await rebaseBranch(workspace.id, project.id, "main").run(
+			ctx,
+		);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {

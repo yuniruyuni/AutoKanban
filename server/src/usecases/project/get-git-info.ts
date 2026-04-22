@@ -1,10 +1,6 @@
 import { fail } from "../../models/common";
 import { usecase } from "../runner";
 
-export interface GetGitInfoInput {
-	path: string;
-}
-
 export interface GitInfo {
 	isGitRepo: boolean;
 	hasCommits: boolean;
@@ -14,13 +10,13 @@ export interface GitInfo {
 	repoName: string | null;
 }
 
-export const getGitInfo = (input: GetGitInfoInput) =>
+export const getGitInfo = (path: string) =>
 	usecase({
 		pre: async () => {
-			if (!input.path) {
+			if (!path) {
 				return fail("INVALID_INPUT", "Path is required");
 			}
-			return { path: input.path };
+			return { path };
 		},
 
 		post: async (ctx, { path }) => {

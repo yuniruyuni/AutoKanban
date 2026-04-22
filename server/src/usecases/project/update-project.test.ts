@@ -13,8 +13,7 @@ describe("updateProject", () => {
 			} as never,
 		});
 
-		const result = await updateProject({
-			projectId: project.id,
+		const result = await updateProject(project.id, {
 			name: "New Name",
 		}).run(ctx);
 
@@ -33,8 +32,7 @@ describe("updateProject", () => {
 			} as never,
 		});
 
-		const result = await updateProject({
-			projectId: project.id,
+		const result = await updateProject(project.id, {
 			description: "New description",
 		}).run(ctx);
 
@@ -49,8 +47,7 @@ describe("updateProject", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await updateProject({
-			projectId: "non-existent",
+		const result = await updateProject("non-existent", {
 			name: "X",
 		}).run(ctx);
 
@@ -72,8 +69,7 @@ describe("updateProject", () => {
 			} as never,
 		});
 
-		const result = await updateProject({
-			projectId: project.id,
+		const result = await updateProject(project.id, {
 			name: "Updated",
 		}).run(ctx);
 

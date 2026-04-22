@@ -4,27 +4,16 @@ import { spawn } from "bun";
 import { fail } from "../../models/common";
 import { usecase } from "../runner";
 
-export interface InitGitRepoInput {
-	path: string;
-	defaultBranch?: string;
-}
-
-export interface InitGitRepoOutput {
-	success: boolean;
-	path: string;
-	branch: string;
-}
-
-export const initGitRepo = (input: InitGitRepoInput) =>
+export const initGitRepo = (path: string, defaultBranch?: string) =>
 	usecase({
 		pre: async () => {
-			if (!input.path) {
+			if (!path) {
 				return fail("INVALID_INPUT", "Path is required");
 			}
 
 			// Verify the path exists and is a directory
 			try {
-				const stats = await stat(input.path);
+				const stats = await stat(path);
 				if (!stats.isDirectory()) {
 					return fail("INVALID_PATH", "Path is not a directory");
 				}
@@ -32,7 +21,7 @@ export const initGitRepo = (input: InitGitRepoInput) =>
 				return fail("NOT_FOUND", "Directory not found");
 			}
 
-			return { path: input.path };
+			return { path };
 		},
 
 		post: async (ctx, { path }) => {
@@ -45,11 +34,11 @@ export const initGitRepo = (input: InitGitRepoInput) =>
 				);
 			}
 
-			const defaultBranch = input.defaultBranch ?? "main";
+			const resolvedBranch = defaultBranch ?? "main";
 
 			try {
 				// Run git init with the specified default branch
-				const proc = spawn(["git", "init", "-b", defaultBranch], {
+				const proc = spawn(["git", "init", "-b", resolvedBranch], {
 					cwd: path,
 					stdout: "pipe",
 					stderr: "pipe",
@@ -125,8 +114,8 @@ export const initGitRepo = (input: InitGitRepoInput) =>
 				return {
 					success: true,
 					path,
-					branch: defaultBranch,
-				} as InitGitRepoOutput;
+					branch: resolvedBranch,
+				};
 			} catch (error) {
 				return fail(
 					"GIT_INIT_ERROR",
@@ -135,5 +124,5 @@ export const initGitRepo = (input: InitGitRepoInput) =>
 			}
 		},
 
-		result: (state) => state as InitGitRepoOutput,
+		result: (state) => state,
 	});

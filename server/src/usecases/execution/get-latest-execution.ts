@@ -6,36 +6,25 @@ import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface GetLatestExecutionInput {
-	taskId: string;
-	includeLogs?: boolean;
-}
-
-export interface GetLatestExecutionResult {
-	workspaceId: string | null;
-	sessionId: string | null;
-	executionProcess: CodingAgentProcess | null;
-	logs?: CodingAgentProcessLogs | null;
-}
-
 /**
  * Gets the latest coding agent process for a task.
  * Follows the chain: Task -> Workspace -> Session -> CodingAgentProcess
  */
-export const getLatestExecution = (input: GetLatestExecutionInput) =>
+export const getLatestExecution = (taskId: string, includeLogs?: boolean) =>
 	usecase({
 		read: async (ctx) => {
 			// Find workspace by taskId
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ByTaskIdActive(input.taskId),
+				Workspace.ByTaskIdActive(taskId),
 			);
 
 			if (!workspace) {
 				// No workspace means no execution has ever been started
-				const result: GetLatestExecutionResult = {
-					workspaceId: null,
-					sessionId: null,
-					executionProcess: null,
+				const result = {
+					workspaceId: null as string | null,
+					sessionId: null as string | null,
+					executionProcess: null as CodingAgentProcess | null,
+					logs: null as CodingAgentProcessLogs | null,
 				};
 				return result;
 			}
@@ -47,10 +36,11 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 			);
 
 			if (sessionPage.items.length === 0) {
-				const result: GetLatestExecutionResult = {
+				const result = {
 					workspaceId: workspace.id,
-					sessionId: null,
-					executionProcess: null,
+					sessionId: null as string | null,
+					executionProcess: null as CodingAgentProcess | null,
+					logs: null as CodingAgentProcessLogs | null,
 				};
 				return result;
 			}
@@ -64,10 +54,11 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 			);
 
 			if (executionPage.items.length === 0) {
-				const result: GetLatestExecutionResult = {
+				const result = {
 					workspaceId: workspace.id,
 					sessionId: session.id,
-					executionProcess: null,
+					executionProcess: null as CodingAgentProcess | null,
+					logs: null as CodingAgentProcessLogs | null,
 				};
 				return result;
 			}
@@ -76,13 +67,13 @@ export const getLatestExecution = (input: GetLatestExecutionInput) =>
 
 			// Optionally include logs
 			let logs: CodingAgentProcessLogs | null = null;
-			if (input.includeLogs) {
+			if (includeLogs) {
 				logs = await ctx.repos.codingAgentProcessLogs.getLogs(
 					executionProcess.id,
 				);
 			}
 
-			const result: GetLatestExecutionResult = {
+			const result = {
 				workspaceId: workspace.id,
 				sessionId: session.id,
 				executionProcess,

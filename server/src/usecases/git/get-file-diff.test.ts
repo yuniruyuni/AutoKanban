@@ -27,11 +27,11 @@ describe("getFileDiff", () => {
 			}),
 		});
 
-		const result = await getFileDiff({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			filePath: "src/index.ts",
-		}).run(ctx);
+		const result = await getFileDiff(
+			workspace.id,
+			project.id,
+			"src/index.ts",
+		).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -57,12 +57,9 @@ describe("getFileDiff", () => {
 			}),
 		});
 
-		await getFileDiff({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			filePath: "src/index.ts",
-			baseCommit: "abc123",
-		}).run(ctx);
+		await getFileDiff(workspace.id, project.id, "src/index.ts", "abc123").run(
+			ctx,
+		);
 
 		expect(capturedBaseCommit).toBe("abc123");
 	});
@@ -90,11 +87,7 @@ describe("getFileDiff", () => {
 			}),
 		});
 
-		await getFileDiff({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			filePath: "src/index.ts",
-		}).run(ctx);
+		await getFileDiff(workspace.id, project.id, "src/index.ts").run(ctx);
 
 		expect(capturedBaseCommit).toBe("feature/custom");
 	});
@@ -118,11 +111,7 @@ describe("getFileDiff", () => {
 			}),
 		});
 
-		await getFileDiff({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			filePath: "src/index.ts",
-		}).run(ctx);
+		await getFileDiff(workspace.id, project.id, "src/index.ts").run(ctx);
 
 		expect(capturedBaseCommit).toBe("develop");
 	});
@@ -150,11 +139,11 @@ describe("getFileDiff", () => {
 			}),
 		});
 
-		await getFileDiff({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			filePath: "src/components/Button.tsx",
-		}).run(ctx);
+		await getFileDiff(
+			workspace.id,
+			project.id,
+			"src/components/Button.tsx",
+		).run(ctx);
 
 		expect(capturedFilePath).toBe("src/components/Button.tsx");
 	});
@@ -164,11 +153,11 @@ describe("getFileDiff", () => {
 			workspace: { get: () => null } as never,
 		});
 
-		const result = await getFileDiff({
-			workspaceId: "non-existent",
-			projectId: "proj-1",
-			filePath: "src/index.ts",
-		}).run(ctx);
+		const result = await getFileDiff(
+			"non-existent",
+			"proj-1",
+			"src/index.ts",
+		).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -184,11 +173,11 @@ describe("getFileDiff", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await getFileDiff({
-			workspaceId: workspace.id,
-			projectId: "non-existent",
-			filePath: "src/index.ts",
-		}).run(ctx);
+		const result = await getFileDiff(
+			workspace.id,
+			"non-existent",
+			"src/index.ts",
+		).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -209,11 +198,11 @@ describe("getFileDiff", () => {
 			}),
 		});
 
-		const result = await getFileDiff({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			filePath: "src/index.ts",
-		}).run(ctx);
+		const result = await getFileDiff(
+			workspace.id,
+			project.id,
+			"src/index.ts",
+		).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -235,11 +224,11 @@ describe("getFileDiff", () => {
 			}),
 		});
 
-		const result = await getFileDiff({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			filePath: "src/index.ts",
-		}).run(ctx);
+		const result = await getFileDiff(
+			workspace.id,
+			project.id,
+			"src/index.ts",
+		).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

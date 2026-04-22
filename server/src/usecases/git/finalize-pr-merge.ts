@@ -5,26 +5,19 @@ import { Workspace } from "../../models/workspace";
 import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
-export interface FinalizePrMergeInput {
-	workspaceId: string;
-	projectId: string;
-}
-
-export const finalizePrMerge = (input: FinalizePrMergeInput) =>
+export const finalizePrMerge = (workspaceId: string, projectId: string) =>
 	usecase({
 		read: async (ctx) => {
 			const workspace = await ctx.repos.workspace.get(
-				Workspace.ById(input.workspaceId),
+				Workspace.ById(workspaceId),
 			);
 			if (!workspace) {
-				return fail("NOT_FOUND", `Workspace not found: ${input.workspaceId}`);
+				return fail("NOT_FOUND", `Workspace not found: ${workspaceId}`);
 			}
 
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
-				return fail("NOT_FOUND", `Project not found: ${input.projectId}`);
+				return fail("NOT_FOUND", `Project not found: ${projectId}`);
 			}
 
 			const task = await ctx.repos.task.get(Task.ById(workspace.taskId));
@@ -41,7 +34,7 @@ export const finalizePrMerge = (input: FinalizePrMergeInput) =>
 				workspace.id,
 			);
 			const workspaceRepo = workspaceRepos.find(
-				(wr) => wr.projectId === input.projectId,
+				(wr) => wr.projectId === projectId,
 			);
 
 			if (!workspaceRepo?.prUrl) {

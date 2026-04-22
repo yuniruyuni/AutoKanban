@@ -2,28 +2,18 @@ import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { Session } from "../../models/session";
 import { usecase } from "../runner";
 
-export interface GetAttemptExecutionInput {
-	workspaceId: string;
-}
-
-export interface GetAttemptExecutionResult {
-	workspaceId: string;
-	sessionId: string | null;
-	executionProcessId: string | null;
-}
-
-export const getAttemptExecution = (input: GetAttemptExecutionInput) =>
+export const getAttemptExecution = (workspaceId: string) =>
 	usecase({
-		read: async (ctx): Promise<GetAttemptExecutionResult> => {
+		read: async (ctx) => {
 			// Find latest session for this workspace
 			const sessionPage = await ctx.repos.session.list(
-				Session.ByWorkspaceId(input.workspaceId),
+				Session.ByWorkspaceId(workspaceId),
 				{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
 			);
 
 			if (sessionPage.items.length === 0) {
 				return {
-					workspaceId: input.workspaceId,
+					workspaceId,
 					sessionId: null,
 					executionProcessId: null,
 				};
@@ -38,7 +28,7 @@ export const getAttemptExecution = (input: GetAttemptExecutionInput) =>
 			);
 
 			return {
-				workspaceId: input.workspaceId,
+				workspaceId,
 				sessionId: session.id,
 				executionProcessId: epPage.items.length > 0 ? epPage.items[0].id : null,
 			};

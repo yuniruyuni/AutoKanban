@@ -1,17 +1,12 @@
 import { AgentSetting } from "../../models/agent-setting";
 import { usecase } from "../runner";
 
-export interface UpdateAgentSettingInput {
-	agentId: string;
-	command: string;
-}
-
-export const updateAgentSetting = (input: UpdateAgentSettingInput) =>
+export const updateAgentSetting = (agentId: string, command: string) =>
 	usecase({
 		process: () => {
 			const setting = AgentSetting.create({
-				agentId: input.agentId,
-				command: input.command,
+				agentId,
+				command,
 			});
 			return { setting };
 		},

@@ -36,14 +36,15 @@ export const executionRouter = router({
 				targetBranches: z.record(z.string()).optional(), // Legacy: for multi-repo support
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await startExecution(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { taskId, ...rest } = input;
+			return handleResult(await startExecution(taskId, rest).run(ctx));
+		}),
 
 	stop: publicProcedure
 		.input(z.object({ executionProcessId: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await stopExecution(input).run(ctx)),
+			handleResult(await stopExecution(input.executionProcessId).run(ctx)),
 		),
 
 	get: publicProcedure
@@ -54,7 +55,11 @@ export const executionRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) =>
-			handleResult(await getExecution(input).run(ctx)),
+			handleResult(
+				await getExecution(input.executionProcessId, input.includeLogs).run(
+					ctx,
+				),
+			),
 		),
 
 	// Get the latest execution for a task (follows Task -> Workspace -> Session -> ExecutionProcess)
@@ -66,7 +71,9 @@ export const executionRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) =>
-			handleResult(await getLatestExecution(input).run(ctx)),
+			handleResult(
+				await getLatestExecution(input.taskId, input.includeLogs).run(ctx),
+			),
 		),
 
 	// Send message: Unified endpoint for sending messages
@@ -81,36 +88,37 @@ export const executionRouter = router({
 				variant: z.string().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await queueMessage(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { sessionId, prompt, ...rest } = input;
+			return handleResult(await queueMessage(sessionId, prompt, rest).run(ctx));
+		}),
 
 	// Get queue status for a session
 	getQueueStatus: publicProcedure
 		.input(z.object({ sessionId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getQueueStatus(input).run(ctx)),
+			handleResult(await getQueueStatus(input.sessionId).run(ctx)),
 		),
 
 	// Cancel queued message
 	cancelQueue: publicProcedure
 		.input(z.object({ sessionId: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await cancelQueue(input).run(ctx)),
+			handleResult(await cancelQueue(input.sessionId).run(ctx)),
 		),
 
 	// Get conversation history for a session
 	getConversationHistory: publicProcedure
 		.input(z.object({ sessionId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getConversationHistory(input).run(ctx)),
+			handleResult(await getConversationHistory(input.sessionId).run(ctx)),
 		),
 
 	// Get structured logs (parsed chat messages) for an execution process
 	getStructuredLogs: publicProcedure
 		.input(z.object({ executionProcessId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getStructuredLogs(input).run(ctx)),
+			handleResult(await getStructuredLogs(input.executionProcessId).run(ctx)),
 		),
 
 	// Respond to a permission request (approve or deny)
@@ -124,7 +132,14 @@ export const executionRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await respondToPermission(input).run(ctx)),
+			handleResult(
+				await respondToPermission(
+					input.sessionId,
+					input.requestId,
+					input.approved,
+					input.reason,
+				).run(ctx),
+			),
 		),
 
 	// Get pending permission requests for a session
@@ -145,44 +160,39 @@ export const executionRouter = router({
 				variant: z.string().optional(),
 			}),
 		)
-		.mutation(async ({ ctx, input }) =>
-			handleResult(await forkConversation(input).run(ctx)),
-		),
+		.mutation(async ({ ctx, input }) => {
+			const { sessionId, messageUuid, newPrompt, ...rest } = input;
+			return handleResult(
+				await forkConversation(sessionId, messageUuid, newPrompt, rest).run(
+					ctx,
+				),
+			);
+		}),
 
 	// Save draft follow-up input
 	saveDraft: publicProcedure
 		.input(z.object({ sessionId: z.string().uuid(), text: z.string() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await saveDraft(input).run(ctx)),
+			handleResult(await saveDraft(input.sessionId, input.text).run(ctx)),
 		),
 
 	// Get saved draft
 	getDraft: publicProcedure
 		.input(z.object({ sessionId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await getDraft(input).run(ctx)),
+			handleResult(await getDraft(input.sessionId).run(ctx)),
 		),
 
 	runPrepare: publicProcedure
 		.input(z.object({ taskId: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(
-				await runWorkspaceScript({
-					taskId: input.taskId,
-					scriptType: "prepare",
-				}).run(ctx),
-			),
+			handleResult(await runWorkspaceScript(input.taskId, "prepare").run(ctx)),
 		),
 
 	runCleanup: publicProcedure
 		.input(z.object({ taskId: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) =>
-			handleResult(
-				await runWorkspaceScript({
-					taskId: input.taskId,
-					scriptType: "cleanup",
-				}).run(ctx),
-			),
+			handleResult(await runWorkspaceScript(input.taskId, "cleanup").run(ctx)),
 		),
 
 	// SSE log streaming endpoint will be handled separately in Hono

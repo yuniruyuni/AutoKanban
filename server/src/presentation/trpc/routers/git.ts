@@ -19,7 +19,7 @@ export const gitRouter = router({
 	listBranches: publicProcedure
 		.input(z.object({ projectId: z.string().uuid() }))
 		.query(async ({ ctx, input }) =>
-			handleResult(await listBranches(input).run(ctx)),
+			handleResult(await listBranches(input.projectId).run(ctx)),
 		),
 
 	// Branch status
@@ -31,7 +31,9 @@ export const gitRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) =>
-			handleResult(await getBranchStatus(input).run(ctx)),
+			handleResult(
+				await getBranchStatus(input.workspaceId, input.projectId).run(ctx),
+			),
 		),
 
 	// Diff operations
@@ -44,7 +46,13 @@ export const gitRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) =>
-			handleResult(await getDiffs(input).run(ctx)),
+			handleResult(
+				await getDiffs(
+					input.workspaceId,
+					input.projectId,
+					input.baseCommit,
+				).run(ctx),
+			),
 		),
 
 	getFileDiff: publicProcedure
@@ -57,7 +65,14 @@ export const gitRouter = router({
 			}),
 		)
 		.query(async ({ ctx, input }) =>
-			handleResult(await getFileDiff(input).run(ctx)),
+			handleResult(
+				await getFileDiff(
+					input.workspaceId,
+					input.projectId,
+					input.filePath,
+					input.baseCommit,
+				).run(ctx),
+			),
 		),
 
 	// Rebase operations
@@ -70,7 +85,13 @@ export const gitRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await rebaseBranch(input).run(ctx)),
+			handleResult(
+				await rebaseBranch(
+					input.workspaceId,
+					input.projectId,
+					input.newBaseBranch,
+				).run(ctx),
+			),
 		),
 
 	abortRebase: publicProcedure
@@ -81,7 +102,9 @@ export const gitRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await abortRebase(input).run(ctx)),
+			handleResult(
+				await abortRebase(input.workspaceId, input.projectId).run(ctx),
+			),
 		),
 
 	continueRebase: publicProcedure
@@ -92,7 +115,9 @@ export const gitRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await continueRebase(input).run(ctx)),
+			handleResult(
+				await continueRebase(input.workspaceId, input.projectId).run(ctx),
+			),
 		),
 
 	// Merge operations
@@ -105,7 +130,13 @@ export const gitRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await mergeBranch(input).run(ctx)),
+			handleResult(
+				await mergeBranch(
+					input.workspaceId,
+					input.projectId,
+					input.targetBranch,
+				).run(ctx),
+			),
 		),
 
 	// Push operations
@@ -119,7 +150,14 @@ export const gitRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await pushBranch(input).run(ctx)),
+			handleResult(
+				await pushBranch(
+					input.workspaceId,
+					input.projectId,
+					input.remote,
+					input.force,
+				).run(ctx),
+			),
 		),
 
 	// PR operations
@@ -135,7 +173,16 @@ export const gitRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await createPullRequest(input).run(ctx)),
+			handleResult(
+				await createPullRequest(
+					input.workspaceId,
+					input.projectId,
+					input.taskTitle,
+					input.remote,
+					input.force,
+					input.draft,
+				).run(ctx),
+			),
 		),
 
 	// Finalize PR merge
@@ -147,7 +194,9 @@ export const gitRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await finalizePrMerge(input).run(ctx)),
+			handleResult(
+				await finalizePrMerge(input.workspaceId, input.projectId).run(ctx),
+			),
 		),
 
 	// Generate PR description (background, streamed via SSE)
@@ -159,6 +208,10 @@ export const gitRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
-			handleResult(await generatePrDescription(input).run(ctx)),
+			handleResult(
+				await generatePrDescription(input.workspaceId, input.projectId).run(
+					ctx,
+				),
+			),
 		),
 });

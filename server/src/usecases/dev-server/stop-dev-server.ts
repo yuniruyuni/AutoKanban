@@ -2,15 +2,11 @@ import { fail } from "../../models/common";
 import { DevServerProcess } from "../../models/dev-server-process";
 import { usecase } from "../runner";
 
-export interface StopDevServerInput {
-	executionProcessId: string;
-}
-
-export const stopDevServer = (input: StopDevServerInput) =>
+export const stopDevServer = (executionProcessId: string) =>
 	usecase({
 		read: async (ctx) => {
 			const ep = await ctx.repos.devServerProcess.get(
-				DevServerProcess.ById(input.executionProcessId),
+				DevServerProcess.ById(executionProcessId),
 			);
 			if (!ep) {
 				return fail("NOT_FOUND", "Dev server process not found");

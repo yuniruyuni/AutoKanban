@@ -10,7 +10,7 @@ describe("getTask", () => {
 			task: { get: () => task } as never,
 		});
 
-		const result = await getTask({ taskId: task.id }).run(ctx);
+		const result = await getTask(task.id).run(ctx);
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.value.id).toBe(task.id);
@@ -23,7 +23,7 @@ describe("getTask", () => {
 			task: { get: () => null } as never,
 		});
 
-		const result = await getTask({ taskId: "non-existent" }).run(ctx);
+		const result = await getTask("non-existent").run(ctx);
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
 			expect(result.error.code).toBe("NOT_FOUND");

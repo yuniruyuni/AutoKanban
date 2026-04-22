@@ -1,39 +1,22 @@
 // @specre 01KPNSHJW0CXD6X1YSAFEWHKXP
 import { fail } from "../../models/common";
 import { Project } from "../../models/project";
-import { Task } from "../../models/task";
+import type { Task } from "../../models/task";
 import { usecase } from "../runner";
 
-export interface CreateTaskInput {
-	projectId: string;
-	title: string;
-	description?: string | null;
-}
-
-export const createTask = (input: CreateTaskInput) =>
+export const createTask = (task: Task) =>
 	usecase({
 		read: async (ctx) => {
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(task.projectId));
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
-					projectId: input.projectId,
+					projectId: task.projectId,
 				});
 			}
-			return { project };
+			return {};
 		},
 
-		process: (_, { project }) => {
-			const task = Task.create({
-				projectId: project.id,
-				title: input.title,
-				description: input.description,
-			});
-			return { task };
-		},
-
-		write: async (ctx, { task }) => {
+		write: async (ctx) => {
 			await ctx.repos.task.upsert(task);
 			return task;
 		},

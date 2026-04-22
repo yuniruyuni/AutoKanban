@@ -8,20 +8,18 @@ import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
 import { usecase } from "../runner";
 
-export interface ApprovalRequestInput {
-	processId: string;
-	request: DriverApprovalRequest;
-}
-
 /**
  * Handle approval request: set statuses to awaiting, wait for response,
  * relay to executor, restore statuses.
  */
-export const handleApprovalRequest = (input: ApprovalRequestInput) =>
+export const handleApprovalRequest = (
+	processId: string,
+	request: DriverApprovalRequest,
+) =>
 	usecase({
 		read: async (ctx) => {
 			const execProcess = await ctx.repos.codingAgentProcess.get(
-				CodingAgentProcess.ById(input.processId),
+				CodingAgentProcess.ById(processId),
 			);
 
 			// Find task via codingAgentProcess -> session -> workspace -> task
@@ -59,9 +57,9 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 			}
 
 			const approval = Approval.create({
-				executionProcessId: input.processId,
-				toolName: input.request.toolName,
-				toolCallId: input.request.toolCallId,
+				executionProcessId: processId,
+				toolName: request.toolName,
+				toolCallId: request.toolCallId,
 			});
 			await ctx.repos.approval.upsert(approval);
 
@@ -76,20 +74,20 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 			// Use the control protocol request_id (from protocolContext), not
 			// toolCallId (which may be tool_use_id). The control_response must
 			// match the control_request's request_id for Claude Code to process it.
-			const protocolCtx = input.request.protocolContext as {
+			const protocolCtx = request.protocolContext as {
 				requestId?: string;
 				requestSubtype?: string;
 			};
-			const requestId = protocolCtx.requestId ?? input.request.toolCallId;
+			const requestId = protocolCtx.requestId ?? request.toolCallId;
 
 			await ctx.repos.executor.sendPermissionResponse(
-				input.processId,
+				processId,
 				requestId,
 				approved,
 				protocolCtx.requestSubtype,
 				response.reason ?? undefined,
 				undefined,
-				input.request.toolInput,
+				request.toolInput,
 			);
 
 			return { taskId };
@@ -98,7 +96,7 @@ export const handleApprovalRequest = (input: ApprovalRequestInput) =>
 		finish: async (ctx, { taskId }) => {
 			// Restore coding agent process status
 			const currentProcess = await ctx.repos.codingAgentProcess.get(
-				CodingAgentProcess.ById(input.processId),
+				CodingAgentProcess.ById(processId),
 			);
 			if (currentProcess) {
 				const restored = CodingAgentProcess.restoreFromApproval(currentProcess);

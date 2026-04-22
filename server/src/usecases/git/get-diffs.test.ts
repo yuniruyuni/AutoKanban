@@ -27,10 +27,7 @@ describe("getDiffs", () => {
 			}),
 		});
 
-		const result = await getDiffs({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await getDiffs(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -74,10 +71,7 @@ describe("getDiffs", () => {
 			}),
 		});
 
-		const result = await getDiffs({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await getDiffs(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -104,11 +98,7 @@ describe("getDiffs", () => {
 			}),
 		});
 
-		await getDiffs({
-			workspaceId: workspace.id,
-			projectId: project.id,
-			baseCommit: "abc123",
-		}).run(ctx);
+		await getDiffs(workspace.id, project.id, "abc123").run(ctx);
 
 		expect(capturedBaseCommit).toBe("abc123");
 	});
@@ -136,10 +126,7 @@ describe("getDiffs", () => {
 			}),
 		});
 
-		await getDiffs({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		await getDiffs(workspace.id, project.id).run(ctx);
 
 		expect(capturedBaseCommit).toBe("feature/custom");
 	});
@@ -163,10 +150,7 @@ describe("getDiffs", () => {
 			}),
 		});
 
-		await getDiffs({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		await getDiffs(workspace.id, project.id).run(ctx);
 
 		expect(capturedBaseCommit).toBe("develop");
 	});
@@ -176,10 +160,7 @@ describe("getDiffs", () => {
 			workspace: { get: () => null } as never,
 		});
 
-		const result = await getDiffs({
-			workspaceId: "non-existent",
-			projectId: "proj-1",
-		}).run(ctx);
+		const result = await getDiffs("non-existent", "proj-1").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -195,10 +176,7 @@ describe("getDiffs", () => {
 			project: { get: () => null } as never,
 		});
 
-		const result = await getDiffs({
-			workspaceId: workspace.id,
-			projectId: "non-existent",
-		}).run(ctx);
+		const result = await getDiffs(workspace.id, "non-existent").run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -219,10 +197,7 @@ describe("getDiffs", () => {
 			}),
 		});
 
-		const result = await getDiffs({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await getDiffs(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -244,10 +219,7 @@ describe("getDiffs", () => {
 			}),
 		});
 
-		const result = await getDiffs({
-			workspaceId: workspace.id,
-			projectId: project.id,
-		}).run(ctx);
+		const result = await getDiffs(workspace.id, project.id).run(ctx);
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {

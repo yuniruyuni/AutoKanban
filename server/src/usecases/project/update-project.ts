@@ -3,35 +3,23 @@ import { fail } from "../../models/common";
 import { Project } from "../../models/project";
 import { usecase } from "../runner";
 
-export interface UpdateProjectInput {
-	projectId: string;
-	name?: string;
-	description?: string | null;
-}
-
-export const updateProject = (input: UpdateProjectInput) =>
+export const updateProject = (
+	projectId: string,
+	fields: Project.UpdateFields,
+) =>
 	usecase({
 		read: async (ctx) => {
-			const project = await ctx.repos.project.get(
-				Project.ById(input.projectId),
-			);
+			const project = await ctx.repos.project.get(Project.ById(projectId));
 			if (!project) {
 				return fail("NOT_FOUND", "Project not found", {
-					projectId: input.projectId,
+					projectId,
 				});
 			}
 			return { project };
 		},
 
-		process: (_ctx, { project }) => {
-			const updated = {
-				...project,
-				...(input.name !== undefined && { name: input.name }),
-				...(input.description !== undefined && {
-					description: input.description,
-				}),
-				updatedAt: new Date(),
-			};
+		process: (ctx, { project }) => {
+			const updated = Project.applyUpdate(project, fields, ctx.now);
 			return { project: updated };
 		},
 
