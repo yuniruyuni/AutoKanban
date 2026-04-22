@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-21T17:51:22Z",
+  "generated_at": "2026-04-22T02:10:14Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -873,6 +873,11 @@
     {
       "specre_id": "01KPNTBSG4HEKJYAW9Q9SM25R8",
       "file": "server/src/presentation/trpc/routers/mcp-config.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPQ6W85T6VTJEQWKM3BNVPMC",
+      "file": "server/src/presentation/trpc/routers/project.ts",
       "line": 1
     },
     {

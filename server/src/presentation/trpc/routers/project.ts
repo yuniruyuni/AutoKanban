@@ -1,3 +1,4 @@
+// @specre 01KPQ6W85T6VTJEQWKM3BNVPMC
 import { z } from "zod";
 import { browseDirectory } from "../../../usecases/project/browse-directory";
 import { createProject } from "../../../usecases/project/create-project";
@@ -11,11 +12,28 @@ import { updateProject } from "../../../usecases/project/update-project";
 import { handleResult } from "../handle-result";
 import { publicProcedure, router } from "../init";
 
+// Project name is used as a path segment under ~/.auto-kanban/worktrees/<workspaceId>/<projectName>/.
+// WorktreeRepository.getWorktreePath is the backstop, but we reject the obvious
+// traversal vectors here so bad names never land in the DB in the first place.
+export const projectNameSchema = z
+	.string()
+	.min(1)
+	.max(100)
+	.refine((s) => !/[/\\\0]/.test(s), {
+		message: "Project name cannot contain path separators or null bytes",
+	})
+	.refine((s) => !s.startsWith("."), {
+		message: "Project name cannot start with '.'",
+	})
+	.refine((s) => s === s.trim(), {
+		message: "Project name cannot have leading or trailing whitespace",
+	});
+
 export const projectRouter = router({
 	create: publicProcedure
 		.input(
 			z.object({
-				name: z.string().min(1),
+				name: projectNameSchema,
 				description: z.string().optional().nullable(),
 				repoPath: z.string().min(1),
 				branch: z.string().optional(),
@@ -39,7 +57,7 @@ export const projectRouter = router({
 		.input(
 			z.object({
 				projectId: z.string().uuid(),
-				name: z.string().min(1).optional(),
+				name: projectNameSchema.optional(),
 				description: z.string().optional().nullable(),
 			}),
 		)

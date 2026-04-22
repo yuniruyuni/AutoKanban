@@ -8,8 +8,8 @@ last_verified: "2026-04-22"
 ## 関連ファイル
 
 - `server/src/presentation/index.ts` (`HOST` = `AUTO_KANBAN_HOST ?? "127.0.0.1"` で bind)
-- `server/src/presentation/trpc/routers/*.ts` (Zod によるバリデーション)
-- `server/src/repositories/worktree/fs/index.ts` (`getWorktreePath` でのパストラバーサル検証)
+- `server/src/presentation/trpc/routers/*.ts` (Zod によるバリデーション。`project.ts` の `projectNameSchema` がパストラバーサル入口チェック)
+- `server/src/repositories/worktree/fs/index.ts` (`getWorktreePath` でのパストラバーサル出口チェック)
 - `~/.auto-kanban/` (データディレクトリ)
 
 ## 機能概要
@@ -44,7 +44,7 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 | CSRF | — | localhost 同一オリジン、外部オリジンが呼べない |
 | SQL インジェクション | 高 | Raw SQL + パラメータバインディング |
 | コマンドインジェクション | 高 | `spawn([...])` 配列形式、shell 経由禁止 |
-| パストラバーサル | 中 | worktree 作成時にベースパス内か検証 |
+| パストラバーサル | 中 | 入口: Zod で `projectName` から `/` `\` `..` 等を拒否 / 出口: worktree 作成時にベースパス内か検証 |
 | 依存関係の脆弱性 | 中 | `bun audit` 定期実行、最小依存主義 |
 
 ### 実装規約（single source of truth）
@@ -53,9 +53,14 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
   ([`raw_sql_is_used_instead_of_orm`](./raw_sql_is_used_instead_of_orm.md))
 - **コマンド実行**: `Bun.spawn(['git', 'commit', '-m', message])` のように**配列形式で引数を渡す**。
   `exec(\`git commit -m "${message}"\`)` のようなシェル経由は禁止
-- **パス検証**: `WorktreeRepository.getWorktreePath` が `path.resolve(joined).startsWith(base + sep)`
-  を全 worktree 操作の唯一の入口で強制。`projectName` に `../` が混ざると throw。
-  これが worktree 関連 5 メソッド（create / remove / exists / ensure / getInfo）の共通バックストップ
+- **パス検証（2 段構え）**:
+  1. **入口（Zod）**: `projectNameSchema` が project 作成/更新時に path separator (`/` `\`)、
+     null byte、先頭ドット、前後空白、100 文字超を拒否。bad name が DB に入らないよう防ぐ
+     （`server/src/presentation/trpc/routers/project.ts`）
+  2. **出口（Repository）**: `WorktreeRepository.getWorktreePath` が
+     `path.resolve(joined).startsWith(base + sep)` で最終チェック。DB を直接いじられた
+     場合や将来の入力経路追加に対する共通バックストップ（worktree 関連 5 メソッド
+     create / remove / exists / ensure / getInfo で共用）
 - **入力バリデーション**: tRPC の `z.object({...}).input(...)` で全入力を検証。
   Presentation 層の責務（[`trpc_is_the_client_server_protocol`](./trpc_is_the_client_server_protocol.md)）
 - **エラーメッセージ**: 外向きには汎用メッセージ、詳細は `Fail.details` に入れてログ・UI で
@@ -80,7 +85,8 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 
 - `process.env.AUTO_KANBAN_HOST ?? "127.0.0.1"` — 外部公開を既定で防ぐ
 - `Bun.spawn([...])` — シェル非経由のコマンド実行
-- `WorktreeRepository.getWorktreePath` — `path.resolve().startsWith(base + sep)` でパストラバーサル拒否
+- `projectNameSchema` (`server/src/presentation/trpc/routers/project.ts`) — パストラバーサル 1st layer
+- `WorktreeRepository.getWorktreePath` — `path.resolve().startsWith(base + sep)` でパストラバーサル出口防御
 - `z.object({...})` — Zod 入力スキーマ
 - `bun audit` — 依存脆弱性チェック
 
