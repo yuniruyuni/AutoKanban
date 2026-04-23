@@ -2,7 +2,6 @@
 import type { ProcessType } from "../../infra/callback/client";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import {
-	findPendingToolUses,
 	type PendingToolUse,
 	pendingToolUsesToProtocolFormat,
 } from "../../models/conversation/conversation-parser";
@@ -13,6 +12,7 @@ import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
 import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
+import { collectInterruptedTools } from "../collect-interrupted-tools";
 import { usecase } from "../runner";
 
 /**
@@ -159,15 +159,10 @@ export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 					CodingAgentProcess.BySessionId(sessionId),
 					{ limit: 1, sort: CodingAgentProcess.defaultSort },
 				);
-				const latestProcess = latestProcessPage.items[0];
-				if (latestProcess && latestProcess.status !== "running") {
-					const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
-						latestProcess.id,
-					);
-					if (logs?.logs) {
-						interruptedTools = findPendingToolUses(logs.logs);
-					}
-				}
+				interruptedTools = await collectInterruptedTools(
+					ctx,
+					latestProcessPage.items[0],
+				);
 			}
 
 			return { workingDir, resumeInfo, interruptedTools };

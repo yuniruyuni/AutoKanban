@@ -5,7 +5,7 @@ import { fail, isFail } from "../../models/common";
 import { Project } from "../../models/project";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
-import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
+import { cleanupAndRemoveWorktrees } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
 export const updateTask = (taskId: string, fields: Task.UpdateFields) =>
@@ -71,33 +71,13 @@ export const updateTask = (taskId: string, fields: Task.UpdateFields) =>
 		post: async (ctx, { task, workspaces, project }) => {
 			const workspaceIds = workspaces.map((ws) => ws.id);
 			if (workspaceIds.length > 0 && project) {
-				// Remove worktree directories but preserve branches
-				for (const wsId of workspaceIds) {
-					try {
-						const worktreePath = ctx.repos.worktree.getWorktreePath(
-							wsId,
-							project.name,
-						);
-						const exists = await ctx.repos.worktree.worktreeExists(
-							wsId,
-							project.name,
-						);
-						if (exists) {
-							await runCleanupIfConfigured(ctx.repos, ctx.logger, worktreePath);
-						}
-						await ctx.repos.worktree.removeAllWorktrees(
-							wsId,
-							[project],
-							true,
-							false, // deleteBranch: false — preserve branches for history
-						);
-					} catch (error) {
-						ctx.logger.error(
-							`Failed to remove worktrees for workspace ${wsId}:`,
-							error,
-						);
-					}
-				}
+				await cleanupAndRemoveWorktrees(
+					ctx.repos,
+					ctx.logger,
+					workspaceIds,
+					project,
+					{ deleteBranch: false },
+				);
 
 				try {
 					await ctx.repos.worktree.pruneWorktrees(project);

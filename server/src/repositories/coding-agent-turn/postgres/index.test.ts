@@ -306,62 +306,54 @@ describe("CodingAgentTurnRepository spec filtering", () => {
 // P7: Custom methods
 // ============================================
 
-describe("CodingAgentTurnRepository updateAgentSessionId", () => {
-	test("updates only agent session id", async () => {
+describe("CodingAgentTurnRepository upsert with model helpers", () => {
+	test("updates agent session id via withAgentSessionId + upsert", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentSessionId: null,
 		});
 		await turnRepo.upsert(wCtx, turn);
 
-		await turnRepo.updateAgentSessionId(
-			wCtx,
-			EXECUTION_PROCESS_ID,
+		const updated = CodingAgentTurn.withAgentSessionId(
+			turn,
 			"new-agent-session",
 		);
+		await turnRepo.upsert(wCtx, updated);
 
 		const retrieved = await turnRepo.get(rCtx, CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.agentSessionId).toBe("new-agent-session");
-		// Other fields should remain unchanged
 		expect(retrieved?.prompt).toBe(turn.prompt);
 	});
-});
 
-describe("CodingAgentTurnRepository updateAgentMessageId", () => {
-	test("updates only agent message id", async () => {
+	test("updates agent message id via withAgentMessageId + upsert", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			agentMessageId: null,
 		});
 		await turnRepo.upsert(wCtx, turn);
 
-		await turnRepo.updateAgentMessageId(
-			wCtx,
-			EXECUTION_PROCESS_ID,
-			"new-msg-id",
-		);
+		const updated = CodingAgentTurn.withAgentMessageId(turn, "new-msg-id");
+		await turnRepo.upsert(wCtx, updated);
 
 		const retrieved = await turnRepo.get(rCtx, CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.agentMessageId).toBe("new-msg-id");
 		expect(retrieved?.prompt).toBe(turn.prompt);
 	});
-});
 
-describe("CodingAgentTurnRepository updateSummary", () => {
-	test("updates only summary", async () => {
+	test("updates summary via withSummary + upsert", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,
 			summary: null,
 		});
 		await turnRepo.upsert(wCtx, turn);
 
-		await turnRepo.updateSummary(
-			wCtx,
-			EXECUTION_PROCESS_ID,
+		const updated = CodingAgentTurn.withSummary(
+			turn,
 			"Task completed successfully",
 		);
+		await turnRepo.upsert(wCtx, updated);
 
 		const retrieved = await turnRepo.get(rCtx, CodingAgentTurn.ById(turn.id));
 		expect(retrieved).not.toBeNull();

@@ -5,6 +5,7 @@ import type { DriverCallbacks } from "../../orchestrator/driver-callbacks";
 import type { DriverProcess } from "../../orchestrator/driver-process";
 import type { DriverSpawnOptions } from "../../orchestrator/driver-spawn-options";
 import {
+	asClaudeCodeProcess,
 	ClaudeCodeExecutor,
 	type ClaudeCodeProcess,
 	TOOL_APPROVAL_CALLBACK_ID,
@@ -80,7 +81,7 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		processId: string,
 		callbacks: DriverCallbacks,
 	): Promise<void> {
-		const nativeProcess = process as unknown as ClaudeCodeProcess;
+		const nativeProcess = asClaudeCodeProcess(process);
 		this.processes.set(processId, nativeProcess);
 
 		const collector = new ProtocolLogCollector(this.logger);
@@ -169,7 +170,7 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 	}
 
 	async sendMessage(process: DriverProcess, prompt: string): Promise<void> {
-		const nativeProcess = process as unknown as ClaudeCodeProcess;
+		const nativeProcess = asClaudeCodeProcess(process);
 		await this.executor.sendUserMessage(nativeProcess, prompt);
 	}
 
@@ -177,7 +178,7 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		process: DriverProcess,
 		tools: Array<{ toolId: string; toolName: string }>,
 	): Promise<void> {
-		const nativeProcess = process as unknown as ClaudeCodeProcess;
+		const nativeProcess = asClaudeCodeProcess(process);
 		const toolResults = tools.map((tool) => ({
 			toolId: tool.toolId,
 			content: `Task "${tool.toolName}" was interrupted due to server restart. Please retry if needed.`,
@@ -192,7 +193,7 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 		approved: boolean,
 		reason?: string,
 	): Promise<void> {
-		const nativeProcess = process as unknown as ClaudeCodeProcess;
+		const nativeProcess = asClaudeCodeProcess(process);
 		const ctx = request.protocolContext as ClaudeApprovalContext;
 
 		const updatedPermissions: PermissionUpdate[] | undefined = approved
@@ -251,19 +252,19 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 	}
 
 	interrupt(process: DriverProcess): void {
-		const nativeProcess = process as unknown as ClaudeCodeProcess;
+		const nativeProcess = asClaudeCodeProcess(process);
 		this.executor.interrupt(nativeProcess);
 	}
 
 	kill(process: DriverProcess): void {
-		const nativeProcess = process as unknown as ClaudeCodeProcess;
+		const nativeProcess = asClaudeCodeProcess(process);
 		this.executor.kill(nativeProcess);
 	}
 
 	async wait(
 		process: DriverProcess,
 	): Promise<{ exitCode: number; killed: boolean }> {
-		const nativeProcess = process as unknown as ClaudeCodeProcess;
+		const nativeProcess = asClaudeCodeProcess(process);
 		return this.executor.wait(nativeProcess);
 	}
 }

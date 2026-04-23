@@ -76,6 +76,40 @@ export namespace Project {
 		};
 	}
 
+	// Name validation
+	export interface NameValidationError {
+		field: "name";
+		message: string;
+	}
+
+	export function validateName(name: string): NameValidationError | null {
+		if (name.length === 0 || name.length > 100) {
+			return {
+				field: "name",
+				message: "Project name must be 1-100 characters",
+			};
+		}
+		if (/[/\\\0]/.test(name)) {
+			return {
+				field: "name",
+				message: "Project name cannot contain path separators or null bytes",
+			};
+		}
+		if (name.startsWith(".")) {
+			return {
+				field: "name",
+				message: "Project name cannot start with '.'",
+			};
+		}
+		if (name !== name.trim()) {
+			return {
+				field: "name",
+				message: "Project name cannot have leading or trailing whitespace",
+			};
+		}
+		return null;
+	}
+
 	// Partial update application
 	export interface UpdateFields {
 		name?: string;

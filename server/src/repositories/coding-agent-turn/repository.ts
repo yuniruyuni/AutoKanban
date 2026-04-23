@@ -25,19 +25,4 @@ export interface CodingAgentTurnRepository {
 	): Promise<CodingAgentResumeInfo | null>;
 	upsert(ctx: DbWriteCtx, turn: CodingAgentTurn): Promise<void>;
 	delete(ctx: DbWriteCtx, spec: CodingAgentTurn.Spec): Promise<number>;
-	updateAgentSessionId(
-		ctx: DbWriteCtx,
-		executionProcessId: string,
-		agentSessionId: string,
-	): Promise<void>;
-	updateAgentMessageId(
-		ctx: DbWriteCtx,
-		executionProcessId: string,
-		agentMessageId: string,
-	): Promise<void>;
-	updateSummary(
-		ctx: DbWriteCtx,
-		executionProcessId: string,
-		summary: string,
-	): Promise<void>;
 }

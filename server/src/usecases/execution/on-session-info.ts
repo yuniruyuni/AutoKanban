@@ -1,4 +1,5 @@
 // @specre 01KPNSJ3QYE2ZFFYFFQ19JD3AH
+import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { usecase } from "../runner";
 
 interface UpdateSessionInfoInput {
@@ -9,18 +10,32 @@ interface UpdateSessionInfoInput {
 
 export const updateSessionInfo = (input: UpdateSessionInfoInput) =>
 	usecase({
-		write: async (ctx) => {
+		read: async (ctx) => {
+			const turn = await ctx.repos.codingAgentTurn.get(
+				CodingAgentTurn.ByExecutionProcessId(input.processId),
+			);
+			return { turn };
+		},
+
+		process: (_ctx, { turn }) => {
+			if (!turn) return { updated: null };
+			let updated = turn;
 			if (input.agentSessionId) {
-				await ctx.repos.codingAgentTurn.updateAgentSessionId(
-					input.processId,
+				updated = CodingAgentTurn.withAgentSessionId(
+					updated,
 					input.agentSessionId,
 				);
 			}
 			if (input.agentMessageId) {
-				await ctx.repos.codingAgentTurn.updateAgentMessageId(
-					input.processId,
+				updated = CodingAgentTurn.withAgentMessageId(
+					updated,
 					input.agentMessageId,
 				);
 			}
+			return { updated };
+		},
+
+		write: async (ctx, { updated }) => {
+			if (updated) await ctx.repos.codingAgentTurn.upsert(updated);
 		},
 	});

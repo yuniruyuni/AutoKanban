@@ -1,14 +1,10 @@
 // @specre 01KPNSHJW89KPCWYXKE4E261H9
-import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
-import { DevServerProcess } from "../../models/dev-server-process";
 import { Project } from "../../models/project";
-import { Session } from "../../models/session";
 import { Task } from "../../models/task";
 import { Workspace } from "../../models/workspace";
-import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
-import { executeCascadeDeletion } from "../cascade-deletion";
-import { runCleanupIfConfigured } from "../run-cleanup-before-removal";
+import { collectCascadeIds, executeCascadeDeletion } from "../cascade-deletion";
+import { cleanupAndRemoveWorktrees } from "../run-cleanup-before-removal";
 import { usecase } from "../runner";
 
 export const deleteTask = (
@@ -29,94 +25,22 @@ export const deleteTask = (
 				});
 			}
 
-			// Collect all related entity IDs for cascade deletion
-			const workspaceIds: string[] = [];
-			const workspaces: Workspace[] = [];
-			const sessionIds: string[] = [];
-			const codingAgentProcessIds: string[] = [];
-			const devServerProcessIds: string[] = [];
-			const workspaceScriptProcessIds: string[] = [];
-
 			const workspacesPage = await ctx.repos.workspace.list(
 				Workspace.ByTaskId(task.id),
-				{
-					limit: 10000,
-				},
+				{ limit: 10000 },
 			);
-			for (const ws of workspacesPage.items) {
-				workspaceIds.push(ws.id);
-				workspaces.push(ws);
-				const sessions = await ctx.repos.session.list(
-					Session.ByWorkspaceId(ws.id),
-					{
-						limit: 10000,
-					},
-				);
-				for (const session of sessions.items) {
-					sessionIds.push(session.id);
-
-					// Collect coding agent process IDs
-					const caProcesses = await ctx.repos.codingAgentProcess.list(
-						CodingAgentProcess.BySessionId(session.id),
-						{ limit: 10000 },
-					);
-					for (const proc of caProcesses.items) {
-						codingAgentProcessIds.push(proc.id);
-					}
-
-					// Collect dev server process IDs
-					const dsProcesses = await ctx.repos.devServerProcess.list(
-						DevServerProcess.BySessionId(session.id),
-						{ limit: 10000 },
-					);
-					for (const proc of dsProcesses.items) {
-						devServerProcessIds.push(proc.id);
-					}
-
-					// Collect workspace script process IDs
-					const wsProcesses = await ctx.repos.workspaceScriptProcess.list(
-						WorkspaceScriptProcess.BySessionId(session.id),
-						{ limit: 10000 },
-					);
-					for (const proc of wsProcesses.items) {
-						workspaceScriptProcessIds.push(proc.id);
-					}
-				}
-			}
+			const cascadeIds = await collectCascadeIds(ctx, workspacesPage.items);
 
 			return {
 				task,
 				project,
-				workspaceIds,
-				workspaces,
-				sessionIds,
-				codingAgentProcessIds,
-				devServerProcessIds,
-				workspaceScriptProcessIds,
+				workspaces: workspacesPage.items,
+				cascadeIds,
 			};
 		},
 
-		write: async (
-			ctx,
-			{
-				task,
-				project,
-				workspaces,
-				workspaceIds,
-				sessionIds,
-				codingAgentProcessIds,
-				devServerProcessIds,
-				workspaceScriptProcessIds,
-			},
-		) => {
-			// Delete dependent entities in reverse dependency order
-			await executeCascadeDeletion(ctx, {
-				codingAgentProcessIds,
-				devServerProcessIds,
-				workspaceScriptProcessIds,
-				sessionIds,
-				workspaceIds,
-			});
+		write: async (ctx, { task, project, workspaces, cascadeIds }) => {
+			await executeCascadeDeletion(ctx, cascadeIds);
 
 			// 5. workspaces (depend on tasks)
 			await ctx.repos.workspace.delete(Workspace.ByTaskId(task.id));
@@ -128,32 +52,13 @@ export const deleteTask = (
 		},
 
 		post: async (ctx, { workspaces, project }) => {
-			if (!options?.deleteWorktrees) {
-				return { deleted: true, taskId };
-			}
-
-			for (const ws of workspaces) {
-				try {
-					const worktreePath = ctx.repos.worktree.getWorktreePath(
-						ws.id,
-						project.name,
-					);
-					const exists = await ctx.repos.worktree.worktreeExists(
-						ws.id,
-						project.name,
-					);
-					if (exists) {
-						await runCleanupIfConfigured(ctx.repos, ctx.logger, worktreePath);
-					}
-					await ctx.repos.worktree.removeAllWorktrees(ws.id, [project], true);
-				} catch (error: unknown) {
-					const message =
-						error instanceof Error ? error.message : String(error);
-					ctx.logger.error(
-						`Failed to remove worktrees for workspace ${ws.id}: ${message}`,
-						error,
-					);
-				}
+			if (options?.deleteWorktrees) {
+				await cleanupAndRemoveWorktrees(
+					ctx.repos,
+					ctx.logger,
+					workspaces.map((ws) => ws.id),
+					project,
+				);
 			}
 
 			return { deleted: true, taskId };

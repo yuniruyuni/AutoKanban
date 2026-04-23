@@ -78,6 +78,28 @@ export namespace CodingAgentTurn {
 		};
 	}
 
+	// Immutable update helpers
+	export function withAgentSessionId(
+		turn: CodingAgentTurn,
+		agentSessionId: string,
+	): CodingAgentTurn {
+		return { ...turn, agentSessionId, updatedAt: new Date() };
+	}
+
+	export function withAgentMessageId(
+		turn: CodingAgentTurn,
+		agentMessageId: string,
+	): CodingAgentTurn {
+		return { ...turn, agentMessageId, updatedAt: new Date() };
+	}
+
+	export function withSummary(
+		turn: CodingAgentTurn,
+		summary: string,
+	): CodingAgentTurn {
+		return { ...turn, summary, updatedAt: new Date() };
+	}
+
 	// Cursor
 	export function cursor(
 		turn: CodingAgentTurn,

@@ -4,7 +4,6 @@ import { AgentSetting } from "../../models/agent-setting";
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
 import {
-	findPendingToolUses,
 	type PendingToolUse,
 	pendingToolUsesToProtocolFormat,
 } from "../../models/conversation/conversation-parser";
@@ -15,6 +14,7 @@ import { Variant } from "../../models/variant";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
 import { WorkspaceScriptProcess } from "../../models/workspace-script-process";
+import { collectInterruptedTools } from "../collect-interrupted-tools";
 import { usecase } from "../runner";
 
 export const startExecution = (
@@ -77,7 +77,6 @@ export const startExecution = (
 			// These need synthetic error results to prevent Claude from getting stuck
 			let interruptedTools: PendingToolUse[] = [];
 			if (resumeInfo && activeWorkspace) {
-				// Find the latest session in this workspace
 				const sessionsPage = await ctx.repos.session.list(
 					Session.ByWorkspaceId(activeWorkspace.id),
 					{ limit: 1, sort: { keys: ["createdAt", "id"], order: "desc" } },
@@ -85,22 +84,14 @@ export const startExecution = (
 				const latestSession = sessionsPage.items[0];
 
 				if (latestSession) {
-					// Find the latest coding agent process for this session
 					const processesPage = await ctx.repos.codingAgentProcess.list(
 						CodingAgentProcess.BySessionId(latestSession.id),
 						{ limit: 1, sort: CodingAgentProcess.defaultSort },
 					);
-					const latestProcess = processesPage.items[0];
-
-					if (latestProcess) {
-						// Get logs and find interrupted Task tools
-						const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
-							latestProcess.id,
-						);
-						if (logs?.logs) {
-							interruptedTools = findPendingToolUses(logs.logs);
-						}
-					}
+					interruptedTools = await collectInterruptedTools(
+						ctx,
+						processesPage.items[0],
+					);
 				}
 			}
 

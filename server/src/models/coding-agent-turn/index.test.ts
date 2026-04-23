@@ -57,6 +57,115 @@ describe("CodingAgentTurn.create()", () => {
 });
 
 // ============================================
+// CodingAgentTurn.withAgentSessionId()
+// ============================================
+
+describe("CodingAgentTurn.withAgentSessionId()", () => {
+	test("updates agentSessionId", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		const updated = CodingAgentTurn.withAgentSessionId(turn, "session-123");
+		expect(updated.agentSessionId).toBe("session-123");
+	});
+
+	test("preserves other fields", () => {
+		const turn = CodingAgentTurn.create({
+			executionProcessId: "ep-1",
+			prompt: "test prompt",
+		});
+		const updated = CodingAgentTurn.withAgentSessionId(turn, "session-123");
+		expect(updated.id).toBe(turn.id);
+		expect(updated.executionProcessId).toBe("ep-1");
+		expect(updated.prompt).toBe("test prompt");
+		expect(updated.summary).toBeNull();
+	});
+
+	test("updates updatedAt", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		const updated = CodingAgentTurn.withAgentSessionId(turn, "session-123");
+		expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(
+			turn.updatedAt.getTime(),
+		);
+	});
+
+	test("does not mutate original", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		CodingAgentTurn.withAgentSessionId(turn, "session-123");
+		expect(turn.agentSessionId).toBeNull();
+	});
+});
+
+// ============================================
+// CodingAgentTurn.withAgentMessageId()
+// ============================================
+
+describe("CodingAgentTurn.withAgentMessageId()", () => {
+	test("updates agentMessageId", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		const updated = CodingAgentTurn.withAgentMessageId(turn, "msg-456");
+		expect(updated.agentMessageId).toBe("msg-456");
+	});
+
+	test("preserves other fields", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		const updated = CodingAgentTurn.withAgentMessageId(turn, "msg-456");
+		expect(updated.id).toBe(turn.id);
+		expect(updated.executionProcessId).toBe("ep-1");
+		expect(updated.agentSessionId).toBeNull();
+	});
+
+	test("updates updatedAt", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		const updated = CodingAgentTurn.withAgentMessageId(turn, "msg-456");
+		expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(
+			turn.updatedAt.getTime(),
+		);
+	});
+
+	test("does not mutate original", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		CodingAgentTurn.withAgentMessageId(turn, "msg-456");
+		expect(turn.agentMessageId).toBeNull();
+	});
+});
+
+// ============================================
+// CodingAgentTurn.withSummary()
+// ============================================
+
+describe("CodingAgentTurn.withSummary()", () => {
+	test("updates summary", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		const updated = CodingAgentTurn.withSummary(turn, "Task completed");
+		expect(updated.summary).toBe("Task completed");
+	});
+
+	test("preserves other fields", () => {
+		const turn = CodingAgentTurn.create({
+			executionProcessId: "ep-1",
+			prompt: "fix bug",
+		});
+		const updated = CodingAgentTurn.withSummary(turn, "Fixed the bug");
+		expect(updated.id).toBe(turn.id);
+		expect(updated.executionProcessId).toBe("ep-1");
+		expect(updated.prompt).toBe("fix bug");
+	});
+
+	test("updates updatedAt", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		const updated = CodingAgentTurn.withSummary(turn, "Task completed");
+		expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(
+			turn.updatedAt.getTime(),
+		);
+	});
+
+	test("does not mutate original", () => {
+		const turn = CodingAgentTurn.create({ executionProcessId: "ep-1" });
+		CodingAgentTurn.withSummary(turn, "Task completed");
+		expect(turn.summary).toBeNull();
+	});
+});
+
+// ============================================
 // CodingAgentTurn Specs
 // ============================================
 

@@ -16,19 +16,17 @@ import { publicProcedure, router } from "../init";
 // Project name is used as a path segment under ~/.auto-kanban/worktrees/<workspaceId>/<projectName>/.
 // WorktreeRepository.getWorktreePath is the backstop, but we reject the obvious
 // traversal vectors here so bad names never land in the DB in the first place.
-export const projectNameSchema = z
-	.string()
-	.min(1)
-	.max(100)
-	.refine((s) => !/[/\\\0]/.test(s), {
-		message: "Project name cannot contain path separators or null bytes",
-	})
-	.refine((s) => !s.startsWith("."), {
-		message: "Project name cannot start with '.'",
-	})
-	.refine((s) => s === s.trim(), {
-		message: "Project name cannot have leading or trailing whitespace",
-	});
+// Validation rules are defined in Model layer (Project.validateName) and
+// delegated here via Zod superRefine.
+export const projectNameSchema = z.string().superRefine((val, ctx) => {
+	const error = Project.validateName(val);
+	if (error) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: error.message,
+		});
+	}
+});
 
 export const projectRouter = router({
 	create: publicProcedure

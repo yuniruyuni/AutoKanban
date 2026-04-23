@@ -70,6 +70,15 @@ export namespace WorkspaceRepo {
 		};
 	}
 
+	// Immutable update helpers
+	export function withPrUrl(
+		repo: WorkspaceRepo,
+		prUrl: string,
+		now: Date,
+	): WorkspaceRepo {
+		return { ...repo, prUrl, updatedAt: now };
+	}
+
 	// Cursor
 	export function cursor(
 		workspaceRepo: WorkspaceRepo,

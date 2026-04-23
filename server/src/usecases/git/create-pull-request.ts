@@ -114,11 +114,11 @@ export const createPullRequest = (
 				success: true,
 				branch,
 				prUrl: url,
-				workspaceRepoToUpdate: {
-					...workspaceRepoToUpdate,
-					prUrl: url,
-					updatedAt: ctx.now,
-				},
+				workspaceRepoToUpdate: WorkspaceRepo.withPrUrl(
+					workspaceRepoToUpdate,
+					url,
+					ctx.now,
+				),
 			};
 		},
 

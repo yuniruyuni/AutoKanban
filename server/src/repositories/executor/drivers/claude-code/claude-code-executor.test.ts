@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { ClaudeCodeProcess } from "./claude-code-executor";
-import { ClaudeCodeExecutor } from "./claude-code-executor";
+import { buildProtocolArgs, ClaudeCodeExecutor } from "./claude-code-executor";
 
 // ============================================
 // sendPermissionResponse format tests
@@ -87,14 +87,8 @@ describe("initialize", () => {
 // ============================================
 
 describe("buildProtocolArgs", () => {
-	const executor = new ClaudeCodeExecutor();
-	// Access private method for testing
-	const buildArgs = (options: Record<string, unknown>) =>
-		// biome-ignore lint/suspicious/noExplicitAny: testing private method
-		(executor as any).buildProtocolArgs(options) as string[];
-
 	test("does NOT include --disallowedTools=AskUserQuestion", () => {
-		const args = buildArgs({ workingDir: "/tmp" });
+		const args = buildProtocolArgs({ workingDir: "/tmp" });
 		expect(args).not.toContain("--disallowedTools=AskUserQuestion");
 	});
 });

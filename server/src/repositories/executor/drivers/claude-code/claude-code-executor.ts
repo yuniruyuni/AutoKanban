@@ -39,6 +39,14 @@ export interface ClaudeCodeResult {
 	killed: boolean;
 }
 
+/**
+ * Type-safe cast from DriverProcess to ClaudeCodeProcess.
+ * Replaces `process as unknown as ClaudeCodeProcess` throughout the driver.
+ */
+export function asClaudeCodeProcess(process: unknown): ClaudeCodeProcess {
+	return process as ClaudeCodeProcess;
+}
+
 // Hook callback ID for auto-approving non-ExitPlanMode tools
 export const AUTO_APPROVE_CALLBACK_ID = "AUTO_APPROVE_CALLBACK_ID";
 
@@ -112,7 +120,7 @@ export class ClaudeCodeExecutor {
 		options: ClaudeCodeProtocolOptions,
 		command?: string,
 	): ClaudeCodeProcess {
-		const args = this.buildProtocolArgs(options);
+		const args = buildProtocolArgs(options);
 		return this.spawnProcess(options.workingDir, args, command);
 	}
 
@@ -483,35 +491,37 @@ export class ClaudeCodeExecutor {
 
 		return args;
 	}
+}
 
-	/**
-	 * Builds command line arguments for protocol mode.
-	 * Prompt is NOT included - it's sent via stdin.
-	 */
-	private buildProtocolArgs(options: ClaudeCodeProtocolOptions): string[] {
-		const args: string[] = [
-			"-p", // Protocol mode
-			"--output-format=stream-json",
-			"--input-format=stream-json",
-			"--verbose",
-			// CLIフラグでpermission制御を有効化
-			"--permission-prompt-tool=stdio",
-			`--permission-mode=${options.permissionMode ?? "default"}`,
-		];
+/**
+ * Builds command line arguments for protocol mode.
+ * Prompt is NOT included - it's sent via stdin.
+ */
+export function buildProtocolArgs(
+	options: ClaudeCodeProtocolOptions,
+): string[] {
+	const args: string[] = [
+		"-p", // Protocol mode
+		"--output-format=stream-json",
+		"--input-format=stream-json",
+		"--verbose",
+		// CLIフラグでpermission制御を有効化
+		"--permission-prompt-tool=stdio",
+		`--permission-mode=${options.permissionMode ?? "default"}`,
+	];
 
-		if (options.model) {
-			args.push("--model", options.model);
-		}
-
-		// Resume options for continuing a previous session
-		if (options.resumeSessionId) {
-			args.push("--resume", options.resumeSessionId);
-
-			if (options.resumeMessageId) {
-				args.push("--resume-session-at", options.resumeMessageId);
-			}
-		}
-
-		return args;
+	if (options.model) {
+		args.push("--model", options.model);
 	}
+
+	// Resume options for continuing a previous session
+	if (options.resumeSessionId) {
+		args.push("--resume", options.resumeSessionId);
+
+		if (options.resumeMessageId) {
+			args.push("--resume-session-at", options.resumeMessageId);
+		}
+	}
+
+	return args;
 }

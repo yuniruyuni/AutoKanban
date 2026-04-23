@@ -1,5 +1,6 @@
 // @specre 01KPNSJ3QDCVVJXS9QES8YWY99
 import type { ILogger } from "../infra/logger/types";
+import type { Project } from "../models/project";
 import type { Repos } from "../repositories";
 import type { ServiceRepos } from "../repositories/common";
 
@@ -41,5 +42,38 @@ export async function runCleanupIfConfigured(
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		logger.warn(`Cleanup script failed: ${message}`);
+	}
+}
+
+/**
+ * Clean up and remove worktrees for a list of workspace IDs.
+ * Runs cleanup script before removal, then removes worktrees.
+ * Best-effort: individual failures are logged but do not block others.
+ *
+ * Shared by delete-task, delete-project, and update-task post steps.
+ */
+export async function cleanupAndRemoveWorktrees(
+	repos: ServiceRepos<Repos>,
+	logger: ILogger,
+	workspaceIds: string[],
+	project: Project,
+	opts?: { deleteBranch?: boolean },
+): Promise<void> {
+	for (const wsId of workspaceIds) {
+		try {
+			const worktreePath = repos.worktree.getWorktreePath(wsId, project.name);
+			const exists = await repos.worktree.worktreeExists(wsId, project.name);
+			if (exists) {
+				await runCleanupIfConfigured(repos, logger, worktreePath);
+			}
+			await repos.worktree.removeAllWorktrees(
+				wsId,
+				[project],
+				true,
+				opts?.deleteBranch,
+			);
+		} catch (error) {
+			logger.error(`Failed to remove worktrees for workspace ${wsId}:`, error);
+		}
 	}
 }

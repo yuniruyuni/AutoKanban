@@ -60,6 +60,71 @@ describe("Project.create()", () => {
 });
 
 // ============================================
+// Project.validateName()
+// ============================================
+
+describe("Project.validateName()", () => {
+	test("returns null for valid name", () => {
+		expect(Project.validateName("My Project")).toBeNull();
+	});
+
+	test("rejects empty string", () => {
+		const error = Project.validateName("");
+		expect(error).not.toBeNull();
+		expect(error?.field).toBe("name");
+	});
+
+	test("rejects name longer than 100 characters", () => {
+		const error = Project.validateName("a".repeat(101));
+		expect(error).not.toBeNull();
+		expect(error?.message).toContain("1-100");
+	});
+
+	test("accepts name with exactly 100 characters", () => {
+		expect(Project.validateName("a".repeat(100))).toBeNull();
+	});
+
+	test("rejects name with forward slash", () => {
+		const error = Project.validateName("foo/bar");
+		expect(error).not.toBeNull();
+		expect(error?.message).toContain("path separators");
+	});
+
+	test("rejects name with backslash", () => {
+		const error = Project.validateName("foo\\bar");
+		expect(error).not.toBeNull();
+		expect(error?.message).toContain("path separators");
+	});
+
+	test("rejects name with null byte", () => {
+		const error = Project.validateName("foo\0bar");
+		expect(error).not.toBeNull();
+	});
+
+	test("rejects name starting with dot", () => {
+		const error = Project.validateName(".hidden");
+		expect(error).not.toBeNull();
+		expect(error?.message).toContain("'.'");
+	});
+
+	test("rejects name with leading whitespace", () => {
+		const error = Project.validateName(" name");
+		expect(error).not.toBeNull();
+		expect(error?.message).toContain("whitespace");
+	});
+
+	test("rejects name with trailing whitespace", () => {
+		const error = Project.validateName("name ");
+		expect(error).not.toBeNull();
+		expect(error?.message).toContain("whitespace");
+	});
+
+	test("accepts name with internal spaces", () => {
+		expect(Project.validateName("my project name")).toBeNull();
+	});
+});
+
+// ============================================
 // Project.cursor()
 // ============================================
 

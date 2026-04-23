@@ -6,7 +6,6 @@ import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { CodingAgentTurn } from "../../models/coding-agent-turn";
 import { fail } from "../../models/common";
 import {
-	findPendingToolUses,
 	type PendingToolUse,
 	parseLogsToConversation,
 	pendingToolUsesToProtocolFormat,
@@ -16,6 +15,7 @@ import { Session } from "../../models/session";
 import { Variant } from "../../models/variant";
 import { Workspace } from "../../models/workspace";
 import { WorkspaceRepo } from "../../models/workspace-repo";
+import { collectInterruptedTools } from "../collect-interrupted-tools";
 import { usecase } from "../runner";
 
 // ============================================
@@ -93,13 +93,8 @@ export const queueMessage = (
 				}
 			}
 
-			if (resumeInfo && latestProcess && latestProcess.status !== "running") {
-				const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
-					latestProcess.id,
-				);
-				if (logs?.logs) {
-					interruptedTools = findPendingToolUses(logs.logs);
-				}
+			if (resumeInfo) {
+				interruptedTools = await collectInterruptedTools(ctx, latestProcess);
 			}
 
 			return {

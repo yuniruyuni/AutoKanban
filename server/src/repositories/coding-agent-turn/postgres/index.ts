@@ -10,9 +10,6 @@ import { findLatestResumeInfo } from "./findLatestResumeInfo";
 import { findLatestResumeInfoByWorkspaceId } from "./findLatestResumeInfoByWorkspaceId";
 import { get } from "./get";
 import { list } from "./list";
-import { updateAgentMessageId } from "./updateAgentMessageId";
-import { updateAgentSessionId } from "./updateAgentSessionId";
-import { updateSummary } from "./updateSummary";
 import { upsert } from "./upsert";
 
 export class CodingAgentTurnRepository implements ICodingAgentTurnRepository {
@@ -37,30 +34,6 @@ export class CodingAgentTurnRepository implements ICodingAgentTurnRepository {
 
 	async delete(ctx: DbWriteCtx, spec: CodingAgentTurn.Spec): Promise<number> {
 		return del(ctx.db, spec);
-	}
-
-	async updateAgentSessionId(
-		ctx: DbWriteCtx,
-		executionProcessId: string,
-		agentSessionId: string,
-	): Promise<void> {
-		await updateAgentSessionId(ctx.db, executionProcessId, agentSessionId);
-	}
-
-	async updateAgentMessageId(
-		ctx: DbWriteCtx,
-		executionProcessId: string,
-		agentMessageId: string,
-	): Promise<void> {
-		await updateAgentMessageId(ctx.db, executionProcessId, agentMessageId);
-	}
-
-	async updateSummary(
-		ctx: DbWriteCtx,
-		executionProcessId: string,
-		summary: string,
-	): Promise<void> {
-		await updateSummary(ctx.db, executionProcessId, summary);
 	}
 
 	async findLatestResumeInfo(
