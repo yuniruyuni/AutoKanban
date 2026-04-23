@@ -19,6 +19,32 @@ interface GitCommandResult {
  */
 export class GitRepository implements GitRepositoryDef {
 	/**
+	 * Resolve a base branch name to the freshest available ref.
+	 *
+	 * Prefers `<remote>/<branch>` (e.g. `origin/main`), which after a `fetch`
+	 * points to the canonical tip of the base branch. Falls back to the local
+	 * branch name when the remote-tracking ref does not exist (local-only
+	 * repositories). This ensures rebase / diff / ahead-behind all reference
+	 * the latest known state of the base branch rather than a possibly stale
+	 * local ref that `git fetch origin` never updates.
+	 */
+	private async resolveBaseRef(
+		worktreePath: string,
+		branch: string,
+		remote = "origin",
+	): Promise<string> {
+		const remoteRef = `${remote}/${branch}`;
+		const result = await this.exec(
+			worktreePath,
+			"rev-parse",
+			"--verify",
+			"--quiet",
+			`refs/remotes/${remoteRef}`,
+		);
+		return result.success ? remoteRef : branch;
+	}
+
+	/**
 	 * Executes a git command in the specified working directory.
 	 */
 	private async exec(
@@ -142,12 +168,16 @@ export class GitRepository implements GitRepositoryDef {
 		branch: string,
 		targetBranch: string,
 	): Promise<{ ahead: number; behind: number }> {
+		const resolvedTarget = await this.resolveBaseRef(
+			worktreePath,
+			targetBranch,
+		);
 		const result = await this.exec(
 			worktreePath,
 			"rev-list",
 			"--left-right",
 			"--count",
-			`${targetBranch}...${branch}`,
+			`${resolvedTarget}...${branch}`,
 		);
 
 		if (!result.success) {
@@ -194,12 +224,19 @@ export class GitRepository implements GitRepositoryDef {
 		newBase: string,
 		oldBase?: string,
 	): Promise<string> {
+		// Resolve to origin/<base> when available so rebase targets the freshly
+		// fetched tip rather than the possibly stale local branch ref.
+		const resolvedNewBase = await this.resolveBaseRef(worktreePath, newBase);
+		const resolvedOldBase = oldBase
+			? await this.resolveBaseRef(worktreePath, oldBase)
+			: undefined;
+
 		// Auto-stash uncommitted changes to allow rebase on dirty worktree
 		const args = ["rebase", "--autostash"];
-		if (oldBase) {
-			args.push("--onto", newBase, oldBase);
+		if (resolvedOldBase) {
+			args.push("--onto", resolvedNewBase, resolvedOldBase);
 		} else {
-			args.push(newBase);
+			args.push(resolvedNewBase);
 		}
 
 		const result = await this.exec(worktreePath, ...args);
@@ -347,12 +384,17 @@ export class GitRepository implements GitRepositoryDef {
 		worktreePath: string,
 		baseCommit: string,
 	): Promise<GitDiff[]> {
+		// Three-dot range scopes the diff to changes unique to HEAD since the
+		// merge-base with the resolved base ref, so commits that landed on the
+		// base branch since the fork point don't appear as inverse additions.
+		const range = `${await this.resolveBaseRef(worktreePath, baseCommit)}...HEAD`;
+
 		const result = await this.exec(
 			worktreePath,
 			"diff",
 			"--numstat",
 			"--name-status",
-			baseCommit,
+			range,
 		);
 
 		if (!result.success) {
@@ -363,14 +405,14 @@ export class GitRepository implements GitRepositoryDef {
 			worktreePath,
 			"diff",
 			"--numstat",
-			baseCommit,
+			range,
 		);
 
 		const statusResult = await this.exec(
 			worktreePath,
 			"diff",
 			"--name-status",
-			baseCommit,
+			range,
 		);
 
 		const numstatLines = numstatResult.stdout.split("\n").filter(Boolean);
@@ -430,7 +472,8 @@ export class GitRepository implements GitRepositoryDef {
 		worktreePath: string,
 		baseCommit: string,
 	): Promise<string> {
-		const result = await this.exec(worktreePath, "diff", baseCommit);
+		const range = `${await this.resolveBaseRef(worktreePath, baseCommit)}...HEAD`;
+		const result = await this.exec(worktreePath, "diff", range);
 		return result.stdout;
 	}
 
@@ -440,13 +483,8 @@ export class GitRepository implements GitRepositoryDef {
 		baseCommit: string,
 		filePath: string,
 	): Promise<string> {
-		const result = await this.exec(
-			worktreePath,
-			"diff",
-			baseCommit,
-			"--",
-			filePath,
-		);
+		const range = `${await this.resolveBaseRef(worktreePath, baseCommit)}...HEAD`;
+		const result = await this.exec(worktreePath, "diff", range, "--", filePath);
 		return result.stdout;
 	}
 
