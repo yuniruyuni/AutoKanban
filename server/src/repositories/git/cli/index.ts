@@ -45,6 +45,28 @@ export class GitRepository implements GitRepositoryDef {
 	}
 
 	/**
+	 * Compute the fork-point commit to diff the worktree against.
+	 *
+	 * Returns `merge-base(<resolvedBase>, HEAD)` when available. Callers pass
+	 * this single commit SHA (not a range) to `git diff` so the diff compares
+	 * fork-point → WORKING TREE, which includes the typical agent-in-progress
+	 * state (uncommitted edits). Using a range like `<base>...HEAD` instead
+	 * would diff fork-point → HEAD only and silently drop uncommitted changes.
+	 *
+	 * Falls back to the resolved ref itself if merge-base fails — matches the
+	 * pre-merge-base behaviour and stays non-empty for repositories without a
+	 * common ancestor.
+	 */
+	private async resolveDiffBase(
+		worktreePath: string,
+		branch: string,
+	): Promise<string> {
+		const resolved = await this.resolveBaseRef(worktreePath, branch);
+		const mb = await this.exec(worktreePath, "merge-base", resolved, "HEAD");
+		return mb.success && mb.stdout ? mb.stdout : resolved;
+	}
+
+	/**
 	 * Executes a git command in the specified working directory.
 	 */
 	private async exec(
@@ -384,17 +406,18 @@ export class GitRepository implements GitRepositoryDef {
 		worktreePath: string,
 		baseCommit: string,
 	): Promise<GitDiff[]> {
-		// Three-dot range scopes the diff to changes unique to HEAD since the
-		// merge-base with the resolved base ref, so commits that landed on the
-		// base branch since the fork point don't appear as inverse additions.
-		const range = `${await this.resolveBaseRef(worktreePath, baseCommit)}...HEAD`;
+		// Single-arg `git diff <mergeBase>` compares fork-point → WORKING TREE,
+		// which catches both committed changes unique to the task and any
+		// uncommitted edits the agent has in flight. Using `<base>...HEAD` (a
+		// range) would scope to committed-only and hide work-in-progress.
+		const base = await this.resolveDiffBase(worktreePath, baseCommit);
 
 		const result = await this.exec(
 			worktreePath,
 			"diff",
 			"--numstat",
 			"--name-status",
-			range,
+			base,
 		);
 
 		if (!result.success) {
@@ -405,14 +428,14 @@ export class GitRepository implements GitRepositoryDef {
 			worktreePath,
 			"diff",
 			"--numstat",
-			range,
+			base,
 		);
 
 		const statusResult = await this.exec(
 			worktreePath,
 			"diff",
 			"--name-status",
-			range,
+			base,
 		);
 
 		const numstatLines = numstatResult.stdout.split("\n").filter(Boolean);
@@ -472,8 +495,8 @@ export class GitRepository implements GitRepositoryDef {
 		worktreePath: string,
 		baseCommit: string,
 	): Promise<string> {
-		const range = `${await this.resolveBaseRef(worktreePath, baseCommit)}...HEAD`;
-		const result = await this.exec(worktreePath, "diff", range);
+		const base = await this.resolveDiffBase(worktreePath, baseCommit);
+		const result = await this.exec(worktreePath, "diff", base);
 		return result.stdout;
 	}
 
@@ -483,8 +506,8 @@ export class GitRepository implements GitRepositoryDef {
 		baseCommit: string,
 		filePath: string,
 	): Promise<string> {
-		const range = `${await this.resolveBaseRef(worktreePath, baseCommit)}...HEAD`;
-		const result = await this.exec(worktreePath, "diff", range, "--", filePath);
+		const base = await this.resolveDiffBase(worktreePath, baseCommit);
+		const result = await this.exec(worktreePath, "diff", base, "--", filePath);
 		return result.stdout;
 	}
 
