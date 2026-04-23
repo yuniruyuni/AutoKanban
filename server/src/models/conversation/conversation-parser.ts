@@ -271,16 +271,9 @@ function processClaudeJson(
 			return null;
 
 		case "result": {
-			// Extract token usage from result messages
 			const resultMsg =
 				json as import("../../models/claude-protocol").ClaudeResultMessage;
-			const usage = (resultMsg as unknown as Record<string, unknown>).usage as
-				| {
-						input_tokens?: number;
-						output_tokens?: number;
-						context_window?: number;
-				  }
-				| undefined;
+			const usage = resultMsg.usage;
 
 			if (usage && usage.input_tokens !== undefined) {
 				const inputTokens = usage.input_tokens ?? 0;

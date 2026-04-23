@@ -1,4 +1,3 @@
-import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { closeDatabase } from "../infra/db";
@@ -9,7 +8,8 @@ import { sseRoutes } from "./sse/routers";
 import { sseServer } from "./sse/stream";
 import { registerHealthRoute } from "./system/routers/health";
 import { startup } from "./system/routers/startup";
-import { appRouter } from "./trpc/routers";
+import { trpcServer } from "./trpc/adapter";
+import { type AppRouter, appRouter } from "./trpc/routers";
 
 export type { AppRouter } from "./trpc/routers";
 
@@ -42,9 +42,9 @@ export async function startServer(params: StartServerParams) {
 	// tRPC protocol
 	app.use(
 		"/trpc/*",
-		trpcServer({
+		trpcServer<AppRouter>({
 			router: appRouter,
-			createContext: () => ctx as unknown as Record<string, unknown>,
+			createContext: () => ctx,
 		}),
 	);
 

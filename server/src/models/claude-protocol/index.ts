@@ -99,7 +99,11 @@ export interface ClaudeResultMessage {
 	result?: string;
 	stop_reason?: string | null;
 	total_cost_usd?: number;
-	usage?: Record<string, unknown>;
+	usage?: {
+		input_tokens?: number;
+		output_tokens?: number;
+		context_window?: number;
+	};
 	session_id?: string;
 	uuid?: string;
 }
