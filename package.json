@@ -14,7 +14,7 @@
 		"build": "bun run --filter '*' build",
 		"check": "bun run --parallel 'check:*'",
 		"check:lint": "bun run --filter '*' check:lint",
-		"check:test": "bun run --filter '*' check:test",
+		"check:test": "bun run --filter '*' --sequential check:test",
 		"check:type": "bun run --filter '*' check:type",
 		"check:arch": "bun run --filter '*' check:arch",
 		"check:specre": "if command -v specre >/dev/null 2>&1; then scripts/specre-quiet.sh health-check --json; else echo '(specre CLI not installed; install with `cargo install specre` to enable spec drift detection)'; fi",
