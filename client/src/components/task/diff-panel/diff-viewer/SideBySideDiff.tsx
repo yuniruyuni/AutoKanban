@@ -17,7 +17,7 @@ export function SideBySideDiff({
 	const pairs = pairSideBySide(lines);
 
 	return (
-		<div className="font-mono text-xs">
+		<div className="font-mono text-xs whitespace-pre-wrap">
 			{pairs.map((pair, index) => {
 				if (pair.left?.type === "hunk") {
 					return (

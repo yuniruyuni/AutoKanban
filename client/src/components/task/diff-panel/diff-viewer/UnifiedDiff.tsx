@@ -27,7 +27,7 @@ export function UnifiedDiff({
 	});
 
 	return (
-		<div className="font-mono text-xs">
+		<div className="font-mono text-xs whitespace-pre-wrap">
 			{contentLines.map((line, index) => {
 				// Handle hunk headers
 				if (line.startsWith("@@")) {
