@@ -23,6 +23,15 @@ export function useGitMutations() {
 		},
 	});
 
+	const resolveRebaseConflict = trpc.git.resolveRebaseConflict.useMutation({
+		onSuccess: () => {
+			// The agent's turn will land in execution logs; refresh so the UI
+			// picks it up immediately alongside branch status.
+			utils.git.getBranchStatus.invalidate();
+			utils.execution.getLatest.invalidate();
+		},
+	});
+
 	const merge = trpc.git.merge.useMutation({
 		onSuccess: () => {
 			utils.git.getBranchStatus.invalidate();
@@ -68,6 +77,11 @@ export function useGitMutations() {
 			return continueRebase.mutateAsync({ workspaceId, projectId });
 		},
 		isContinuingRebase: continueRebase.isPending,
+
+		resolveRebaseConflict: async (workspaceId: string, projectId: string) => {
+			return resolveRebaseConflict.mutateAsync({ workspaceId, projectId });
+		},
+		isResolvingRebaseConflict: resolveRebaseConflict.isPending,
 
 		merge: async (
 			workspaceId: string,

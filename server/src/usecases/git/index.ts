@@ -11,3 +11,4 @@ export * from "./list-branches";
 export * from "./merge-branch";
 export * from "./push-branch";
 export * from "./rebase-branch";
+export * from "./resolve-rebase-conflict";

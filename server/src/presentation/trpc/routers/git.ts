@@ -11,6 +11,7 @@ import { listBranches } from "../../../usecases/git/list-branches";
 import { mergeBranch } from "../../../usecases/git/merge-branch";
 import { pushBranch } from "../../../usecases/git/push-branch";
 import { rebaseBranch } from "../../../usecases/git/rebase-branch";
+import { resolveRebaseConflict } from "../../../usecases/git/resolve-rebase-conflict";
 import { handleResult } from "../handle-result";
 import { publicProcedure, router } from "../init";
 
@@ -117,6 +118,24 @@ export const gitRouter = router({
 		.mutation(async ({ ctx, input }) =>
 			handleResult(
 				await continueRebase(input.workspaceId, input.projectId).run(ctx),
+			),
+		),
+
+	// Spawn / message the Coding Agent to resolve an in-progress rebase
+	// conflict. Typically chained by the client after `rebase` returns
+	// `hasConflicts: true`.
+	resolveRebaseConflict: publicProcedure
+		.input(
+			z.object({
+				workspaceId: z.string().uuid(),
+				projectId: z.string().uuid(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) =>
+			handleResult(
+				await resolveRebaseConflict(input.workspaceId, input.projectId).run(
+					ctx,
+				),
 			),
 		),
 

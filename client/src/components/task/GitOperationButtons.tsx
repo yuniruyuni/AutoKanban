@@ -42,6 +42,7 @@ export function GitOperationButtons({
 		isAbortingRebase,
 		continueRebase,
 		isContinuingRebase,
+		resolveRebaseConflict,
 		merge,
 		isMerging,
 		finalizePrMerge,
@@ -133,6 +134,19 @@ export function GitOperationButtons({
 				result.conflictedFiles
 			) {
 				onConflict?.(result.conflictedFiles);
+				// Hand the conflict off to the Coding Agent. The agent runs
+				// autonomously in the worktree, resolves markers, and drives
+				// `git rebase --continue` to completion. If it cannot resolve
+				// some hunk, it stops with a user-visible message in the chat.
+				try {
+					await resolveRebaseConflict(workspaceId, projectId);
+				} catch (agentErr) {
+					setError(
+						agentErr instanceof Error
+							? `Agent conflict resolution failed: ${agentErr.message}`
+							: "Agent conflict resolution failed",
+					);
+				}
 			}
 			refetch();
 		} catch (err) {
