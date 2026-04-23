@@ -1,8 +1,8 @@
 import { join } from "node:path";
-import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { startup } from "../../server/src/presentation/system/routers/startup";
+import { trpcServer } from "../../server/src/presentation/trpc/adapter";
 import { appRouter } from "../../server/src/presentation/trpc/routers";
 import type { Context } from "../../server/src/usecases/context";
 import { createTestDB } from "../../server/test/helpers/db";
@@ -23,17 +23,18 @@ export async function setupTestServer(): Promise<{
 		dataDir: join(import.meta.dir, "../.test-pg-data"),
 	});
 	const logger = createMockLogger();
-	ctx = await createE2EContext(db, logger);
+	const currentCtx = await createE2EContext(db, logger);
+	ctx = currentCtx;
 
-	await startup(ctx);
+	await startup(currentCtx);
 
 	const app = new Hono();
 	app.use("/*", cors());
 	app.use(
 		"/trpc/*",
-		trpcServer({
+		trpcServer<typeof appRouter>({
 			router: appRouter,
-			createContext: () => ctx as unknown as Record<string, unknown>,
+			createContext: () => currentCtx,
 		}),
 	);
 
@@ -46,7 +47,7 @@ export async function setupTestServer(): Promise<{
 
 	const port = server.port;
 	if (port === undefined) throw new Error("Server port not assigned");
-	return { port, ctx };
+	return { port, ctx: currentCtx };
 }
 
 export async function resetTestData(): Promise<void> {
