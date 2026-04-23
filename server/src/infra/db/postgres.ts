@@ -55,7 +55,7 @@ export class EmbeddedPostgresManager {
 	private password: string;
 	private database: string;
 	private dataDir: string;
-	private lastLog = "";
+	private recentLogs: string[] = [];
 	private requestedPort: number | undefined;
 
 	constructor(options?: {
@@ -68,6 +68,10 @@ export class EmbeddedPostgresManager {
 		this.database = DEFAULT_DATABASE;
 		this.dataDir =
 			options?.dataDir ?? join(homedir(), ".auto-kanban", "postgres");
+	}
+
+	private dumpLogs(): string {
+		return this.recentLogs.join("").trim() || "(no PG log output)";
 	}
 
 	async start(): Promise<void> {
@@ -92,7 +96,9 @@ export class EmbeddedPostgresManager {
 			password: this.password,
 			persistent: true,
 			onLog: (msg) => {
-				this.lastLog = msg;
+				this.recentLogs.push(msg);
+				// Bound memory: keep only the last ~50 log chunks.
+				if (this.recentLogs.length > 50) this.recentLogs.shift();
 			},
 			onError: () => {},
 		});
@@ -103,7 +109,7 @@ export class EmbeddedPostgresManager {
 				await this.pg.initialise();
 			} catch (err) {
 				throw new Error(
-					`Failed to initialise PostgreSQL: ${err ?? this.lastLog}`,
+					`Failed to initialise PostgreSQL: ${err ?? this.dumpLogs()}`,
 				);
 			}
 		}
@@ -112,7 +118,7 @@ export class EmbeddedPostgresManager {
 			await this.pg.start();
 		} catch (err) {
 			throw new Error(
-				`Failed to start PostgreSQL on port ${this.port}: ${err ?? this.lastLog}`,
+				`Failed to start PostgreSQL on port ${this.port}: ${err ?? this.dumpLogs()}`,
 			);
 		}
 
