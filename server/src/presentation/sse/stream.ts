@@ -1,4 +1,4 @@
-import type { Context as HonoContext, MiddlewareHandler } from "hono";
+import type { MiddlewareHandler } from "hono";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import type { Context } from "../../usecases/context";
@@ -7,6 +7,19 @@ import type { Usecase } from "../../usecases/runner";
 export type { SSEDeltaResult, SSEEvent } from "../../models/sse";
 
 import type { SSEDeltaResult } from "../../models/sse";
+
+type PathParamKey<Segment extends string> = Segment extends `:${infer Name}`
+	? Name
+	: never;
+
+type PathParamsUnion<Path extends string> =
+	Path extends `${infer Head}/${infer Tail}`
+		? PathParamKey<Head> | PathParamsUnion<Tail>
+		: PathParamKey<Path>;
+
+export type PathParams<Path extends string> = {
+	[K in PathParamsUnion<Path>]: string;
+};
 
 export interface SSEStreamDef<TParams, TState> {
 	snapshot: (params: TParams) => Usecase<SSEDeltaResult<TState>>;
@@ -19,19 +32,18 @@ export interface SSERoute {
 }
 
 /**
- * Define a single SSE route.
+ * Define a single SSE route. Path params are inferred from the literal path.
  */
-export function sseRoute<TParams, TState>(
-	path: string,
-	extractParams: (c: HonoContext) => TParams,
-	def: SSEStreamDef<TParams, TState>,
+export function sseRoute<TPath extends string, TState>(
+	path: TPath,
+	def: SSEStreamDef<PathParams<TPath>, TState>,
 ): SSERoute {
 	return {
 		mount(app, ctx) {
 			const interval = def.interval ?? 500;
 
 			app.get(path, async (c) => {
-				const params = extractParams(c);
+				const params = c.req.param() as unknown as PathParams<TPath>;
 
 				return streamSSE(c, async (stream) => {
 					const controller = new AbortController();

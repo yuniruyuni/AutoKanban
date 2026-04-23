@@ -1,17 +1,11 @@
 import {
 	getStructuredLogDelta,
 	getStructuredLogSnapshot,
-	type StructuredLogParams,
-	type StructuredLogState,
 } from "../../../usecases/execution/get-structured-log-delta";
 import { sseRoute } from "../stream";
 
-export const structuredLogStreamRoute = sseRoute<
-	StructuredLogParams,
-	StructuredLogState
->(
+export const structuredLogStreamRoute = sseRoute(
 	"/structured-logs/:executionProcessId",
-	(c) => ({ executionProcessId: c.req.param("executionProcessId")! }),
 	{
 		snapshot: (params) => getStructuredLogSnapshot(params),
 		delta: (params, state) => getStructuredLogDelta(params, state),
