@@ -65,6 +65,7 @@ export const startDevServer = (taskId: string) =>
 
 			return {
 				alreadyRunning: false as const,
+				task,
 				session,
 				workspace,
 				project,
@@ -108,6 +109,11 @@ export const startDevServer = (taskId: string) =>
 				command: config.server,
 				workingDir: worktreePath,
 				processType: "devserver",
+				context: {
+					taskId: data.task.id,
+					workspaceId: data.workspace.id,
+					projectId: data.project.id,
+				},
 			});
 			return { ...data, worktreePath, serverCommand: config.server };
 		},

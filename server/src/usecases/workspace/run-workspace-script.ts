@@ -62,7 +62,13 @@ export const runWorkspaceScript = (
 				);
 			}
 
-			return { session, workspace, projectName: project.name };
+			return {
+				task,
+				project,
+				session,
+				workspace,
+				projectName: project.name,
+			};
 		},
 
 		process: (_ctx, data) => {
@@ -106,6 +112,11 @@ export const runWorkspaceScript = (
 				command,
 				workingDir: worktreePath,
 				processType: "workspacescript",
+				context: {
+					taskId: data.task.id,
+					workspaceId: data.workspace.id,
+					projectId: data.project.id,
+				},
 			});
 			return { ...data, worktreePath, command };
 		},

@@ -1,16 +1,14 @@
 // @specre 01KPQ6W85T6VTJEQWKM3BNVPMC
 import * as fs from "node:fs/promises";
-import * as os from "node:os";
 import * as path from "node:path";
 import type { ILogger } from "../../../infra/logger/types";
+import { getAutoKanbanHome } from "../../../infra/paths";
 import type { Project } from "../../../models/project";
 import type { Workspace } from "../../../models/workspace";
 import type { WorktreeInfo } from "../../../models/worktree-info";
 import type { ServiceCtx } from "../../common";
 import { GitRepository } from "../../git/cli";
 import type { WorktreeRepository as WorktreeRepositoryDef } from "../repository";
-
-const WORKTREE_BASE_DIR = ".auto-kanban/worktrees";
 
 /**
  * Repository for managing git worktrees for workspaces.
@@ -26,7 +24,7 @@ export class WorktreeRepository implements WorktreeRepositoryDef {
 	constructor(logger: ILogger, baseDir?: string) {
 		this.logger = logger.child("WorktreeRepository");
 		this.gitRepository = new GitRepository();
-		this.baseDir = baseDir ?? path.join(os.homedir(), WORKTREE_BASE_DIR);
+		this.baseDir = baseDir ?? path.join(getAutoKanbanHome(), "worktrees");
 	}
 
 	getBaseDir(_ctx: ServiceCtx): string {

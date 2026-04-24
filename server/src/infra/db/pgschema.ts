@@ -1,11 +1,13 @@
 import { spawnSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
+import { getAutoKanbanHome } from "../paths";
 import { extractSchema } from "./schema-vfs";
 
 const PGSCHEMA_VERSION = "1.8.0";
-const BIN_DIR = join(homedir(), ".auto-kanban", "bin");
+function getBinDir(): string {
+	return join(getAutoKanbanHome(), "bin");
+}
 
 function getPlatformBinary(): string {
 	const platform = process.platform;
@@ -38,7 +40,7 @@ function getDownloadUrl(): string {
 }
 
 function getBinaryPath(): string {
-	return join(BIN_DIR, "pgschema");
+	return join(getBinDir(), "pgschema");
 }
 
 async function downloadBinary(): Promise<string> {
@@ -48,7 +50,7 @@ async function downloadBinary(): Promise<string> {
 		return binaryPath;
 	}
 
-	mkdirSync(BIN_DIR, { recursive: true });
+	mkdirSync(getBinDir(), { recursive: true });
 
 	const url = getDownloadUrl();
 	const response = await fetch(url);

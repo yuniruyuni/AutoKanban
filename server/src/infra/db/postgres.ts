@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
-import { homedir } from "node:os";
 import { join } from "node:path";
 import EmbeddedPostgres from "embedded-postgres";
 import type pg from "pg";
+import { getAutoKanbanHome } from "../paths";
 
 const DEFAULT_USER = "autokanban";
 const DEFAULT_PASSWORD = "autokanban";
@@ -66,8 +66,7 @@ export class EmbeddedPostgresManager {
 		this.user = DEFAULT_USER;
 		this.password = DEFAULT_PASSWORD;
 		this.database = DEFAULT_DATABASE;
-		this.dataDir =
-			options?.dataDir ?? join(homedir(), ".auto-kanban", "postgres");
+		this.dataDir = options?.dataDir ?? join(getAutoKanbanHome(), "postgres");
 	}
 
 	private dumpLogs(): string {

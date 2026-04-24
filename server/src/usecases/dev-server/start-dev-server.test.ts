@@ -31,7 +31,11 @@ function buildCtx(overrides?: {
 	const session = createTestSession({ workspaceId: workspace.id });
 
 	const order: string[] = [];
-	const startCalls: Array<{ processType: string; processId: string }> = [];
+	const startCalls: Array<{
+		processType: string;
+		processId: string;
+		context: { taskId: string; workspaceId: string; projectId: string };
+	}> = [];
 
 	const ctx = createMockContext({
 		task: { get: async () => task },
@@ -65,11 +69,16 @@ function buildCtx(overrides?: {
 			}),
 		},
 		devServer: {
-			start: (opts: { processId: string; processType: string }) => {
+			start: (opts: {
+				processId: string;
+				processType: string;
+				context: { taskId: string; workspaceId: string; projectId: string };
+			}) => {
 				order.push(`spawn:${opts.processId}`);
 				startCalls.push({
 					processType: opts.processType,
 					processId: opts.processId,
+					context: opts.context,
 				});
 			},
 		},
@@ -100,6 +109,20 @@ describe("startDevServer", () => {
 
 		expect(startCalls.length).toBe(1);
 		expect(startCalls[0].processType).toBe("devserver");
+	});
+
+	test("forwards task / workspace / project ids as spawn context", async () => {
+		const { ctx, task, startCalls } = buildCtx();
+
+		await startDevServer(task.id).run(ctx);
+
+		expect(startCalls.length).toBe(1);
+		const ctxArg = startCalls[0].context;
+		expect(ctxArg.taskId).toBe(task.id);
+		expect(typeof ctxArg.workspaceId).toBe("string");
+		expect(typeof ctxArg.projectId).toBe("string");
+		expect(ctxArg.workspaceId.length).toBeGreaterThan(0);
+		expect(ctxArg.projectId.length).toBeGreaterThan(0);
 	});
 
 	test("returns the existing process id when one is already running", async () => {

@@ -6,10 +6,10 @@ import {
 	unlinkSync,
 	writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { getAutoKanbanHome } from "../paths";
 
-const PORT_DIR = join(homedir(), ".auto-kanban", "ports");
+const PORT_DIR = join(getAutoKanbanHome(), "ports");
 
 // Worktree-unique filename: hash of process.cwd() so parallel worktrees running
 // `start:dev` don't clobber each other's port. The HTTP server, its MCP config

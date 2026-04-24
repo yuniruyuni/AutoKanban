@@ -6,7 +6,10 @@ import type {
 import type { ILogger } from "../../../infra/logger/types";
 import type { ServiceCtx } from "../../common";
 import type { LogCollector } from "../../log-collector";
-import type { DevServerRepository as DevServerRepositoryDef } from "../repository";
+import type {
+	AkSpawnContext,
+	DevServerRepository as DevServerRepositoryDef,
+} from "../repository";
 
 type AsyncScriptProcessType = Extract<
 	ProcessType,
@@ -51,19 +54,33 @@ export class DevServerRepository implements DevServerRepositoryDef {
 			command: string;
 			workingDir: string;
 			processType: AsyncScriptProcessType;
+			context: AkSpawnContext;
 		},
 	): void {
-		const { processId, sessionId, command, workingDir, processType } = options;
+		const { processId, sessionId, command, workingDir, processType, context } =
+			options;
 
 		this.logger.info(
 			`Starting ${processType}: ${command} in ${workingDir} (pid tbd)`,
 		);
 
+		// AK_* env vars let project scripts (`auto-kanban.json`) scope side
+		// effects per-process / per-workspace (e.g. a temp state dir keyed by
+		// $AK_PROCESS_ID) without AutoKanban knowing project specifics.
 		const process = Bun.spawn(["sh", "-c", command], {
 			cwd: workingDir,
 			stdout: "pipe",
 			stderr: "pipe",
-			env: { ...Bun.env, FORCE_COLOR: "1" },
+			env: {
+				...Bun.env,
+				FORCE_COLOR: "1",
+				AK_PROCESS_ID: processId,
+				AK_SESSION_ID: sessionId,
+				AK_TASK_ID: context.taskId,
+				AK_WORKSPACE_ID: context.workspaceId,
+				AK_PROJECT_ID: context.projectId,
+				AK_WORKTREE_PATH: workingDir,
+			},
 		});
 
 		if (!process.pid) {
