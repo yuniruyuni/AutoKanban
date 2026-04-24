@@ -48,11 +48,13 @@ export function detectPreviewUrl(line: string): PreviewUrlInfo | null {
 			if (isLocalhost && !parsed.port) {
 				// Fall through to host:port pattern
 			} else {
-				if (
-					parsed.hostname === "0.0.0.0" ||
-					parsed.hostname === "::" ||
-					parsed.hostname === "[::]"
-				) {
+				// Always rewrite localhost-like hostnames to whatever host the
+				// user is actually opening AutoKanban from. Previously only
+				// wildcard binds (0.0.0.0 / ::) were rewritten, which broke the
+				// Preview iframe whenever the user accessed AutoKanban from a
+				// different machine (e.g. WSL host / LAN): "localhost:PORT"
+				// then resolved to the viewer's own machine, not the server's.
+				if (isLocalhost) {
 					parsed.hostname = browserHostname;
 				}
 				return {
