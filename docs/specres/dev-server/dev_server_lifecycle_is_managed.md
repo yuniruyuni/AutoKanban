@@ -2,7 +2,7 @@
 id: "01KPNSJ3RRYH45YHGMS83W76H0"
 name: "dev_server_lifecycle_is_managed"
 status: "stable"
-last_verified: "2026-04-21"
+last_verified: "2026-04-24"
 ---
 
 ## 関連ファイル
@@ -21,6 +21,12 @@ last_verified: "2026-04-21"
 `auto-kanban.json` の `server` スクリプト（例: `bun run start:dev`）をタスクの worktree 上で起動、
 停止、状態取得する API 群。同一 session 内では 1 プロセスのみ running を許容し、
 重複起動要求は既存の `executionProcessId` を返して no-op。
+
+実装上は `DevServerRepository` という単一の async script runner が使われ、同じ runner が
+`processType: "devserver" | "workspacescript"` で振る舞いを切り替える（workspace script 側は
+`workspace_prepare_script_is_run` 参照）。runner は processType ごとに別の logs テーブル
+(`dev_server_process_logs` / `workspace_script_process_logs`) に append し、完了時の callback
+にも processType をそのまま乗せて `completeExecutionProcess` を正しい側へ分岐させる。
 
 ## 概念的背景: なぜタスク単位の Dev Server を作ったか
 
@@ -64,8 +70,10 @@ dev server 関連のテンプレートタスクを出さない、という連携
 1. ユーザーが `trpc.devServer.start({ taskId })`
 2. `read` で task / project / active workspace / latest session を取得、既存 running を確認
 3. 既存 running があればそれを返す（alreadyRunning）
-4. なければ `DevServerProcess.create`、post で `workspaceConfig.load` → `config.server` を `devServer.start` に渡す
-5. finish で DevServerProcess を upsert
+4. なければ `DevServerProcess.create` し、`write` ステップで **先に DB commit**
+   （`dev_server_process_logs` FK を先に満たすため）
+5. post で `workspaceConfig.load` → `config.server` を `devServer.start({ processType: "devserver", ... })`
+   に渡して非同期起動
 6. `{ executionProcessId }` を返却
 
 ### 停止

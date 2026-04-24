@@ -73,6 +73,17 @@ export const runWorkspaceScript = (
 			return { ...data, workspaceScriptProcess };
 		},
 
+		// The WorkspaceScriptProcess row must be committed BEFORE we spawn, so
+		// the first stdout chunk we append to workspace_script_process_logs
+		// finds its FK target already present. Previously this was in `finish`
+		// (post-spawn) and the race occasionally surfaced as an FK violation.
+		write: async (ctx, data) => {
+			await ctx.repos.workspaceScriptProcess.upsert(
+				data.workspaceScriptProcess,
+			);
+			return data;
+		},
+
 		post: async (ctx, data) => {
 			// External calls: resolve worktree path and load workspace config
 			const worktreePath = ctx.repos.worktree.getWorktreePath(
@@ -94,15 +105,9 @@ export const runWorkspaceScript = (
 				sessionId: data.session.id,
 				command,
 				workingDir: worktreePath,
+				processType: "workspacescript",
 			});
 			return { ...data, worktreePath, command };
-		},
-
-		finish: async (ctx, data) => {
-			await ctx.repos.workspaceScriptProcess.upsert(
-				data.workspaceScriptProcess,
-			);
-			return data;
 		},
 
 		result: (data) => ({

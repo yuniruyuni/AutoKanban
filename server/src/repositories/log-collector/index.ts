@@ -67,11 +67,23 @@ export class LogCollector {
 
 				store.append(svcCtx, entry);
 
-				// Also persist to database (with newline for proper parsing)
-				this.processLogsRepo.appendLogs(
-					processId,
-					`[${entry.timestamp.toISOString()}] [${source}] ${data}\n`,
-				);
+				// Also persist to database (with newline for proper parsing).
+				// Catch the rejection so a DB error (e.g. FK violation because the
+				// caller persists the process row asynchronously after spawn) does
+				// not surface as an unhandled promise rejection — that previously
+				// brought the whole server process down. Logs are best-effort; the
+				// in-memory store above already has them for SSE subscribers.
+				this.processLogsRepo
+					.appendLogs(
+						processId,
+						`[${entry.timestamp.toISOString()}] [${source}] ${data}\n`,
+					)
+					.catch((err) => {
+						this.logger.error(
+							`Failed to persist log chunk for process ${processId}:`,
+							err,
+						);
+					});
 			}
 		} catch (error) {
 			this.logger.error(`Error collecting ${source}:`, error);

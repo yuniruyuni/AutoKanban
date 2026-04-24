@@ -1,9 +1,17 @@
 import type { Subprocess } from "bun";
-import type { CallbackClient } from "../../../infra/callback/client";
+import type {
+	CallbackClient,
+	ProcessType,
+} from "../../../infra/callback/client";
 import type { ILogger } from "../../../infra/logger/types";
 import type { ServiceCtx } from "../../common";
 import type { LogCollector } from "../../log-collector";
 import type { DevServerRepository as DevServerRepositoryDef } from "../repository";
+
+type AsyncScriptProcessType = Extract<
+	ProcessType,
+	"devserver" | "workspacescript"
+>;
 
 interface RunningDevServer {
 	process: Subprocess;
@@ -13,21 +21,25 @@ interface RunningDevServer {
 }
 
 /**
- * Repository for spawning and managing dev server processes.
+ * Long-running async process runner. Despite the historical name it spawns
+ * both the per-session dev server and one-off workspace scripts (prepare /
+ * cleanup) — the caller declares which variant via `processType`, which in
+ * turn selects the correct persistent logs table (FK-constrained to the
+ * matching process table) and the processType value reported back on exit.
  */
 export class DevServerRepository implements DevServerRepositoryDef {
 	private runningProcesses = new Map<string, RunningDevServer>();
 	private logger: ILogger;
-	private logCollector: LogCollector;
+	private logCollectors: Record<AsyncScriptProcessType, LogCollector>;
 	private callbackClient: CallbackClient;
 
 	constructor(
 		logger: ILogger,
-		logCollector: LogCollector,
+		logCollectors: Record<AsyncScriptProcessType, LogCollector>,
 		callbackClient: CallbackClient,
 	) {
 		this.logger = logger.child("DevServerRepository");
-		this.logCollector = logCollector;
+		this.logCollectors = logCollectors;
 		this.callbackClient = callbackClient;
 	}
 
@@ -38,11 +50,14 @@ export class DevServerRepository implements DevServerRepositoryDef {
 			sessionId: string;
 			command: string;
 			workingDir: string;
+			processType: AsyncScriptProcessType;
 		},
 	): void {
-		const { processId, sessionId, command, workingDir } = options;
+		const { processId, sessionId, command, workingDir, processType } = options;
 
-		this.logger.info(`Starting dev server: ${command} in ${workingDir}`);
+		this.logger.info(
+			`Starting ${processType}: ${command} in ${workingDir} (pid tbd)`,
+		);
 
 		const process = Bun.spawn(["sh", "-c", command], {
 			cwd: workingDir,
@@ -52,7 +67,7 @@ export class DevServerRepository implements DevServerRepositoryDef {
 		});
 
 		if (!process.pid) {
-			this.logger.error("Failed to start dev server process");
+			this.logger.error(`Failed to start ${processType} process`);
 			return;
 		}
 
@@ -64,17 +79,23 @@ export class DevServerRepository implements DevServerRepositoryDef {
 		};
 		this.runningProcesses.set(processId, running);
 
-		this.logCollector.collect(processId, process.stdout, process.stderr);
+		this.logCollectors[processType].collect(
+			processId,
+			process.stdout,
+			process.stderr,
+		);
 
 		process.exited.then((exitCode) => {
-			this.logger.info(`Dev server ${processId} exited with code ${exitCode}`);
+			this.logger.info(
+				`${processType} ${processId} exited with code ${exitCode}`,
+			);
 			this.runningProcesses.delete(processId);
 			const status = exitCode === 0 ? "completed" : "failed";
 			this.callbackClient
 				.onProcessComplete({
 					processId,
 					sessionId,
-					processType: "devserver",
+					processType,
 					status,
 					exitCode: exitCode ?? null,
 				})

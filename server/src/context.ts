@@ -98,11 +98,25 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	const fullCtx = createFullCtx(db);
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	// 3. Create DevServerRepository with bound LogCollector, then rebind
-	const logCollector = new LogCollector(repos.devServerProcessLogs, logger);
+	// 3. Create DevServerRepository with bound LogCollectors, then rebind.
+	// One collector per logs table: dev server vs. workspace script. They share
+	// the same spawn machinery but persist to FK-distinct tables, so we must
+	// route each process kind to the correct logs repo or the database will
+	// reject inserts (FK violation -> unhandled promise rejection).
+	const devServerLogCollector = new LogCollector(
+		repos.devServerProcessLogs,
+		logger,
+	);
+	const workspaceScriptLogCollector = new LogCollector(
+		repos.workspaceScriptProcessLogs,
+		logger,
+	);
 	const devServer = new DevServerRepository(
 		logger,
-		logCollector,
+		{
+			devserver: devServerLogCollector,
+			workspacescript: workspaceScriptLogCollector,
+		},
 		callbackClient,
 	);
 	rawRepos.devServer = devServer;

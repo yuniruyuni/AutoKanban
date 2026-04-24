@@ -79,6 +79,15 @@ export const startDevServer = (taskId: string) =>
 			return { ...data, devServerProcess };
 		},
 
+		// The DevServerProcess row must exist in the DB before we spawn, so the
+		// stream of stdout chunks LogCollector writes to dev_server_process_logs
+		// does not race the FK. Previously this was deferred to `finish`.
+		write: async (ctx, data) => {
+			if (data.alreadyRunning) return data;
+			await ctx.repos.devServerProcess.upsert(data.devServerProcess);
+			return data;
+		},
+
 		post: async (ctx, data) => {
 			if (data.alreadyRunning) return data;
 
@@ -98,14 +107,9 @@ export const startDevServer = (taskId: string) =>
 				sessionId: data.session.id,
 				command: config.server,
 				workingDir: worktreePath,
+				processType: "devserver",
 			});
 			return { ...data, worktreePath, serverCommand: config.server };
-		},
-
-		finish: async (ctx, data) => {
-			if (data.alreadyRunning) return data;
-			await ctx.repos.devServerProcess.upsert(data.devServerProcess);
-			return data;
 		},
 
 		result: (data) => ({

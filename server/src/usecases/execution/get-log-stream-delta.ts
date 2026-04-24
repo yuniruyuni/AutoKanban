@@ -1,5 +1,6 @@
 // @specre 01KPNSJ3RA08KSRZFYJ61HG2AB
 import type { SSEDeltaResult } from "../../models/sse";
+import type { ReadContext } from "../context";
 import { usecase } from "../runner";
 
 // ============================================
@@ -19,6 +20,30 @@ export interface LogStreamParams {
 	executionProcessId: string;
 }
 
+/**
+ * Resolve logs for an execution process by trying each of the three logs
+ * tables in turn. The process-id space is unique across tables (ULIDs), so
+ * whichever returns non-null is the authoritative source. Coding-agent is
+ * tried first because it is the overwhelmingly common case.
+ */
+async function loadLogsFromAnySource(
+	ctx: ReadContext,
+	executionProcessId: string,
+): Promise<{ logs: string } | null> {
+	const coding =
+		await ctx.repos.codingAgentProcessLogs.getLogs(executionProcessId);
+	if (coding) return { logs: coding.logs };
+
+	const dev = await ctx.repos.devServerProcessLogs.getLogs(executionProcessId);
+	if (dev) return { logs: dev.logs };
+
+	const script =
+		await ctx.repos.workspaceScriptProcessLogs.getLogs(executionProcessId);
+	if (script) return { logs: script.logs };
+
+	return null;
+}
+
 // ============================================
 // Snapshot usecase
 // ============================================
@@ -26,9 +51,7 @@ export interface LogStreamParams {
 export const getLogStreamSnapshot = (params: LogStreamParams) =>
 	usecase({
 		read: async (ctx) => {
-			const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
-				params.executionProcessId,
-			);
+			const logs = await loadLogsFromAnySource(ctx, params.executionProcessId);
 			return { logs };
 		},
 
@@ -58,9 +81,7 @@ export const getLogStreamDelta = (
 ) =>
 	usecase({
 		read: async (ctx) => {
-			const logs = await ctx.repos.codingAgentProcessLogs.getLogs(
-				params.executionProcessId,
-			);
+			const logs = await loadLogsFromAnySource(ctx, params.executionProcessId);
 			return { logs };
 		},
 

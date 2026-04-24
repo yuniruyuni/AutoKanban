@@ -196,10 +196,20 @@ export async function createE2EContext(
 	const fullCtx = createFullCtx(db);
 	const repos = bindRepos(rawRepos, fullCtx);
 
-	const logCollector = new LogCollector(repos.devServerProcessLogs, logger);
+	const devServerLogCollector = new LogCollector(
+		repos.devServerProcessLogs,
+		logger,
+	);
+	const workspaceScriptLogCollector = new LogCollector(
+		repos.workspaceScriptProcessLogs,
+		logger,
+	);
 	const devServer = new DevServerRepository(
 		logger,
-		logCollector,
+		{
+			devserver: devServerLogCollector,
+			workspacescript: workspaceScriptLogCollector,
+		},
 		callbackClient,
 	);
 	rawRepos.devServer = devServer;

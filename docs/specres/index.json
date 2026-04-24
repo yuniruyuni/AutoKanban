@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-23T13:57:00Z",
+  "generated_at": "2026-04-24T04:48:29Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -136,7 +136,7 @@
       "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/workspace_prepare_script_is_run.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-24"
     },
     {
       "id": "01KPNSJ3QDCVVJXS9QES8YWY99",
@@ -328,7 +328,7 @@
       "status": "stable",
       "domain": "dev-server",
       "path": "docs/specres/dev-server/dev_server_lifecycle_is_managed.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-24"
     },
     {
       "id": "01KPNSJ3RSQGHS2F76VKN16QZM",
