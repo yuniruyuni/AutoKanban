@@ -2,7 +2,9 @@
   // worktree作成後、エージェント実行前に実行
   "prepare": "bun install",
   // 開発サーバ起動（ランダムポートで衝突回避）
+  // start-preview.sh 内で $AK_PROCESS_ID 毎に AUTO_KANBAN_HOME を /tmp 配下に分ける
   "server": "sh scripts/start-preview.sh",
-  // worktree削除時のクリーンアップ（SIGTERMでプロセス終了するため不要）
-  "cleanup": ""
+  // worktree削除時に、この workspace に紐づく preview の isolated state
+  // ディレクトリをまとめて掃除 (${AK_WORKSPACE_ID} でワイルドカードする)
+  "cleanup": "rm -rf /tmp/auto-kanban-preview-${AK_WORKSPACE_ID}-*"
 }
