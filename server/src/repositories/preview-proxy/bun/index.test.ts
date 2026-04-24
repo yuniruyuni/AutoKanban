@@ -19,10 +19,7 @@ const openProxies: PreviewProxyRepository[] = [];
 
 afterEach(() => {
 	for (const s of openServers.splice(0)) s.stop(true);
-	for (const p of openProxies.splice(0)) {
-		// Stop any remaining proxies across all processIds they know about.
-		// The test creates at most one per repo instance.
-	}
+	openProxies.splice(0);
 });
 
 async function startTarget(

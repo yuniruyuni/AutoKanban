@@ -110,7 +110,7 @@ export class PreviewProxyRepository implements PreviewProxyRepositoryDef {
 			hostname: "0.0.0.0",
 			async fetch(req: Request, server) {
 				const entry = self.running.get(processId);
-				if (!entry || !entry.target) {
+				if (!entry?.target) {
 					return warmingUpResponse();
 				}
 

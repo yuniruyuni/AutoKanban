@@ -2,7 +2,7 @@
 id: "01KPNSJ3RRYH45YHGMS83W76H0"
 name: "dev_server_lifecycle_is_managed"
 status: "stable"
-last_verified: "2026-04-24"
+last_verified: "2026-04-23"
 ---
 
 ## 関連ファイル
@@ -11,9 +11,12 @@ last_verified: "2026-04-24"
 - `server/src/usecases/dev-server/stop-dev-server.ts`
 - `server/src/usecases/dev-server/get-dev-server.ts`
 - `server/src/presentation/trpc/routers/dev-server.ts`
-- `server/src/models/dev-server-process/index.ts`
-- `server/src/repositories/dev-server/`
+- `server/src/models/dev-server-process/index.ts` (`proxyPort` 付き)
+- `server/src/repositories/dev-server/` (`DevServerRepository.start` は `AK_*` env を注入)
 - `server/src/repositories/dev-server-process-logs/`
+- `server/src/repositories/preview-proxy/` (proxy 本体 — `preview_is_proxied_through_autokanban` 参照)
+- `server/src/models/preview-url/index.ts` (stdout ログ解析で target URL を検出)
+- `server/src/infra/net/find-free-port.ts` (`proxyPort` 予約)
 - `server/src/repositories/workspace-config/` (`auto-kanban.json` の `server` キー)
 
 ## 機能概要
@@ -27,6 +30,16 @@ last_verified: "2026-04-24"
 `workspace_prepare_script_is_run` 参照）。runner は processType ごとに別の logs テーブル
 (`dev_server_process_logs` / `workspace_script_process_logs`) に append し、完了時の callback
 にも processType をそのまま乗せて `completeExecutionProcess` を正しい側へ分岐させる。
+起動するプロセスには `AK_*` 環境変数（`AK_PROCESS_ID` など）が注入される
+([ak_env_context_is_exported_to_spawned_scripts](../architecture/ak_env_context_is_exported_to_spawned_scripts.md))。
+
+ブラウザから見える URL は **AutoKanban 側が所有する `proxyPort`** 1 点だけ。
+`DevServerProcess.proxyPort` として DB に保存され、AutoKanban 内部で動く pass-through proxy
+(HTTP + WebSocket) が、子 dev server が stdout に出した URL へリクエストを透過転送する
+([preview_is_proxied_through_autokanban](./preview_is_proxied_through_autokanban.md))。
+URL 検出は **サーバ側のログ解析** (`server/src/models/preview-url/detectDevServerUrl`) で行い、
+client 側の URL 書き換えは iframe URL 構築のためには使わない
+(`useDevServerPreview` は `proxyPort` から URL を組み立てるだけ)。
 
 ## 概念的背景: なぜタスク単位の Dev Server を作ったか
 
@@ -68,24 +81,30 @@ dev server 関連のテンプレートタスクを出さない、という連携
 ### 起動（初回）
 
 1. ユーザーが `trpc.devServer.start({ taskId })`
-2. `read` で task / project / active workspace / latest session を取得、既存 running を確認
-3. 既存 running があればそれを返す（alreadyRunning）
-4. なければ `DevServerProcess.create` し、`write` ステップで **先に DB commit**
-   （`dev_server_process_logs` FK を先に満たすため）
-5. post で `workspaceConfig.load` → `config.server` を `devServer.start({ processType: "devserver", ... })`
-   に渡して非同期起動
-6. `{ executionProcessId }` を返却
+2. `pre` ステップで `findFreePort()` により `proxyPort` を予約
+3. `read` で task / project / active workspace / latest session を取得、既存 running を確認
+4. 既存 running があればそれを返す（alreadyRunning）
+5. なければ `DevServerProcess.create({ ..., proxyPort })` し、`write` ステップで **先に DB commit**
+   （`dev_server_process_logs` FK を先に満たす + client 側が `proxyPort` をすぐ読み取れる）
+6. `post` で `previewProxy.start(processId, proxyPort)` — viewer 用 listen を先に開ける
+7. `post` 続きで `devServer.start({ processType: "devserver", context: {...}, ... })` に
+   `config.server` と `AK_*` 用 context を渡して非同期起動
+8. `LogCollector` が子の stdout を流しながら `detectDevServerUrl` で URL を検出した瞬間、
+   `previewProxy.setTarget(processId, url)` で proxy の転送先を確定
+9. `{ executionProcessId }` を返却
 
 ### 停止
 
 1. `trpc.devServer.stop({ executionProcessId })`
 2. `devServer.stop(processId)` が SIGTERM → SIGKILL を送る
-3. `on-process-complete` callback が status を更新
+3. `on-process-complete` callback が status を更新し、`previewProxy.stop(processId)` を呼んで
+   proxy の listen socket を閉じる
 
 ### state とログ取得
 
-1. `trpc.devServer.get({ taskId })` で現在のプロセスと port、直近ログを返す
-2. UI は「dev server running http://localhost:3000 / 最終ログ 10 行」を表示
+1. `trpc.devServer.get({ taskId })` で現在のプロセスと `proxyPort`、直近ログを返す
+2. UI は「dev server running http://\<autokanban-host\>:\<proxyPort\>/ / 最終ログ 10 行」を表示
+3. ブラウザ reload しても `proxyPort` は DB から再取得でき、iframe は同じ URL へ戻る
 
 ## 失敗 / 例外
 

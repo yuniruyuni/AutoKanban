@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-24T12:52:08Z",
+  "generated_at": "2026-04-24T13:50:55Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -136,7 +136,7 @@
       "status": "stable",
       "domain": "workspace",
       "path": "docs/specres/workspace/workspace_prepare_script_is_run.md",
-      "last_verified": "2026-04-24"
+      "last_verified": "2026-04-23"
     },
     {
       "id": "01KPNSJ3QDCVVJXS9QES8YWY99",
@@ -328,7 +328,7 @@
       "status": "stable",
       "domain": "dev-server",
       "path": "docs/specres/dev-server/dev_server_lifecycle_is_managed.md",
-      "last_verified": "2026-04-24"
+      "last_verified": "2026-04-23"
     },
     {
       "id": "01KPNSJ3RSQGHS2F76VKN16QZM",
@@ -713,6 +713,30 @@
       "domain": "agent",
       "path": "docs/specres/agent/agent_is_the_coding_agent_definition.md",
       "last_verified": "2026-04-24"
+    },
+    {
+      "id": "01KPZT8XW9MWN21TTAE1AFS3YF",
+      "name": "ak_env_context_is_exported_to_spawned_scripts",
+      "status": "stable",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/ak_env_context_is_exported_to_spawned_scripts.md",
+      "last_verified": "2026-04-23"
+    },
+    {
+      "id": "01KPZT8YMP9F6B9CJFFG809NM0",
+      "name": "auto_kanban_home_isolates_instances",
+      "status": "stable",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/auto_kanban_home_isolates_instances.md",
+      "last_verified": "2026-04-23"
+    },
+    {
+      "id": "01KPZT8Z802KXZRGTYZKDZVH06",
+      "name": "preview_is_proxied_through_autokanban",
+      "status": "stable",
+      "domain": "dev-server",
+      "path": "docs/specres/dev-server/preview_is_proxied_through_autokanban.md",
+      "last_verified": "2026-04-23"
     }
   ],
   "source_refs": [
@@ -754,6 +778,11 @@
     {
       "specre_id": "01KPPZWHXYJQ6KJBGSCWD8NMKG",
       "file": "server/src/infra/db/pg-client.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPZT8YMP9F6B9CJFFG809NM0",
+      "file": "server/src/infra/db/postgres.ts",
       "line": 1
     },
     {
@@ -799,6 +828,11 @@
     {
       "specre_id": "01KPNX4PACA9S29SQDJ441E6V7",
       "file": "server/src/models/permission/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KPZT8Z802KXZRGTYZKDZVH06",
+      "file": "server/src/models/preview-url/index.ts",
       "line": 1
     },
     {
@@ -855,6 +889,11 @@
       "specre_id": "01KPNX4PA4SS8SKP7XWJG3KGVF",
       "file": "server/src/models/workspace/index.ts",
       "line": 2
+    },
+    {
+      "specre_id": "01KPZT8Z802KXZRGTYZKDZVH06",
+      "file": "server/src/presentation/callback/routers/on-process-complete.ts",
+      "line": 1
     },
     {
       "specre_id": "01KPNTBSG5R2DQ15S2NJ893VNE",
@@ -930,6 +969,16 @@
       "specre_id": "01KPNSJ3RRYH45YHGMS83W76H0",
       "file": "server/src/usecases/dev-server/start-dev-server.ts",
       "line": 1
+    },
+    {
+      "specre_id": "01KPZT8Z802KXZRGTYZKDZVH06",
+      "file": "server/src/usecases/dev-server/start-dev-server.ts",
+      "line": 2
+    },
+    {
+      "specre_id": "01KPZT8XW9MWN21TTAE1AFS3YF",
+      "file": "server/src/usecases/dev-server/start-dev-server.ts",
+      "line": 3
     },
     {
       "specre_id": "01KPNSJ3QQHP6GHD2JHE1RK26C",
@@ -1150,6 +1199,11 @@
       "specre_id": "01KPNSJ3QC5W9HVHPA3PGSMZRF",
       "file": "server/src/usecases/workspace/run-workspace-script.ts",
       "line": 1
+    },
+    {
+      "specre_id": "01KPZT8XW9MWN21TTAE1AFS3YF",
+      "file": "server/src/usecases/workspace/run-workspace-script.ts",
+      "line": 2
     }
   ]
 }
