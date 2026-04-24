@@ -83,6 +83,16 @@ export function useLogStream(options: UseLogStreamOptions) {
 			}
 		});
 
+		// The server emits "done" once the underlying process has reached a
+		// terminal status and all logs have drained. Close cleanly so
+		// downstream hooks (e.g. useWorkspaceScript) can flip their
+		// "isRunning" state off without guessing from connection errors.
+		eventSource.addEventListener("done", () => {
+			setIsStreaming(false);
+			eventSource.close();
+			eventSourceRef.current = null;
+		});
+
 		eventSource.onerror = () => {
 			// Try loading from database on connection error
 			console.log("[useLogStream] SSE error, loading from database");
