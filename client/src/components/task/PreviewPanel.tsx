@@ -1,4 +1,4 @@
-import { Play, Square } from "lucide-react";
+import { Play, RefreshCw, Square } from "lucide-react";
 import { useState } from "react";
 import { LogViewer } from "@/components/chat/LogViewer";
 import type { UseDevServerPreviewResult } from "@/hooks/useDevServerPreview";
@@ -18,6 +18,13 @@ export function PreviewPanel({
 }: PreviewPanelProps) {
 	const { urls, canStart, isRunning, start, stop, status } = preview;
 	const [activeSubTab, setActiveSubTab] = useState("logs");
+	// Monotonic counter per URL; used as part of the iframe key so clicking
+	// "Reload" forces a remount → the browser re-fetches the iframe src
+	// without restarting the dev server process behind it.
+	const [reloadNonces, setReloadNonces] = useState<Record<string, number>>({});
+	const reloadActiveIframe = (url: string) => {
+		setReloadNonces((prev) => ({ ...prev, [url]: (prev[url] ?? 0) + 1 }));
+	};
 
 	// Build sub-tabs: each URL + Logs
 	const subTabs: { id: string; label: string }[] = [];
@@ -84,6 +91,10 @@ export function PreviewPanel({
 		? activeSubTab
 		: (subTabs[0]?.id ?? "logs");
 
+	const activeUrl = resolvedTab.startsWith("url-")
+		? (urls[Number(resolvedTab.split("-")[1])]?.url ?? "")
+		: "";
+
 	return (
 		<div className="flex h-full flex-col">
 			<SubTabBar
@@ -92,6 +103,9 @@ export function PreviewPanel({
 				onChange={setActiveSubTab}
 				isRunning={isRunning}
 				onStop={stop}
+				onReloadUrl={
+					activeUrl ? () => reloadActiveIframe(activeUrl) : undefined
+				}
 			/>
 			<div className="flex-1 overflow-hidden">
 				{resolvedTab === "logs" ? (
@@ -102,9 +116,10 @@ export function PreviewPanel({
 							className="h-full"
 						/>
 					</div>
-				) : resolvedTab.startsWith("url-") ? (
+				) : activeUrl ? (
 					<PreviewIframe
-						url={urls[Number(resolvedTab.split("-")[1])]?.url ?? ""}
+						url={activeUrl}
+						reloadNonce={reloadNonces[activeUrl] ?? 0}
 					/>
 				) : null}
 			</div>
@@ -118,12 +133,18 @@ function SubTabBar({
 	onChange,
 	isRunning,
 	onStop,
+	onReloadUrl,
 }: {
 	tabs: { id: string; label: string }[];
 	activeTab: string;
 	onChange: (id: string) => void;
 	isRunning: boolean;
 	onStop: () => void;
+	/**
+	 * If the active tab is a URL tab, a handler to reload just that iframe
+	 * without restarting the dev server. Hidden on the Logs tab.
+	 */
+	onReloadUrl?: () => void;
 }) {
 	return (
 		<div className="flex items-center border-b border-[#E4E4E7] bg-white">
@@ -144,6 +165,18 @@ function SubTabBar({
 					</button>
 				))}
 			</div>
+			{onReloadUrl && (
+				<button
+					type="button"
+					onClick={onReloadUrl}
+					className="mr-1 flex h-6 items-center gap-1 rounded px-2 text-xs text-[#A1A1AA] transition-colors hover:bg-[#F5F5F5] hover:text-[#0A0A0B]"
+					title="Reload this preview (iframe only — dev server stays running)"
+					aria-label="Reload preview"
+				>
+					<RefreshCw className="h-3 w-3" />
+					Reload
+				</button>
+			)}
 			{isRunning && (
 				<button
 					type="button"
@@ -159,7 +192,20 @@ function SubTabBar({
 	);
 }
 
-function PreviewIframe({ url }: { url: string }) {
+function PreviewIframe({
+	url,
+	reloadNonce,
+}: {
+	url: string;
+	/**
+	 * Bumping this value forces React to unmount and remount the iframe,
+	 * which re-issues the request for `url` without touching the dev server
+	 * process. Cross-origin iframes cannot be reloaded via the DOM
+	 * (contentWindow.location.reload would throw), so remount is the
+	 * reliable mechanism.
+	 */
+	reloadNonce: number;
+}) {
 	const [isLoading, setIsLoading] = useState(true);
 
 	return (
@@ -170,6 +216,7 @@ function PreviewIframe({ url }: { url: string }) {
 				</div>
 			)}
 			<iframe
+				key={`${url}:${reloadNonce}`}
 				src={url}
 				title={`Preview ${url}`}
 				sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
