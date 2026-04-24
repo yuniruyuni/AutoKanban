@@ -114,18 +114,20 @@ export const completeExecutionProcess = (
 
 /**
  * Process queued follow-up message after process completion.
- * Uses protocol mode with session resume to continue the Claude Code conversation.
+ * Uses protocol mode with session resume to continue the agent conversation.
  */
 export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 	usecase({
 		read: async (ctx) => {
 			const session = await ctx.repos.session.get(Session.ById(sessionId));
-			if (!session)
+			if (!session) {
 				return {
 					workingDir: null as string | null,
+					executor: null as string | null,
 					resumeInfo: null,
 					interruptedTools: [] as PendingToolUse[],
 				};
+			}
 
 			const workspace = await ctx.repos.workspace.get(
 				Workspace.ById(session.workspaceId),
@@ -133,6 +135,7 @@ export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 			if (!workspace)
 				return {
 					workingDir: null as string | null,
+					executor: session.executor,
 					resumeInfo: null,
 					interruptedTools: [] as PendingToolUse[],
 				};
@@ -165,13 +168,19 @@ export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 				);
 			}
 
-			return { workingDir, resumeInfo, interruptedTools };
+			return {
+				workingDir,
+				executor: session.executor,
+				resumeInfo,
+				interruptedTools,
+			};
 		},
 
-		process: (_ctx, { workingDir, resumeInfo, interruptedTools }) => {
+		process: (_ctx, { workingDir, executor, resumeInfo, interruptedTools }) => {
 			if (!workingDir)
 				return {
 					workingDir,
+					executor,
 					codingAgentProcess: null,
 					turn: null,
 					resumeInfo,
@@ -184,6 +193,7 @@ export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 				});
 			return {
 				workingDir,
+				executor,
 				codingAgentProcess,
 				turn,
 				resumeInfo,
@@ -203,7 +213,13 @@ export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 
 		post: async (
 			ctx,
-			{ workingDir, codingAgentProcess, resumeInfo, interruptedTools },
+			{
+				workingDir,
+				executor,
+				codingAgentProcess,
+				resumeInfo,
+				interruptedTools,
+			},
 		) => {
 			if (!workingDir || !codingAgentProcess) return {};
 
@@ -213,6 +229,7 @@ export const processQueuedFollowUp = (sessionId: string, prompt: string) =>
 				runReason: "codingagent",
 				workingDir,
 				prompt,
+				executor: executor ?? undefined,
 				resumeSessionId: resumeInfo?.agentSessionId,
 				resumeMessageId: resumeInfo?.agentMessageId ?? undefined,
 				interruptedTools: pendingToolUsesToProtocolFormat(interruptedTools),

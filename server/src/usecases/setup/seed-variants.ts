@@ -1,39 +1,21 @@
 import { Variant } from "../../models/variant";
 import { usecase } from "../runner";
 
-const DEFAULT_VARIANTS = [
-	{
-		executor: "claude-code",
-		name: "DEFAULT",
-		permissionMode: "default",
-	},
-	{
-		executor: "claude-code",
-		name: "BYPASS",
-		permissionMode: "bypassPermissions",
-	},
-	{
-		executor: "claude-code",
-		name: "PLAN",
-		permissionMode: "plan",
-	},
-	{
-		executor: "gemini-cli",
-		name: "DEFAULT",
-		permissionMode: "bypassPermissions",
-	},
-] as const;
-
 export const seedDefaultVariants = () =>
 	usecase({
 		read: async (ctx) => {
+			const definitions = ctx.repos.agent
+				.list()
+				.flatMap((agent) => agent.defaultVariants);
 			const variants: Array<{
 				executor: string;
 				name: string;
 				permissionMode: string;
+				model?: string | null;
+				appendPrompt?: string | null;
 				existing: Variant | null;
 			}> = [];
-			for (const def of DEFAULT_VARIANTS) {
+			for (const def of definitions) {
 				const existing = await ctx.repos.variant.get(
 					Variant.ByExecutorAndName(def.executor, def.name),
 				);
@@ -43,10 +25,23 @@ export const seedDefaultVariants = () =>
 		},
 
 		write: async (ctx, { variants }) => {
-			for (const { executor, name, permissionMode, existing } of variants) {
+			for (const {
+				executor,
+				name,
+				permissionMode,
+				model,
+				appendPrompt,
+				existing,
+			} of variants) {
 				if (!existing) {
 					await ctx.repos.variant.upsert(
-						Variant.create({ executor, name, permissionMode }),
+						Variant.create({
+							executor,
+							name,
+							permissionMode,
+							model,
+							appendPrompt,
+						}),
 					);
 				}
 			}

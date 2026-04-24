@@ -1,5 +1,6 @@
 import type { Database } from "../../src/infra/db/database";
 import type { Repos } from "../../src/repositories";
+import { AgentRepository } from "../../src/repositories/agent";
 import { AgentSettingRepository } from "../../src/repositories/agent-setting/postgres";
 import { ApprovalRepository } from "../../src/repositories/approval/postgres";
 import { CodingAgentProcessRepository } from "../../src/repositories/coding-agent-process/postgres";
@@ -20,6 +21,7 @@ import type { Context } from "../../src/usecases/context";
 import { createMockLogger } from "./logger";
 
 const DB_REPO_KEYS = [
+	"agent",
 	"agentSetting",
 	"task",
 	"taskTemplate",
@@ -179,6 +181,7 @@ export function createMockContext(
  */
 export function createIntegrationContext(db: Database): Context {
 	const rawRepos: Repos = {
+		agent: new AgentRepository(),
 		agentSetting: new AgentSettingRepository(),
 		task: new TaskRepository(),
 		taskTemplate: {} as Repos["taskTemplate"],
@@ -214,6 +217,7 @@ export function createIntegrationContext(db: Database): Context {
 
 	const dbCtx = createDbWriteCtx(db);
 	const repos = {
+		agent: bindCtx(rawRepos.agent, dbCtx),
 		agentSetting: bindCtx(rawRepos.agentSetting, dbCtx),
 		task: bindCtx(rawRepos.task, dbCtx),
 		taskTemplate: {} as FullRepos<Repos>["taskTemplate"],

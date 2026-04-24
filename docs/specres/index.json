@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-24T04:48:29Z",
+  "generated_at": "2026-04-24T12:52:08Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -705,6 +705,14 @@
       "domain": "git",
       "path": "docs/specres/git/rebase_conflict_is_resolved_by_agent.md",
       "last_verified": "2026-04-23"
+    },
+    {
+      "id": "01KPZR958EEG6V88WM1W5AAK5G",
+      "name": "agent_is_the_coding_agent_definition",
+      "status": "stable",
+      "domain": "agent",
+      "path": "docs/specres/agent/agent_is_the_coding_agent_definition.md",
+      "last_verified": "2026-04-24"
     }
   ],
   "source_refs": [

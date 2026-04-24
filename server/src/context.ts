@@ -1,8 +1,10 @@
 import type { PgDatabase } from "./infra/db/pg-client";
+import { CodexCliInfraDriver } from "./infra/executor";
 import type { ILogger } from "./infra/logger/types";
 import { detectDevServerUrl } from "./models/preview-url";
 import { CallbackClientImpl } from "./presentation/callback/impl";
 import { bindCtx, bindRepos, type Repos } from "./repositories";
+import { AgentRepository } from "./repositories/agent";
 import { AgentConfigRepository } from "./repositories/agent-config";
 import { AgentSettingRepository } from "./repositories/agent-setting/postgres";
 import { ApprovalRepository } from "./repositories/approval/postgres";
@@ -18,6 +20,7 @@ import { draftRepository } from "./repositories/draft";
 import { draftPullRequestRepository } from "./repositories/draft-pull-request";
 import { ExecutorRepository } from "./repositories/executor";
 import { ClaudeCodeDriver } from "./repositories/executor/drivers/claude-code";
+import { CodexCliDriver } from "./repositories/executor/drivers/codex-cli";
 import { GeminiCliDriver } from "./repositories/executor/drivers/gemini-cli";
 import { GitRepository } from "./repositories/git";
 import { LogCollector } from "./repositories/log-collector";
@@ -48,6 +51,10 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	const drivers = new Map();
 	drivers.set("claude-code", new ClaudeCodeDriver(logger));
 	drivers.set("gemini-cli", new GeminiCliDriver(logger));
+	drivers.set(
+		"codex-cli",
+		new CodexCliDriver(new CodexCliInfraDriver(logger), logger),
+	);
 
 	// Check agent availability at startup
 	for (const driver of drivers.values()) {
@@ -63,6 +70,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 
 	// 1. Construct all raw repos
 	const rawRepos: Repos = {
+		agent: new AgentRepository(),
 		agentSetting: new AgentSettingRepository(),
 		task: new TaskRepository(),
 		taskTemplate: new TaskTemplateRepository(),

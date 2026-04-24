@@ -5,6 +5,7 @@ export interface AgentAdapter {
 	displayName: string;
 	configPath: string;
 	serversKey: string;
+	format?: "json" | "codex-toml";
 }
 
 export interface AgentConfigRepository {

@@ -9,19 +9,20 @@ last_verified: "2026-04-21"
 
 - `server/src/presentation/mcp/stdio.ts`
 - `server/src/presentation/mcp/routers/tools.ts`
+- `server/src/models/agent/`
 - `server/src/models/agent-config-defaults/`
 - `server/src/infra/port-file/`
 - `server/src/repositories/agent-config/`
 
 ## 機能概要
 
-AutoKanban は**自分自身を MCP サーバーとして**外部の Coding Agent（Claude Code 等）に
+AutoKanban は**自分自身を MCP サーバーとして**外部の Coding Agent（Claude Code / Codex CLI 等）に
 自動登録する。これにより agent は「今いる workspace を知る」「カンバン上の他タスクを参照する」
 「親タスクの詳細を取る」などの AutoKanban 固有ツールを MCP 経由で呼び出せる。
 
 port 情報は `infra/port-file/` が書く一時ファイル（`~/.autokanban/port`）を介して渡される。
-agent が起動するたび、AutoKanban は現在のポートで MCP サーバーを刺し、
-agent の設定ファイルに `auto_kanban` エントリを差し込む（既にあれば上書き）。
+AutoKanban は現在のポートで MCP サーバーを刺し、対象 Agent の設定ファイルに
+`auto_kanban` エントリを差し込む（既にあれば上書き）。
 
 ## 概念的背景: なぜ AutoKanban 自身が MCP サーバーになるのか
 
@@ -45,7 +46,7 @@ AutoKanban を **MCP サーバー**として公開することで、AI が必要
 - `list_sibling_tasks(projectId)` — 同じプロジェクトの他タスクを列挙
 
 もう 1 つの重要な設計判断は **AutoKanban 側から自動注入する** こと。
-ユーザーに「Claude Code の `mcpServers.json` に以下を追記してください」と頼む方式は
+ユーザーに「Claude Code の `mcpServers.json` や Codex の `config.toml` に以下を追記してください」と頼む方式は
 動くが摩擦が大きく、また port が動的に変わるたびに設定を更新しなければならない。
 AutoKanban が agent を spawn する直前に agent の設定ファイルに `auto_kanban` エントリを
 書き込むことで、**ユーザー操作ゼロで MCP 接続を成立させる**。
@@ -57,6 +58,8 @@ AutoKanban が agent を spawn する直前に agent の設定ファイルに `a
   MCP 接続時（agent 自身）の両方から参照できるようにする
 - **agent 設定ファイルへの注入**: ユーザーが手動で JSON を書く必要がない（摩擦を減らす）。
   実装は `agent-config` Repository が executor ごとの設定フォーマット差異を吸収
+- **Agent ごとの config format**: Claude Code は JSON、Codex CLI は TOML を使う。
+  AutoKanban は同じ `auto_kanban` server 定義を AgentConfigRepository で各形式に変換する
 - **双方向接続**: agent → AutoKanban（MCP tools で context 取得）、
   AutoKanban → agent（executor プロセス起動、stdout/stderr 監視、control protocol）。
   これにより AutoKanban は単なる起動元ではなく、**agent の文脈源泉**としても振る舞う
@@ -66,17 +69,17 @@ AutoKanban が agent を spawn する直前に agent の設定ファイルに `a
 
 ## シナリオ
 
-### agent 起動時の inject
+### agent 設定への inject
 
-1. `startExecution` の post で executor プロセスを起動する前に
-   `agentConfig` Repository が `auto_kanban` の MCP 設定を書き込む
-2. MCP サーバー URL は `http://localhost:<port>/mcp` のような形
-3. agent プロセスが起動して MCP handshake を行うと tools が露出する
+1. `mcpConfig.injectSelf({ agentId })` が呼ばれる
+2. `models/agent-config-defaults` が現在の AutoKanban MCP 起動コマンドを作る
+3. `agentConfig` Repository が対象 Agent の config file に `auto_kanban` を書き込む
+4. agent プロセスが次回起動して MCP handshake を行うと tools が露出する
 
 ### stdio transport 処理
 
 1. `/mcp/stdio` エンドポイントで stdio トランスポートも受け付ける
-2. Claude Code の stdio モードからも接続できる
+2. Claude Code や Codex CLI の stdio MCP 設定から接続できる
 
 ### MCP tool 一覧
 

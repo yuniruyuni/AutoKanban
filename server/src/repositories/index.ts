@@ -2,6 +2,7 @@
 // DB Repository re-exports
 // ============================================
 
+export type { AgentRepository } from "./agent/repository";
 export type { AgentSettingRepository } from "./agent-setting/repository";
 export type { ApprovalRepository } from "./approval/repository";
 export type { CodingAgentProcessRepository } from "./coding-agent-process/repository";
@@ -64,6 +65,7 @@ export * from "./common";
 // Repos aggregate type
 // ============================================
 
+import type { AgentRepository } from "./agent/repository";
 import type { AgentConfigRepository } from "./agent-config/repository";
 import type { AgentSettingRepository } from "./agent-setting/repository";
 import type { ApprovalRepository } from "./approval/repository";
@@ -120,6 +122,7 @@ export function bindRepos<Ctx>(raw: Repos, ctx: Ctx): ExtractRepos<Ctx> {
 
 export interface Repos {
 	// DB repositories
+	agent: AgentRepository;
 	agentSetting: AgentSettingRepository;
 	task: TaskRepository;
 	taskTemplate: TaskTemplateRepository;

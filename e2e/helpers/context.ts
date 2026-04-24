@@ -10,6 +10,7 @@ import {
 	createFullCtx,
 	type Repos,
 } from "../../server/src/repositories";
+import { AgentRepository } from "../../server/src/repositories/agent";
 import { AgentConfigRepository } from "../../server/src/repositories/agent-config";
 import { AgentSettingRepository } from "../../server/src/repositories/agent-setting/postgres";
 import { ApprovalRepository } from "../../server/src/repositories/approval/postgres";
@@ -162,6 +163,7 @@ export async function createE2EContext(
 	const baseDir = await getWorktreeBaseDir();
 
 	const rawRepos: Repos = {
+		agent: new AgentRepository(),
 		agentSetting: new AgentSettingRepository(),
 		task: new TaskRepository(),
 		taskTemplate: new TaskTemplateRepository(),

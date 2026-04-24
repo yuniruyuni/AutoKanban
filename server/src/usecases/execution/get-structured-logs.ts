@@ -1,7 +1,7 @@
 // @specre 01KPNSJ3RNADFZ6C4H1H2VF44S
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
-import { parseLogsToConversation } from "../../models/conversation/conversation-parser";
+import { Session } from "../../models/session";
 import { usecase } from "../runner";
 
 /**
@@ -23,6 +23,10 @@ export const getStructuredLogs = (executionProcessId: string) =>
 				});
 			}
 
+			const session = await ctx.repos.session.get(
+				Session.ById(codingAgentProcess.sessionId),
+			);
+
 			// Get logs
 			const logs =
 				await ctx.repos.codingAgentProcessLogs.getLogs(executionProcessId);
@@ -32,8 +36,9 @@ export const getStructuredLogs = (executionProcessId: string) =>
 				return result;
 			}
 
-			// Parse logs into structured conversation entries
-			const parseResult = parseLogsToConversation(logs.logs);
+			// Parse logs into structured conversation entries using the agent model.
+			const parser = ctx.repos.agent.getParser(session?.executor);
+			const parseResult = parser.parse(logs.logs);
 
 			const result = {
 				entries: parseResult.entries,
