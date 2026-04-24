@@ -1,5 +1,6 @@
 import type { PgDatabase } from "./infra/db/pg-client";
 import type { ILogger } from "./infra/logger/types";
+import { detectDevServerUrl } from "./models/preview-url";
 import { CallbackClientImpl } from "./presentation/callback/impl";
 import { bindCtx, bindRepos, type Repos } from "./repositories";
 import { AgentConfigRepository } from "./repositories/agent-config";
@@ -9,7 +10,7 @@ import { approvalStore } from "./repositories/approval-store";
 import { CodingAgentProcessRepository } from "./repositories/coding-agent-process/postgres";
 import { CodingAgentProcessLogsRepository } from "./repositories/coding-agent-process-logs/postgres";
 import { CodingAgentTurnRepository } from "./repositories/coding-agent-turn/postgres";
-import { createFullCtx } from "./repositories/common";
+import { createFullCtx, createServiceCtx } from "./repositories/common";
 import { DevServerRepository } from "./repositories/dev-server";
 import { DevServerProcessRepository } from "./repositories/dev-server-process/postgres";
 import { DevServerProcessLogsRepository } from "./repositories/dev-server-process-logs/postgres";
@@ -23,6 +24,7 @@ import { LogCollector } from "./repositories/log-collector";
 import { logStoreManager } from "./repositories/log-store";
 import { messageQueueRepository } from "./repositories/message-queue";
 import { permissionStore } from "./repositories/permission-store";
+import { PreviewProxyRepository } from "./repositories/preview-proxy";
 import { ProjectRepository } from "./repositories/project/postgres";
 import { ScriptRunnerRepository } from "./repositories/script-runner";
 import { SessionRepository } from "./repositories/session/postgres";
@@ -92,6 +94,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		logStoreManager,
 		// Placeholder — replaced after binding (needs bound repos for LogCollector)
 		devServer: {} as Repos["devServer"],
+		previewProxy: new PreviewProxyRepository(logger),
 	};
 
 	// 2. Bind all repos once
@@ -103,9 +106,21 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 	// the same spawn machinery but persist to FK-distinct tables, so we must
 	// route each process kind to the correct logs repo or the database will
 	// reject inserts (FK violation -> unhandled promise rejection).
+	//
+	// The dev-server collector also watches output for the first URL the
+	// child prints and hands it to PreviewProxy as the proxy target, so the
+	// viewer's iframe starts forwarding real responses as soon as the dev
+	// server is up. Workspace-script processes don't need a proxy target.
+	const previewProxy = rawRepos.previewProxy;
 	const devServerLogCollector = new LogCollector(
 		repos.devServerProcessLogs,
 		logger,
+		(processId, _source, data) => {
+			const svc = createServiceCtx();
+			if (previewProxy.getTarget(svc, processId)) return;
+			const url = detectDevServerUrl(data);
+			if (url) previewProxy.setTarget(svc, processId, url);
+		},
 	);
 	const workspaceScriptLogCollector = new LogCollector(
 		repos.workspaceScriptProcessLogs,

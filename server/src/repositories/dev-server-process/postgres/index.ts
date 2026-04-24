@@ -63,8 +63,8 @@ export class DevServerProcessRepository implements IDevServerProcessRepository {
 
 	async upsert(ctx: DbWriteCtx, process: DevServerProcess): Promise<void> {
 		await ctx.db.queryRun({
-			query: `INSERT INTO dev_server_processes (id, session_id, status, exit_code, started_at, completed_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			query: `INSERT INTO dev_server_processes (id, session_id, status, exit_code, proxy_port, started_at, completed_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            status = excluded.status,
            exit_code = excluded.exit_code,
@@ -75,6 +75,7 @@ export class DevServerProcessRepository implements IDevServerProcessRepository {
 				process.sessionId,
 				process.status,
 				process.exitCode,
+				process.proxyPort,
 				dateToSQL(process.startedAt),
 				process.completedAt ? dateToSQL(process.completedAt) : null,
 				dateToSQL(process.createdAt),

@@ -82,6 +82,15 @@ function buildCtx(overrides?: {
 				});
 			},
 		},
+		previewProxy: {
+			// Proxy lifecycle hooks during the post step — tests only need the
+			// start() spy to be callable; target routing is covered in the
+			// preview-proxy repo test.
+			start: () => {},
+			stop: () => false,
+			setTarget: () => {},
+			getTarget: () => null,
+		},
 	} as never);
 
 	return { ctx, task, order, startCalls };

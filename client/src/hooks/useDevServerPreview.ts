@@ -1,8 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	detectPreviewUrl,
-	type PreviewUrlInfo,
-} from "@/lib/detect-preview-url";
+import { useCallback, useEffect, useState } from "react";
+import type { PreviewUrlInfo } from "@/lib/detect-preview-url";
 import { trpc } from "@/trpc";
 import { type LogEntry, useLogStream } from "./useLogStream";
 
@@ -28,16 +25,30 @@ export interface UseDevServerPreviewResult {
 	stop: () => void;
 }
 
+/**
+ * Build the proxy URL the iframe should load. The server reserves a port
+ * (`DevServerProcess.proxyPort`) per dev-server process and runs a
+ * pass-through proxy on it. The viewer hits that port on the same host
+ * they're already viewing AutoKanban from — so regardless of where the
+ * project's own dev server is actually listening (loopback, LAN, remote),
+ * the browser only ever needs reachability to AutoKanban itself.
+ */
+function buildProxyUrl(proxyPort: number): PreviewUrlInfo {
+	const { protocol, hostname } = window.location;
+	const scheme = protocol === "https:" ? "https" : "http";
+	const url = `${scheme}://${hostname}:${proxyPort}/`;
+	return { url, port: proxyPort, scheme };
+}
+
 export function useDevServerPreview(
 	options: UseDevServerPreviewOptions,
 ): UseDevServerPreviewResult {
 	const { taskId, sessionId, projectHasDevServer } = options;
-	const [urls, setUrls] = useState<PreviewUrlInfo[]>([]);
 	const [status, setStatus] = useState<
 		"idle" | "starting" | "searching" | "ready" | "error"
 	>("idle");
 	const [devServerEpId, setDevServerEpId] = useState<string | null>(null);
-	const seenPorts = useRef(new Set<string>());
+	const [proxyPort, setProxyPort] = useState<number | null>(null);
 
 	const enabled = projectHasDevServer && !!sessionId;
 
@@ -60,30 +71,20 @@ export function useDevServerPreview(
 		const ep = devServerData.executionProcess;
 		if (ep.status === "running") {
 			setDevServerEpId(ep.id);
-			if (status === "idle") {
-				setStatus("searching");
+			setProxyPort(ep.proxyPort);
+			// As soon as we know a proxy port we can flip to "ready" — the
+			// iframe will show the proxy's warming-up page until the dev
+			// server's real output kicks in (that's the proxy's problem,
+			// not ours). No client-side URL detection is needed any more.
+			if (status === "idle" || status === "starting") {
+				setStatus("ready");
 			}
 		}
 	}, [devServerData, status]);
 
-	// Handle log entries to detect URLs
-	const onLog = useCallback((entry: { data: string }) => {
-		const info = detectPreviewUrl(entry.data);
-		if (!info) return;
-
-		// Deduplicate by port (or full URL if no port)
-		const key = info.port ? String(info.port) : info.url;
-		if (seenPorts.current.has(key)) return;
-		seenPorts.current.add(key);
-
-		setUrls((prev) => [...prev, info]);
-		setStatus("ready");
-	}, []);
-
-	// Subscribe to dev server logs via SSE
+	// Subscribe to dev server logs via SSE (shown under the Logs tab)
 	const { logs, isStreaming } = useLogStream({
 		executionProcessId: devServerEpId,
-		onLog,
 	});
 
 	// Start handler
@@ -97,6 +98,9 @@ export function useDevServerPreview(
 			{
 				onSuccess: (result) => {
 					setDevServerEpId(result.executionProcessId);
+					// proxy port will arrive via `devServer.get` refetch (triggered
+					// by the `status === "starting"` interval). Flip to searching
+					// meanwhile so the UI doesn't keep the "starting" spinner.
 					setStatus("searching");
 				},
 				onError: () => {
@@ -111,9 +115,8 @@ export function useDevServerPreview(
 		if (!devServerEpId) return;
 		stopMutation.mutate({ executionProcessId: devServerEpId });
 		setDevServerEpId(null);
+		setProxyPort(null);
 		setStatus("idle");
-		setUrls([]);
-		seenPorts.current.clear();
 	}, [devServerEpId, stopMutation]);
 
 	const isRunning =
@@ -132,6 +135,8 @@ export function useDevServerPreview(
 			stop: () => {},
 		};
 	}
+
+	const urls = proxyPort != null ? [buildProxyUrl(proxyPort)] : [];
 
 	return {
 		urls,

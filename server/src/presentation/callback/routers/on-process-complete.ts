@@ -18,6 +18,13 @@ export async function handleProcessComplete(
 		info.exitCode,
 	).run(ctx);
 
+	// Tear down the dev-server-scoped pass-through proxy when the dev
+	// server exits — both so we release the proxy port and so subsequent
+	// viewer requests fail fast instead of hanging on a dead target.
+	if (info.processType === "devserver") {
+		ctx.repos.previewProxy.stop(info.processId);
+	}
+
 	// Only codingagent processes trigger follow-up and task status changes
 	if (info.processType !== "codingagent") return;
 

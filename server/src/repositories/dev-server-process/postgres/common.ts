@@ -7,6 +7,7 @@ export interface DevServerProcessRow {
 	session_id: string;
 	status: string;
 	exit_code: number | null;
+	proxy_port: number;
 	started_at: Date;
 	completed_at: Date | null;
 	created_at: Date;
@@ -39,6 +40,7 @@ export function rowToDevServerProcess(
 		sessionId: row.session_id,
 		status: row.status as DevServerProcess.Status,
 		exitCode: row.exit_code,
+		proxyPort: row.proxy_port,
 		startedAt: dateFromSQL(row.started_at),
 		completedAt: row.completed_at ? dateFromSQL(row.completed_at) : null,
 		createdAt: dateFromSQL(row.created_at),

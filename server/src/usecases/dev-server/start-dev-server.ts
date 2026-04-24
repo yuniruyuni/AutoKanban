@@ -1,4 +1,5 @@
 // @specre 01KPNSJ3RRYH45YHGMS83W76H0
+import { findFreePort } from "../../infra/net/find-free-port";
 import { fail } from "../../models/common";
 import { DevServerProcess } from "../../models/dev-server-process";
 import { Project } from "../../models/project";
@@ -9,7 +10,14 @@ import { usecase } from "../runner";
 
 export const startDevServer = (taskId: string) =>
 	usecase({
-		read: async (ctx) => {
+		// Reserve the proxy port eagerly so the DB row can carry it by the time
+		// `write` commits. The port is AutoKanban's own pass-through for this
+		// preview (see DevServerProcess.proxyPort docs).
+		pre: async () => {
+			return { proxyPort: await findFreePort() };
+		},
+
+		read: async (ctx, { proxyPort }) => {
 			// Get task
 			const task = await ctx.repos.task.get(Task.ById(taskId));
 			if (!task) {
@@ -69,6 +77,7 @@ export const startDevServer = (taskId: string) =>
 				session,
 				workspace,
 				project,
+				proxyPort,
 			};
 		},
 
@@ -76,6 +85,7 @@ export const startDevServer = (taskId: string) =>
 			if (data.alreadyRunning) return data;
 			const devServerProcess = DevServerProcess.create({
 				sessionId: data.session.id,
+				proxyPort: data.proxyPort,
 			});
 			return { ...data, devServerProcess };
 		},
@@ -102,6 +112,15 @@ export const startDevServer = (taskId: string) =>
 			if (!config.server) {
 				return fail("INVALID_STATE", "No server script in auto-kanban.json");
 			}
+
+			// Start the AutoKanban-side pass-through proxy BEFORE the child
+			// dev server. The proxy immediately accepts viewer connections and
+			// serves a "starting…" placeholder until a target URL is detected
+			// from the child's stdout (see LogCollector's onUrlDetected hook).
+			ctx.repos.previewProxy.start(
+				data.devServerProcess.id,
+				data.devServerProcess.proxyPort,
+			);
 
 			ctx.repos.devServer.start({
 				processId: data.devServerProcess.id,

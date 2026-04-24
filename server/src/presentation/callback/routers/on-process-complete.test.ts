@@ -101,6 +101,12 @@ function setupMocks(options: {
 				calls.executorStartCalled = true;
 			},
 		} as never,
+		previewProxy: {
+			start: () => {},
+			stop: () => false,
+			setTarget: () => {},
+			getTarget: () => null,
+		} as never,
 	});
 
 	return { ctx, session, calls };

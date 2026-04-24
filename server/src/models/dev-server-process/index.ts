@@ -16,6 +16,16 @@ export interface DevServerProcess {
 	sessionId: string;
 	status: DevServerProcess.Status;
 	exitCode: number | null;
+	/**
+	 * AutoKanban-side port reserved for pass-through proxying this preview.
+	 * The viewer's browser connects to `<autokanban-host>:<proxyPort>` and
+	 * AutoKanban forwards to whatever URL the project's dev server emits in
+	 * its stdout. This decouples the bind address / network reachability of
+	 * the dev server from the viewer's network, so the convention for
+	 * `auto-kanban.json`'s `server` is simply "emit a URL that is reachable
+	 * from the AutoKanban server process".
+	 */
+	proxyPort: number;
 	startedAt: Date;
 	completedAt: Date | null;
 	createdAt: Date;
@@ -68,6 +78,7 @@ export namespace DevServerProcess {
 	// Factory
 	export function create(params: {
 		sessionId: string;
+		proxyPort: number;
 		id?: string;
 	}): DevServerProcess {
 		const now = new Date();
@@ -76,6 +87,7 @@ export namespace DevServerProcess {
 			sessionId: params.sessionId,
 			status: "running",
 			exitCode: null,
+			proxyPort: params.proxyPort,
 			startedAt: now,
 			completedAt: null,
 			createdAt: now,

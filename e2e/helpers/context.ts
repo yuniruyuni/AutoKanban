@@ -27,6 +27,7 @@ import { LogCollector } from "../../server/src/repositories/log-collector";
 import { logStoreManager } from "../../server/src/repositories/log-store";
 import { messageQueueRepository } from "../../server/src/repositories/message-queue";
 import { permissionStore } from "../../server/src/repositories/permission-store";
+import { PreviewProxyRepository } from "../../server/src/repositories/preview-proxy";
 import { ProjectRepository } from "../../server/src/repositories/project/postgres";
 import { ScriptRunnerRepository } from "../../server/src/repositories/script-runner";
 import { SessionRepository } from "../../server/src/repositories/session/postgres";
@@ -191,6 +192,7 @@ export async function createE2EContext(
 		approvalStore,
 		logStoreManager,
 		devServer: {} as Repos["devServer"],
+		previewProxy: new PreviewProxyRepository(logger),
 	};
 
 	const fullCtx = createFullCtx(db);

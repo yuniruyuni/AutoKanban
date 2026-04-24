@@ -79,6 +79,7 @@ export function createTestDevServerProcess(
 ): DevServerProcess {
 	const base = DevServerProcess.create({
 		sessionId: "test-session-id",
+		proxyPort: 12345,
 	});
 	return { ...base, ...overrides };
 }

@@ -46,6 +46,7 @@ export type {
 	QueueStatus,
 } from "./message-queue/repository";
 export type { PermissionStoreRepository } from "./permission-store/repository";
+export type { PreviewProxyRepository } from "./preview-proxy/repository";
 export type {
 	ScriptRunnerRepository,
 	ScriptRunnerResult,
@@ -80,6 +81,7 @@ import type { GitRepository } from "./git/repository";
 import type { LogStoreManager } from "./log-store/repository";
 import type { MessageQueueRepository } from "./message-queue/repository";
 import type { PermissionStoreRepository } from "./permission-store/repository";
+import type { PreviewProxyRepository } from "./preview-proxy/repository";
 import type { ProjectRepository } from "./project/repository";
 import type { ScriptRunnerRepository } from "./script-runner/repository";
 import type { SessionRepository } from "./session/repository";
@@ -150,4 +152,5 @@ export interface Repos {
 	logStoreManager: LogStoreManager;
 	scriptRunner: ScriptRunnerRepository;
 	devServer: DevServerRepository;
+	previewProxy: PreviewProxyRepository;
 }

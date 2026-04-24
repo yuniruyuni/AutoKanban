@@ -1,32 +1,13 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { createServer } from "node:net";
 import { join } from "node:path";
 import EmbeddedPostgres from "embedded-postgres";
 import type pg from "pg";
+import { findFreePort } from "../net/find-free-port";
 import { getAutoKanbanHome } from "../paths";
 
 const DEFAULT_USER = "autokanban";
 const DEFAULT_PASSWORD = "autokanban";
 const DEFAULT_DATABASE = "autokanban";
-
-/**
- * Find a free TCP port by binding to port 0 and releasing.
- */
-function findFreePort(): Promise<number> {
-	return new Promise((resolve, reject) => {
-		const server = createServer();
-		server.listen(0, () => {
-			const addr = server.address();
-			if (typeof addr === "object" && addr) {
-				const port = addr.port;
-				server.close(() => resolve(port));
-			} else {
-				server.close(() => reject(new Error("Failed to get port")));
-			}
-		});
-		server.on("error", reject);
-	});
-}
 
 function killPostgresByPidFile(dataDir: string): void {
 	const pidFile = join(dataDir, "postmaster.pid");

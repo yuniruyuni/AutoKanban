@@ -89,6 +89,7 @@ function createMockRawRepos(repoOverrides: Partial<FullRepos<Repos>>): Repos {
 		"logStoreManager",
 		"scriptRunner",
 		"devServer",
+		"previewProxy",
 	] as const;
 
 	for (const key of externalKeys) {
@@ -208,6 +209,7 @@ export function createIntegrationContext(db: Database): Context {
 		approvalStore: {} as Repos["approvalStore"],
 		logStoreManager: {} as Repos["logStoreManager"],
 		devServer: {} as Repos["devServer"],
+		previewProxy: {} as Repos["previewProxy"],
 	};
 
 	const dbCtx = createDbWriteCtx(db);
@@ -244,6 +246,7 @@ export function createIntegrationContext(db: Database): Context {
 		approvalStore: {} as FullRepos<Repos>["approvalStore"],
 		logStoreManager: {} as FullRepos<Repos>["logStoreManager"],
 		devServer: {} as FullRepos<Repos>["devServer"],
+		previewProxy: {} as FullRepos<Repos>["previewProxy"],
 	} as FullRepos<Repos>;
 
 	return {

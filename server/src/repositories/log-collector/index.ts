@@ -15,6 +15,17 @@ interface ProcessLogsAppender {
 }
 
 /**
+ * Optional callback invoked for every raw stdout/stderr chunk. The
+ * PreviewProxy uses this to peek at a dev server's output and set its
+ * target URL the moment the server prints one.
+ */
+export type LogChunkObserver = (
+	processId: string,
+	source: "stdout" | "stderr",
+	data: string,
+) => void;
+
+/**
  * Collects logs from print mode (legacy) process streams.
  * Reads stdout/stderr and persists to both in-memory store and database.
  */
@@ -22,6 +33,7 @@ export class LogCollector {
 	constructor(
 		private processLogsRepo: Full<ProcessLogsAppender>,
 		private logger: ILogger,
+		private observer?: LogChunkObserver,
 	) {}
 
 	/**
@@ -66,6 +78,17 @@ export class LogCollector {
 				};
 
 				store.append(svcCtx, entry);
+
+				// Peek at the raw chunk before the database write — observers
+				// should react quickly (URL detection for the proxy) and stay
+				// off the persistence hot-path.
+				if (this.observer) {
+					try {
+						this.observer(processId, source, data);
+					} catch (err) {
+						this.logger.error(`Log observer for ${processId} threw:`, err);
+					}
+				}
 
 				// Also persist to database (with newline for proper parsing).
 				// Catch the rejection so a DB error (e.g. FK violation because the
