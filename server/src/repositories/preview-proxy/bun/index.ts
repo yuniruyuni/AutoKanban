@@ -13,6 +13,23 @@ interface RunningProxy {
 }
 
 /**
+ * Per-WebSocket state carried on the `data` field. When a viewer upgrades
+ * to WS we open a matching upstream to the dev server and hold its handle
+ * here so `message` / `close` callbacks can forward bidirectionally.
+ */
+interface WsData {
+	processId: string;
+	/** Path + query the viewer requested; forwarded 1:1 to the target WS. */
+	pathAndQuery: string;
+	upstream: WebSocket | null;
+	/** Messages received from the browser before the upstream finished
+	 *  connecting. Flushed on upstream `open`. Without this a fast HMR
+	 *  client that sends its first frame during the upstream handshake
+	 *  would drop it. */
+	pending: (string | Buffer | Uint8Array)[];
+}
+
+/**
  * Headers that MUST NOT be forwarded hop-by-hop per RFC 7230 §6.1.
  * `content-length` is also dropped because `fetch` recomputes it from the
  * body stream; forwarding the original would mislead the destination if
@@ -88,15 +105,77 @@ export class PreviewProxyRepository implements PreviewProxyRepositoryDef {
 		}
 
 		const self = this;
-		const server = Bun.serve({
+		const server = Bun.serve<WsData, never>({
 			port,
 			hostname: "0.0.0.0",
-			async fetch(req: Request) {
+			async fetch(req: Request, server) {
 				const entry = self.running.get(processId);
 				if (!entry || !entry.target) {
 					return warmingUpResponse();
 				}
+
+				// WebSocket upgrade (Vite HMR, Next.js dev overlay, etc). Hand
+				// the connection to the `websocket` handler below which will
+				// bridge it to the matching target WS.
+				if (req.headers.get("upgrade")?.toLowerCase() === "websocket") {
+					const url = new URL(req.url);
+					const upgraded = server.upgrade(req, {
+						data: {
+							processId,
+							pathAndQuery: url.pathname + url.search,
+							upstream: null,
+							pending: [],
+						} satisfies WsData,
+					});
+					if (upgraded) return undefined;
+					return new Response("Upgrade failed", { status: 400 });
+				}
+
 				return self.forward(req, entry.target, processId);
+			},
+			websocket: {
+				open(ws) {
+					const entry = self.running.get(ws.data.processId);
+					if (!entry?.target) {
+						ws.close(1013, "Preview target not ready");
+						return;
+					}
+					const base = entry.target.replace(/^http/, "ws");
+					const targetUrl = new URL(ws.data.pathAndQuery, base);
+					const upstream = new WebSocket(targetUrl);
+					ws.data.upstream = upstream;
+
+					upstream.binaryType = "arraybuffer";
+					upstream.addEventListener("open", () => {
+						for (const m of ws.data.pending) upstream.send(m);
+						ws.data.pending.length = 0;
+					});
+					upstream.addEventListener("message", (ev) => {
+						ws.send(ev.data as string | Buffer | Uint8Array);
+					});
+					upstream.addEventListener("close", (ev) => {
+						ws.close(ev.code, ev.reason);
+					});
+					upstream.addEventListener("error", (err) => {
+						self.logger.warn(
+							`WS upstream error on ${ws.data.processId} → ${targetUrl.href}:`,
+							err,
+						);
+						ws.close(1011, "Upstream WS error");
+					});
+				},
+				message(ws, message) {
+					const up = ws.data.upstream;
+					if (!up) return;
+					if (up.readyState === 1 /* OPEN */) {
+						up.send(message);
+					} else {
+						ws.data.pending.push(message);
+					}
+				},
+				close(ws) {
+					ws.data.upstream?.close();
+				},
 			},
 		});
 

@@ -129,4 +129,57 @@ describe("PreviewProxyRepository", () => {
 		const repo = new PreviewProxyRepository(createMockLogger());
 		expect(repo.stop(ctx, "never-started")).toBe(false);
 	});
+
+	test("proxies a WebSocket bidirectionally (HMR path)", async () => {
+		// Target WS server that echoes "pong" for "ping".
+		const targetPort = await findFreePort();
+		const targetServer = Bun.serve<{ label: string }, never>({
+			port: targetPort,
+			hostname: "127.0.0.1",
+			fetch(req, server) {
+				if (req.headers.get("upgrade")?.toLowerCase() === "websocket") {
+					server.upgrade(req, { data: { label: "target" } });
+					return undefined;
+				}
+				return new Response("n/a");
+			},
+			websocket: {
+				message(ws, message) {
+					if (typeof message === "string" && message === "ping") {
+						ws.send("pong");
+					}
+				},
+			},
+		});
+		openServers.push(targetServer);
+
+		const repo = new PreviewProxyRepository(createMockLogger());
+		openProxies.push(repo);
+		const proxyPort = await findFreePort();
+		repo.start(ctx, "ws-proc", proxyPort);
+		repo.setTarget(ctx, "ws-proc", `http://127.0.0.1:${targetPort}/`);
+
+		const ws = new WebSocket(`ws://127.0.0.1:${proxyPort}/hmr`);
+		try {
+			const received = await new Promise<string>((resolve, reject) => {
+				const timeout = setTimeout(
+					() => reject(new Error("timeout waiting for pong")),
+					2000,
+				);
+				ws.addEventListener("open", () => ws.send("ping"));
+				ws.addEventListener("message", (ev) => {
+					clearTimeout(timeout);
+					resolve(String(ev.data));
+				});
+				ws.addEventListener("error", (err) => {
+					clearTimeout(timeout);
+					reject(err instanceof Error ? err : new Error("ws error"));
+				});
+			});
+			expect(received).toBe("pong");
+		} finally {
+			ws.close();
+			repo.stop(ctx, "ws-proc");
+		}
+	});
 });
