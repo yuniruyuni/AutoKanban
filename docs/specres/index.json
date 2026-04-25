@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-25T13:58:42Z",
+  "generated_at": "2026-04-25T14:05:30Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -737,6 +737,14 @@
       "domain": "dev-server",
       "path": "docs/specres/dev-server/preview_is_proxied_through_autokanban.md",
       "last_verified": "2026-04-25"
+    },
+    {
+      "id": "01KQ2EWC7XPARS1RBHKVW2FNV3",
+      "name": "schema_upgrades_must_apply_to_populated_dbs",
+      "status": "stable",
+      "domain": "architecture",
+      "path": "docs/specres/architecture/schema_upgrades_must_apply_to_populated_dbs.md",
+      "last_verified": "2026-04-25"
     }
   ],
   "source_refs": [
@@ -779,6 +787,11 @@
       "specre_id": "01KPPZWHXYJQ6KJBGSCWD8NMKG",
       "file": "server/src/infra/db/pg-client.ts",
       "line": 1
+    },
+    {
+      "specre_id": "01KQ2EWC7XPARS1RBHKVW2FNV3",
+      "file": "server/src/infra/db/pgschema.ts",
+      "line": 70
     },
     {
       "specre_id": "01KPZT8YMP9F6B9CJFFG809NM0",

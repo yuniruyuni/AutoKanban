@@ -67,6 +67,7 @@ async function downloadBinary(): Promise<string> {
 	return binaryPath;
 }
 
+// @specre 01KQ2EWC7XPARS1RBHKVW2FNV3
 export async function ensurePgSchema(connectionParams: {
 	host: string;
 	port: number;

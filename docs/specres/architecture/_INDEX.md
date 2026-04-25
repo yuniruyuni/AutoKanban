@@ -17,3 +17,4 @@
 | [mcp_server_starts_from_mcp_flag](mcp_server_starts_from_mcp_flag.md) | stable | 2026-04-21 |
 | [ak_env_context_is_exported_to_spawned_scripts](ak_env_context_is_exported_to_spawned_scripts.md) | stable | 2026-04-23 |
 | [auto_kanban_home_isolates_instances](auto_kanban_home_isolates_instances.md) | stable | 2026-04-23 |
+| [schema_upgrades_must_apply_to_populated_dbs](schema_upgrades_must_apply_to_populated_dbs.md) | stable | 2026-04-25 |
