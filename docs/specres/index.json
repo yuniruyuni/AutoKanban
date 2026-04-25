@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-25T16:27:59Z",
+  "generated_at": "2026-04-25T17:12:46Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -328,7 +328,7 @@
       "status": "stable",
       "domain": "dev-server",
       "path": "docs/specres/dev-server/dev_server_lifecycle_is_managed.md",
-      "last_verified": "2026-04-23"
+      "last_verified": "2026-04-26"
     },
     {
       "id": "01KPNSJ3RSQGHS2F76VKN16QZM",
@@ -640,7 +640,7 @@
       "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/postgresql_is_embedded_for_storage.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-26"
     },
     {
       "id": "01KPPZWHXZBF4J3P7QB0C67VCP",
@@ -736,7 +736,7 @@
       "status": "stable",
       "domain": "dev-server",
       "path": "docs/specres/dev-server/preview_is_proxied_through_autokanban.md",
-      "last_verified": "2026-04-25"
+      "last_verified": "2026-04-26"
     },
     {
       "id": "01KQ2EWC7XPARS1RBHKVW2FNV3",

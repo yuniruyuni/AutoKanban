@@ -2,13 +2,14 @@
 id: "01KPPZWHXYJQ6KJBGSCWD8NMKG"
 name: "postgresql_is_embedded_for_storage"
 status: "stable"
-last_verified: "2026-04-21"
+last_verified: "2026-04-26"
 ---
 
 ## 関連ファイル
 
 - `server/src/infra/db/embedded-postgres.ts` (PG 起動管理)
 - `server/src/infra/db/pgschema.ts` (schema.sql 差分適用)
+- `server/src/infra/net/find-free-port.ts` (`listenOnFreePort` で acquire+start を atomic retry)
 - `server/src/repositories/common/pg-client.ts` (`PgDatabase` 実装)
 - `server/src/repositories/common/database.ts` (`Database` interface)
 - `server/schema.sql` (single source of truth for schema)

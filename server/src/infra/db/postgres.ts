@@ -3,7 +3,7 @@ import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import EmbeddedPostgres from "embedded-postgres";
 import type pg from "pg";
-import { findFreePort } from "../net/find-free-port";
+import { listenOnFreePort } from "../net/find-free-port";
 import { getAutoKanbanHome } from "../paths";
 
 const DEFAULT_USER = "autokanban";
@@ -67,9 +67,39 @@ export class EmbeddedPostgresManager {
 		// Clean stale lock if process is dead
 		this.cleanStaleLock();
 
-		// Resolve port: use requested port or find a free one
-		this.port = this.requestedPort ?? (await findFreePort());
+		if (this.requestedPort !== undefined) {
+			// Caller pinned the port; no port-acquisition retry possible.
+			this.port = this.requestedPort;
+			await this.bootEmbedded();
+		} else {
+			// Acquire a free port AND `pg.start()` atomically. Without this
+			// wrapper, the gap between findFreePort()'s release and pg.start()'s
+			// bind lets another listener steal the port (rare, but bursty
+			// dev/test startup hits it).
+			const { port } = await listenOnFreePort(
+				async (candidate) => {
+					this.port = candidate;
+					await this.bootEmbedded();
+					return null;
+				},
+				{ attempts: 5, label: "embedded-postgres" },
+			);
+			this.port = port;
+		}
 
+		this.registerExitHandler();
+
+		await this.pg?.createDatabase(this.database).catch(() => {
+			// Database already exists — ignore
+		});
+	}
+
+	/**
+	 * Construct a fresh EmbeddedPostgres pinned to `this.port` and start it.
+	 * Pulled out so {@link listenOnFreePort} can re-invoke us with a different
+	 * port if the first bind races EADDRINUSE.
+	 */
+	private async bootEmbedded(): Promise<void> {
 		this.pg = new EmbeddedPostgres({
 			databaseDir: this.dataDir,
 			port: this.port,
@@ -98,16 +128,16 @@ export class EmbeddedPostgresManager {
 		try {
 			await this.pg.start();
 		} catch (err) {
-			throw new Error(
-				`Failed to start PostgreSQL on port ${this.port}: ${err ?? this.dumpLogs()}`,
+			// Surface a real Error with the EADDRINUSE / "address already in use"
+			// substring intact so listenOnFreePort's detector can spot the
+			// port-conflict case and retry with a fresh candidate.
+			const detail = err instanceof Error ? err.message : String(err);
+			const wrapped = new Error(
+				`Failed to start PostgreSQL on port ${this.port}: ${detail || this.dumpLogs()}`,
 			);
+			(wrapped as Error & { cause?: unknown }).cause = err;
+			throw wrapped;
 		}
-
-		this.registerExitHandler();
-
-		await this.pg.createDatabase(this.database).catch(() => {
-			// Database already exists — ignore
-		});
 	}
 
 	private exitHandlerRegistered = false;

@@ -41,7 +41,7 @@ describe("PreviewProxyRepository", () => {
 		openProxies.push(repo);
 
 		const port = await findFreePort();
-		repo.start(ctx, "p1", port);
+		await repo.start(ctx, "p1", port);
 
 		const res = await fetch(`http://127.0.0.1:${port}/`);
 		expect(res.status).toBe(503);
@@ -59,7 +59,7 @@ describe("PreviewProxyRepository", () => {
 		const repo = new PreviewProxyRepository(createMockLogger());
 		openProxies.push(repo);
 		const port = await findFreePort();
-		repo.start(ctx, "p2", port);
+		await repo.start(ctx, "p2", port);
 		repo.setTarget(ctx, "p2", target.url);
 
 		const res = await fetch(`http://127.0.0.1:${port}/some/path?q=1`);
@@ -80,7 +80,7 @@ describe("PreviewProxyRepository", () => {
 		const repo = new PreviewProxyRepository(createMockLogger());
 		openProxies.push(repo);
 		const port = await findFreePort();
-		repo.start(ctx, "p3", port);
+		await repo.start(ctx, "p3", port);
 		repo.setTarget(ctx, "p3", target.url);
 
 		await fetch(`http://127.0.0.1:${port}/foo/bar?q=baz`);
@@ -93,7 +93,7 @@ describe("PreviewProxyRepository", () => {
 		const repo = new PreviewProxyRepository(createMockLogger());
 		openProxies.push(repo);
 		const port = await findFreePort();
-		repo.start(ctx, "p4", port);
+		await repo.start(ctx, "p4", port);
 		const dead = `http://127.0.0.1:${await findFreePort()}/`;
 		repo.setTarget(ctx, "p4", dead);
 
@@ -107,7 +107,7 @@ describe("PreviewProxyRepository", () => {
 		const repo = new PreviewProxyRepository(createMockLogger());
 		openProxies.push(repo);
 		const port = await findFreePort();
-		repo.start(ctx, "p5", port);
+		await repo.start(ctx, "p5", port);
 		const stopped = repo.stop(ctx, "p5");
 		expect(stopped).toBe(true);
 
@@ -125,6 +125,46 @@ describe("PreviewProxyRepository", () => {
 	test("stop on unknown processId returns false", () => {
 		const repo = new PreviewProxyRepository(createMockLogger());
 		expect(repo.stop(ctx, "never-started")).toBe(false);
+	});
+
+	test("falls back to a fresh port when the preferred port is already taken", async () => {
+		// Squat on a port to force a real EADDRINUSE on the preferred-port path,
+		// proving that previewProxy.start rebinds rather than crashing the caller.
+		const squattedPort = await findFreePort();
+		const squatter = Bun.serve({
+			port: squattedPort,
+			hostname: "127.0.0.1",
+			fetch: () => new Response("squatter"),
+		});
+		openServers.push(squatter);
+
+		const repo = new PreviewProxyRepository(createMockLogger());
+		openProxies.push(repo);
+
+		const { port: actualPort } = await repo.start(ctx, "race", squattedPort);
+		expect(actualPort).not.toBe(squattedPort);
+		expect(actualPort).toBeGreaterThan(0);
+
+		// Proxy is reachable on the fallback port; squatter is reachable on the
+		// original. Both work, no port collision.
+		const placeholder = await fetch(`http://127.0.0.1:${actualPort}/`);
+		expect(placeholder.status).toBe(503);
+		const squatRes = await fetch(`http://127.0.0.1:${squattedPort}/`);
+		expect(await squatRes.text()).toBe("squatter");
+
+		repo.stop(ctx, "race");
+	});
+
+	test("acquires its own port when called without a preferred port", async () => {
+		const repo = new PreviewProxyRepository(createMockLogger());
+		openProxies.push(repo);
+
+		const { port } = await repo.start(ctx, "auto");
+		expect(port).toBeGreaterThan(0);
+
+		const res = await fetch(`http://127.0.0.1:${port}/`);
+		expect(res.status).toBe(503);
+		repo.stop(ctx, "auto");
 	});
 
 	test("proxies a WebSocket bidirectionally (HMR path)", async () => {
@@ -153,7 +193,7 @@ describe("PreviewProxyRepository", () => {
 		const repo = new PreviewProxyRepository(createMockLogger());
 		openProxies.push(repo);
 		const proxyPort = await findFreePort();
-		repo.start(ctx, "ws-proc", proxyPort);
+		await repo.start(ctx, "ws-proc", proxyPort);
 		repo.setTarget(ctx, "ws-proc", `http://127.0.0.1:${targetPort}/`);
 
 		const ws = new WebSocket(`ws://127.0.0.1:${proxyPort}/hmr`);

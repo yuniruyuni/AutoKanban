@@ -13,17 +13,24 @@ import type { ServiceCtx } from "../common";
  * of external reachability.
  *
  * Lifecycle:
- *   1. `start(processId, port)` opens a listener on `port`. Before a target
+ *   1. `start(processId, preferredPort?)` opens a listener. Before a target
  *      URL is known the proxy serves a small "preview server is warming up"
  *      placeholder so the iframe stays framed at the right origin and can
- *      auto-refresh.
+ *      auto-refresh. `preferredPort` is a hint — if the bind races
+ *      EADDRINUSE the implementation acquires a fresh free port and binds
+ *      there. The actual bound port is returned so the caller can reconcile
+ *      its DB row.
  *   2. `setTarget(processId, url)` makes subsequent requests forward to
  *      `url`. Typically invoked from a log watcher that detected the dev
  *      server's emitted URL.
  *   3. `stop(processId)` closes the listener when the dev server exits.
  */
 export interface PreviewProxyRepository {
-	start(ctx: ServiceCtx, processId: string, port: number): void;
+	start(
+		ctx: ServiceCtx,
+		processId: string,
+		preferredPort?: number,
+	): Promise<{ port: number }>;
 	setTarget(ctx: ServiceCtx, processId: string, targetUrl: string): void;
 	stop(ctx: ServiceCtx, processId: string): boolean;
 	/** Returns the current target URL, or null if not set. Test helper. */

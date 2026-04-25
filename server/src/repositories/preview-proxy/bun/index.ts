@@ -1,4 +1,8 @@
 import type { ILogger } from "../../../infra/logger/types";
+import {
+	isPortConflictError,
+	listenOnFreePort,
+} from "../../../infra/net/find-free-port";
 import type { ServiceCtx } from "../../common";
 import type { PreviewProxyRepository as PreviewProxyRepositoryDef } from "../repository";
 
@@ -96,16 +100,60 @@ export class PreviewProxyRepository implements PreviewProxyRepositoryDef {
 		this.logger = logger.child("PreviewProxyRepository");
 	}
 
-	start(_ctx: ServiceCtx, processId: string, port: number): void {
-		if (this.running.has(processId)) {
+	async start(
+		_ctx: ServiceCtx,
+		processId: string,
+		preferredPort?: number,
+	): Promise<{ port: number }> {
+		const existing = this.running.get(processId);
+		if (existing) {
 			this.logger.warn(
-				`Proxy for ${processId} already running, ignoring start()`,
+				`Proxy for ${processId} already running on port ${existing.port}, ignoring start()`,
 			);
-			return;
+			return { port: existing.port };
 		}
 
+		// Caller may pass the port reserved earlier (e.g. stamped on the
+		// DevServerProcess row). Try it first; if another listener stole it
+		// during the gap, fall back to acquire+bind retry on a fresh port.
+		if (preferredPort !== undefined) {
+			try {
+				const server = this.buildServer(processId, preferredPort);
+				this.running.set(processId, {
+					server,
+					port: preferredPort,
+					target: null,
+				});
+				this.logger.info(
+					`Preview proxy for ${processId} listening on 0.0.0.0:${preferredPort}`,
+				);
+				return { port: preferredPort };
+			} catch (err) {
+				if (!isPortConflictError(err)) throw err;
+				this.logger.warn(
+					`Preview proxy ${processId}: preferred port ${preferredPort} taken, falling back to a fresh free port`,
+				);
+			}
+		}
+
+		const { port, result: server } = await listenOnFreePort(
+			(candidate) => this.buildServer(processId, candidate),
+			{
+				attempts: 5,
+				logger: this.logger,
+				label: `preview proxy ${processId}`,
+			},
+		);
+		this.running.set(processId, { server, port, target: null });
+		this.logger.info(
+			`Preview proxy for ${processId} listening on 0.0.0.0:${port}`,
+		);
+		return { port };
+	}
+
+	private buildServer(processId: string, port: number): BunServerHandle {
 		const self = this;
-		const server = Bun.serve<WsData, never>({
+		return Bun.serve<WsData, never>({
 			port,
 			hostname: "0.0.0.0",
 			async fetch(req: Request, server) {
@@ -204,11 +252,6 @@ export class PreviewProxyRepository implements PreviewProxyRepositoryDef {
 				},
 			},
 		});
-
-		this.running.set(processId, { server, port, target: null });
-		this.logger.info(
-			`Preview proxy for ${processId} listening on 0.0.0.0:${port}`,
-		);
 	}
 
 	setTarget(_ctx: ServiceCtx, processId: string, targetUrl: string): void {

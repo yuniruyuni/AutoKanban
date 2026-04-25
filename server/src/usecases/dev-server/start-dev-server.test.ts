@@ -21,6 +21,15 @@ import { startDevServer } from "./start-dev-server";
 function buildCtx(overrides?: {
 	hasRunningDevServer?: boolean;
 	serverCommand?: string | null;
+	/**
+	 * Override what the proxy's start callback returns. Useful for simulating
+	 * the rare race case where Bun.serve had to fall back to a different
+	 * port than the one stamped during `write`.
+	 */
+	proxyStart?: (
+		processId: string,
+		preferredPort?: number,
+	) => Promise<{ port: number }>;
 }) {
 	const task = createTestTask();
 	const project = createTestProject({ id: task.projectId });
@@ -31,6 +40,7 @@ function buildCtx(overrides?: {
 	const session = createTestSession({ workspaceId: workspace.id });
 
 	const order: string[] = [];
+	const upsertedPorts: Array<{ id: string; port: number }> = [];
 	const startCalls: Array<{
 		processType: string;
 		processId: string;
@@ -51,8 +61,9 @@ function buildCtx(overrides?: {
 					: [],
 				hasMore: false,
 			}),
-			upsert: async (p: { id: string }) => {
+			upsert: async (p: { id: string; proxyPort: number }) => {
 				order.push(`upsert:${p.id}`);
+				upsertedPorts.push({ id: p.id, port: p.proxyPort });
 			},
 		},
 		worktree: {
@@ -86,14 +97,19 @@ function buildCtx(overrides?: {
 			// Proxy lifecycle hooks during the post step — tests only need the
 			// start() spy to be callable; target routing is covered in the
 			// preview-proxy repo test.
-			start: () => {},
+			start:
+				overrides?.proxyStart ??
+				(async (
+					_processId: string,
+					preferredPort?: number,
+				): Promise<{ port: number }> => ({ port: preferredPort ?? 0 })),
 			stop: () => false,
 			setTarget: () => {},
 			getTarget: () => null,
 		},
 	} as never);
 
-	return { ctx, task, order, startCalls };
+	return { ctx, task, order, startCalls, upsertedPorts };
 }
 
 describe("startDevServer", () => {
@@ -157,5 +173,36 @@ describe("startDevServer", () => {
 			expect(result.error.code).toBe("INVALID_STATE");
 			expect(result.error.message).toMatch(/server/);
 		}
+	});
+
+	// Rare-but-possible: findFreePort wins port X, but between `write` and
+	// post's bind another listener steals X. previewProxy.start rebinds on a
+	// fresh port and reports it back; the usecase must reconcile the DB row
+	// so the client doesn't keep pointing iframes at a dead port.
+	test("reconciles the DB row when previewProxy.start falls back to a different port", async () => {
+		const { ctx, task, upsertedPorts } = buildCtx({
+			proxyStart: async () => ({ port: 9999 }),
+		});
+
+		const result = await startDevServer(task.id).run(ctx);
+
+		expect(result.ok).toBe(true);
+		// First upsert (write step) carries the port reserved in pre.
+		// Second upsert (finish step) carries the port the proxy actually bound.
+		expect(upsertedPorts.length).toBe(2);
+		expect(upsertedPorts[1].port).toBe(9999);
+		expect(upsertedPorts[0].id).toBe(upsertedPorts[1].id);
+	});
+
+	test("does not re-upsert when the proxy bound the originally-reserved port", async () => {
+		const { ctx, task, upsertedPorts } = buildCtx({
+			// Echo back the preferred port — the common case.
+			proxyStart: async (_id, port) => ({ port: port ?? 0 }),
+		});
+
+		const result = await startDevServer(task.id).run(ctx);
+
+		expect(result.ok).toBe(true);
+		expect(upsertedPorts.length).toBe(1);
 	});
 });
