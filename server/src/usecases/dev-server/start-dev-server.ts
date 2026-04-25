@@ -119,7 +119,12 @@ export const startDevServer = (taskId: string) =>
 			// dev server. The proxy immediately accepts viewer connections and
 			// serves a "starting…" placeholder until a target URL is detected
 			// from the child's stdout (see LogCollector's onUrlDetected hook).
-			ctx.repos.previewProxy.start(
+			//
+			// `proxyPort` was a best-effort reservation made in `pre`; if the
+			// kernel handed it to another listener in the meantime, the proxy
+			// transparently rebinds on a fresh free port and returns it. We
+			// reconcile any port drift with the DB row in `finish`.
+			const { port: boundProxyPort } = await ctx.repos.previewProxy.start(
 				data.devServerProcess.id,
 				data.devServerProcess.proxyPort,
 			);
@@ -136,7 +141,26 @@ export const startDevServer = (taskId: string) =>
 					projectId: data.project.id,
 				},
 			});
-			return { ...data, worktreePath, serverCommand: config.server };
+			return {
+				...data,
+				worktreePath,
+				serverCommand: config.server,
+				boundProxyPort,
+			};
+		},
+
+		// Reconcile the DB row when `previewProxy.start` had to fall back to a
+		// different port than the one stamped during `write`. Common case: ports
+		// match and this is a no-op.
+		finish: async (ctx, data) => {
+			if (data.alreadyRunning) return data;
+			if (data.boundProxyPort === data.devServerProcess.proxyPort) return data;
+			const updated = {
+				...data.devServerProcess,
+				proxyPort: data.boundProxyPort,
+			};
+			await ctx.repos.devServerProcess.upsert(updated);
+			return { ...data, devServerProcess: updated };
 		},
 
 		result: (data) => ({

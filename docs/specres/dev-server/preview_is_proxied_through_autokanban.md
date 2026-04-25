@@ -2,7 +2,7 @@
 id: "01KPZT8Z802KXZRGTYZKDZVH06"
 name: "preview_is_proxied_through_autokanban"
 status: "stable"
-last_verified: "2026-04-25"
+last_verified: "2026-04-26"
 ---
 
 ## 関連ファイル
@@ -69,6 +69,12 @@ HTTP だけ forward しても「ページは出るが変更が反映されない
 - `proxyPort` は AutoKanban 側が `findFreePort()` で**予約**し、`DevServerProcess.create` 時点で
   entity の一部として持つ。DB 行が commit される前 (`pre` 步) に決まるので、
   その後ログが始まった瞬間に "どのポートへ proxy するか" がブレない
+- `findFreePort` の close→bind 間で別プロセスにポートを奪われると `Bun.serve` が
+  EADDRINUSE で失敗するので、`previewProxy.start(processId, preferredPort)` は
+  EADDRINUSE を観測すると `listenOnFreePort` で新しい free port を atomic に取得して
+  そこで bind し直す。**実際に bound したポートを返す**ので、それが pre 予約と異なる場合は
+  `start-dev-server` の `finish` ステップで DB 行の `proxyPort` を更新する
+  (rare case; race が起きなければ no-op)
 - 一度 `DevServerProcess` 行に入った `proxyPort` は `trpc.devServer.get` で
   クライアントに返り、ブラウザ reload でも iframe が正しい URL を再構築できる
 - ターゲット URL の検出は **stdout ログの逐次解析** で行う: `context.ts` が
@@ -91,11 +97,15 @@ HTTP だけ forward しても「ページは出るが変更が反映されない
 1. `trpc.devServer.start` → Usecase の `pre` ステップで `findFreePort()` が `proxyPort` を予約
 2. `read` / `process` で `DevServerProcess.create({ proxyPort, ... })`
 3. `write` で DB commit (ログの FK 先がここで確実に存在する)
-4. `post` で `previewProxy.start(processId, proxyPort)` — 即座に listen 開始 (placeholder を返せる状態)
+4. `post` で `previewProxy.start(processId, proxyPort)` — 即座に listen 開始 (placeholder を返せる状態)。
+   close→bind race で EADDRINUSE が起きれば、内部で `listenOnFreePort` を使って新規 port を atomic に
+   取り直し、bound port を返す
 5. `post` 続きで `devServer.start({ processType: "devserver", ... })` — 子 dev server を spawn
 6. 子の stdout 初チャンクが `LogCollector` を通るたびに `detectDevServerUrl` が動き、
    ヒットした時点で `previewProxy.setTarget(processId, url)`
 7. 以降の viewer リクエストはその target へ transparent forward される
+8. `finish` ステップで bound port が pre 予約と異なれば DB 行の `proxyPort` を update
+   (race が起きなければ no-op)
 
 ### 閲覧
 
@@ -119,8 +129,11 @@ HTTP だけ forward しても「ページは出るが変更が反映されない
   unhandled となり AutoKanban server ごと落ちるため、3 箇所すべての send を try-catch する。
 - **`setTarget` 前の HTTP リクエスト**: placeholder (503 + meta-refresh) を返す
 - **`setTarget` 前の WS アップグレード**: `close(1013, "Preview target not ready")` で即切断
-- **`proxyPort` 使用中のポート**: 通常 `findFreePort` で未使用ポートを取るが、race で埋まれば
-  Bun.serve の起動時例外 (運用上はテストで検証済みの範囲)
+- **`proxyPort` 使用中のポート**: 通常 `findFreePort` で未使用ポートを取るが、close→bind 間の
+  race で埋まることがある。`previewProxy.start` は EADDRINUSE を検知して
+  `listenOnFreePort` で新規 port を取り直し、bind を atomic に retry する。
+  retry 上限 (5 回) を超えた場合のみ "Failed to bind to a free port" で起動失敗する。
+  pre 予約と実 bound port がずれた場合は `finish` ステップで DB 行を更新する
 
 ## 関連する動作
 

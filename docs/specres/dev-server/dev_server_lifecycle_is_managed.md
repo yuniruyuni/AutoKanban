@@ -2,7 +2,7 @@
 id: "01KPNSJ3RRYH45YHGMS83W76H0"
 name: "dev_server_lifecycle_is_managed"
 status: "stable"
-last_verified: "2026-04-23"
+last_verified: "2026-04-26"
 ---
 
 ## 関連ファイル
@@ -86,12 +86,16 @@ dev server 関連のテンプレートタスクを出さない、という連携
 4. 既存 running があればそれを返す（alreadyRunning）
 5. なければ `DevServerProcess.create({ ..., proxyPort })` し、`write` ステップで **先に DB commit**
    （`dev_server_process_logs` FK を先に満たす + client 側が `proxyPort` をすぐ読み取れる）
-6. `post` で `previewProxy.start(processId, proxyPort)` — viewer 用 listen を先に開ける
+6. `post` で `previewProxy.start(processId, proxyPort)` — viewer 用 listen を先に開ける。
+   close→bind race で EADDRINUSE が起きた場合、`listenOnFreePort` 経由で新規 port を取り直して
+   atomic に rebind し、実 bound port を返す
 7. `post` 続きで `devServer.start({ processType: "devserver", context: {...}, ... })` に
    `config.server` と `AK_*` 用 context を渡して非同期起動
 8. `LogCollector` が子の stdout を流しながら `detectDevServerUrl` で URL を検出した瞬間、
    `previewProxy.setTarget(processId, url)` で proxy の転送先を確定
-9. `{ executionProcessId }` を返却
+9. `finish` ステップで bound port が pre 予約と異なれば `DevServerProcess.proxyPort` を update
+   （race が起きなければ no-op）
+10. `{ executionProcessId }` を返却
 
 ### 停止
 
