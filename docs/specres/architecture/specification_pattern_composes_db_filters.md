@@ -2,7 +2,7 @@
 id: "01KPPZWHXX6SCHAHJ36VA70ZJE"
 name: "specification_pattern_composes_db_filters"
 status: "stable"
-last_verified: "2026-04-21"
+last_verified: "2026-04-25"
 ---
 
 ## 関連ファイル
@@ -59,6 +59,43 @@ const rows = await ctx.db.queryAll(sql`SELECT * FROM tasks WHERE ${where}`);
 - `SpecsOf<typeof x>` — defineSpecs の戻り値から Union 型を抽出
 - `compToSQL(spec, convert)` — Repository の共通 AND/OR/NOT 処理
 - `Repository.get(ctx, spec)` / `list(ctx, spec, cursor)` — 標準インターフェース
+
+## 複数取得戦略 (N+1 回避)
+
+Usecase の read ステップで、親エンティティのリストに対して子エンティティを取りに行く必要が
+出たとき、**per-parent でループするのは禁止**。Spec を集合化して 1 クエリにまとめる。
+
+- 単数 spec（`ByExecutionProcessId`）の隣に **複数 spec**（`ByExecutionProcessIds`）を defineSpecs に並べる
+- Repository 側の `*SpecToSQL` は `IN (${sql.list(ids)})` で展開する。空配列は `1 = 0` を返して
+  「常に false」にする（`IN ()` は PostgreSQL で構文エラー）
+- Usecase 側は `list` で一括 fetch → `Map<parentId, child>` で結合する
+
+```ts
+// Model
+const _specs = defineSpecs({
+  ByExecutionProcessId: (id: string) => ({ executionProcessId: id }),
+  ByExecutionProcessIds: (ids: string[]) => ({ executionProcessIds: ids }),
+});
+
+// Repository (postgres/common.ts)
+case "ByExecutionProcessIds":
+  if (spec.executionProcessIds.length === 0) return sql`1 = 0`;
+  return sql`execution_process_id IN (${sql.list(spec.executionProcessIds)})`;
+
+// Usecase (read step)
+const ids = processes.map(p => p.id);
+const turnsPage = await ctx.repos.codingAgentTurn.list(
+  CodingAgentTurn.ByExecutionProcessIds(ids),
+  { limit: ids.length },
+);
+const turnByProcessId = new Map(turnsPage.items.map(t => [t.executionProcessId, t]));
+```
+
+事例: `server/src/usecases/execution/get-conversation-history.ts` — N+1 を 2 クエリに集約。
+
+OR (`.or()`) 連鎖でも動くが、巨大な OR ツリーは可読性も実行計画も悪化するので使わない。
+集約や JOIN が必須な複雑ケース（最新 turn 抽出など）は Spec を諦めて Repository に
+専用メソッドを足す（[`raw_sql_is_used_instead_of_orm`](./raw_sql_is_used_instead_of_orm.md) の JOIN 戦略）。
 
 ## 関連する動作
 

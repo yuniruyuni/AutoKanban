@@ -49,23 +49,30 @@ export const getConversationHistory = (sessionId: string) =>
 				cursor = page.nextCursor;
 			}
 
-			// Get coding agent turns for each process
-			const turns: ConversationTurn[] = [];
-
-			for (const process of codingAgentProcesses) {
-				const turn = await ctx.repos.codingAgentTurn.get(
-					CodingAgentTurn.ByExecutionProcessId(process.id),
+			// Batch-load all turns in a single IN-query to avoid N+1 round-trips.
+			const processIds = codingAgentProcesses.map((p) => p.id);
+			const turnsByProcessId = new Map<string, CodingAgentTurn>();
+			if (processIds.length > 0) {
+				const turnsPage = await ctx.repos.codingAgentTurn.list(
+					CodingAgentTurn.ByExecutionProcessIds(processIds),
+					{ limit: processIds.length },
 				);
+				for (const turn of turnsPage.items) {
+					turnsByProcessId.set(turn.executionProcessId, turn);
+				}
+			}
 
-				turns.push({
+			const turns: ConversationTurn[] = codingAgentProcesses.map((process) => {
+				const turn = turnsByProcessId.get(process.id);
+				return {
 					id: turn?.id ?? process.id,
 					executionProcessId: process.id,
 					prompt: turn?.prompt ?? null,
 					summary: turn?.summary ?? null,
 					status: process.status,
 					createdAt: process.createdAt,
-				});
-			}
+				};
+			});
 
 			return { sessionId, turns };
 		},

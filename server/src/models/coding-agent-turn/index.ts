@@ -43,11 +43,15 @@ export namespace CodingAgentTurn {
 		ByExecutionProcessId: (executionProcessId: string) => ({
 			executionProcessId,
 		}),
+		ByExecutionProcessIds: (executionProcessIds: string[]) => ({
+			executionProcessIds,
+		}),
 		ByAgentSessionId: (agentSessionId: string) => ({ agentSessionId }),
 		HasAgentSessionId: () => ({}),
 	});
 	export const ById = _specs.ById;
 	export const ByExecutionProcessId = _specs.ByExecutionProcessId;
+	export const ByExecutionProcessIds = _specs.ByExecutionProcessIds;
 	export const ByAgentSessionId = _specs.ByAgentSessionId;
 	export const HasAgentSessionId = _specs.HasAgentSessionId;
 

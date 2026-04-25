@@ -259,6 +259,46 @@ describe("CodingAgentTurnRepository spec filtering", () => {
 		expect(retrieved?.executionProcessId).toBe(EXECUTION_PROCESS_ID);
 	});
 
+	test("ByExecutionProcessIds filters in a single IN query", async () => {
+		const capRepo = new CodingAgentProcessRepository();
+		const ep2 = createTestCodingAgentProcess({ sessionId: SESSION_ID });
+		const ep3 = createTestCodingAgentProcess({ sessionId: SESSION_ID });
+		await capRepo.upsert(wCtx, ep2);
+		await capRepo.upsert(wCtx, ep3);
+
+		const t1 = createTestCodingAgentTurn({
+			executionProcessId: EXECUTION_PROCESS_ID,
+		});
+		const t2 = createTestCodingAgentTurn({ executionProcessId: ep2.id });
+		const t3 = createTestCodingAgentTurn({ executionProcessId: ep3.id });
+		await turnRepo.upsert(wCtx, t1);
+		await turnRepo.upsert(wCtx, t2);
+		await turnRepo.upsert(wCtx, t3);
+
+		const page = await turnRepo.list(
+			rCtx,
+			CodingAgentTurn.ByExecutionProcessIds([EXECUTION_PROCESS_ID, ep2.id]),
+			{ limit: 50 },
+		);
+		expect(page.items).toHaveLength(2);
+		const ids = page.items.map((t) => t.executionProcessId).sort();
+		expect(ids).toEqual([EXECUTION_PROCESS_ID, ep2.id].sort());
+	});
+
+	test("ByExecutionProcessIds with empty array returns nothing", async () => {
+		await turnRepo.upsert(
+			wCtx,
+			createTestCodingAgentTurn({ executionProcessId: EXECUTION_PROCESS_ID }),
+		);
+
+		const page = await turnRepo.list(
+			rCtx,
+			CodingAgentTurn.ByExecutionProcessIds([]),
+			{ limit: 50 },
+		);
+		expect(page.items).toHaveLength(0);
+	});
+
 	test("ByAgentSessionId filters correctly", async () => {
 		const turn = createTestCodingAgentTurn({
 			executionProcessId: EXECUTION_PROCESS_ID,

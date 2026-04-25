@@ -76,10 +76,12 @@ describe("getConversationHistory", () => {
 				list: () => ({ items: [process1, process2], hasMore: false }),
 			} as never,
 			codingAgentTurn: {
-				get: (spec: { executionProcessId?: string }) => {
-					if (spec.executionProcessId === process1.id) return turn1;
-					if (spec.executionProcessId === process2.id) return turn2;
-					return null;
+				list: (spec: { executionProcessIds?: string[] }) => {
+					const ids = new Set(spec.executionProcessIds ?? []);
+					const items = [turn1, turn2].filter((t) =>
+						ids.has(t.executionProcessId),
+					);
+					return { items, hasMore: false };
 				},
 			} as never,
 		});
@@ -116,11 +118,16 @@ describe("getConversationHistory", () => {
 				}),
 			} as never,
 			codingAgentTurn: {
-				get: () => ({
-					id: "turn-1",
-					executionProcessId: codingProcess.id,
-					prompt: "Coding prompt",
-					summary: "Coding summary",
+				list: () => ({
+					items: [
+						{
+							id: "turn-1",
+							executionProcessId: codingProcess.id,
+							prompt: "Coding prompt",
+							summary: "Coding summary",
+						},
+					],
+					hasMore: false,
 				}),
 			} as never,
 		});
@@ -150,7 +157,7 @@ describe("getConversationHistory", () => {
 				list: () => ({ items: [process], hasMore: false }),
 			} as never,
 			codingAgentTurn: {
-				get: () => null, // No turn record
+				list: () => ({ items: [], hasMore: false }), // No turn records
 			} as never,
 		});
 
@@ -193,12 +200,15 @@ describe("getConversationHistory", () => {
 				},
 			} as never,
 			codingAgentTurn: {
-				get: (spec: { executionProcessId?: string }) => ({
-					id: `turn-${spec.executionProcessId}`,
-					executionProcessId: spec.executionProcessId,
-					prompt: `Prompt ${spec.executionProcessId}`,
-					summary: null,
-				}),
+				list: (spec: { executionProcessIds?: string[] }) => {
+					const items = (spec.executionProcessIds ?? []).map((id) => ({
+						id: `turn-${id}`,
+						executionProcessId: id,
+						prompt: `Prompt ${id}`,
+						summary: null,
+					}));
+					return { items, hasMore: false };
+				},
 			} as never,
 		});
 

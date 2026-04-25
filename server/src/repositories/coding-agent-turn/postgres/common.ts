@@ -17,6 +17,7 @@ export interface CodingAgentTurnRow {
 type CodingAgentTurnSpecData =
 	| { type: "ById"; id: string }
 	| { type: "ByExecutionProcessId"; executionProcessId: string }
+	| { type: "ByExecutionProcessIds"; executionProcessIds: string[] }
 	| { type: "ByAgentSessionId"; agentSessionId: string }
 	| { type: "HasAgentSessionId" };
 
@@ -28,6 +29,11 @@ export function codingAgentTurnSpecToSQL(
 			return sql`id = ${spec.id}`;
 		case "ByExecutionProcessId":
 			return sql`execution_process_id = ${spec.executionProcessId}`;
+		case "ByExecutionProcessIds":
+			if (spec.executionProcessIds.length === 0) {
+				return sql`1 = 0`;
+			}
+			return sql`execution_process_id IN (${sql.list(spec.executionProcessIds)})`;
 		case "ByAgentSessionId":
 			return sql`agent_session_id = ${spec.agentSessionId}`;
 		case "HasAgentSessionId":
