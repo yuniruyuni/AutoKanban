@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS dev_server_processes (
   session_id TEXT NOT NULL REFERENCES sessions(id),
   status TEXT NOT NULL DEFAULT 'running',
   exit_code INTEGER,
-  proxy_port INTEGER NOT NULL,
+  proxy_port INTEGER NOT NULL DEFAULT 0,
   started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   completed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

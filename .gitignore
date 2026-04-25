@@ -47,3 +47,6 @@ temp/
 
 # Playwright MCP
 .playwright-mcp/
+
+# Codex CLI
+.codex
