@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-25T17:12:46Z",
+  "generated_at": "2026-04-25T17:29:15Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -600,7 +600,7 @@
       "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/raw_sql_is_used_instead_of_orm.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-25"
     },
     {
       "id": "01KPPZWHXTQ7W9GC1597XGM4VW",
@@ -632,7 +632,7 @@
       "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/specification_pattern_composes_db_filters.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-25"
     },
     {
       "id": "01KPPZWHXYJQ6KJBGSCWD8NMKG",

@@ -2,7 +2,7 @@
 id: "01KPPZWHXS4NJSCB1ZVD88TRP4"
 name: "raw_sql_is_used_instead_of_orm"
 status: "stable"
-last_verified: "2026-04-21"
+last_verified: "2026-04-25"
 ---
 
 ## 関連ファイル
@@ -56,12 +56,40 @@ const rows = await ctx.db.queryAll(fragment);
 ## 主要メンバー
 
 - `sql` (タグ付きテンプレート): `SQLFragment { query, params }` を返す
-- `sql.join(values, sep)` / `sql.raw(str)` / `sql.empty`
+- `sql.join(values, sep)` / `sql.raw(str)` / `sql.empty` / `sql.list(values)` (`IN (...)` 用)
 - `PgDatabase.queryGet / queryAll / queryRun`: パラメータの順序は SQL Builder 側に閉じる
 - Repository 標準メソッド: `get(ctx, spec)`, `list(ctx, spec, cursor)`, `upsert(ctx, entity)`,
   `delete(ctx, spec)`, `count(ctx, spec)`
 - スキーマ管理: `server/schema.sql` が single source of truth、起動時に pgschema が差分適用
   （[`postgresql_is_embedded_for_storage`](./postgresql_is_embedded_for_storage.md)）
+
+## 複数取得戦略 (JOIN を直接書く)
+
+子テーブルの集約条件（最新 1 件 / 集計値 / 別テーブルでの WHERE）が絡むとき、Spec の
+`IN (...)` だけでは表現できない。その場合は Repository に専用メソッドを足し、`JOIN` を
+SQL Builder で直接書く。Spec で済むケースは
+[`specification_pattern_composes_db_filters`](./specification_pattern_composes_db_filters.md)
+の「複数取得戦略」を優先し、JOIN は最後の手段。
+
+判断基準:
+
+| ケース | 戦略 |
+| --- | --- |
+| 単純な集合 fetch (`WHERE x IN (...)`) | Spec に複数 spec を足す (`ByXxxIds`) |
+| 親→子 1:1 を一括取得して結合 | 同上、Usecase 側で `Map` 結合 |
+| 「最新 1 件」「子テーブルの集約条件」「別テーブル経由の絞り込み」 | Repository に専用メソッド、SQL で JOIN を書く |
+
+事例:
+`server/src/repositories/coding-agent-turn/postgres/findLatestResumeInfoByWorkspaceId.ts` —
+`coding_agent_turns × coding_agent_processes × sessions` を JOIN し、`workspace_id` 経由で
+「resume 可能な最新 turn」1 件を取り出す。Spec 合成では書けない。
+
+ルール:
+
+- ORM 風の include / with API は作らない (Repository の責務を肥大化させる)
+- JOIN クエリは Repository 内に閉じ込める。Usecase に SQL を漏らさない
+- 出力カラムは snake_case のまま `db.queryGet<{ snake_case_column: T }>` で受けて、
+  Repository 内で `rowToXxx` ヘルパーで camelCase Model に変換する
 
 ## 関連する動作
 
