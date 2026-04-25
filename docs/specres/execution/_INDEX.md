@@ -11,5 +11,5 @@
 | [follow_up_draft_is_saved_and_restored](follow_up_draft_is_saved_and_restored.md) | stable | 2026-04-21 |
 | [execution_or_latest_is_fetched](execution_or_latest_is_fetched.md) | stable | 2026-04-21 |
 | [session_is_the_bundle_of_agent_runs](session_is_the_bundle_of_agent_runs.md) | stable | 2026-04-21 |
-| [coding_agent_process_is_one_executor_invocation](coding_agent_process_is_one_executor_invocation.md) | stable | 2026-04-21 |
+| [coding_agent_process_is_one_executor_invocation](coding_agent_process_is_one_executor_invocation.md) | stable | 2026-04-25 |
 | [coding_agent_turn_is_the_resume_identity](coding_agent_turn_is_the_resume_identity.md) | stable | 2026-04-21 |

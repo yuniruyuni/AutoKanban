@@ -5,6 +5,10 @@ import type { DriverCallbacks } from "../../orchestrator/driver-callbacks";
 import type { DriverProcess } from "../../orchestrator/driver-process";
 import type { DriverSpawnOptions } from "../../orchestrator/driver-spawn-options";
 import {
+	DEFAULT_GRACEFUL_STOP_TIMEOUT_MS,
+	performGracefulStop,
+} from "../../orchestrator/graceful-stop";
+import {
 	asClaudeCodeProcess,
 	ClaudeCodeExecutor,
 	type ClaudeCodeProcess,
@@ -259,6 +263,21 @@ export class ClaudeCodeDriver implements ICodingAgentDriver {
 	kill(process: DriverProcess): void {
 		const nativeProcess = asClaudeCodeProcess(process);
 		this.executor.kill(nativeProcess);
+	}
+
+	async gracefulStop(
+		process: DriverProcess,
+		options?: { timeoutMs?: number },
+	): Promise<{ exitCode: number; killed: boolean; forced: boolean }> {
+		const nativeProcess = asClaudeCodeProcess(process);
+		return performGracefulStop(
+			{
+				interrupt: () => this.executor.interrupt(nativeProcess),
+				kill: () => nativeProcess.proc.kill(9),
+				exited: this.executor.wait(nativeProcess),
+			},
+			{ timeoutMs: options?.timeoutMs ?? DEFAULT_GRACEFUL_STOP_TIMEOUT_MS },
+		);
 	}
 
 	async wait(

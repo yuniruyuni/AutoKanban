@@ -2,7 +2,7 @@
 id: "01KPNX4PA8CV9HVRA6SADJ0WSZ"
 name: "coding_agent_process_is_one_executor_invocation"
 status: "stable"
-last_verified: "2026-04-21"
+last_verified: "2026-04-25"
 ---
 
 ## 関連ファイル
@@ -66,6 +66,31 @@ agent ごとに制約が異なる。
 
 AutoKanban はこれを受け入れ、Resume や Fork のたびに新 CodingAgentProcess を作る。
 前 Process は `killed` / `completed` として残り、履歴として参照可能。
+
+### Shutdown ポリシー（graceful stop）
+
+CodingAgentProcess を停止するときは、driver 共通の **graceful shutdown** パターンを通す:
+
+1. `SIGINT` を送る（`driver.interrupt()`）
+2. `process.exited` を `timeoutMs`（既定 5 秒）で race
+3. timeout したら `SIGKILL` を送る（`driver.kill()` ではなく `proc.kill(9)` を直に）
+4. 最終的に `exited` が解決するのを待ち、`{ exitCode, killed, forced }` を返す
+
+実装は `server/src/repositories/executor/orchestrator/graceful-stop.ts` の
+`performGracefulStop()` に集約され、`ICodingAgentDriver.gracefulStop()` 経由で各 driver から呼ぶ。
+これにより:
+
+- claude-code（SIGINT で生成だけ止まりプロセスは生き続ける protocol mode）でも、
+  timeout 後に SIGKILL が確実に飛ぶので「止まらないプロセス」を作らない
+- codex-cli / gemini-cli（SIGINT で素直に終わる one-shot 系）は早期に exit して SIGKILL は不要
+- usecase / orchestrator は driver 別の差を意識せず `gracefulStop()` を呼ぶだけでよい
+
+`ExecutorRepository.stop()` は内部で `driver.gracefulStop()` を起動し、結果は待たない（
+caller を block しないため）。実プロセスの終了は既存の `setupCompletionHandler` が `driver.wait()`
+経由で観測し、`on-process-complete` callback で DB ステータスを更新する。
+
+`driver.interrupt()` / `driver.kill()` は引き続き interface に存在するが、
+**外部から直接呼ぶのは非推奨**。shutdown 意図のときは `gracefulStop()` を使う。
 
 ### Agent driver と infra driver の分離
 

@@ -129,7 +129,12 @@ export class ExecutorRepository implements ExecutorRepositoryDef {
 			return false;
 		}
 
-		runningProcess.driver.interrupt(runningProcess.process);
+		// Run graceful shutdown in the background so the caller is not blocked on
+		// the SIGINT timeout. The completion handler set up at start time will
+		// observe the actual exit and fire on-process-complete.
+		runningProcess.driver
+			.gracefulStop(runningProcess.process)
+			.catch((err) => this.logger.error("Error during graceful stop:", err));
 		return true;
 	}
 

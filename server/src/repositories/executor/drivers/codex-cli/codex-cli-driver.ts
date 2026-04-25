@@ -5,6 +5,10 @@ import type { DriverApprovalRequest } from "../../orchestrator/driver-approval-r
 import type { DriverCallbacks } from "../../orchestrator/driver-callbacks";
 import type { DriverProcess } from "../../orchestrator/driver-process";
 import type { DriverSpawnOptions } from "../../orchestrator/driver-spawn-options";
+import {
+	DEFAULT_GRACEFUL_STOP_TIMEOUT_MS,
+	performGracefulStop,
+} from "../../orchestrator/graceful-stop";
 
 interface CodexProcess extends DriverProcess {
 	proc: import("bun").Subprocess<"pipe", "pipe", "pipe">;
@@ -75,6 +79,24 @@ export class CodexCliDriver implements ICodingAgentDriver {
 
 	kill(process: DriverProcess): void {
 		(process as CodexProcess).proc.kill();
+	}
+
+	async gracefulStop(
+		process: DriverProcess,
+		options?: { timeoutMs?: number },
+	): Promise<{ exitCode: number; killed: boolean; forced: boolean }> {
+		const cp = process as CodexProcess;
+		return performGracefulStop(
+			{
+				interrupt: () => cp.proc.kill(2),
+				kill: () => cp.proc.kill(9),
+				exited: cp.proc.exited.then((exitCode) => ({
+					exitCode,
+					killed: cp.proc.killed,
+				})),
+			},
+			{ timeoutMs: options?.timeoutMs ?? DEFAULT_GRACEFUL_STOP_TIMEOUT_MS },
+		);
 	}
 
 	async wait(
