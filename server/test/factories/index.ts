@@ -7,6 +7,7 @@ import { DevServerProcess } from "../../src/models/dev-server-process";
 import { Project } from "../../src/models/project";
 import { Session } from "../../src/models/session";
 import { Task } from "../../src/models/task";
+import { TaskTemplate } from "../../src/models/task-template";
 import { Tool } from "../../src/models/tool";
 import { Variant } from "../../src/models/variant";
 import { Workspace } from "../../src/models/workspace";
@@ -147,6 +148,19 @@ export function createTestCodingAgentProcessLogs(
 		logs: "test log output",
 		...overrides,
 	};
+}
+
+/**
+ * Create a test TaskTemplate with sensible defaults and overrides.
+ */
+export function createTestTaskTemplate(
+	overrides: Partial<TaskTemplate> = {},
+): TaskTemplate {
+	const base = TaskTemplate.create({
+		title: "Test Template",
+		description: "Test template description",
+	});
+	return { ...base, ...overrides };
 }
 
 /**
