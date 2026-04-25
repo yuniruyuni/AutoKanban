@@ -67,65 +67,76 @@ async function downloadBinary(): Promise<string> {
 	return binaryPath;
 }
 
-// @specre 01KQ2EWC7XPARS1RBHKVW2FNV3
-export async function ensurePgSchema(connectionParams: {
+export interface PgConnectionParams {
 	host: string;
 	port: number;
 	user: string;
 	password: string;
 	database: string;
-}): Promise<void> {
+}
+
+export async function applySchema(
+	connectionParams: PgConnectionParams,
+	schemaFilePath: string,
+): Promise<void> {
 	const binaryPath = await downloadBinary();
-	const schemaDir = extractSchema();
 
-	try {
-		const result = spawnSync(
-			binaryPath,
-			[
-				"apply",
-				"--host",
-				connectionParams.host,
-				"--port",
-				connectionParams.port.toString(),
-				"--db",
-				connectionParams.database,
-				"--user",
-				connectionParams.user,
-				"--schema",
-				"public",
-				"--file",
-				join(schemaDir.path, "schema.sql"),
-				"--auto-approve",
-				// Use the same postgres instance for plan validation
-				// to avoid starting a second embedded postgres (which can
-				// fail on macOS due to limited SysV shared memory).
-				"--plan-host",
-				connectionParams.host,
-				"--plan-port",
-				connectionParams.port.toString(),
-				"--plan-db",
-				connectionParams.database,
-				"--plan-user",
-				connectionParams.user,
-				"--plan-password",
-				connectionParams.password,
-			],
-			{
-				env: {
-					...process.env,
-					PGPASSWORD: connectionParams.password,
-				},
-				stdio: "pipe",
+	const result = spawnSync(
+		binaryPath,
+		[
+			"apply",
+			"--host",
+			connectionParams.host,
+			"--port",
+			connectionParams.port.toString(),
+			"--db",
+			connectionParams.database,
+			"--user",
+			connectionParams.user,
+			"--schema",
+			"public",
+			"--file",
+			schemaFilePath,
+			"--auto-approve",
+			// Use the same postgres instance for plan validation
+			// to avoid starting a second embedded postgres (which can
+			// fail on macOS due to limited SysV shared memory).
+			"--plan-host",
+			connectionParams.host,
+			"--plan-port",
+			connectionParams.port.toString(),
+			"--plan-db",
+			connectionParams.database,
+			"--plan-user",
+			connectionParams.user,
+			"--plan-password",
+			connectionParams.password,
+		],
+		{
+			env: {
+				...process.env,
+				PGPASSWORD: connectionParams.password,
 			},
-		);
+			stdio: "pipe",
+		},
+	);
 
-		if (result.status !== 0) {
-			const stderr = result.stderr?.toString() ?? "";
-			const stdout = result.stdout?.toString() ?? "";
-			throw new Error(
-				`pgschema apply failed (exit ${result.status}):\n${stderr}\n${stdout}`,
-			);
-		}
+	if (result.status !== 0) {
+		const stderr = result.stderr?.toString() ?? "";
+		const stdout = result.stdout?.toString() ?? "";
+		throw new Error(
+			`pgschema apply failed (exit ${result.status}):\n${stderr}\n${stdout}`,
+		);
+	}
+}
+
+// @specre 01KQ2EWC7XPARS1RBHKVW2FNV3
+export async function ensurePgSchema(
+	connectionParams: PgConnectionParams,
+): Promise<void> {
+	const schemaDir = extractSchema();
+	try {
+		await applySchema(connectionParams, join(schemaDir.path, "schema.sql"));
 	} finally {
 		schemaDir.cleanup();
 	}
