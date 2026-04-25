@@ -3,13 +3,27 @@ import {
 	CallToolRequestSchema,
 	ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type { TrpcHttpClient } from "../../../infra/trpc/client";
+import { TaskStatusSchema } from "../../trpc/routers/task";
 
-interface ToolDef {
+export interface ToolDef {
 	name: string;
 	description: string;
-	inputSchema: Record<string, unknown>;
-	handler: (args: Record<string, unknown>) => Promise<unknown>;
+	schema: z.ZodTypeAny;
+	handler: (input: unknown) => Promise<unknown>;
+}
+
+// Per-tool typed builder: schema and handler input share a Zod-inferred type at
+// the definition site, but the resulting array stays uniformly typed.
+function defineTool<S extends z.ZodTypeAny>(args: {
+	name: string;
+	description: string;
+	schema: S;
+	handler: (input: z.infer<S>) => Promise<unknown>;
+}): ToolDef {
+	return args as ToolDef;
 }
 
 function ok(result: unknown) {
@@ -22,145 +36,138 @@ function err(message: string) {
 	return { content: [{ type: "text" as const, text: message }], isError: true };
 }
 
+export function formatZodError(error: z.ZodError, toolName: string): string {
+	const lines = error.errors.map((issue) => {
+		const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
+		return `  - ${path}: ${issue.message}`;
+	});
+	return `Invalid input for tool "${toolName}":\n${lines.join("\n")}`;
+}
+
+export function buildInputSchema(
+	schema: z.ZodTypeAny,
+): Record<string, unknown> {
+	const json = zodToJsonSchema(schema, { target: "jsonSchema7" }) as Record<
+		string,
+		unknown
+	>;
+	// MCP `inputSchema` is an inline JSON Schema fragment; the top-level
+	// `$schema` URI only matters for standalone documents.
+	delete json.$schema;
+	return json;
+}
+
+const ProjectIdField = z.string().uuid().describe("Project ID (UUID)");
+const TaskIdField = z.string().uuid().describe("Task ID (UUID)");
+
 function buildTools(client: TrpcHttpClient): ToolDef[] {
 	return [
-		{
+		defineTool({
 			name: "list_projects",
 			description: "List all the available projects",
-			inputSchema: { type: "object", properties: {} },
-			handler: async () => {
-				const result = await client.query("project.list");
-				return result;
-			},
-		},
-		{
+			schema: z.object({}).strict(),
+			handler: async () => client.query("project.list"),
+		}),
+		defineTool({
 			name: "list_tasks",
 			description:
 				"List all the tasks in a project with optional status filtering. `project_id` is required!",
-			inputSchema: {
-				type: "object",
-				properties: {
-					project_id: { type: "string", description: "Project ID (UUID)" },
-					status: {
-						type: "string",
-						enum: ["todo", "inprogress", "inreview", "done", "cancelled"],
-						description: "Filter by task status (optional)",
-					},
-				},
-				required: ["project_id"],
-			},
-			handler: async (args) => {
-				const input: Record<string, unknown> = {
-					projectId: args.project_id,
+			schema: z
+				.object({
+					project_id: ProjectIdField,
+					status: TaskStatusSchema.optional().describe(
+						"Filter by task status (optional)",
+					),
+				})
+				.strict(),
+			handler: async (input) => {
+				const trpcInput: Record<string, unknown> = {
+					projectId: input.project_id,
 				};
-				if (args.status) input.status = args.status;
-				return client.query("task.list", input);
+				if (input.status) trpcInput.status = input.status;
+				return client.query("task.list", trpcInput);
 			},
-		},
-		{
+		}),
+		defineTool({
 			name: "create_task",
 			description:
 				"Create a new task in a project. Always pass the `project_id` of the project you want to create the task in - it is required!",
-			inputSchema: {
-				type: "object",
-				properties: {
-					project_id: { type: "string", description: "Project ID (UUID)" },
-					title: { type: "string", description: "Task title" },
-					description: {
-						type: "string",
-						description: "Task description (optional)",
-					},
-				},
-				required: ["project_id", "title"],
-			},
-			handler: async (args) => {
-				const input: Record<string, unknown> = {
-					projectId: args.project_id,
-					title: args.title,
+			schema: z
+				.object({
+					project_id: ProjectIdField,
+					title: z.string().min(1).describe("Task title"),
+					description: z
+						.string()
+						.optional()
+						.describe("Task description (optional)"),
+				})
+				.strict(),
+			handler: async (input) => {
+				const trpcInput: Record<string, unknown> = {
+					projectId: input.project_id,
+					title: input.title,
 				};
-				if (args.description) input.description = args.description;
-				return client.mutation("task.create", input);
+				if (input.description) trpcInput.description = input.description;
+				return client.mutation("task.create", trpcInput);
 			},
-		},
-		{
+		}),
+		defineTool({
 			name: "get_task",
 			description:
 				"Get detailed information about a specific task. You can use `list_tasks` to find the `task_id`. `task_id` is required.",
-			inputSchema: {
-				type: "object",
-				properties: {
-					task_id: { type: "string", description: "Task ID (UUID)" },
-				},
-				required: ["task_id"],
-			},
-			handler: async (args) => {
-				return client.query("task.get", { taskId: args.task_id });
-			},
-		},
-		{
+			schema: z.object({ task_id: TaskIdField }).strict(),
+			handler: async (input) =>
+				client.query("task.get", { taskId: input.task_id }),
+		}),
+		defineTool({
 			name: "update_task",
 			description:
 				"Update an existing task's title, description, or status. `task_id` is required. `title`, `description`, and `status` are optional.",
-			inputSchema: {
-				type: "object",
-				properties: {
-					task_id: { type: "string", description: "Task ID (UUID)" },
-					title: { type: "string", description: "New title (optional)" },
-					description: {
-						type: "string",
-						description: "New description (optional)",
-					},
-					status: {
-						type: "string",
-						enum: ["todo", "inprogress", "inreview", "done", "cancelled"],
-						description: "New status (optional)",
-					},
-				},
-				required: ["task_id"],
+			schema: z
+				.object({
+					task_id: TaskIdField,
+					title: z.string().min(1).optional().describe("New title (optional)"),
+					description: z
+						.string()
+						.optional()
+						.describe("New description (optional)"),
+					status: TaskStatusSchema.optional().describe("New status (optional)"),
+				})
+				.strict(),
+			handler: async (input) => {
+				const trpcInput: Record<string, unknown> = { taskId: input.task_id };
+				if (input.title) trpcInput.title = input.title;
+				if (input.description) trpcInput.description = input.description;
+				if (input.status) trpcInput.status = input.status;
+				return client.mutation("task.update", trpcInput);
 			},
-			handler: async (args) => {
-				const input: Record<string, unknown> = { taskId: args.task_id };
-				if (args.title) input.title = args.title;
-				if (args.description) input.description = args.description;
-				if (args.status) input.status = args.status;
-				return client.mutation("task.update", input);
-			},
-		},
-		{
+		}),
+		defineTool({
 			name: "delete_task",
 			description: "Delete a task. `task_id` is required.",
-			inputSchema: {
-				type: "object",
-				properties: {
-					task_id: { type: "string", description: "Task ID (UUID)" },
-				},
-				required: ["task_id"],
-			},
-			handler: async (args) => {
-				return client.mutation("task.delete", { taskId: args.task_id });
-			},
-		},
-		{
+			schema: z.object({ task_id: TaskIdField }).strict(),
+			handler: async (input) =>
+				client.mutation("task.delete", { taskId: input.task_id }),
+		}),
+		defineTool({
 			name: "start_workspace_session",
 			description:
 				"Start working on a task by creating and launching a new workspace session.",
-			inputSchema: {
-				type: "object",
-				properties: {
-					task_id: { type: "string", description: "Task ID (UUID)" },
-					prompt: {
-						type: "string",
-						description: "Prompt for the agent (optional)",
-					},
-				},
-				required: ["task_id"],
+			schema: z
+				.object({
+					task_id: TaskIdField,
+					prompt: z
+						.string()
+						.optional()
+						.describe("Prompt for the agent (optional)"),
+				})
+				.strict(),
+			handler: async (input) => {
+				const trpcInput: Record<string, unknown> = { taskId: input.task_id };
+				if (input.prompt) trpcInput.prompt = input.prompt;
+				return client.mutation("execution.start", trpcInput);
 			},
-			handler: async (args) => {
-				const input: Record<string, unknown> = { taskId: args.task_id };
-				if (args.prompt) input.prompt = args.prompt;
-				return client.mutation("execution.start", input);
-			},
-		},
+		}),
 	];
 }
 
@@ -174,13 +181,13 @@ async function buildContextTool(
 		});
 		if (!context) return null;
 
-		return {
+		return defineTool({
 			name: "get_context",
 			description:
 				"Return project, task, and workspace metadata for the current workspace session context",
-			inputSchema: { type: "object", properties: {} },
+			schema: z.object({}).strict(),
 			handler: async () => context,
-		};
+		});
 	} catch {
 		return null;
 	}
@@ -204,7 +211,7 @@ export async function registerMcpTools(
 		tools: tools.map((t) => ({
 			name: t.name,
 			description: t.description,
-			inputSchema: t.inputSchema,
+			inputSchema: buildInputSchema(t.schema),
 		})),
 	}));
 
@@ -213,10 +220,12 @@ export async function registerMcpTools(
 		if (!tool) {
 			return err(`Unknown tool: ${request.params.name}`);
 		}
+		const parsed = tool.schema.safeParse(request.params.arguments ?? {});
+		if (!parsed.success) {
+			return err(formatZodError(parsed.error, tool.name));
+		}
 		try {
-			const result = await tool.handler(
-				(request.params.arguments ?? {}) as Record<string, unknown>,
-			);
+			const result = await tool.handler(parsed.data);
 			return ok(result);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
