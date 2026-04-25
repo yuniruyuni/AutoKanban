@@ -4,6 +4,10 @@ import type { DriverApprovalRequest } from "../../orchestrator/driver-approval-r
 import type { DriverCallbacks } from "../../orchestrator/driver-callbacks";
 import type { DriverProcess } from "../../orchestrator/driver-process";
 import type { DriverSpawnOptions } from "../../orchestrator/driver-spawn-options";
+import {
+	DEFAULT_GRACEFUL_STOP_TIMEOUT_MS,
+	performGracefulStop,
+} from "../../orchestrator/graceful-stop";
 
 interface GeminiProcess extends DriverProcess {
 	proc: import("bun").Subprocess<"pipe", "pipe", "pipe">;
@@ -112,6 +116,24 @@ export class GeminiCliDriver implements ICodingAgentDriver {
 	kill(driverProcess: DriverProcess): void {
 		const gp = driverProcess as GeminiProcess;
 		gp.proc.kill();
+	}
+
+	async gracefulStop(
+		driverProcess: DriverProcess,
+		options?: { timeoutMs?: number },
+	): Promise<{ exitCode: number; killed: boolean; forced: boolean }> {
+		const gp = driverProcess as GeminiProcess;
+		return performGracefulStop(
+			{
+				interrupt: () => gp.proc.kill(2),
+				kill: () => gp.proc.kill(9),
+				exited: gp.proc.exited.then((exitCode) => ({
+					exitCode,
+					killed: gp.proc.killed,
+				})),
+			},
+			{ timeoutMs: options?.timeoutMs ?? DEFAULT_GRACEFUL_STOP_TIMEOUT_MS },
+		);
 	}
 
 	async wait(

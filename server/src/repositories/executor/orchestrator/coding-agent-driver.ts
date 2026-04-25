@@ -59,11 +59,37 @@ export interface ICodingAgentDriver {
 		reason?: string,
 	): Promise<void>;
 
-	/** Interrupt current generation (SIGINT). Process stays alive. */
+	/**
+	 * Send SIGINT to the underlying process.
+	 *
+	 * For agents like Claude Code in protocol mode, SIGINT only interrupts the
+	 * current generation; the process stays alive. For one-shot drivers
+	 * (codex-cli, gemini-cli) SIGINT typically terminates the process.
+	 *
+	 * Used internally by `gracefulStop()`. Callers that want a process-level
+	 * shutdown should use `gracefulStop()` instead so that drivers behave
+	 * consistently regardless of how their CLI handles SIGINT.
+	 */
 	interrupt(process: DriverProcess): void;
 
-	/** Kill the process (SIGTERM). */
+	/**
+	 * Force-kill the process with SIGKILL.
+	 *
+	 * Used internally by `gracefulStop()` as the fallback when SIGINT does not
+	 * cause the process to exit within the configured timeout.
+	 */
 	kill(process: DriverProcess): void;
+
+	/**
+	 * Shut the process down using the shared graceful pattern:
+	 *   SIGINT → wait up to `timeoutMs` → SIGKILL.
+	 *
+	 * Resolves once the process has actually exited.
+	 */
+	gracefulStop(
+		process: DriverProcess,
+		options?: { timeoutMs?: number },
+	): Promise<{ exitCode: number; killed: boolean; forced: boolean }>;
 
 	/** Wait for the process to exit. */
 	wait(process: DriverProcess): Promise<{ exitCode: number; killed: boolean }>;

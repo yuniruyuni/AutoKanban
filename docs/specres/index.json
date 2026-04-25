@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-25T15:47:58Z",
+  "generated_at": "2026-04-25T16:27:59Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -504,7 +504,7 @@
       "status": "stable",
       "domain": "execution",
       "path": "docs/specres/execution/coding_agent_process_is_one_executor_invocation.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-25"
     },
     {
       "id": "01KPNX4PAAXA6FR10PJY9C1DF1",
@@ -791,7 +791,7 @@
     {
       "specre_id": "01KQ2EWC7XPARS1RBHKVW2FNV3",
       "file": "server/src/infra/db/pgschema.ts",
-      "line": 133
+      "line": 174
     },
     {
       "specre_id": "01KPZT8YMP9F6B9CJFFG809NM0",
