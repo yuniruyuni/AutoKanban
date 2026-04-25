@@ -82,7 +82,7 @@ export function DialogHeader({
 	size = "lg",
 }: DialogHeaderProps) {
 	return (
-		<div className="flex items-center justify-between border-b border-border px-6 py-5">
+		<div className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 py-5">
 			<div className="flex flex-col gap-1">
 				<h2
 					className={cn(
@@ -123,7 +123,14 @@ interface DialogContentProps {
 
 export function DialogContent({ children, className }: DialogContentProps) {
 	return (
-		<div className={cn("flex flex-col gap-5 p-6", className)}>{children}</div>
+		<div
+			className={cn(
+				"flex min-h-0 flex-col gap-5 overflow-y-auto p-6",
+				className,
+			)}
+		>
+			{children}
+		</div>
 	);
 }
 
@@ -136,7 +143,7 @@ export function DialogFooter({ children, className }: DialogFooterProps) {
 	return (
 		<div
 			className={cn(
-				"flex items-center justify-end gap-3 border-t border-border px-6 py-4",
+				"flex flex-shrink-0 items-center justify-end gap-3 border-t border-border px-6 py-4",
 				className,
 			)}
 		>
