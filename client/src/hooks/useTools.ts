@@ -25,7 +25,8 @@ interface CreateToolInput {
 	name: string;
 	icon: string;
 	iconColor?: string;
-	command: string;
+	command?: string;
+	argv?: string[] | null;
 	sortOrder?: number;
 }
 
@@ -35,6 +36,7 @@ interface UpdateToolInput {
 	icon?: string;
 	iconColor?: string;
 	command?: string;
+	argv?: string[] | null;
 	sortOrder?: number;
 }
 

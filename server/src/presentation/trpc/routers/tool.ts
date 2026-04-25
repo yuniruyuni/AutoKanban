@@ -15,13 +15,22 @@ export const toolRouter = router({
 
 	create: publicProcedure
 		.input(
-			z.object({
-				name: z.string().min(1),
-				icon: z.string().min(1),
-				iconColor: z.string().optional(),
-				command: z.string().min(1),
-				sortOrder: z.number().optional(),
-			}),
+			z
+				.object({
+					name: z.string().min(1),
+					icon: z.string().min(1),
+					iconColor: z.string().optional(),
+					command: z.string().default(""),
+					argv: z.array(z.string()).nullable().optional(),
+					sortOrder: z.number().optional(),
+				})
+				.refine(
+					(data) =>
+						(data.argv && data.argv.length > 0) || data.command.trim() !== "",
+					{
+						message: "Either argv or command must be non-empty",
+					},
+				),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const tool = Tool.create(input);
@@ -35,7 +44,8 @@ export const toolRouter = router({
 				name: z.string().min(1).optional(),
 				icon: z.string().min(1).optional(),
 				iconColor: z.string().optional(),
-				command: z.string().min(1).optional(),
+				command: z.string().optional(),
+				argv: z.array(z.string()).nullable().optional(),
 				sortOrder: z.number().optional(),
 			}),
 		)

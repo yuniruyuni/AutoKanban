@@ -29,12 +29,14 @@ export function ToolsPage() {
 		icon: string;
 		iconColor: string;
 		command: string;
+		argv: string[] | null;
 	}) => {
 		await createTool({
 			name: data.name,
 			icon: data.icon,
 			iconColor: data.iconColor,
 			command: data.command,
+			argv: data.argv,
 			sortOrder: tools.length,
 		});
 		setIsAddDialogOpen(false);
@@ -45,6 +47,7 @@ export function ToolsPage() {
 		icon: string;
 		iconColor: string;
 		command: string;
+		argv: string[] | null;
 	}) => {
 		if (!editingTool) return;
 		await updateTool({
@@ -155,6 +158,7 @@ export function ToolsPage() {
 								icon: editingTool.icon,
 								iconColor: editingTool.iconColor,
 								command: editingTool.command,
+								argv: editingTool.argv,
 							}}
 							onSubmit={handleUpdateTool}
 							onCancel={() => setEditingTool(null)}
@@ -177,6 +181,8 @@ interface ToolRowProps {
 
 function ToolRow({ tool, onEdit, onDelete, isDeleting }: ToolRowProps) {
 	const IconComponent = getIconComponent(tool.icon);
+	const display =
+		tool.argv && tool.argv.length > 0 ? tool.argv.join(" ") : tool.command;
 
 	return (
 		<div className="flex items-center gap-4 py-4 px-5 border border-border rounded-none first:rounded-t-lg last:rounded-b-lg">
@@ -190,7 +196,7 @@ function ToolRow({ tool, onEdit, onDelete, isDeleting }: ToolRowProps) {
 				<div className="text-[15px] font-semibold text-primary-foreground">
 					{tool.name}
 				</div>
-				<div className="text-xs text-muted font-mono">{tool.command}</div>
+				<div className="text-xs text-muted font-mono">{display}</div>
 			</div>
 			<div className="flex items-center gap-2">
 				<button

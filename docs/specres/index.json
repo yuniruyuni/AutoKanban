@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-25T14:05:30Z",
+  "generated_at": "2026-04-25T15:47:58Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -360,7 +360,7 @@
       "status": "stable",
       "domain": "tool",
       "path": "docs/specres/tool/tool_is_managed_and_executed.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-25"
     },
     {
       "id": "01KPNTBSG00XN1PFDMY201CH8A",
@@ -536,7 +536,7 @@
       "status": "stable",
       "domain": "tool",
       "path": "docs/specres/tool/tool_is_a_user_defined_shell_launcher.md",
-      "last_verified": "2026-04-21"
+      "last_verified": "2026-04-25"
     },
     {
       "id": "01KPNX4PAFDPFGKQKSWRHPM2XV",
@@ -664,7 +664,7 @@
       "status": "stable",
       "domain": "architecture",
       "path": "docs/specres/architecture/local_only_security_model.md",
-      "last_verified": "2026-04-22"
+      "last_verified": "2026-04-25"
     },
     {
       "id": "01KPQ6W85WC3WMHX9ZKHAACSJ6",
@@ -791,7 +791,7 @@
     {
       "specre_id": "01KQ2EWC7XPARS1RBHKVW2FNV3",
       "file": "server/src/infra/db/pgschema.ts",
-      "line": 70
+      "line": 133
     },
     {
       "specre_id": "01KPZT8YMP9F6B9CJFFG809NM0",

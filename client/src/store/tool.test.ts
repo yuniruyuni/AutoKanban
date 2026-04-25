@@ -7,6 +7,7 @@ const makeTool = (overrides: Partial<Tool> = {}): Tool => ({
 	icon: "wrench",
 	iconColor: "#000",
 	command: "bun build",
+	argv: null,
 	sortOrder: 1,
 	createdAt: "2024-01-01T00:00:00Z",
 	updatedAt: "2024-01-01T00:00:00Z",

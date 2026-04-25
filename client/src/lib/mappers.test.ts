@@ -65,6 +65,7 @@ describe("mapTool", () => {
 		icon: "wrench",
 		iconColor: "#ff0000",
 		command: "bun run build",
+		argv: null,
 		sortOrder: 1,
 		createdAt: "2024-01-01T00:00:00Z",
 		updatedAt: "2024-01-02T00:00:00Z",
@@ -78,5 +79,10 @@ describe("mapTool", () => {
 	test("preserves sortOrder value", () => {
 		const result = mapTool({ ...baseTool, sortOrder: 99 });
 		expect(result.sortOrder).toBe(99);
+	});
+
+	test("preserves argv array", () => {
+		const result = mapTool({ ...baseTool, argv: ["code", "{path}"] });
+		expect(result.argv).toEqual(["code", "{path}"]);
 	});
 });

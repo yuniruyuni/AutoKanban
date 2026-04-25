@@ -79,6 +79,7 @@ describe("Tool.cursor()", () => {
 		icon: "check",
 		iconColor: "#6B7280",
 		command: "bun lint",
+		argv: null,
 		sortOrder: 2,
 		createdAt: now,
 		updatedAt: now,

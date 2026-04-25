@@ -50,6 +50,18 @@ describe("ToolRepository round-trip", () => {
 		expectEntityEqual(retrieved as Tool, tool, ["createdAt", "updatedAt"]);
 	});
 
+	test("preserves argv array including shell-metacharacter args", async () => {
+		const tool = createTestTool({
+			name: "Cursor",
+			argv: ["cursor", "/my repo; touch x", "$HOME"],
+		});
+		await toolRepo.upsert(wCtx, tool);
+
+		const retrieved = await toolRepo.get(rCtx, Tool.ById(tool.id));
+		expect(retrieved).not.toBeNull();
+		expect(retrieved?.argv).toEqual(["cursor", "/my repo; touch x", "$HOME"]);
+	});
+
 	test("preserves default iconColor", async () => {
 		const tool = createTestTool(); // default iconColor = '#6B7280'
 		await toolRepo.upsert(wCtx, tool);
@@ -207,7 +219,7 @@ describe("ToolRepository listAll", () => {
 // ============================================
 
 describe("ToolRepository executeCommand", () => {
-	test("executes command via shell (sh -c)", () => {
+	test("spawns argv directly without a shell", () => {
 		let capturedCmd: string[] = [];
 		let capturedCwd: string | undefined;
 
@@ -217,11 +229,25 @@ describe("ToolRepository executeCommand", () => {
 		}) as never;
 
 		const repo = new ToolRepository(spawnSpy);
-		repo.executeCommand(sCtx, "code /my/project", "/my/project");
+		repo.executeCommand(sCtx, ["code", "/my/project"], "/my/project");
 
-		// Must use sh -c to support PATH-based commands (code, cursor, etc.)
-		expect(capturedCmd).toEqual(["sh", "-c", "code /my/project"]);
+		// argv vector is passed verbatim — no `sh -c` wrapping. Bun.spawn does
+		// PATH lookup on argv[0], so PATH-based binaries still resolve.
+		expect(capturedCmd).toEqual(["code", "/my/project"]);
 		expect(capturedCwd).toBe("/my/project");
+	});
+
+	test("preserves args containing shell metacharacters as-is", () => {
+		let capturedCmd: string[] = [];
+		const spawnSpy = ((opts: { cmd: string[] }) => {
+			capturedCmd = opts.cmd;
+		}) as never;
+
+		const repo = new ToolRepository(spawnSpy);
+		repo.executeCommand(sCtx, ["echo", "/my repo; rm -rf $HOME"]);
+
+		// Without a shell, `;` and `$HOME` are literal characters in the arg.
+		expect(capturedCmd).toEqual(["echo", "/my repo; rm -rf $HOME"]);
 	});
 
 	test("passes cwd as undefined when not provided", () => {
@@ -232,7 +258,7 @@ describe("ToolRepository executeCommand", () => {
 		}) as never;
 
 		const repo = new ToolRepository(spawnSpy);
-		repo.executeCommand(sCtx, "echo test");
+		repo.executeCommand(sCtx, ["echo", "test"]);
 
 		expect(capturedCwd).toBeUndefined();
 	});

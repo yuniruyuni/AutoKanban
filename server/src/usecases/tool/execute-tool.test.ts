@@ -8,14 +8,14 @@ import {
 import { createMockContext } from "../../../test/helpers/context";
 import { executeTool } from "./execute-tool";
 
-// Capture executeCommand calls to verify command/cwd without spawning real processes
-let executeCommandCalls: Array<{ command: string; cwd?: string }> = [];
+// Capture executeCommand calls to verify argv/cwd without spawning real processes
+let executeCommandCalls: Array<{ argv: string[]; cwd?: string }> = [];
 
 function createToolRepoMock(tool: ReturnType<typeof createTestTool> | null) {
 	return {
 		get: () => tool,
-		executeCommand: (command: string, cwd?: string) => {
-			executeCommandCalls.push({ command, cwd });
+		executeCommand: (argv: string[], cwd?: string) => {
+			executeCommandCalls.push({ argv, cwd });
 		},
 	} as never;
 }
@@ -53,7 +53,7 @@ describe("executeTool", () => {
 		});
 
 		test("fails when task is not found", async () => {
-			const tool = createTestTool({ command: "echo test" });
+			const tool = createTestTool({ argv: ["echo", "test"] });
 			const ctx = createMockContext({
 				tool: createToolRepoMock(tool),
 				task: { get: () => null } as never,
@@ -70,7 +70,7 @@ describe("executeTool", () => {
 		});
 
 		test("fails when project is not found (via taskId)", async () => {
-			const tool = createTestTool({ command: "echo test" });
+			const tool = createTestTool({ argv: ["echo", "test"] });
 			const task = createTestTask({ id: "task-1", projectId: "proj-1" });
 			const ctx = createMockContext({
 				tool: createToolRepoMock(tool),
@@ -87,7 +87,7 @@ describe("executeTool", () => {
 		});
 
 		test("fails when project is not found (via projectId)", async () => {
-			const tool = createTestTool({ command: "echo test" });
+			const tool = createTestTool({ argv: ["echo", "test"] });
 			const ctx = createMockContext({
 				tool: createToolRepoMock(tool),
 				project: { get: () => null } as never,
@@ -104,9 +104,9 @@ describe("executeTool", () => {
 		});
 	});
 
-	describe("path resolution with taskId", () => {
-		test("uses worktree path when workspace exists", async () => {
-			const tool = createTestTool({ command: "code {path}" });
+	describe("argv form (recommended)", () => {
+		test("uses worktree path when workspace exists, no shell wrapping", async () => {
+			const tool = createTestTool({ argv: ["code", "{path}"] });
 			const task = createTestTask({ id: "task-1", projectId: "proj-1" });
 			const project = createTestProject({
 				id: "proj-1",
@@ -128,19 +128,16 @@ describe("executeTool", () => {
 			const result = await executeTool(tool.id, { taskId: task.id }).run(ctx);
 
 			expect(result.ok).toBe(true);
-			if (result.ok) {
-				expect(result.value.command).toBe("code /worktrees/ws-1/my-project");
-			}
-			// Verify executeCommand received the correct command and cwd
 			expect(executeCommandCalls).toHaveLength(1);
-			expect(executeCommandCalls[0].command).toBe(
-				"code /worktrees/ws-1/my-project",
-			);
+			expect(executeCommandCalls[0].argv).toEqual([
+				"code",
+				"/worktrees/ws-1/my-project",
+			]);
 			expect(executeCommandCalls[0].cwd).toBe("/worktrees/ws-1/my-project");
 		});
 
 		test("falls back to project.repoPath when workspace does not exist", async () => {
-			const tool = createTestTool({ command: "code {path}" });
+			const tool = createTestTool({ argv: ["code", "{path}"] });
 			const task = createTestTask({ id: "task-1", projectId: "proj-1" });
 			const project = createTestProject({
 				id: "proj-1",
@@ -157,21 +154,17 @@ describe("executeTool", () => {
 
 			const result = await executeTool(tool.id, { taskId: task.id }).run(ctx);
 
-			// Must succeed even without workspace — this was a bug where it used to
-			// leave targetPath as null, resulting in {path} becoming empty string
 			expect(result.ok).toBe(true);
-			if (result.ok) {
-				expect(result.value.command).toBe("code /repos/my-project");
-			}
 			expect(executeCommandCalls).toHaveLength(1);
-			expect(executeCommandCalls[0].command).toBe("code /repos/my-project");
+			expect(executeCommandCalls[0].argv).toEqual([
+				"code",
+				"/repos/my-project",
+			]);
 			expect(executeCommandCalls[0].cwd).toBe("/repos/my-project");
 		});
-	});
 
-	describe("path resolution with projectId", () => {
 		test("uses project.repoPath when projectId is provided", async () => {
-			const tool = createTestTool({ command: "code {path}" });
+			const tool = createTestTool({ argv: ["code", "{path}"] });
 			const project = createTestProject({
 				id: "proj-1",
 				repoPath: "/repos/my-project",
@@ -187,17 +180,17 @@ describe("executeTool", () => {
 			}).run(ctx);
 
 			expect(result.ok).toBe(true);
-			if (result.ok) {
-				expect(result.value.command).toBe("code /repos/my-project");
-			}
-			expect(executeCommandCalls).toHaveLength(1);
+			expect(executeCommandCalls[0].argv).toEqual([
+				"code",
+				"/repos/my-project",
+			]);
 			expect(executeCommandCalls[0].cwd).toBe("/repos/my-project");
 		});
-	});
 
-	describe("{path} placeholder replacement", () => {
-		test("replaces all {path} occurrences in command", async () => {
-			const tool = createTestTool({ command: "echo {path} {path}" });
+		test("substitutes {path} in every arg element where it appears", async () => {
+			const tool = createTestTool({
+				argv: ["echo", "{path}", "and-{path}-here"],
+			});
 			const project = createTestProject({ id: "proj-1", repoPath: "/my/repo" });
 
 			const ctx = createMockContext({
@@ -210,14 +203,21 @@ describe("executeTool", () => {
 			}).run(ctx);
 
 			expect(result.ok).toBe(true);
-			if (result.ok) {
-				expect(result.value.command).toBe("echo /my/repo /my/repo");
-			}
+			expect(executeCommandCalls[0].argv).toEqual([
+				"echo",
+				"/my/repo",
+				"and-/my/repo-here",
+			]);
 		});
 
-		test("command without {path} placeholder is passed as-is", async () => {
-			const tool = createTestTool({ command: "echo hello" });
-			const project = createTestProject({ id: "proj-1", repoPath: "/my/repo" });
+		test("paths containing whitespace and shell metacharacters are safe", async () => {
+			const tool = createTestTool({ argv: ["code", "{path}"] });
+			const project = createTestProject({
+				id: "proj-1",
+				// Realistic-but-pathological: the user named their project oddly,
+				// or worktree base happens to contain a space, etc.
+				repoPath: "/repos/My Repo; rm -rf $HOME `id`",
+			});
 
 			const ctx = createMockContext({
 				tool: createToolRepoMock(tool),
@@ -229,15 +229,17 @@ describe("executeTool", () => {
 			}).run(ctx);
 
 			expect(result.ok).toBe(true);
-			if (result.ok) {
-				expect(result.value.command).toBe("echo hello");
-			}
+			// The dangerous string is one literal arg — the shell never sees it.
+			expect(executeCommandCalls[0].argv).toEqual([
+				"code",
+				"/repos/My Repo; rm -rf $HOME `id`",
+			]);
 		});
 	});
 
-	describe("command execution", () => {
-		test("calls executeCommand with the resolved command and cwd", async () => {
-			const tool = createTestTool({ command: "code {path}" });
+	describe("legacy command form (string)", () => {
+		test("substitutes {path} via sh -c, with the path shell-escaped", async () => {
+			const tool = createTestTool({ command: "code {path}", argv: null });
 			const project = createTestProject({ id: "proj-1", repoPath: "/my/repo" });
 
 			const ctx = createMockContext({
@@ -250,12 +252,142 @@ describe("executeTool", () => {
 			}).run(ctx);
 
 			expect(result.ok).toBe(true);
-			if (result.ok) {
-				expect(result.value.success).toBe(true);
-			}
 			expect(executeCommandCalls).toHaveLength(1);
-			expect(executeCommandCalls[0].command).toBe("code /my/repo");
+			expect(executeCommandCalls[0].argv).toEqual([
+				"sh",
+				"-c",
+				"code '/my/repo'",
+			]);
 			expect(executeCommandCalls[0].cwd).toBe("/my/repo");
+		});
+
+		test("paths with whitespace / `;` / `$` cannot break out of the placeholder", async () => {
+			const tool = createTestTool({ command: "code {path}", argv: null });
+			const project = createTestProject({
+				id: "proj-1",
+				repoPath: "/repos/My Repo; rm -rf $HOME",
+			});
+
+			const ctx = createMockContext({
+				tool: createToolRepoMock(tool),
+				project: { get: () => project } as never,
+			});
+
+			const result = await executeTool(tool.id, {
+				projectId: project.id,
+			}).run(ctx);
+
+			expect(result.ok).toBe(true);
+			// `;` and `$HOME` are inside the single-quoted segment, so the shell
+			// treats the whole substituted path as a single literal argument.
+			expect(executeCommandCalls[0].argv).toEqual([
+				"sh",
+				"-c",
+				"code '/repos/My Repo; rm -rf $HOME'",
+			]);
+		});
+
+		test("a single-quote in the path is escaped via the '\\''  trick", async () => {
+			const tool = createTestTool({ command: "ls {path}", argv: null });
+			const project = createTestProject({
+				id: "proj-1",
+				repoPath: "/it's/here",
+			});
+
+			const ctx = createMockContext({
+				tool: createToolRepoMock(tool),
+				project: { get: () => project } as never,
+			});
+
+			const result = await executeTool(tool.id, {
+				projectId: project.id,
+			}).run(ctx);
+
+			expect(result.ok).toBe(true);
+			expect(executeCommandCalls[0].argv).toEqual([
+				"sh",
+				"-c",
+				"ls '/it'\\''s/here'",
+			]);
+		});
+
+		test("command without {path} is passed as-is via sh -c", async () => {
+			const tool = createTestTool({ command: "echo hello", argv: null });
+			const project = createTestProject({ id: "proj-1", repoPath: "/my/repo" });
+
+			const ctx = createMockContext({
+				tool: createToolRepoMock(tool),
+				project: { get: () => project } as never,
+			});
+
+			const result = await executeTool(tool.id, {
+				projectId: project.id,
+			}).run(ctx);
+
+			expect(result.ok).toBe(true);
+			expect(executeCommandCalls[0].argv).toEqual(["sh", "-c", "echo hello"]);
+		});
+
+		test("empty command yields INVALID_COMMAND", async () => {
+			const tool = createTestTool({ command: "   ", argv: null });
+			const project = createTestProject({ id: "proj-1", repoPath: "/my/repo" });
+
+			const ctx = createMockContext({
+				tool: createToolRepoMock(tool),
+				project: { get: () => project } as never,
+			});
+
+			const result = await executeTool(tool.id, {
+				projectId: project.id,
+			}).run(ctx);
+
+			expect(result.ok).toBe(false);
+			if (!result.ok) {
+				expect(result.error.code).toBe("INVALID_COMMAND");
+			}
+			expect(executeCommandCalls).toHaveLength(0);
+		});
+	});
+
+	describe("argv vs command precedence", () => {
+		test("when both are present, argv wins (no shell)", async () => {
+			const tool = createTestTool({
+				command: "old {path}",
+				argv: ["new", "{path}"],
+			});
+			const project = createTestProject({ id: "proj-1", repoPath: "/p" });
+
+			const ctx = createMockContext({
+				tool: createToolRepoMock(tool),
+				project: { get: () => project } as never,
+			});
+
+			const result = await executeTool(tool.id, {
+				projectId: project.id,
+			}).run(ctx);
+
+			expect(result.ok).toBe(true);
+			expect(executeCommandCalls[0].argv).toEqual(["new", "/p"]);
+		});
+
+		test("empty argv array falls through to legacy command", async () => {
+			const tool = createTestTool({
+				command: "echo hi",
+				argv: [],
+			});
+			const project = createTestProject({ id: "proj-1", repoPath: "/p" });
+
+			const ctx = createMockContext({
+				tool: createToolRepoMock(tool),
+				project: { get: () => project } as never,
+			});
+
+			const result = await executeTool(tool.id, {
+				projectId: project.id,
+			}).run(ctx);
+
+			expect(result.ok).toBe(true);
+			expect(executeCommandCalls[0].argv).toEqual(["sh", "-c", "echo hi"]);
 		});
 	});
 });

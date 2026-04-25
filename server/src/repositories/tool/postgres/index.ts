@@ -45,9 +45,9 @@ export class ToolRepository implements IToolRepository {
 
 	async executeCommand(
 		_ctx: ServiceCtx,
-		command: string,
+		argv: string[],
 		cwd?: string,
 	): Promise<void> {
-		await executeCommand(this.spawnFn, command, cwd);
+		await executeCommand(this.spawnFn, argv, cwd);
 	}
 }

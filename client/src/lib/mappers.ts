@@ -44,6 +44,7 @@ export function mapTool(data: {
 	icon: string;
 	iconColor: string;
 	command: string;
+	argv: readonly string[] | null;
 	sortOrder: number;
 	createdAt: string;
 	updatedAt: string;
@@ -54,6 +55,7 @@ export function mapTool(data: {
 		icon: data.icon,
 		iconColor: data.iconColor,
 		command: data.command,
+		argv: data.argv,
 		sortOrder: data.sortOrder,
 		createdAt: data.createdAt,
 		updatedAt: data.updatedAt,

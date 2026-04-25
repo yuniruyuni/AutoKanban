@@ -6,6 +6,9 @@ export interface Tool {
 	icon: string;
 	iconColor: string;
 	command: string;
+	// Treated as immutable so it survives Valtio's deep-readonly snapshot
+	// without producing a `readonly string[]` mismatch at consumer sites.
+	argv: readonly string[] | null;
 	sortOrder: number;
 	createdAt: string;
 	updatedAt: string;
