@@ -18,10 +18,15 @@ export interface BranchStatus {
 export function useBranchStatus(
 	workspaceId: string | null,
 	projectId: string | null,
+	options?: { enabled?: boolean },
 ) {
+	const enabled = options?.enabled ?? true;
 	const query = trpc.git.getBranchStatus.useQuery(
 		{ workspaceId: workspaceId ?? "", projectId: projectId ?? "" },
-		{ enabled: !!workspaceId && !!projectId, refetchInterval: 5000 },
+		{
+			enabled: enabled && !!workspaceId && !!projectId,
+			refetchInterval: 5000,
+		},
 	);
 
 	return {
