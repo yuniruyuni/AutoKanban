@@ -30,7 +30,9 @@ export function GitOperationButtons({
 	taskTitle,
 	onConflict,
 }: GitOperationButtonsProps) {
-	const { status, refetch } = useBranchStatus(workspaceId, projectId);
+	const { status, refetch } = useBranchStatus(workspaceId, projectId, {
+		enabled: taskStatus !== "done",
+	});
 	const { diffs } = useDiffs(workspaceId, projectId);
 	const { data: branchData } = trpc.git.listBranches.useQuery(
 		projectId ? { projectId } : skipToken,
@@ -82,27 +84,31 @@ export function GitOperationButtons({
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, [showActionMenu]);
 
-	// Auto-finalize when PR is merged
+	// Auto-finalize when PR is merged. The ref is only reset on error so the
+	// effect cannot re-fire after a successful finalize — once the worktree is
+	// removed server-side, getBranchStatus refetches fail and React Query keeps
+	// the stale "merged" payload, which would otherwise loop the effect.
 	const finalizingRef = useRef(false);
 	useEffect(() => {
 		if (
-			status?.prState === "merged" &&
-			workspaceId &&
-			projectId &&
-			!finalizingRef.current &&
-			!isFinalizingPrMerge
+			taskStatus === "done" ||
+			status?.prState !== "merged" ||
+			!workspaceId ||
+			!projectId ||
+			finalizingRef.current ||
+			isFinalizingPrMerge
 		) {
-			finalizingRef.current = true;
-			finalizePrMerge(workspaceId, projectId)
-				.catch((err) => {
-					setError(err instanceof Error ? err.message : "Finalize failed");
-				})
-				.finally(() => {
-					finalizingRef.current = false;
-				});
+			return;
 		}
+
+		finalizingRef.current = true;
+		finalizePrMerge(workspaceId, projectId).catch((err) => {
+			setError(err instanceof Error ? err.message : "Finalize failed");
+			finalizingRef.current = false;
+		});
 	}, [
 		status?.prState,
+		taskStatus,
 		workspaceId,
 		projectId,
 		finalizePrMerge,
