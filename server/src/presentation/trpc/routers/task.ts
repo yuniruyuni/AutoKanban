@@ -8,13 +8,11 @@ import { updateTask } from "../../../usecases/task/update-task";
 import { handleResult } from "../handle-result";
 import { publicProcedure, router } from "../init";
 
-const TaskStatusSchema = z.enum([
-	"todo",
-	"inprogress",
-	"inreview",
-	"done",
-	"cancelled",
-]);
+// Source the enum from the Task model so MCP and tRPC schemas can never drift
+// apart on accepted statuses.
+export const TaskStatusSchema = z.enum(
+	Task.statuses as readonly [Task.Status, ...Task.Status[]],
+);
 
 export const taskRouter = router({
 	create: publicProcedure
