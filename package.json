@@ -12,7 +12,7 @@
 		"start:dev": "bun run --filter '*' --parallel start:dev",
 		"start:prod": "bun run --filter '*' --parallel start:prod",
 		"build": "bun run --filter '*' build",
-		"check": "bun run --parallel 'check:*'",
+		"check": "bun run --parallel 'check:*' && bun run --filter '@auto-kanban/server' check:schema-upgrade",
 		"check:lint": "bun run --filter '*' check:lint",
 		"check:test": "bun run --filter '*' --sequential check:test",
 		"check:type": "bun run --filter '*' check:type",

@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Schema upgrade smoke test diffs server/schema/ against origin/main.
+          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
 
@@ -31,6 +34,9 @@ jobs:
 
       - name: Test
         run: bun run check:test
+
+      - name: Schema upgrade smoke test
+        run: bun run --filter '@auto-kanban/server' check:schema-upgrade
 
       - name: Architecture check
         run: bun run check:arch
