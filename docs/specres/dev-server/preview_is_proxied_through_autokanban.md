@@ -2,7 +2,7 @@
 id: "01KPZT8Z802KXZRGTYZKDZVH06"
 name: "preview_is_proxied_through_autokanban"
 status: "stable"
-last_verified: "2026-04-23"
+last_verified: "2026-04-25"
 ---
 
 ## 関連ファイル
@@ -113,6 +113,10 @@ HTTP だけ forward しても「ページは出るが変更が反映されない
 
 - **ターゲットに到達できない**: `forward` で `fetch` が例外 → 502 を返す (サーバは落ちない)
 - **WS アップストリームエラー**: `close(1011, "Upstream WS error")` で viewer 側を閉じる
+- **send 先の WS が close 済み**: `ws.send()` / `upstream.send()` が同期 throw するケース
+  (viewer reload 中・upstream 切断直後の race) は warn ログを出して drop。
+  HMR は冪等のため再送で復旧する。捕捉せずに伝播させると Bun イベントループで
+  unhandled となり AutoKanban server ごと落ちるため、3 箇所すべての send を try-catch する。
 - **`setTarget` 前の HTTP リクエスト**: placeholder (503 + meta-refresh) を返す
 - **`setTarget` 前の WS アップグレード**: `close(1013, "Preview target not ready")` で即切断
 - **`proxyPort` 使用中のポート**: 通常 `findFreePort` で未使用ポートを取るが、race で埋まれば
