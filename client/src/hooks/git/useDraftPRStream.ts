@@ -68,6 +68,17 @@ export function useDraftPRStream(
 			}
 		});
 
+		es.addEventListener("stream-error", (event) => {
+			let payload: unknown = event.data;
+			try {
+				payload = JSON.parse(event.data);
+			} catch {}
+			console.error("[useDraftPRStream] server reported stream-error", payload);
+			setIsConnected(false);
+			es.close();
+			eventSourceRef.current = null;
+		});
+
 		es.onopen = () => {
 			setIsConnected(true);
 		};

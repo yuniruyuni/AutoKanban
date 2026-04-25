@@ -66,6 +66,19 @@ export function useStructuredLogStream(
 			setIsIdle(data.isIdle);
 		});
 
+		es.addEventListener("stream-error", (event) => {
+			let payload: unknown = event.data;
+			try {
+				payload = JSON.parse(event.data);
+			} catch {}
+			console.error(
+				"[useStructuredLogStream] server reported stream-error",
+				payload,
+			);
+			setIsConnected(false);
+			es.close();
+		});
+
 		es.onopen = () => {
 			setIsConnected(true);
 		};

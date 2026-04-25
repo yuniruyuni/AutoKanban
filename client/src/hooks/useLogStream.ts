@@ -93,6 +93,21 @@ export function useLogStream(options: UseLogStreamOptions) {
 			eventSourceRef.current = null;
 		});
 
+		// The server emits "stream-error" when delta polling has failed N times
+		// in a row. Treat it the same as a transport error: stop streaming and
+		// fall back to the DB so the user still sees something.
+		eventSource.addEventListener("stream-error", (event) => {
+			let payload: unknown = event.data;
+			try {
+				payload = JSON.parse(event.data);
+			} catch {}
+			console.error("[useLogStream] server reported stream-error", payload);
+			setError(new Error("SSE stream-error from server"));
+			setShouldFetchDb(true);
+			setIsStreaming(false);
+			eventSource.close();
+		});
+
 		eventSource.onerror = () => {
 			// Try loading from database on connection error
 			console.log("[useLogStream] SSE error, loading from database");

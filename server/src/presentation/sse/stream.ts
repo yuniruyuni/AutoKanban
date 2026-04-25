@@ -2,12 +2,11 @@ import type { Context as HonoContext, MiddlewareHandler } from "hono";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import type { ParamKeys } from "hono/types";
+import type { SSEDeltaResult } from "../../models/sse";
 import type { Context } from "../../usecases/context";
 import type { Usecase } from "../../usecases/runner";
 
 export type { SSEDeltaResult, SSEEvent } from "../../models/sse";
-
-import type { SSEDeltaResult } from "../../models/sse";
 
 export type PathParams<Path extends string> = {
 	[K in ParamKeys<Path>]: string;
@@ -42,6 +41,79 @@ export interface SSERoute {
 	mount(app: Hono, ctx: Context): void;
 }
 
+export const STREAM_ERROR_THRESHOLD = 3;
+export const MAX_BACKOFF_MS = 5000;
+
+export function computeDeltaInterval(
+	baseInterval: number,
+	consecutiveFailures: number,
+): number {
+	if (consecutiveFailures <= 0) return baseInterval;
+	return Math.min(baseInterval * 2 ** consecutiveFailures, MAX_BACKOFF_MS);
+}
+
+export interface SSEWriter {
+	writeSSE(event: { event: string; data: string }): Promise<void>;
+}
+
+export interface DeltaLoopOptions<TParams, TState> {
+	ctx: Context;
+	path: string;
+	params: TParams;
+	initialState: TState;
+	delta: (params: TParams, state: TState) => Usecase<SSEDeltaResult<TState>>;
+	baseInterval: number;
+	signal: AbortSignal;
+	writer: SSEWriter;
+	failureThreshold?: number;
+}
+
+export async function runDeltaLoop<TParams, TState>(
+	opts: DeltaLoopOptions<TParams, TState>,
+): Promise<void> {
+	const threshold = opts.failureThreshold ?? STREAM_ERROR_THRESHOLD;
+	let state = opts.initialState;
+	let consecutiveFailures = 0;
+
+	while (!opts.signal.aborted) {
+		const wait = computeDeltaInterval(opts.baseInterval, consecutiveFailures);
+		await sleep(wait, opts.signal);
+		if (opts.signal.aborted) break;
+
+		const delta = await opts.delta(opts.params, state).run(opts.ctx);
+		if (!delta.ok) {
+			consecutiveFailures += 1;
+			opts.ctx.logger.error("[sse] delta failed", {
+				path: opts.path,
+				params: opts.params,
+				code: delta.error.code,
+				message: delta.error.message,
+				consecutiveFailures,
+			});
+			if (consecutiveFailures >= threshold) {
+				await opts.writer.writeSSE({
+					event: "stream-error",
+					data: JSON.stringify({
+						code: delta.error.code,
+						message: delta.error.message,
+						consecutiveFailures,
+					}),
+				});
+			}
+			continue;
+		}
+		consecutiveFailures = 0;
+		state = delta.value.state;
+
+		for (const event of delta.value.events) {
+			await opts.writer.writeSSE({
+				event: event.type,
+				data: JSON.stringify(event.data),
+			});
+		}
+	}
+}
+
 /**
  * Define a single SSE route. Path params are inferred from the literal path.
  */
@@ -61,8 +133,24 @@ export function sseRoute<TPath extends string, TState>(
 					stream.onAbort(() => controller.abort());
 
 					const snap = await def.snapshot(params).run(ctx);
-					if (!snap.ok) return;
-					let state = snap.value.state;
+					if (!snap.ok) {
+						ctx.logger.error("[sse] snapshot failed", {
+							path,
+							params,
+							code: snap.error.code,
+							message: snap.error.message,
+						});
+						await stream.writeSSE({
+							event: "stream-error",
+							data: JSON.stringify({
+								code: snap.error.code,
+								message: snap.error.message,
+								phase: "snapshot",
+							}),
+						});
+						return;
+					}
+					const initialState = snap.value.state;
 					for (const event of snap.value.events) {
 						await stream.writeSSE({
 							event: event.type,
@@ -70,21 +158,16 @@ export function sseRoute<TPath extends string, TState>(
 						});
 					}
 
-					while (!controller.signal.aborted) {
-						await sleep(interval, controller.signal);
-						if (controller.signal.aborted) break;
-
-						const delta = await def.delta(params, state).run(ctx);
-						if (!delta.ok) continue;
-						state = delta.value.state;
-
-						for (const event of delta.value.events) {
-							await stream.writeSSE({
-								event: event.type,
-								data: JSON.stringify(event.data),
-							});
-						}
-					}
+					await runDeltaLoop({
+						ctx,
+						path,
+						params,
+						initialState,
+						delta: def.delta,
+						baseInterval: interval,
+						signal: controller.signal,
+						writer: stream,
+					});
 				});
 			});
 		},
@@ -122,6 +205,7 @@ export function sseServer(options: {
 }
 
 function sleep(ms: number, signal: AbortSignal): Promise<void> {
+	if (signal.aborted) return Promise.resolve();
 	return new Promise<void>((resolve) => {
 		const timer = setTimeout(resolve, ms);
 		signal.addEventListener(
