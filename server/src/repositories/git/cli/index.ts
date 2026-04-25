@@ -676,6 +676,28 @@ export class GitRepository implements GitRepositoryDef {
 			throw new Error(`Failed to fetch branch: ${fetchResult.stderr}`);
 		}
 
+		// If the branch is checked out in any worktree (typically the parent
+		// repo on `main`), advance it via fast-forward merge from inside that
+		// worktree so the working tree files move forward together with the
+		// ref. `git update-ref` alone only moves the pointer and silently
+		// strands the working tree at the old commit, surfacing every newly
+		// merged change as a reverse diff in `git status`.
+		const checkoutPath = await this.findWorktreeForBranch(repoPath, branch);
+		if (checkoutPath) {
+			const mergeResult = await this.exec(
+				checkoutPath,
+				"merge",
+				"--ff-only",
+				`${remote}/${branch}`,
+			);
+			if (!mergeResult.success) {
+				throw new Error(
+					`Failed to fast-forward ${branch} at ${checkoutPath}: ${mergeResult.stderr}`,
+				);
+			}
+			return;
+		}
+
 		const updateResult = await this.exec(
 			repoPath,
 			"update-ref",
@@ -685,6 +707,15 @@ export class GitRepository implements GitRepositoryDef {
 		if (!updateResult.success) {
 			throw new Error(`Failed to update ref: ${updateResult.stderr}`);
 		}
+	}
+
+	private async findWorktreeForBranch(
+		repoPath: string,
+		branch: string,
+	): Promise<string | null> {
+		const result = await this.exec(repoPath, "worktree", "list", "--porcelain");
+		if (!result.success) return null;
+		return parseWorktreeForBranch(result.stdout, branch);
 	}
 
 	// ============================================
@@ -755,4 +786,27 @@ export class GitRepository implements GitRepositoryDef {
 		const result = await this.exec(dirPath, "rev-parse", "--git-dir");
 		return result.success;
 	}
+}
+
+// Parse `git worktree list --porcelain` output and return the absolute path
+// of the worktree on `branch`, or null if not checked out anywhere. Each
+// worktree entry is a block of `key value` lines (worktree, HEAD, branch)
+// terminated by a blank line. Detached worktrees emit `detached` instead of
+// `branch <ref>` and are ignored.
+export function parseWorktreeForBranch(
+	porcelain: string,
+	branch: string,
+): string | null {
+	const target = `branch refs/heads/${branch}`;
+	let currentPath: string | null = null;
+	for (const line of porcelain.split("\n")) {
+		if (line.startsWith("worktree ")) {
+			currentPath = line.slice("worktree ".length);
+		} else if (line === target && currentPath) {
+			return currentPath;
+		} else if (line === "") {
+			currentPath = null;
+		}
+	}
+	return null;
 }
