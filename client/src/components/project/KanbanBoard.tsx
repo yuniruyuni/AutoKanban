@@ -15,6 +15,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useState } from "react";
 import { useSnapshot } from "valtio";
 import { Dialog, DialogContent, DialogHeader } from "@/components/atoms/Dialog";
+import { QueryState } from "@/components/atoms/QueryState";
 import { TaskCard } from "@/components/task/TaskCard";
 import { TaskForm } from "@/components/task/TaskForm";
 import { useTaskMutations } from "@/hooks/useTaskMutations";
@@ -43,7 +44,7 @@ export function KanbanBoard({
 	onTaskClick,
 	onTaskDoubleClick,
 }: KanbanBoardProps) {
-	const { tasks, isLoading } = useTasks({ projectId });
+	const { tasks, isLoading, error, refetch } = useTasks({ projectId });
 	const { createTask, updateTask, isCreating, isUpdating } = useTaskMutations();
 	const uiState = useSnapshot(uiStore);
 	const { tools } = useSnapshot(toolStore);
@@ -198,45 +199,44 @@ export function KanbanBoard({
 		? tasks.find((t) => t.id === uiState.editingTaskId)
 		: null;
 
-	if (isLoading) {
-		return (
-			<div className="flex h-64 items-center justify-center">
-				<div className="text-secondary-foreground">Loading tasks...</div>
-			</div>
-		);
-	}
-
 	return (
 		<>
-			<DndContext
-				sensors={sensors}
-				collisionDetection={closestCorners}
-				onDragStart={handleDragStart}
-				onDragOver={handleDragOver}
-				onDragEnd={handleDragEnd}
+			<QueryState
+				isLoading={isLoading}
+				error={error}
+				onRetry={refetch}
+				className="flex h-64 items-center justify-center"
 			>
-				<div className="flex h-full gap-4 overflow-x-auto p-6">
-					{KANBAN_COLUMNS.map((status) => (
-						<KanbanColumn
-							key={status}
-							status={status}
-							tasks={getTasksByStatus(status)}
-							activeTaskId={activeTaskId}
-							onTaskClick={handleTaskClick}
-							onTaskDoubleClick={onTaskDoubleClick}
-							onAddTask={() => uiActions.openCreateTask()}
-							tools={tools}
-							onToolClick={handleToolClick}
-						/>
-					))}
-				</div>
+				<DndContext
+					sensors={sensors}
+					collisionDetection={closestCorners}
+					onDragStart={handleDragStart}
+					onDragOver={handleDragOver}
+					onDragEnd={handleDragEnd}
+				>
+					<div className="flex h-full gap-4 overflow-x-auto p-6">
+						{KANBAN_COLUMNS.map((status) => (
+							<KanbanColumn
+								key={status}
+								status={status}
+								tasks={getTasksByStatus(status)}
+								activeTaskId={activeTaskId}
+								onTaskClick={handleTaskClick}
+								onTaskDoubleClick={onTaskDoubleClick}
+								onAddTask={() => uiActions.openCreateTask()}
+								tools={tools}
+								onToolClick={handleToolClick}
+							/>
+						))}
+					</div>
 
-				<DragOverlay>
-					{activeTask && (
-						<TaskCard task={activeTask} isDragging tools={tools} />
-					)}
-				</DragOverlay>
-			</DndContext>
+					<DragOverlay>
+						{activeTask && (
+							<TaskCard task={activeTask} isDragging tools={tools} />
+						)}
+					</DragOverlay>
+				</DndContext>
+			</QueryState>
 
 			<Dialog
 				open={uiState.isTaskFormOpen}

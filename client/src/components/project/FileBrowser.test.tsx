@@ -2,85 +2,109 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { FileBrowser } from "./FileBrowser";
 
-// Mock useDirectoryBrowser hook
-const mockLeftBrowser = {
-	currentPath: "/Users/test",
-	parentPath: "/Users",
-	entries: [
-		{
-			name: "project",
-			path: "/Users/test/project",
-			isDirectory: true,
-			isGitRepo: true,
-		},
-		{
-			name: "folder",
-			path: "/Users/test/folder",
-			isDirectory: true,
-			isGitRepo: false,
-		},
-	],
-	isLoading: false,
-	error: null,
-	navigateTo: vi.fn(),
-	navigateUp: vi.fn(),
-	navigateToHome: vi.fn(),
-	canNavigateUp: true,
+type Browser = {
+	currentPath: string;
+	parentPath: string | null;
+	entries: Array<{
+		name: string;
+		path: string;
+		isDirectory: boolean;
+		isGitRepo: boolean;
+		size?: number;
+	}>;
+	isLoading: boolean;
+	error: { message?: string } | null;
+	navigateTo: ReturnType<typeof vi.fn>;
+	navigateUp: ReturnType<typeof vi.fn>;
+	navigateToHome: ReturnType<typeof vi.fn>;
+	canNavigateUp: boolean;
 };
 
-const mockRightBrowser = {
-	currentPath: "/Users/test/project",
-	parentPath: "/Users/test",
-	entries: [
-		{
-			name: "src",
-			path: "/Users/test/project/src",
-			isDirectory: true,
-			isGitRepo: false,
-		},
-		{
-			name: "package.json",
-			path: "/Users/test/project/package.json",
-			isDirectory: false,
-			isGitRepo: false,
-			size: 1024,
-		},
-		{
-			name: "index.ts",
-			path: "/Users/test/project/index.ts",
-			isDirectory: false,
-			isGitRepo: false,
-			size: 256,
-		},
-	],
-	isLoading: false,
-	error: null,
-	navigateTo: vi.fn(),
-	navigateUp: vi.fn(),
-	navigateToHome: vi.fn(),
-	canNavigateUp: true,
-};
+function createLeftBrowser(overrides: Partial<Browser> = {}): Browser {
+	return {
+		currentPath: "/Users/test",
+		parentPath: "/Users",
+		entries: [
+			{
+				name: "project",
+				path: "/Users/test/project",
+				isDirectory: true,
+				isGitRepo: true,
+			},
+			{
+				name: "folder",
+				path: "/Users/test/folder",
+				isDirectory: true,
+				isGitRepo: false,
+			},
+		],
+		isLoading: false,
+		error: null,
+		navigateTo: vi.fn(),
+		navigateUp: vi.fn(),
+		navigateToHome: vi.fn(),
+		canNavigateUp: true,
+		...overrides,
+	};
+}
+
+function createRightBrowser(overrides: Partial<Browser> = {}): Browser {
+	return {
+		currentPath: "/Users/test/project",
+		parentPath: "/Users/test",
+		entries: [
+			{
+				name: "src",
+				path: "/Users/test/project/src",
+				isDirectory: true,
+				isGitRepo: false,
+			},
+			{
+				name: "package.json",
+				path: "/Users/test/project/package.json",
+				isDirectory: false,
+				isGitRepo: false,
+				size: 1024,
+			},
+			{
+				name: "index.ts",
+				path: "/Users/test/project/index.ts",
+				isDirectory: false,
+				isGitRepo: false,
+				size: 256,
+			},
+		],
+		isLoading: false,
+		error: null,
+		navigateTo: vi.fn(),
+		navigateUp: vi.fn(),
+		navigateToHome: vi.fn(),
+		canNavigateUp: true,
+		...overrides,
+	};
+}
+
+let leftBrowser = createLeftBrowser();
+let rightBrowser = createRightBrowser();
 
 vi.mock("@/hooks/useDirectoryBrowser", () => ({
 	useDirectoryBrowser: (initialPath?: string, includeFiles?: boolean) => {
 		if (!includeFiles) {
 			// Left pane - directories only
-			return mockLeftBrowser;
+			return leftBrowser;
 		}
 		// Right pane - with files
 		if (!initialPath) {
-			return {
-				...mockRightBrowser,
-				entries: [],
-				isLoading: false,
-			};
+			return { ...rightBrowser, entries: [], isLoading: false };
 		}
-		return mockRightBrowser;
+		return rightBrowser;
 	},
 }));
 
 describe("FileBrowser", () => {
 	beforeEach(() => {
+		leftBrowser = createLeftBrowser();
+		rightBrowser = createRightBrowser();
 		vi.clearAllMocks();
 	});
 
@@ -167,5 +191,30 @@ describe("FileBrowser", () => {
 				"Select a directory from the left pane to preview its contents",
 			),
 		).toBeInTheDocument();
+	});
+
+	test("renders skeleton while left pane is loading", () => {
+		leftBrowser = createLeftBrowser({ isLoading: true, entries: [] });
+		render(<FileBrowser onSelect={vi.fn()} selectedPath={null} />);
+
+		// Skeleton should appear and entries should not
+		expect(screen.queryByText("project")).not.toBeInTheDocument();
+		expect(screen.getByTestId("query-state-loading")).toBeInTheDocument();
+	});
+
+	test("renders error and retry button when left pane query fails", () => {
+		leftBrowser = createLeftBrowser({
+			error: { message: "permission denied" },
+			entries: [],
+		});
+		render(<FileBrowser onSelect={vi.fn()} selectedPath={null} />);
+
+		expect(screen.getByRole("alert")).toBeInTheDocument();
+		expect(screen.getByText("permission denied")).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+		expect(leftBrowser.navigateTo).toHaveBeenCalledWith(
+			leftBrowser.currentPath,
+		);
 	});
 });
