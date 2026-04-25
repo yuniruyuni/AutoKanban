@@ -11,6 +11,7 @@ import {
 	RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
+import { QueryState } from "@/components/atoms/QueryState";
 import {
 	type DirectoryEntry,
 	useDirectoryBrowser,
@@ -182,30 +183,32 @@ export function FileBrowser({ onSelect, selectedPath }: FileBrowserProps) {
 							</button>
 						)}
 
-						{leftBrowser.isLoading && (
-							<div className="px-4 py-2.5 text-sm text-muted">Loading...</div>
-						)}
+						<QueryState
+							isLoading={leftBrowser.isLoading}
+							error={leftBrowser.error}
+							onRetry={() => leftBrowser.navigateTo(leftBrowser.currentPath)}
+						>
+							{leftBrowser.entries.map((entry) => (
+								<LeftPaneItem
+									key={entry.path}
+									entry={entry}
+									isSelected={selectedPath === entry.path}
+									isRightPaneTarget={rightPanePath === entry.path}
+									onSelect={(e) => {
+										onSelect(e);
+										// Also set this directory as right pane target
+										setRightPanePath(e.path);
+									}}
+									onNavigate={leftBrowser.navigateTo}
+								/>
+							))}
 
-						{leftBrowser.entries.map((entry) => (
-							<LeftPaneItem
-								key={entry.path}
-								entry={entry}
-								isSelected={selectedPath === entry.path}
-								isRightPaneTarget={rightPanePath === entry.path}
-								onSelect={(e) => {
-									onSelect(e);
-									// Also set this directory as right pane target
-									setRightPanePath(e.path);
-								}}
-								onNavigate={leftBrowser.navigateTo}
-							/>
-						))}
-
-						{!leftBrowser.isLoading && leftBrowser.entries.length === 0 && (
-							<div className="px-4 py-2.5 text-sm text-muted">
-								No directories found
-							</div>
-						)}
+							{leftBrowser.entries.length === 0 && (
+								<div className="px-4 py-2.5 text-sm text-muted">
+									No directories found
+								</div>
+							)}
+						</QueryState>
 					</div>
 				</div>
 
@@ -245,44 +248,42 @@ export function FileBrowser({ onSelect, selectedPath }: FileBrowserProps) {
 
 					{/* Right pane content */}
 					<div className="flex-1 overflow-y-auto py-2">
-						{!rightPanePath && (
+						{!rightPanePath ? (
 							<div className="flex items-center justify-center h-full text-sm text-muted">
 								Select a directory from the left pane to preview its contents
 							</div>
+						) : (
+							<QueryState
+								isLoading={rightBrowser.isLoading}
+								error={rightBrowser.error}
+								onRetry={() => rightBrowser.navigateTo(rightPanePath)}
+							>
+								{rightBrowser.entries.length === 0 ? (
+									<div className="px-4 py-2.5 text-sm text-muted">
+										Directory is empty
+									</div>
+								) : (
+									rightBrowser.entries.map((entry) => (
+										<RightPaneItem
+											key={entry.path}
+											entry={entry}
+											onDirectoryClick={
+												entry.isDirectory
+													? () => {
+															// Navigate left pane to show this directory
+															leftBrowser.navigateTo(rightPanePath);
+															// Select the directory
+															onSelect(entry);
+															// Update right pane to show this directory's contents
+															setRightPanePath(entry.path);
+														}
+													: undefined
+											}
+										/>
+									))
+								)}
+							</QueryState>
 						)}
-
-						{rightPanePath && rightBrowser.isLoading && (
-							<div className="px-4 py-2.5 text-sm text-muted">Loading...</div>
-						)}
-
-						{rightPanePath &&
-							!rightBrowser.isLoading &&
-							rightBrowser.entries.map((entry) => (
-								<RightPaneItem
-									key={entry.path}
-									entry={entry}
-									onDirectoryClick={
-										entry.isDirectory
-											? () => {
-													// Navigate left pane to show this directory
-													leftBrowser.navigateTo(rightPanePath);
-													// Select the directory
-													onSelect(entry);
-													// Update right pane to show this directory's contents
-													setRightPanePath(entry.path);
-												}
-											: undefined
-									}
-								/>
-							))}
-
-						{rightPanePath &&
-							!rightBrowser.isLoading &&
-							rightBrowser.entries.length === 0 && (
-								<div className="px-4 py-2.5 text-sm text-muted">
-									Directory is empty
-								</div>
-							)}
 					</div>
 				</div>
 			</div>
