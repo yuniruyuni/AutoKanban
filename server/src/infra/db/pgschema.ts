@@ -43,6 +43,54 @@ function getBinaryPath(): string {
 	return join(getBinDir(), "pgschema");
 }
 
+const DEFAULT_DOWNLOAD_TIMEOUT_MS = 60_000;
+const DOWNLOAD_RETRIES = 1;
+
+function getDownloadTimeoutMs(): number {
+	const raw = process.env.AUTO_KANBAN_PGSCHEMA_TIMEOUT_MS;
+	if (!raw) return DEFAULT_DOWNLOAD_TIMEOUT_MS;
+	const n = Number(raw);
+	return Number.isFinite(n) && n > 0 ? n : DEFAULT_DOWNLOAD_TIMEOUT_MS;
+}
+
+async function fetchBinary(
+	url: string,
+	timeoutMs: number,
+): Promise<ArrayBuffer> {
+	let lastErr: unknown;
+	for (let attempt = 0; attempt <= DOWNLOAD_RETRIES; attempt++) {
+		try {
+			const response = await fetch(url, {
+				signal: AbortSignal.timeout(timeoutMs),
+			});
+			if (!response.ok) {
+				throw new Error(
+					`Failed to download pgschema: ${response.status} ${response.statusText}`,
+				);
+			}
+			return await response.arrayBuffer();
+		} catch (err) {
+			lastErr = err;
+			const isTimeout = err instanceof Error && err.name === "TimeoutError";
+			if (attempt < DOWNLOAD_RETRIES) {
+				continue;
+			}
+			const reason = isTimeout
+				? `timed out after ${timeoutMs / 1000}s`
+				: err instanceof Error
+					? err.message
+					: String(err);
+			throw new Error(
+				`Failed to download pgschema from ${url} (${reason}). ` +
+					"Check your network connection and restart Auto Kanban to retry.",
+				{ cause: lastErr instanceof Error ? lastErr : undefined },
+			);
+		}
+	}
+	// unreachable
+	throw lastErr instanceof Error ? lastErr : new Error("download failed");
+}
+
 async function downloadBinary(): Promise<string> {
 	const binaryPath = getBinaryPath();
 
@@ -53,14 +101,7 @@ async function downloadBinary(): Promise<string> {
 	mkdirSync(getBinDir(), { recursive: true });
 
 	const url = getDownloadUrl();
-	const response = await fetch(url);
-	if (!response.ok) {
-		throw new Error(
-			`Failed to download pgschema: ${response.status} ${response.statusText}`,
-		);
-	}
-
-	const buffer = await response.arrayBuffer();
+	const buffer = await fetchBinary(url, getDownloadTimeoutMs());
 	writeFileSync(binaryPath, Buffer.from(buffer));
 	chmodSync(binaryPath, 0o755);
 
