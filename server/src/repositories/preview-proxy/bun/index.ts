@@ -147,11 +147,30 @@ export class PreviewProxyRepository implements PreviewProxyRepositoryDef {
 
 					upstream.binaryType = "arraybuffer";
 					upstream.addEventListener("open", () => {
-						for (const m of ws.data.pending) upstream.send(m);
+						// Closed/closing sockets throw on send. Drop and warn — HMR
+						// is idempotent and recovers on the next change.
+						for (const m of ws.data.pending) {
+							try {
+								upstream.send(m);
+							} catch (err) {
+								self.logger.warn(
+									`Failed to flush pending message on ${ws.data.processId}:`,
+									err,
+								);
+								break;
+							}
+						}
 						ws.data.pending.length = 0;
 					});
 					upstream.addEventListener("message", (ev) => {
-						ws.send(ev.data as string | Buffer | Uint8Array);
+						try {
+							ws.send(ev.data as string | Buffer | Uint8Array);
+						} catch (err) {
+							self.logger.warn(
+								`Failed to forward upstream message to viewer on ${ws.data.processId}:`,
+								err,
+							);
+						}
 					});
 					upstream.addEventListener("close", (ev) => {
 						ws.close(ev.code, ev.reason);
@@ -167,10 +186,17 @@ export class PreviewProxyRepository implements PreviewProxyRepositoryDef {
 				message(ws, message) {
 					const up = ws.data.upstream;
 					if (!up) return;
-					if (up.readyState === 1 /* OPEN */) {
-						up.send(message);
-					} else {
-						ws.data.pending.push(message);
+					try {
+						if (up.readyState === 1 /* OPEN */) {
+							up.send(message);
+						} else {
+							ws.data.pending.push(message);
+						}
+					} catch (err) {
+						self.logger.warn(
+							`Failed to forward viewer message to upstream on ${ws.data.processId}:`,
+							err,
+						);
 					}
 				},
 				close(ws) {
