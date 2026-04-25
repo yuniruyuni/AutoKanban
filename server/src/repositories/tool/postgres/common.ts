@@ -8,6 +8,7 @@ export interface ToolRow {
 	icon: string;
 	icon_color: string;
 	command: string;
+	argv: string[] | null;
 	sort_order: number;
 	created_at: Date;
 	updated_at: Date;
@@ -31,10 +32,22 @@ export function rowToTool(row: ToolRow): Tool {
 		icon: row.icon,
 		iconColor: row.icon_color,
 		command: row.command,
+		argv: parseArgv(row.argv),
 		sortOrder: row.sort_order,
 		createdAt: dateFromSQL(row.created_at),
 		updatedAt: dateFromSQL(row.updated_at),
 	};
+}
+
+// pg returns JSONB as a parsed JS value, but row data may also arrive as a
+// raw string in tests / non-pg drivers. Accept both, reject anything that is
+// not an array of strings.
+function parseArgv(value: unknown): string[] | null {
+	if (value == null) return null;
+	const parsed = typeof value === "string" ? JSON.parse(value) : value;
+	if (!Array.isArray(parsed)) return null;
+	if (!parsed.every((v) => typeof v === "string")) return null;
+	return parsed;
 }
 
 export function columnName(key: Tool.SortKey): string {

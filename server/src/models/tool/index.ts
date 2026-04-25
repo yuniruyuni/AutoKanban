@@ -17,6 +17,7 @@ export interface Tool {
 	icon: string;
 	iconColor: string;
 	command: string;
+	argv: string[] | null;
 	sortOrder: number;
 	createdAt: Date;
 	updatedAt: Date;
@@ -51,7 +52,8 @@ export namespace Tool {
 		name: string;
 		icon: string;
 		iconColor?: string;
-		command: string;
+		command?: string;
+		argv?: string[] | null;
 		sortOrder?: number;
 	}): Tool {
 		const now = new Date();
@@ -60,7 +62,8 @@ export namespace Tool {
 			name: params.name,
 			icon: params.icon,
 			iconColor: params.iconColor ?? "#6B7280",
-			command: params.command,
+			command: params.command ?? "",
+			argv: params.argv ?? null,
 			sortOrder: params.sortOrder ?? 0,
 			createdAt: now,
 			updatedAt: now,
@@ -73,6 +76,7 @@ export namespace Tool {
 		icon?: string;
 		iconColor?: string;
 		command?: string;
+		argv?: string[] | null;
 		sortOrder?: number;
 	}
 
@@ -87,6 +91,7 @@ export namespace Tool {
 			icon: fields.icon ?? tool.icon,
 			iconColor: fields.iconColor ?? tool.iconColor,
 			command: fields.command ?? tool.command,
+			argv: fields.argv === undefined ? tool.argv : fields.argv,
 			sortOrder: fields.sortOrder ?? tool.sortOrder,
 			updatedAt: now,
 		};

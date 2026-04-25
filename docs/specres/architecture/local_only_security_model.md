@@ -2,7 +2,7 @@
 id: "01KPQ6W85T6VTJEQWKM3BNVPMC"
 name: "local_only_security_model"
 status: "stable"
-last_verified: "2026-04-22"
+last_verified: "2026-04-25"
 ---
 
 ## 関連ファイル
@@ -52,7 +52,16 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 - **SQL**: すべて `sql\`...\`` タグ付きテンプレートで記述。パラメータは自動プレースホルダ化
   ([`raw_sql_is_used_instead_of_orm`](./raw_sql_is_used_instead_of_orm.md))
 - **コマンド実行**: `Bun.spawn(['git', 'commit', '-m', message])` のように**配列形式で引数を渡す**。
-  `exec(\`git commit -m "${message}"\`)` のようなシェル経由は禁止
+  `exec(\`git commit -m "${message}"\`)` のようなシェル経由は禁止。
+  ユーザー定義 Tool は `Tool.argv: string[]` を canonical とし、`{path}` を arg
+  要素内のリテラル substring として置換（spawn 経由・shell なし）。レガシー string
+  `Tool.command` を `sh -c` 経由で実行する場合でも、`{path}` は POSIX shell-escape
+  してから挿入する（`server/src/usecases/tool/execute-tool.ts` の `resolveToolInvocation`）。
+  → **「local-only でも入力は escape する」** を原則とする。理由:
+  - パス・プロジェクト名・ブランチ名は OS / ユーザー / git から来る文字列で、
+    空白 / `$` / `;` / バッククォート / 引用符を含み得る
+  - 攻撃面でなくとも、**引用が崩れて意味不明な失敗 → デバッグ難**という DX 問題が
+    現実に起きるので、injection の有無に関わらず escape は必須コスト
 - **パス検証（2 段構え）**:
   1. **入口（Zod）**: `projectNameSchema` が project 作成/更新時に path separator (`/` `\`)、
      null byte、先頭ドット、前後空白、100 文字超を拒否。bad name が DB に入らないよう防ぐ
