@@ -1,8 +1,10 @@
 // @specre 01KPNSJ3QQHP6GHD2JHE1RK26C
 import { CodingAgentProcess } from "../../models/coding-agent-process";
 import { fail } from "../../models/common";
+import { Project } from "../../models/project";
 import { Session } from "../../models/session";
 import { Workspace } from "../../models/workspace";
+import { WorkspaceRepo } from "../../models/workspace-repo";
 import { usecase } from "../runner";
 
 // ============================================
@@ -65,10 +67,22 @@ export const forkConversation = (
 				return fail("NOT_FOUND", "Workspace not found");
 			}
 
-			return { session, workspace, resumeInfo };
+			// Resolve the workspace's primary project so the executor's
+			// workingDir lands inside the project's worktree subdir, not the
+			// workspace parent dir. Mirrors the lookup queueMessage uses.
+			const workspaceReposPage = await ctx.repos.workspaceRepo.list(
+				WorkspaceRepo.ByWorkspaceId(workspace.id),
+				{ limit: 1, sort: WorkspaceRepo.defaultSort },
+			);
+			const workspaceRepo = workspaceReposPage.items[0];
+			const project = workspaceRepo
+				? await ctx.repos.project.get(Project.ById(workspaceRepo.projectId))
+				: null;
+
+			return { session, workspace, project, resumeInfo };
 		},
 
-		process: (_ctx, { session, workspace, resumeInfo }) => {
+		process: (_ctx, { session, workspace, project, resumeInfo }) => {
 			const { process: codingAgentProcess, turn: codingAgentTurn } =
 				CodingAgentProcess.createWithTurn({
 					sessionId: session.id,
@@ -77,6 +91,7 @@ export const forkConversation = (
 			return {
 				session,
 				workspace,
+				project,
 				agentSessionId: resumeInfo.agentSessionId,
 				messageUuid,
 				prompt: newPrompt,
@@ -96,6 +111,7 @@ export const forkConversation = (
 			{
 				session,
 				workspace,
+				project,
 				agentSessionId,
 				messageUuid,
 				prompt,
@@ -107,7 +123,7 @@ export const forkConversation = (
 				id: codingAgentProcess.id,
 				sessionId: session.id,
 				runReason: "codingagent",
-				workingDir: workspace.worktreePath ?? ".",
+				workingDir: Workspace.resolveWorkingDir(workspace, project) ?? ".",
 				prompt,
 				resumeSessionId: agentSessionId,
 				resumeMessageId: messageUuid,
