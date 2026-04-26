@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-25T17:29:15Z",
+  "generated_at": "2026-04-26T06:17:56Z",
   "specres": [
     {
       "id": "01KPNSEAVR0V2FXNAGASW9P9FJ",
@@ -745,6 +745,22 @@
       "domain": "architecture",
       "path": "docs/specres/architecture/schema_upgrades_must_apply_to_populated_dbs.md",
       "last_verified": "2026-04-25"
+    },
+    {
+      "id": "01KQ46NA9PKBT5W133HP1R1BJP",
+      "name": "pull_branch_advances_ref_and_worktree_together",
+      "status": "stable",
+      "domain": "git",
+      "path": "docs/specres/git/pull_branch_advances_ref_and_worktree_together.md",
+      "last_verified": "2026-04-26"
+    },
+    {
+      "id": "01KQ46NAA0F829KC90BEK8VW3H",
+      "name": "git_operations_serialize_per_repo",
+      "status": "stable",
+      "domain": "git",
+      "path": "docs/specres/git/git_operations_serialize_per_repo.md",
+      "last_verified": "2026-04-26"
     }
   ],
   "source_refs": [
@@ -781,6 +797,11 @@
     {
       "specre_id": "01KPPZWHXV5WC3V732NY8CG046",
       "file": "client/src/store/ui.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KQ46NAA0F829KC90BEK8VW3H",
+      "file": "server/src/infra/concurrency/keyed-lock.ts",
       "line": 1
     },
     {
@@ -957,6 +978,16 @@
       "specre_id": "01KPNTBSG1VTZH0VGAVST7EX29",
       "file": "server/src/presentation/trpc/routers/variant.ts",
       "line": 1
+    },
+    {
+      "specre_id": "01KQ46NA9PKBT5W133HP1R1BJP",
+      "file": "server/src/repositories/git/cli/index.ts",
+      "line": 1
+    },
+    {
+      "specre_id": "01KQ46NAA0F829KC90BEK8VW3H",
+      "file": "server/src/repositories/git/cli/index.ts",
+      "line": 2
     },
     {
       "specre_id": "01KPQ6W85T6VTJEQWKM3BNVPMC",

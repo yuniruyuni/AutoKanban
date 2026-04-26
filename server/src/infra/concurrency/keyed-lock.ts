@@ -1,3 +1,5 @@
+// @specre 01KQ46NAA0F829KC90BEK8VW3H
+
 /**
  * Per-key serialization. Operations sharing a key run one at a time;
  * different keys run in parallel.
