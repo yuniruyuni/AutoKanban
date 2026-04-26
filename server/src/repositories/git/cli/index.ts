@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { spawn } from "bun";
+import { KeyedLock } from "../../../infra/concurrency/keyed-lock";
 import type { ILogger } from "../../../infra/logger/types";
 import type { BranchStatus, ConflictOp } from "../../../models/branch-status";
 import { createBranchStatus } from "../../../models/branch-status";
@@ -20,6 +21,14 @@ interface GitCommandResult {
  */
 export class GitRepository implements GitRepositoryDef {
 	private logger: ILogger | null;
+
+	// Per-repo serialization for operations that race on the parent repo's
+	// `.git/index.lock` (notably `pullBranch` / `git merge --ff-only`).
+	// Keyed by repoPath so independent repos still run in parallel. Static
+	// so all GitRepository instances share the same map (we currently only
+	// instantiate it twice — context.ts + WorktreeRepository — but they need
+	// to coordinate on the same parent repo regardless).
+	private static readonly repoLock = new KeyedLock();
 
 	constructor(logger?: ILogger) {
 		this.logger = logger ? logger.child("GitRepository") : null;
@@ -699,42 +708,48 @@ export class GitRepository implements GitRepositoryDef {
 		branch: string,
 		remote: string = "origin",
 	): Promise<void> {
-		const fetchResult = await this.exec(repoPath, "fetch", remote, branch);
-		if (!fetchResult.success) {
-			throw new Error(`Failed to fetch branch: ${fetchResult.stderr}`);
-		}
+		// Serialize on repoPath so two finalize-pr-merge runs racing on the
+		// same parent repo don't trip over `.git/index.lock`. Different repos
+		// stay parallel.
+		return GitRepository.repoLock.runExclusive(repoPath, async () => {
+			const fetchResult = await this.exec(repoPath, "fetch", remote, branch);
+			if (!fetchResult.success) {
+				throw new Error(`Failed to fetch branch: ${fetchResult.stderr}`);
+			}
 
-		// If the branch is checked out in any worktree (typically the parent
-		// repo on `main`), advance it via fast-forward merge from inside that
-		// worktree so the working tree files move forward together with the
-		// ref. `git update-ref` alone only moves the pointer and silently
-		// strands the working tree at the old commit, surfacing every newly
-		// merged change as a reverse diff in `git status`.
-		const checkoutPath = await this.findWorktreeForBranch(repoPath, branch);
-		if (checkoutPath) {
-			const mergeResult = await this.exec(
-				checkoutPath,
-				"merge",
-				"--ff-only",
+			// If the branch is checked out in any worktree (typically the
+			// parent repo on `main`), advance it via fast-forward merge from
+			// inside that worktree so the working tree files move forward
+			// together with the ref. `git update-ref` alone only moves the
+			// pointer and silently strands the working tree at the old
+			// commit, surfacing every newly merged change as a reverse diff
+			// in `git status`.
+			const checkoutPath = await this.findWorktreeForBranch(repoPath, branch);
+			if (checkoutPath) {
+				const mergeResult = await this.exec(
+					checkoutPath,
+					"merge",
+					"--ff-only",
+					`${remote}/${branch}`,
+				);
+				if (!mergeResult.success) {
+					throw new Error(
+						`Failed to fast-forward ${branch} at ${checkoutPath}: ${mergeResult.stderr}`,
+					);
+				}
+				return;
+			}
+
+			const updateResult = await this.exec(
+				repoPath,
+				"update-ref",
+				`refs/heads/${branch}`,
 				`${remote}/${branch}`,
 			);
-			if (!mergeResult.success) {
-				throw new Error(
-					`Failed to fast-forward ${branch} at ${checkoutPath}: ${mergeResult.stderr}`,
-				);
+			if (!updateResult.success) {
+				throw new Error(`Failed to update ref: ${updateResult.stderr}`);
 			}
-			return;
-		}
-
-		const updateResult = await this.exec(
-			repoPath,
-			"update-ref",
-			`refs/heads/${branch}`,
-			`${remote}/${branch}`,
-		);
-		if (!updateResult.success) {
-			throw new Error(`Failed to update ref: ${updateResult.stderr}`);
-		}
+		});
 	}
 
 	private async findWorktreeForBranch(
