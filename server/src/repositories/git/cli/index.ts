@@ -1,3 +1,5 @@
+// @specre 01KQ46NA9PKBT5W133HP1R1BJP
+// @specre 01KQ46NAA0F829KC90BEK8VW3H
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { spawn } from "bun";
