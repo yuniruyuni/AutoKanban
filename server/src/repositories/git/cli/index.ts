@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { spawn } from "bun";
+import type { ILogger } from "../../../infra/logger/types";
 import type { BranchStatus, ConflictOp } from "../../../models/branch-status";
 import { createBranchStatus } from "../../../models/branch-status";
 import type { GitDiff } from "../../../models/git-diff";
@@ -18,6 +19,12 @@ interface GitCommandResult {
  * Repository for executing git commands via CLI.
  */
 export class GitRepository implements GitRepositoryDef {
+	private logger: ILogger | null;
+
+	constructor(logger?: ILogger) {
+		this.logger = logger ? logger.child("GitRepository") : null;
+	}
+
 	/**
 	 * Resolve a base branch name to the freshest available ref.
 	 *
@@ -246,6 +253,11 @@ export class GitRepository implements GitRepositoryDef {
 		newBase: string,
 		oldBase?: string,
 	): Promise<string> {
+		// Snapshot pre-existing autostash entries so we can detect ones our
+		// rebase creates but fails to pop (orphan stashes accumulate
+		// silently otherwise — see the bf0a35c-era leak that motivated this).
+		const stashesBefore = await this.listAutostashRefs(worktreePath);
+
 		// Resolve to origin/<base> when available so rebase targets the freshly
 		// fetched tip rather than the possibly stale local branch ref.
 		const resolvedNewBase = await this.resolveBaseRef(worktreePath, newBase);
@@ -264,10 +276,17 @@ export class GitRepository implements GitRepositoryDef {
 		const result = await this.exec(worktreePath, ...args);
 		if (!result.success) {
 			if (await this.isRebaseInProgress(_ctx, worktreePath)) {
+				// Conflict — rebase is paused mid-replay. The autostash is
+				// expected to remain in the list until --continue or --abort
+				// runs, so don't flag it as orphaned yet.
 				throw new Error("REBASE_CONFLICT");
 			}
+			await this.warnIfOrphanAutostash(worktreePath, stashesBefore, "rebase");
 			throw new Error(`Rebase failed: ${result.stderr}`);
 		}
+		// Success path: the autostash should have been popped. If not, the
+		// pop hit a conflict and silently left the entry behind.
+		await this.warnIfOrphanAutostash(worktreePath, stashesBefore, "rebase");
 		return result.stdout;
 	}
 
@@ -299,10 +318,19 @@ export class GitRepository implements GitRepositoryDef {
 	}
 
 	async abortRebase(_ctx: ServiceCtx, worktreePath: string): Promise<void> {
+		const stashesBefore = await this.listAutostashRefs(worktreePath);
 		const result = await this.exec(worktreePath, "rebase", "--abort");
 		if (!result.success) {
 			throw new Error(`Failed to abort rebase: ${result.stderr}`);
 		}
+		// `git rebase --abort` re-applies the autostash. If apply hit a
+		// conflict the entry stays — surface that so it doesn't silently
+		// pile up as it did with the bf0a35c-era leftovers.
+		await this.warnIfOrphanAutostash(
+			worktreePath,
+			stashesBefore,
+			"rebase --abort",
+		);
 	}
 
 	async continueRebase(_ctx: ServiceCtx, worktreePath: string): Promise<void> {
@@ -718,6 +746,35 @@ export class GitRepository implements GitRepositoryDef {
 		return parseWorktreeForBranch(result.stdout, branch);
 	}
 
+	/**
+	 * Return the SHAs of stash entries whose reflog subject is exactly
+	 * "autostash" — the marker `git rebase --autostash` writes. SHAs (not
+	 * `stash@{N}` indexes) are stable across `git stash drop` calls that
+	 * renumber the index.
+	 */
+	private async listAutostashRefs(cwd: string): Promise<string[]> {
+		const result = await this.exec(cwd, "stash", "list", "--format=%H %gs");
+		if (!result.success) return [];
+		return parseAutostashRefs(result.stdout);
+	}
+
+	private async warnIfOrphanAutostash(
+		cwd: string,
+		refsBefore: string[],
+		op: string,
+	): Promise<void> {
+		if (!this.logger) return;
+		const after = await this.listAutostashRefs(cwd);
+		const before = new Set(refsBefore);
+		const orphans = after.filter((sha) => !before.has(sha));
+		if (orphans.length === 0) return;
+		this.logger.warn(
+			`${op} left ${orphans.length} orphan autostash ${
+				orphans.length === 1 ? "entry" : "entries"
+			} in ${cwd}: ${orphans.join(", ")}. Recover with: git stash apply <sha> && git stash drop <sha>`,
+		);
+	}
+
 	// ============================================
 	// Branch Status
 	// ============================================
@@ -809,4 +866,21 @@ export function parseWorktreeForBranch(
 		}
 	}
 	return null;
+}
+
+// Parse `git stash list --format=%H %gs` output and return SHAs of entries
+// whose reflog subject is exactly "autostash" (the marker
+// `git rebase --autostash` writes). Other stash subjects (e.g.
+// `On main: <message>`, `WIP on main: ...`) are ignored.
+export function parseAutostashRefs(stashList: string): string[] {
+	const refs: string[] = [];
+	for (const line of stashList.split("\n")) {
+		const space = line.indexOf(" ");
+		if (space === -1) continue;
+		const subject = line.slice(space + 1);
+		if (subject === "autostash") {
+			refs.push(line.slice(0, space));
+		}
+	}
+	return refs;
 }

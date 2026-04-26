@@ -23,7 +23,7 @@ export class WorktreeRepository implements WorktreeRepositoryDef {
 
 	constructor(logger: ILogger, baseDir?: string) {
 		this.logger = logger.child("WorktreeRepository");
-		this.gitRepository = new GitRepository();
+		this.gitRepository = new GitRepository(logger);
 		this.baseDir = baseDir ?? path.join(getAutoKanbanHome(), "worktrees");
 	}
 

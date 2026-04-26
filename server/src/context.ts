@@ -88,7 +88,7 @@ export function createContext(db: PgDatabase, logger: ILogger): Context {
 		tool: new ToolRepository(),
 		variant: new VariantRepository(),
 		approval: new ApprovalRepository(),
-		git: new GitRepository(),
+		git: new GitRepository(logger),
 		worktree: new WorktreeRepository(logger),
 		executor: new ExecutorRepository(drivers, logger, callbackClient),
 		messageQueue: messageQueueRepository,
