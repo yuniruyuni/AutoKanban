@@ -4,7 +4,6 @@ import {
 	ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import type { TrpcHttpClient } from "../../../infra/trpc/client";
 import { TaskStatusSchema } from "../../trpc/routers/task";
 
@@ -37,7 +36,7 @@ function err(message: string) {
 }
 
 export function formatZodError(error: z.ZodError, toolName: string): string {
-	const lines = error.errors.map((issue) => {
+	const lines = error.issues.map((issue) => {
 		const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
 		return `  - ${path}: ${issue.message}`;
 	});
@@ -47,7 +46,9 @@ export function formatZodError(error: z.ZodError, toolName: string): string {
 export function buildInputSchema(
 	schema: z.ZodTypeAny,
 ): Record<string, unknown> {
-	const json = zodToJsonSchema(schema, { target: "jsonSchema7" }) as Record<
+	// Zod v4 ships its own JSON Schema converter; use `target: "draft-7"` to
+	// match the previous `zod-to-json-schema({ target: "jsonSchema7" })` output.
+	const json = z.toJSONSchema(schema, { target: "draft-7" }) as Record<
 		string,
 		unknown
 	>;

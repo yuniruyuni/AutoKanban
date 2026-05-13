@@ -33,7 +33,7 @@ export const executionRouter = router({
 				model: z.string().optional(),
 				repoIds: z.array(z.string().uuid()).optional(),
 				targetBranch: z.string().optional(), // Target branch for the worktree
-				targetBranches: z.record(z.string()).optional(), // Legacy: for multi-repo support
+				targetBranches: z.record(z.string(), z.string()).optional(), // Legacy: for multi-repo support
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {

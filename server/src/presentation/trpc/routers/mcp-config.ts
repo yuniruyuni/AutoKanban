@@ -20,7 +20,7 @@ export const mcpConfigRouter = router({
 		.input(
 			z.object({
 				agentId: z.string(),
-				servers: z.record(z.unknown()),
+				servers: z.record(z.string(), z.unknown()),
 			}),
 		)
 		.mutation(({ ctx, input }) => {
