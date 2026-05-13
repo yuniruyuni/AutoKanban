@@ -12,9 +12,9 @@
 		"watch:type": "onchange '**/*.ts' --initial -- bun run check:type"
 	},
 	"dependencies": {
-		"@trpc/client": "11.10.0",
-		"@hono/trpc-server": "^0.3.2",
-		"@trpc/server": "11.10.0",
+		"@trpc/client": "11.17.0",
+		"@hono/trpc-server": "^0.4.0",
+		"@trpc/server": "11.17.0",
 		"hono": "^4.12.14",
 		"embedded-postgres": "^18.3.0-beta.16",
 		"pg": "^8.20.0",
