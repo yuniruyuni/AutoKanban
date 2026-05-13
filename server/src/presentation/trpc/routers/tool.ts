@@ -40,7 +40,7 @@ export const toolRouter = router({
 	update: publicProcedure
 		.input(
 			z.object({
-				toolId: z.string().uuid(),
+				toolId: z.uuid(),
 				name: z.string().min(1).optional(),
 				icon: z.string().min(1).optional(),
 				iconColor: z.string().optional(),
@@ -55,7 +55,7 @@ export const toolRouter = router({
 		}),
 
 	delete: publicProcedure
-		.input(z.object({ toolId: z.string().uuid() }))
+		.input(z.object({ toolId: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await deleteTool(input.toolId).run(ctx)),
 		),
@@ -64,9 +64,9 @@ export const toolRouter = router({
 		.input(
 			z
 				.object({
-					toolId: z.string().uuid(),
-					taskId: z.string().uuid().optional(),
-					projectId: z.string().uuid().optional(),
+					toolId: z.uuid(),
+					taskId: z.uuid().optional(),
+					projectId: z.uuid().optional(),
 				})
 				.refine((data) => data.taskId || data.projectId, {
 					message: "Either taskId or projectId must be provided",

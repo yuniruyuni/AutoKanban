@@ -24,14 +24,14 @@ export const executionRouter = router({
 	start: publicProcedure
 		.input(
 			z.object({
-				taskId: z.string().uuid(),
+				taskId: z.uuid(),
 				prompt: z.string().optional(), // If not provided, uses task.description
 				executor: z.string().optional(),
 				variant: z.string().optional(), // Configuration variant (e.g., 'default', 'plan')
 				workingDir: z.string().optional(), // If not provided, uses first repo worktree
 				dangerouslySkipPermissions: z.boolean().optional(),
 				model: z.string().optional(),
-				repoIds: z.array(z.string().uuid()).optional(),
+				repoIds: z.array(z.uuid()).optional(),
 				targetBranch: z.string().optional(), // Target branch for the worktree
 				targetBranches: z.record(z.string(), z.string()).optional(), // Legacy: for multi-repo support
 			}),
@@ -42,7 +42,7 @@ export const executionRouter = router({
 		}),
 
 	stop: publicProcedure
-		.input(z.object({ executionProcessId: z.string().uuid() }))
+		.input(z.object({ executionProcessId: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await stopExecution(input.executionProcessId).run(ctx)),
 		),
@@ -50,7 +50,7 @@ export const executionRouter = router({
 	get: publicProcedure
 		.input(
 			z.object({
-				executionProcessId: z.string().uuid(),
+				executionProcessId: z.uuid(),
 				includeLogs: z.boolean().optional(),
 			}),
 		)
@@ -66,7 +66,7 @@ export const executionRouter = router({
 	getLatest: publicProcedure
 		.input(
 			z.object({
-				taskId: z.string().uuid(),
+				taskId: z.uuid(),
 				includeLogs: z.boolean().optional(),
 			}),
 		)
@@ -82,7 +82,7 @@ export const executionRouter = router({
 	queueMessage: publicProcedure
 		.input(
 			z.object({
-				sessionId: z.string().uuid(),
+				sessionId: z.uuid(),
 				prompt: z.string().min(1),
 				executor: z.string().optional(),
 				variant: z.string().optional(),
@@ -95,28 +95,28 @@ export const executionRouter = router({
 
 	// Get queue status for a session
 	getQueueStatus: publicProcedure
-		.input(z.object({ sessionId: z.string().uuid() }))
+		.input(z.object({ sessionId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getQueueStatus(input.sessionId).run(ctx)),
 		),
 
 	// Cancel queued message
 	cancelQueue: publicProcedure
-		.input(z.object({ sessionId: z.string().uuid() }))
+		.input(z.object({ sessionId: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await cancelQueue(input.sessionId).run(ctx)),
 		),
 
 	// Get conversation history for a session
 	getConversationHistory: publicProcedure
-		.input(z.object({ sessionId: z.string().uuid() }))
+		.input(z.object({ sessionId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getConversationHistory(input.sessionId).run(ctx)),
 		),
 
 	// Get structured logs (parsed chat messages) for an execution process
 	getStructuredLogs: publicProcedure
-		.input(z.object({ executionProcessId: z.string().uuid() }))
+		.input(z.object({ executionProcessId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getStructuredLogs(input.executionProcessId).run(ctx)),
 		),
@@ -125,7 +125,7 @@ export const executionRouter = router({
 	respondToPermission: publicProcedure
 		.input(
 			z.object({
-				sessionId: z.string().uuid(),
+				sessionId: z.uuid(),
 				requestId: z.string(),
 				approved: z.boolean(),
 				reason: z.string().optional(),
@@ -144,7 +144,7 @@ export const executionRouter = router({
 
 	// Get pending permission requests for a session
 	getPendingPermissions: publicProcedure
-		.input(z.object({ sessionId: z.string().uuid() }))
+		.input(z.object({ sessionId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getPendingPermissions(input).run(ctx)),
 		),
@@ -153,7 +153,7 @@ export const executionRouter = router({
 	forkConversation: publicProcedure
 		.input(
 			z.object({
-				sessionId: z.string().uuid(),
+				sessionId: z.uuid(),
 				messageUuid: z.string(),
 				newPrompt: z.string().min(1),
 				executor: z.string().optional(),
@@ -171,26 +171,26 @@ export const executionRouter = router({
 
 	// Save draft follow-up input
 	saveDraft: publicProcedure
-		.input(z.object({ sessionId: z.string().uuid(), text: z.string() }))
+		.input(z.object({ sessionId: z.uuid(), text: z.string() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await saveDraft(input.sessionId, input.text).run(ctx)),
 		),
 
 	// Get saved draft
 	getDraft: publicProcedure
-		.input(z.object({ sessionId: z.string().uuid() }))
+		.input(z.object({ sessionId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getDraft(input.sessionId).run(ctx)),
 		),
 
 	runPrepare: publicProcedure
-		.input(z.object({ taskId: z.string().uuid() }))
+		.input(z.object({ taskId: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await runWorkspaceScript(input.taskId, "prepare").run(ctx)),
 		),
 
 	runCleanup: publicProcedure
-		.input(z.object({ taskId: z.string().uuid() }))
+		.input(z.object({ taskId: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await runWorkspaceScript(input.taskId, "cleanup").run(ctx)),
 		),

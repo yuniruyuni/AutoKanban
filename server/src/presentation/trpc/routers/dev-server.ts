@@ -7,19 +7,19 @@ import { publicProcedure, router } from "../init";
 
 export const devServerRouter = router({
 	start: publicProcedure
-		.input(z.object({ taskId: z.string().uuid() }))
+		.input(z.object({ taskId: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await startDevServer(input.taskId).run(ctx)),
 		),
 
 	stop: publicProcedure
-		.input(z.object({ executionProcessId: z.string().uuid() }))
+		.input(z.object({ executionProcessId: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await stopDevServer(input.executionProcessId).run(ctx)),
 		),
 
 	get: publicProcedure
-		.input(z.object({ sessionId: z.string().uuid() }))
+		.input(z.object({ sessionId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getDevServer(input.sessionId).run(ctx)),
 		),

@@ -18,7 +18,7 @@ import { publicProcedure, router } from "../init";
 export const gitRouter = router({
 	// List branches
 	listBranches: publicProcedure
-		.input(z.object({ projectId: z.string().uuid() }))
+		.input(z.object({ projectId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await listBranches(input.projectId).run(ctx)),
 		),
@@ -27,8 +27,8 @@ export const gitRouter = router({
 	getBranchStatus: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 			}),
 		)
 		.query(async ({ ctx, input }) =>
@@ -41,8 +41,8 @@ export const gitRouter = router({
 	getDiffs: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 				baseCommit: z.string().optional(),
 			}),
 		)
@@ -59,8 +59,8 @@ export const gitRouter = router({
 	getFileDiff: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 				filePath: z.string(),
 				baseCommit: z.string().optional(),
 			}),
@@ -80,8 +80,8 @@ export const gitRouter = router({
 	rebase: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 				newBaseBranch: z.string(),
 			}),
 		)
@@ -98,8 +98,8 @@ export const gitRouter = router({
 	abortRebase: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
@@ -111,8 +111,8 @@ export const gitRouter = router({
 	continueRebase: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
@@ -127,8 +127,8 @@ export const gitRouter = router({
 	resolveRebaseConflict: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
@@ -143,8 +143,8 @@ export const gitRouter = router({
 	merge: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 				targetBranch: z.string(),
 			}),
 		)
@@ -162,8 +162,8 @@ export const gitRouter = router({
 	push: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 				remote: z.string().optional(),
 				force: z.boolean().optional(),
 			}),
@@ -183,8 +183,8 @@ export const gitRouter = router({
 	createPR: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 				taskTitle: z.string(),
 				remote: z.string().optional(),
 				force: z.boolean().optional(),
@@ -208,8 +208,8 @@ export const gitRouter = router({
 	finalizePrMerge: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>
@@ -222,8 +222,8 @@ export const gitRouter = router({
 	generatePRDescription: publicProcedure
 		.input(
 			z.object({
-				workspaceId: z.string().uuid(),
-				projectId: z.string().uuid(),
+				workspaceId: z.uuid(),
+				projectId: z.uuid(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) =>

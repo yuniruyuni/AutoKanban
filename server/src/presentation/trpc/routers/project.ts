@@ -49,7 +49,7 @@ export const projectRouter = router({
 		}),
 
 	get: publicProcedure
-		.input(z.object({ projectId: z.string().uuid() }))
+		.input(z.object({ projectId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getProject(input.projectId).run(ctx)),
 		),
@@ -61,7 +61,7 @@ export const projectRouter = router({
 	update: publicProcedure
 		.input(
 			z.object({
-				projectId: z.string().uuid(),
+				projectId: z.uuid(),
 				name: projectNameSchema.optional(),
 				description: z.string().optional().nullable(),
 			}),
@@ -74,7 +74,7 @@ export const projectRouter = router({
 	delete: publicProcedure
 		.input(
 			z.object({
-				projectId: z.string().uuid(),
+				projectId: z.uuid(),
 				deleteWorktrees: z.boolean().optional().default(false),
 			}),
 		)

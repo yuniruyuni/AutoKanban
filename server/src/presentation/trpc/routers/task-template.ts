@@ -37,7 +37,7 @@ export const taskTemplateRouter = router({
 	update: publicProcedure
 		.input(
 			z.object({
-				id: z.string().uuid(),
+				id: z.uuid(),
 				title: z.string().min(1).optional(),
 				description: z.string().optional().nullable(),
 				condition: conditionSchema,
@@ -60,7 +60,7 @@ export const taskTemplateRouter = router({
 		}),
 
 	delete: publicProcedure
-		.input(z.object({ id: z.string().uuid() }))
+		.input(z.object({ id: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await deleteTaskTemplate(input.id).run(ctx)),
 		),

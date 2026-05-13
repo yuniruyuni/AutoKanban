@@ -58,8 +58,8 @@ export function buildInputSchema(
 	return json;
 }
 
-const ProjectIdField = z.string().uuid().describe("Project ID (UUID)");
-const TaskIdField = z.string().uuid().describe("Task ID (UUID)");
+const ProjectIdField = z.uuid().describe("Project ID (UUID)");
+const TaskIdField = z.uuid().describe("Task ID (UUID)");
 
 function buildTools(client: TrpcHttpClient): ToolDef[] {
 	return [

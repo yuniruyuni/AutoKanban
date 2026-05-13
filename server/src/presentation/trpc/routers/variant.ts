@@ -33,7 +33,7 @@ export const variantRouter = router({
 	update: publicProcedure
 		.input(
 			z.object({
-				variantId: z.string().uuid(),
+				variantId: z.uuid(),
 				name: z.string().min(1).optional(),
 				permissionMode: z.string().optional(),
 				model: z.string().nullable().optional(),
@@ -46,7 +46,7 @@ export const variantRouter = router({
 		}),
 
 	delete: publicProcedure
-		.input(z.object({ variantId: z.string().uuid() }))
+		.input(z.object({ variantId: z.uuid() }))
 		.mutation(async ({ ctx, input }) =>
 			handleResult(await deleteVariant(input.variantId).run(ctx)),
 		),
