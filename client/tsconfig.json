@@ -19,6 +19,7 @@
 		"noUncheckedSideEffectImports": true,
 
 		"baseUrl": ".",
+		"ignoreDeprecations": "6.0",
 		"paths": {
 			"@/*": ["src/*"],
 			"@auto-kanban/server": ["../server/src/router-types.ts"]
