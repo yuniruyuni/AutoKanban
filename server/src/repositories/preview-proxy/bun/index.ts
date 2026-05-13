@@ -30,7 +30,7 @@ interface WsData {
 	 *  connecting. Flushed on upstream `open`. Without this a fast HMR
 	 *  client that sends its first frame during the upstream handshake
 	 *  would drop it. */
-	pending: (string | Buffer | Uint8Array)[];
+	pending: (string | Uint8Array)[];
 }
 
 /**
@@ -199,7 +199,10 @@ export class PreviewProxyRepository implements PreviewProxyRepositoryDef {
 						// is idempotent and recovers on the next change.
 						for (const m of ws.data.pending) {
 							try {
-								upstream.send(m);
+								// Copy to ArrayBuffer-backed Uint8Array to satisfy
+								// TS 6 BufferSource narrowing (Uint8Array<ArrayBufferLike>
+								// is no longer assignable to ArrayBufferView<ArrayBuffer>).
+								upstream.send(typeof m === "string" ? m : new Uint8Array(m));
 							} catch (err) {
 								self.logger.warn(
 									`Failed to flush pending message on ${ws.data.processId}:`,
