@@ -11,8 +11,8 @@ export const approvalRouter = router({
 	respond: publicProcedure
 		.input(
 			z.object({
-				approvalId: z.string().uuid(),
-				executionProcessId: z.string().uuid(),
+				approvalId: z.uuid(),
+				executionProcessId: z.uuid(),
 				status: z.enum(["approved", "denied"]),
 				reason: z.string().nullable().optional(),
 			}),
@@ -29,7 +29,7 @@ export const approvalRouter = router({
 		),
 
 	getPending: publicProcedure
-		.input(z.object({ executionProcessId: z.string().uuid() }))
+		.input(z.object({ executionProcessId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(
 				await getPendingApprovals(input.executionProcessId).run(ctx),

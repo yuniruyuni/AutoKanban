@@ -18,7 +18,7 @@ export const taskRouter = router({
 	create: publicProcedure
 		.input(
 			z.object({
-				projectId: z.string().uuid(),
+				projectId: z.uuid(),
 				title: z.string().min(1),
 				description: z.string().optional(),
 			}),
@@ -29,7 +29,7 @@ export const taskRouter = router({
 		}),
 
 	get: publicProcedure
-		.input(z.object({ taskId: z.string().uuid() }))
+		.input(z.object({ taskId: z.uuid() }))
 		.query(async ({ ctx, input }) =>
 			handleResult(await getTask(input.taskId).run(ctx)),
 		),
@@ -37,7 +37,7 @@ export const taskRouter = router({
 	list: publicProcedure
 		.input(
 			z.object({
-				projectId: z.string().uuid(),
+				projectId: z.uuid(),
 				status: TaskStatusSchema.optional(),
 				cursor: z.string().optional(),
 				limit: z.number().min(1).max(100).default(50),
@@ -57,7 +57,7 @@ export const taskRouter = router({
 	update: publicProcedure
 		.input(
 			z.object({
-				taskId: z.string().uuid(),
+				taskId: z.uuid(),
 				title: z.string().min(1).optional(),
 				description: z.string().optional(),
 				status: TaskStatusSchema.optional(),
@@ -71,7 +71,7 @@ export const taskRouter = router({
 	delete: publicProcedure
 		.input(
 			z.object({
-				taskId: z.string().uuid(),
+				taskId: z.uuid(),
 				deleteWorktrees: z.boolean().optional(),
 			}),
 		)

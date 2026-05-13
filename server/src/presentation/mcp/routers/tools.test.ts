@@ -20,7 +20,7 @@ describe("buildInputSchema", () => {
 	it("emits a draft-7 JSON Schema with required fields and enum values", () => {
 		const schema = z
 			.object({
-				project_id: z.string().uuid(),
+				project_id: z.uuid(),
 				status: TaskStatusSchema.optional(),
 			})
 			.strict();
@@ -43,7 +43,7 @@ describe("formatZodError", () => {
 	it("includes the offending field path and reason for each issue", () => {
 		const schema = z
 			.object({
-				project_id: z.string().uuid(),
+				project_id: z.uuid(),
 				title: z.string().min(1),
 			})
 			.strict();
