@@ -18,10 +18,9 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true,
 
-		"baseUrl": ".",
 		"ignoreDeprecations": "6.0",
 		"paths": {
-			"@/*": ["src/*"],
+			"@/*": ["./src/*"],
 			"@auto-kanban/server": ["../server/src/router-types.ts"]
 		}
 	},
