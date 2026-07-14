@@ -33,7 +33,8 @@
 	"devDependencies": {
 		"@types/bun": "latest",
 		"@types/pg": "^8.20.0",
+		"@typescript/native": "npm:typescript@^7.0.2",
 		"dependency-cruiser": "^18.0.0",
-		"typescript": "^6.0.0"
+		"typescript": "^6.0.3"
 	}
 }
