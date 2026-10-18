@@ -1,11 +1,14 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { closeDatabase } from "../infra/db";
 import { removePortFile, writePortFile } from "../infra/port-file";
 import type { Context } from "../usecases/context";
 import { runMcpServer } from "./mcp/stdio";
 import { sseRoutes } from "./sse/routers";
 import { sseServer } from "./sse/stream";
+import {
+	localRequestGuard,
+	localRequestGuardOptionsFromEnv,
+} from "./system/middleware/local-request-guard";
 import { registerHealthRoute } from "./system/routers/health";
 import { startup } from "./system/routers/startup";
 import { trpcServer } from "./trpc/adapter";
@@ -37,7 +40,10 @@ export async function startServer(params: StartServerParams) {
 	const HOST = process.env.AUTO_KANBAN_HOST ?? "127.0.0.1";
 	const app = new Hono();
 
-	app.use("/*", cors());
+	// No CORS: the UI reaches /trpc and /sse through the Vite proxy (same
+	// origin), and non-browser clients (MCP subprocess) don't need it.
+	// Reject cross-origin / DNS-rebinding requests before any route runs.
+	app.use("*", localRequestGuard(localRequestGuardOptionsFromEnv(PORT)));
 
 	// tRPC protocol
 	app.use(
