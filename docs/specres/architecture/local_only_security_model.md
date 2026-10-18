@@ -2,12 +2,13 @@
 id: "01KPQ6W85T6VTJEQWKM3BNVPMC"
 name: "local_only_security_model"
 status: "stable"
-last_verified: "2026-04-25"
+last_verified: "2026-10-18"
 ---
 
 ## 関連ファイル
 
-- `server/src/presentation/index.ts` (`HOST` = `AUTO_KANBAN_HOST ?? "127.0.0.1"` で bind)
+- `server/src/presentation/index.ts` (`HOST` = `AUTO_KANBAN_HOST ?? "127.0.0.1"` で bind、CORS なし)
+- `server/src/presentation/system/middleware/local-request-guard.ts` (Host / Origin / Sec-Fetch-Site 検証)
 - `server/src/presentation/trpc/routers/*.ts` (Zod によるバリデーション。`project.ts` の `projectNameSchema` がパストラバーサル入口チェック)
 - `server/src/repositories/worktree/fs/index.ts` (`getWorktreePath` でのパストラバーサル出口チェック)
 - `~/.auto-kanban/` (データディレクトリ)
@@ -19,7 +20,8 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 したがって:
 
 - **認証は実装しない**（OS ユーザー = AutoKanban ユーザー）
-- **CORS・セッション・CSRF 対策は最小限**（localhost 同一オリジン）
+- **CORS は許可しない**。代わりに全リクエストで Host / Origin を検証し、
+  ブラウザ経由の cross-site 呼び出しと DNS rebinding を拒否する
 - **外部ネットワーク公開は設計上禁止**
 
 残る脅威は (a) SQL インジェクション、(b) コマンドインジェクション、(c) パストラバーサル、
@@ -41,7 +43,8 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 |---|---|---|
 | 認証バイパス | — | 認証なし設計（問題にならない） |
 | ネットワーク傍受 | — | localhost のみ通信（外部経路なし） |
-| CSRF | — | localhost 同一オリジン、外部オリジンが呼べない |
+| CSRF（任意サイトからの `fetch("http://127.0.0.1:<port>/trpc/...")`） | 致命（`tool.execute` 等で任意コマンド実行） | CORS を出さない + `Origin` を UI オリジンに限定 + `Sec-Fetch-Site: cross-site` 拒否 |
+| DNS rebinding | 致命（同上） | `Host` を loopback (`127.0.0.1` / `localhost` / `[::1]` + 自ポート) に限定 |
 | SQL インジェクション | 高 | Raw SQL + パラメータバインディング |
 | コマンドインジェクション | 高 | `spawn([...])` 配列形式、shell 経由禁止 |
 | パストラバーサル | 中 | 入口: Zod で `projectName` から `/` `\` `..` 等を拒否 / 出口: worktree 作成時にベースパス内か検証 |
@@ -81,9 +84,31 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 - 外部公開が必要な特殊ケース（WSL の Windows 側から繋ぐ等）は `AUTO_KANBAN_HOST=0.0.0.0`
   env で上書きできるが、**ユーザーが意図して trust を拡張した**という扱い
 - tRPC Subscription (WebSocket) も同じ host
+- **`localRequestGuard`** を全ルート（`/trpc` / `/sse` / `/health`）の先頭に挟む:
+  - `Host` が `127.0.0.1:<PORT>` / `localhost:<PORT>` / `[::1]:<PORT>` 以外 → **421**
+    （DNS rebinding で `attacker.example` を 127.0.0.1 に向けても Host は書き換わらない）
+  - `Origin` があり、許可リスト外 → **403**。許可リストは自ポートと UI ポート
+    （`VITE_PORT` ?? 5173 = Vite dev、4173 = Vite preview）の loopback オリジンのみ。
+    `null` オリジンも拒否。メソッドに関わらず（GET / POST / WebSocket upgrade）適用
+  - `Sec-Fetch-Site: cross-site` → **403**
+  - `Origin` も `Sec-Fetch-Site` も無い非ブラウザクライアント（`--mcp` サブプロセスの
+    `TrpcHttpClient`、curl）は Host さえ loopback なら通る
+- **CORS ヘッダは返さない**。UI は Vite の proxy（`changeOrigin: true` で Host を
+  `localhost:<PORT>` に書き換え）経由で同一オリジンとして `/trpc` `/sse` を叩くので不要。
+  旧実装の `cors()`（`Access-Control-Allow-Origin: *`）は任意サイトから全 procedure を
+  呼べる状態だったため撤去した
+- `AUTO_KANBAN_HOST` で外に開く場合、LAN IP 経由のアクセスは Host / Origin 検証で弾かれる。
+  意図して信頼境界を広げるときは `AUTO_KANBAN_ALLOWED_HOSTS`（`host:port` のカンマ区切り）/
+  `AUTO_KANBAN_ALLOWED_ORIGINS`（`http://host:port` のカンマ区切り）を併せて指定する
 - データディレクトリ `~/.auto-kanban/` は所有者のみアクセス可
 
 ## 検討された代替案
+
+- **CORS で許可オリジンを絞るだけ**: CORS はレスポンスの読み取りを制御するだけで、
+  `Content-Type: text/plain` 等の simple request はプリフライト無しでサーバーに届き実行される。
+  副作用を止めるにはサーバー側で Origin を見て拒否する必要がある
+- **ブラウザ向けにトークン認証を入れる**: MCP サブプロセスや Vite proxy の配線が増える。
+  Host / Origin 検証で既知の経路（cross-site / rebinding）は塞がるので現時点では見送り
 
 - **ローカルでも認証を実装する**: ブラウザ拡張などから意図しない同 origin 呼び出しがあり得る
   懸念はあるが、個人利用で実害のある経路が現状存在しない。コストに見合わないと判断
@@ -93,6 +118,7 @@ AutoKanban は **localhost にバインドされたローカル専用アプリ**
 ## 主要メンバー
 
 - `process.env.AUTO_KANBAN_HOST ?? "127.0.0.1"` — 外部公開を既定で防ぐ
+- `localRequestGuard` / `checkLocalRequest` — Host / Origin / Sec-Fetch-Site 検証（CSRF・DNS rebinding 対策）
 - `Bun.spawn([...])` — シェル非経由のコマンド実行
 - `projectNameSchema` (`server/src/presentation/trpc/routers/project.ts`) — パストラバーサル 1st layer
 - `WorktreeRepository.getWorktreePath` — `path.resolve().startsWith(base + sep)` でパストラバーサル出口防御
