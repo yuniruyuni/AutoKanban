@@ -27,6 +27,9 @@
 		"watch:test": "bun run --filter '*' --parallel watch:test",
 		"watch:type": "bun run --filter '*' --parallel watch:type"
 	},
+	"overrides": {
+		"postcss-selector-parser": "^7.1.6"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.9",
 		"@typescript/native": "npm:typescript@^7.0.2",

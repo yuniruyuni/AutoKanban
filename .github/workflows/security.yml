@@ -1,0 +1,59 @@
+# Known-vulnerability audit of the bun dependency tree. Runs when dependencies
+# change, and weekly so advisories published against an unchanged lockfile
+# still surface.
+name: Dependency audit
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "client/package.json"
+      - "server/package.json"
+      - "e2e/package.json"
+      - "bun.lock"
+      - ".github/workflows/security.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "client/package.json"
+      - "server/package.json"
+      - "e2e/package.json"
+      - "bun.lock"
+      - ".github/workflows/security.yml"
+  schedule:
+    - cron: "41 18 * * 1"
+  workflow_dispatch:
+
+jobs:
+  bun:
+    name: Bun
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.4.3
+
+      # GHSA-vfj7-8cjw-p6xm (braces <=3.0.3) has no patched release. It is only
+      # reachable through onchange > chokidar@3, the dev-only `watch:*` file
+      # watcher, whose glob patterns are written in this repo's package.json
+      # files rather than taken from untrusted input. Drop the ignore once a
+      # fixed braces (or a chokidar without it) is available to onchange.
+      - name: Audit dependencies
+        run: bun audit --ignore GHSA-vfj7-8cjw-p6xm
