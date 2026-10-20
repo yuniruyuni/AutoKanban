@@ -38,6 +38,9 @@ module.exports = {
 			path: "node_modules",
 		},
 		tsPreCompilationDeps: true,
+		// TypeScript 7 (native) ships no JS compiler API, so parse with swc
+		// instead of the tsc parser (dependency-cruiser supports typescript <7).
+		parser: "swc",
 		knownViolations: require("./.dependency-cruiser-known-violations.json"),
 	},
 };
