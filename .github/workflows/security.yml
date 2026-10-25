@@ -48,7 +48,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
 
       # GHSA-vfj7-8cjw-p6xm (braces <=3.0.3) has no patched release. It is only
       # reachable through onchange > chokidar@3, the dev-only `watch:*` file
