@@ -26,7 +26,8 @@ describe("AnsiText", () => {
 		// \x1b[1m = bold
 		render(<AnsiText text={"\x1b[1mBold Text\x1b[0m"} />);
 		const boldSpan = screen.getByText("Bold Text");
-		expect(boldSpan).toHaveStyle({ fontWeight: "bold" });
+		// CSS computed styles normalize the bold keyword to its numeric weight.
+		expect(boldSpan).toHaveStyle({ "font-weight": "700" });
 	});
 
 	test("renders multiple colors in sequence", () => {
