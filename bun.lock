@@ -21,9 +21,9 @@
         "@git-diff-view/react": "^0.1.0",
         "@tanstack/react-query": "^5.80.3",
         "@tanstack/react-virtual": "^3.13.19",
-        "@trpc/client": "11.28.2",
-        "@trpc/react-query": "11.28.2",
-        "@trpc/server": "11.28.2",
+        "@trpc/client": "11.28.3",
+        "@trpc/react-query": "11.28.3",
+        "@trpc/server": "11.28.3",
         "clsx": "^2.1.1",
         "lucide-react": "^1.0.0",
         "react": "^19.0.0",
@@ -58,8 +58,8 @@
       "name": "@auto-kanban/e2e",
       "dependencies": {
         "@hono/trpc-server": "^0.4.0",
-        "@trpc/client": "11.28.2",
-        "@trpc/server": "11.28.2",
+        "@trpc/client": "11.28.3",
+        "@trpc/server": "11.28.3",
         "embedded-postgres": "^18.3.0-beta.16",
         "hono": "^4.13.11",
         "pg": "^8.20.0",
@@ -76,7 +76,7 @@
       "dependencies": {
         "@hono/trpc-server": "^0.4.0",
         "@modelcontextprotocol/sdk": "^1.32.0",
-        "@trpc/server": "11.28.2",
+        "@trpc/server": "11.28.3",
         "embedded-postgres": "^18.3.0-beta.16",
         "hono": "^4.13.11",
         "jsonc-parser": "^3.3.1",
@@ -311,11 +311,11 @@
 
     "@testing-library/react": ["@testing-library/react@16.3.3", "", { "dependencies": { "@babel/runtime": "^7.12.5" }, "peerDependencies": { "@testing-library/dom": "^10.0.0", "@types/react": "^18.0.0 || ^19.0.0", "@types/react-dom": "^18.0.0 || ^19.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-Uo193NgQbPMz6lrrhtRQQFcMC6Re/ELLFbbuVL30WDlZxlpZf9/lMHTAVxPRLw1q1iu9OJmR1c2BLiENRstdBg=="],
 
-    "@trpc/client": ["@trpc/client@11.28.2", "", { "peerDependencies": { "@trpc/server": "11.28.2", "typescript": ">=5.7.2" } }, "sha512-fmMAXYybpjy8L812i9fI3JbMDZE8OtE4Y9i5ch5pQLvJwT08Ioo35wdH0Z3CoweWlfnyQp1eCv0V7s2xjjPo2g=="],
+    "@trpc/client": ["@trpc/client@11.28.3", "", { "peerDependencies": { "@trpc/server": "11.28.3", "typescript": ">=5.7.2" } }, "sha512-NnMXBOCVzPMELdQH/X26MhI4u9g83nxWy3apc7UX1beevUk6rEYqfOboqCb/rVoVPu3CBVaPb8PB7AG51oEKvQ=="],
 
-    "@trpc/react-query": ["@trpc/react-query@11.28.2", "", { "peerDependencies": { "@tanstack/react-query": "^5.80.3", "@trpc/client": "11.28.2", "@trpc/server": "11.28.2", "react": ">=18.2.0", "typescript": ">=5.7.2" } }, "sha512-o00BzWlr105378VUA5b2AKyTEHM/a8t585ViKf/vpCgNdDr+rz22bN/sGBAEY0nxHffJ2UkKfkQIiHOfx3xHlg=="],
+    "@trpc/react-query": ["@trpc/react-query@11.28.3", "", { "peerDependencies": { "@tanstack/react-query": "^5.80.3", "@trpc/client": "11.28.3", "@trpc/server": "11.28.3", "react": ">=18.2.0", "typescript": ">=5.7.2" } }, "sha512-mRzESszF19o5quvxW1mM+24jb1l0lyq4ZhzzhZKNqS95KZ78DBOeSkRGD5793Q2WyWwoNRtZDpn1FB5DS/cryA=="],
 
-    "@trpc/server": ["@trpc/server@11.28.2", "", { "peerDependencies": { "@types/aws-lambda": "*", "@types/express": "*", "@types/ws": "*", "fastify": "*", "next": "*", "typescript": ">=5.7.2" }, "optionalPeers": ["@types/aws-lambda", "@types/express", "@types/ws", "fastify", "next"] }, "sha512-7A55XS4c3xtxHFZQdLREckOYNuEY5sQXuEoZBniIZ5pNFcC5cLqm0rGg/a+2nqPfJOaTnznHf1g6MqKmw3O2zA=="],
+    "@trpc/server": ["@trpc/server@11.28.3", "", { "peerDependencies": { "@types/aws-lambda": "*", "@types/express": "*", "@types/ws": "*", "fastify": "*", "next": "*", "typescript": ">=5.7.2" }, "optionalPeers": ["@types/aws-lambda", "@types/express", "@types/ws", "fastify", "next"] }, "sha512-os9o1enNvbcSSyn9agxsYPkIE8kWK7IJbkD5/ySCCApsdM58cFZ5IF410G9Q0k3RwKfsM2Q/GbGp1rbgCWLp5Q=="],
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.10.4", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A=="],
 
